@@ -33,3 +33,6 @@ __MACOSX/
 *~
 .idea/
 .vscode/
+
+# arXiv build intermediates
+paper/_*

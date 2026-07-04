@@ -9,7 +9,7 @@
 
 Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) | tspiro@vaika.org
 
-📄 **Preprint:** [`paper/manuscript.md`](paper/manuscript.md) — forthcoming (bioRxiv)
+📄 **Preprint:** [`paper/main.pdf`](paper/main.pdf) — arXiv-ready (`q-bio.QM`); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md)
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
