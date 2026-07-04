@@ -1,5 +1,4 @@
-<!-- After minting the Zenodo DOI, add this as the FIRST badge:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.<ID>.svg)](https://doi.org/10.5281/zenodo.<ID>) -->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21195679.svg)](https://doi.org/10.5281/zenodo.21195679)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Preprint](https://img.shields.io/badge/Preprint-forthcoming-lightgrey)](paper/manuscript.md)
 
@@ -11,7 +10,7 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 
 📄 **Preprint:** [`paper/manuscript.md`](paper/manuscript.md) — forthcoming (bioRxiv)
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
-📦 **Archived release (Zenodo DOI):** forthcoming — minted on the first GitHub Release
+📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
 
 ---
@@ -111,7 +110,7 @@ If you use this work, please cite:
 
 And the archived software release (when applicable):
 
-> Spiro, T. (2026). *metric-autopsy* (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.\<ID\>
+> Spiro, T. (2026). *metric-autopsy* (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.21195680
 
 Citation metadata is in [`CITATION.cff`](CITATION.cff).
 

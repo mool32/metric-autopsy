@@ -15,7 +15,7 @@ keywords:
   - metric-validation
   - quality-control
   - reproducible-research
-# doi: <software concept-DOI from Zenodo once released>
+doi: 10.5281/zenodo.21195679
 
 preferred-citation:
   type: article
