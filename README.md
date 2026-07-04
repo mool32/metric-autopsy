@@ -1,6 +1,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21195679.svg)](https://doi.org/10.5281/zenodo.21195679)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Preprint](https://img.shields.io/badge/Preprint-forthcoming-lightgrey)](paper/manuscript.md)
+[![CI](https://github.com/mool32/metric-autopsy/actions/workflows/ci.yml/badge.svg)](https://github.com/mool32/metric-autopsy/actions/workflows/ci.yml)
 
 # metric-autopsy: a metric-agnostic gate system for separating biological signal from QC and technical artifacts in single-cell metrics
 
