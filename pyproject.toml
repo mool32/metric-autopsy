@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metric-autopsy"
+version = "0.1.0"
+description = "Red-team a computed metric on single-cell data before you believe it: gates that catch QC, technical, and mathematical artifacts masquerading as biology."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Theodor Spiro", email = "tspiro@vaika.org" }]
+keywords = [
+    "single-cell", "scRNA-seq", "metric-validation", "quality-control",
+    "reproducible-research", "mutual-information", "confound", "aging",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy>=1.21",
+    "pandas>=1.3",
+]
+
+[project.optional-dependencies]
+scipy = ["scipy>=1.7"]          # exact KS test (a fallback is bundled)
+anndata = ["anndata>=0.8"]      # read real .h5ad datasets
+plots = ["matplotlib>=3.4"]     # GATE 3 scatter PNGs
+dev = ["pytest>=7", "scipy>=1.7", "anndata>=0.8", "matplotlib>=3.4"]
+
+[project.scripts]
+metric-autopsy = "metric_autopsy.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/mool32/metric-autopsy"
+Repository = "https://github.com/mool32/metric-autopsy"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+metric_autopsy = ["py.typed"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

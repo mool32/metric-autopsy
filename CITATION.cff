@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use metric-autopsy, please cite both the software and the preprint."
+title: "metric-autopsy: red-teaming computed metrics before believing them"
+type: software
+authors:
+  - given-names: Theodor
+    family-names: Spiro
+    orcid: "https://orcid.org/0009-0004-5382-9346"
+    affiliation: "Vaika Inc."
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/mool32/metric-autopsy"
+keywords:
+  - single-cell
+  - metric-validation
+  - quality-control
+  - reproducible-research
+# doi: <software concept-DOI from Zenodo once released>
+
+preferred-citation:
+  type: article
+  title: "Metric autopsy: a gate system for distinguishing biological signal from QC, technical, and mathematical artifacts in single-cell metrics"
+  authors:
+    - given-names: Theodor
+      family-names: Spiro
+      orcid: "https://orcid.org/0009-0004-5382-9346"
+  year: 2026
+  # journal / doi: <preprint DOI once posted>
