@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Core job: install ONLY numpy+pandas (no scipy/anndata/matplotlib) to prove the
+  # dependency-light claim and exercise the bundled KS fallback.
+  core-only:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install core only
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+      - name: Run tests (core deps, KS fallback path)
+        run: pytest -q
+      - name: Smoke-test the CLI
+        run: metric-autopsy --demo --no-stop
+
+  # Full job: all optional extras present (scipy exact KS, anndata, matplotlib).
+  full:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run tests (scipy KS + anndata round-trip)
+        run: pytest -q
+      - name: Smoke-test the CLI
+        run: metric-autopsy --demo --no-stop
