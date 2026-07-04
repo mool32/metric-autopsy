@@ -30,10 +30,12 @@ dependencies = [
 scipy = ["scipy>=1.7"]          # exact KS test (a fallback is bundled)
 anndata = ["anndata>=0.8"]      # read real .h5ad datasets
 plots = ["matplotlib>=3.4"]     # GATE 3 scatter PNGs
+mcp = ["mcp>=1.2", "anndata>=0.8"]  # MCP server: use the gates from any agent
 dev = ["pytest>=7", "scipy>=1.7", "anndata>=0.8", "matplotlib>=3.4"]
 
 [project.scripts]
 metric-autopsy = "metric_autopsy.cli:main"
+metric-autopsy-mcp = "metric_autopsy.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/mool32/metric-autopsy"

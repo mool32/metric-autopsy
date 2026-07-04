@@ -26,6 +26,12 @@ cardiac-β, and MI-coupling failures) into runnable behavior with two front door
   sample output, default, and dependency matches the implementation.
 
 ### Added
+- **Three agent front doors.** The **Claude Code skill** (`SKILL.md`), the **pip package**
+  (`metric-autopsy` CLI / `run_autopsy` API), and an **MCP server**
+  (`pip install "metric-autopsy[mcp]"`, console script `metric-autopsy-mcp`) exposing
+  `autopsy_report`, `qc_parity_report`, `list_metrics`, and `demo_report` to any MCP agent
+  (Claude Desktop, Cursor, Cline…). The `mcp` import is lazy; core install stays numpy+pandas.
+  Agent-oriented docs: `AGENTS.md` and `llms.txt`.
 - **Metric-agnostic gate engine** (`metric_autopsy.gates`): `gate0_independence`,
   `gate1_qc_parity`, `gate2_ngenes_matching`, `gate3_raw_visibility`, `gate5_controls`,
   `gate6_replication`. Gates take a black-box `metric(data) -> float`; judgment gates 4 and 7

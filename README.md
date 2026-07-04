@@ -30,6 +30,31 @@ Two front doors, one engine: the **skill** catches the audience inside the Claud
 
 ---
 
+## Using it through an agent
+
+The tool is built to be driven by an agent — a researcher points their agent at an `.h5ad` and
+the agent runs the autopsy. Three entry points, one engine:
+
+- **Claude Code skill** — [`SKILL.md`](SKILL.md). The skill elicits a pre-registration, then runs the gates.
+- **MCP server** — for any MCP-capable agent (Claude Desktop, Cursor, Cline…):
+  ```bash
+  pip install "metric-autopsy[mcp]"
+  metric-autopsy-mcp          # stdio transport
+  ```
+  Register it in your agent (e.g. Claude Desktop `claude_desktop_config.json`):
+  ```json
+  {"mcpServers": {"metric-autopsy": {"command": "metric-autopsy-mcp"}}}
+  ```
+  Tools exposed: `autopsy_report` (full gate sequence on an `.h5ad`), `qc_parity_report`
+  (GATE 1 only), `list_metrics`, and `demo_report` (runs on bundled synthetic data — no file
+  needed). See [`src/metric_autopsy/mcp_server.py`](src/metric_autopsy/mcp_server.py).
+- **CLI** — `metric-autopsy --demo` (or `--h5ad …`), scriptable from any agent shell.
+
+Agents landing in the repo should read [`AGENTS.md`](AGENTS.md); [`llms.txt`](llms.txt) is a
+curated doc map for LLMs.
+
+---
+
 ## Datasets
 
 | Dataset | Source | N | Notes |
@@ -44,8 +69,9 @@ Two front doors, one engine: the **skill** catches the audience inside the Claud
 
 ```
 ├── SKILL.md                  # the skill: elicit pre-reg → run gates → autopsy
+├── AGENTS.md · llms.txt      # agent operating guide + LLM-friendly doc map
 ├── references/               # progressive-disclosure depth (gates, red flags, prereg form)
-├── src/metric_autopsy/       # engine — single source of truth (gates, qc, metrics, report)
+├── src/metric_autopsy/       # engine — single source of truth (gates, qc, metrics, report, mcp_server)
 ├── scripts/run_gates.py      # thin CLI wrapper the skill invokes
 ├── examples/mi_coupling_tms/ # worked example: TMS → MI → 0/N → "not biology" (+ notebook, figures)
 ├── paper/                    # manuscript + figures  (CC-BY-4.0)

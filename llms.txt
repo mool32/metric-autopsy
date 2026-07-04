@@ -1,0 +1,37 @@
+# metric-autopsy
+
+> A metric-agnostic gate system that red-teams a computed single-cell RNA-seq metric to
+> separate biological signal from QC, technical, and mathematical artifacts. Ships as a
+> Claude Code skill, a pip package, and an MCP server. The design principle: invert the
+> default from "compute → believe" to "state your commitments → red-team → then believe."
+
+You pass a black-box `metric(data) -> float` and your factorial `obs` column names; eight
+gates probe the data and the metric's response to controlled perturbations, stopping at the
+first blocking failure. Six gates run automatically; GATE 4 and GATE 7 are judgment gates a
+human/agent resolves.
+
+## Start here
+- [README.md](README.md): pitch, quickstart, the reference `--demo` failure, install.
+- [AGENTS.md](AGENTS.md): how an AI agent should drive the tool (three entry points, the one rule).
+- [SKILL.md](SKILL.md): the Claude Code skill protocol (elicit pre-reg → run gates → autopsy).
+
+## The gates (reference)
+- [references/gates.md](references/gates.md): full definition and rationale of every gate; the methods source.
+- [references/red_flags.md](references/red_flags.md): the 12-row red-flag table, each with a real example.
+- [references/prereg_template.md](references/prereg_template.md): the pre-registration / elicitation form.
+
+## Use it through an agent
+- [src/metric_autopsy/mcp_server.py](src/metric_autopsy/mcp_server.py): MCP tools — `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. Install `metric-autopsy[mcp]`, run `metric-autopsy-mcp`.
+
+## Code (source of truth)
+- [src/metric_autopsy/gates.py](src/metric_autopsy/gates.py): the gates as functions.
+- [src/metric_autopsy/qc.py](src/metric_autopsy/qc.py): factorial QC parity + n_genes matching.
+- [src/metric_autopsy/metrics.py](src/metric_autopsy/metrics.py): reference metrics.
+- [src/metric_autopsy/report.py](src/metric_autopsy/report.py): run_autopsy orchestration + verdict.
+
+## Worked example
+- [examples/mi_coupling_tms/README.md](examples/mi_coupling_tms/README.md): the MI-coupling autopsy (0/N).
+- [examples/mi_coupling_tms/notebook.ipynb](examples/mi_coupling_tms/notebook.ipynb): executed notebook with figures.
+
+## Paper
+- [paper/manuscript.md](paper/manuscript.md): the preprint methods/tool write-up.
