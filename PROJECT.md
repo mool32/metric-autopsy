@@ -3,15 +3,15 @@
 > The single source of truth for where this project is. Update it at every stage transition.
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
-**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · **4 Write-up** · 5 Publish · 6 Archive  ← current
-**One-liner:** A gate system — shipped as a Claude Code skill *and* a pip package — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
+**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · 4 Write-up · **5 Publish** · 6 Archive  ← current
+**One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
 **Started:** 2026-07-04   **Last update:** 2026-07-04
 
 ## Links
-- GitHub: private, not pushed (target repo: mool32/metric-autopsy)
-- Preprint: none (planned — methods text already drafted in references/gates.md)
-- Zenodo DOI: none (mint on first GitHub Release)
-- Portfolio entry: no — publications.yml
+- GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
+- Preprint: none yet — manuscript ready in `paper/manuscript.md`; bioRxiv posting pending
+- Zenodo DOI: **10.5281/zenodo.21195679** (concept) · v0.1.0 `…680` — badge live
+- Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
 ## Origin
 Direct descendant of `perceptual_modules/paper1/oscilatory/docs/metric_validation_checklist.md`
@@ -51,5 +51,8 @@ turns that checklist into runnable behavior.
 - [x] Worked-example notebook `examples/mi_coupling_tms/notebook.ipynb` — executed on synthetic
   `demo_data`, with committed outputs and figures. (Optional: re-run on real TMS after data pull.)
 - [x] `references/gates.md` reworked into the preprint methods (`paper/manuscript.md`).
-- [ ] First GitHub Release → Zenodo DOI → badges → portfolio entry (publication chain §5).
+- [x] Public repo + `gh` metadata (description, homepage→DOI, topics incl. `tool`/`single-cell`).
+- [x] Release v0.1.0 → Zenodo DOI (concept + version) → DOI badge; CI green across Python 3.9–3.12.
+- [ ] Post preprint to bioRxiv (manuscript ready); then fill preprint DOI in README/CITATION/manuscript.
+- [ ] Portfolio: add to `mool32.github.io/_data/publications.yml` + `papers.bib`.
 - [ ] v1.1: turnkey GATE 6 second-platform replication, more example datasets.
