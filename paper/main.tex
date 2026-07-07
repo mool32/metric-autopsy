@@ -207,17 +207,27 @@ meaningless for a non-scRNA metric. The tool is metric-agnostic, not
 domain-agnostic.
 
 \textbf{Relation to existing tooling.} Established single-cell QC
-packages (e.g.~scran, scater, and probabilistic cell-quality filters
-such as miQC) score and filter \emph{cells} on quality;
-batch-integration methods correct \emph{cell embeddings}. None of these
-ask whether a \emph{downstream scalar metric} moves for a QC reason ---
-that gap is what this tool targets. The confounds it encodes are well
-known individually: the depth-dependence of correlation and information
-metrics under dropout, library-size normalization artifacts, and
-interaction confounds of the Simpson's-paradox kind that pooling hides.
-The contribution here is not a new statistic but a runnable,
-metric-agnostic red-teaming sequence that forces those known checks to
-be applied, in order, before a metric is believed.
+packages --- scran (Lun et al., 2016), scater (McCarthy et al., 2017),
+and probabilistic cell-quality filters such as miQC (Hippen et al.,
+2021) --- score and filter \emph{cells} on quality; batch-integration
+methods correct \emph{cell embeddings}, and their tendency to over- or
+under-correct is itself an active benchmarking problem (Leek et al.,
+2010; Luecken et al., 2022). A parallel line of work confronts false
+discoveries that arise from the \emph{analysis} rather than the data:
+pseudoreplication in single-cell differential expression (Squair et al.,
+2021) and ``double dipping'' --- testing for the same structure used to
+define the clusters (Neufeld et al., 2024) --- each produce
+statistically compelling results with no underlying biology; the field's
+open methodological challenges are catalogued by Lähnemann et
+al.~(2020). None of these asks the specific question here: whether a
+\emph{downstream scalar metric} moves for a QC reason. That gap is what
+this tool targets. The confounds it encodes are well known individually
+--- the depth-dependence of correlation and information metrics under
+dropout, library-size normalization artifacts, and interaction confounds
+of the Simpson's-paradox kind that pooling hides --- but the
+contribution is not a new statistic; it is a runnable, metric-agnostic
+red-teaming sequence that forces those known checks to be applied, in
+order, before a metric is believed.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -300,17 +310,22 @@ itself shift the estimate. (b) It applies each nuisance perturbation
 re-evaluates: \texttt{extra\_dropout} (zero out 20\% of the nonzero
 entries), \texttt{depth\_downsample} (binomial thinning of counts, or
 per-cell scaling for non-count input), \texttt{library\_scale} (per-cell
-multiplicative library factors), and, optionally,
-\texttt{variance\_inflation} and \texttt{gene\_subsample}. Genes the
-metric is bound to are protected from gene-subsampling. (c) It compares
-each perturbed set to the baseline on two independent criteria. A
-nuisance is flagged as confounding only if the perturbed mean is
-\emph{both} (i) meaningfully large relative to the metric's scale ---
-relative change \textgreater{} \texttt{tol}, default 0.25, with the
-denominator floored so a near-zero baseline does not explode ---
-\emph{and} (ii) statistically separated from the baseline, z
-\textgreater{} \texttt{z\_thresh}, default 4.0, where z is the mean
-shift divided by the standard error of the difference of the two means.
+multiplicative library factors), and --- for whole-matrix metrics,
+auto-enabled when the metric has no bound gene pair ---
+\texttt{gene\_subsample}. Genes the metric is bound to are protected
+from gene-subsampling. (An earlier \texttt{variance\_inflation}
+perturbation was removed after it was measured to shift the
+correlation-based whole-matrix reference metric by 0.0\% --- a
+scale-invariant no-op, i.e.~exactly the kind of false probe this tool
+exists to catch, here caught in the tool itself.) (c) It compares each
+perturbed set to the baseline on two independent criteria. A nuisance is
+flagged as confounding only if the perturbed mean is \emph{both} (i)
+meaningfully large relative to the metric's scale --- relative change
+\textgreater{} \texttt{tol}, default 0.25, with the denominator floored
+so a near-zero baseline does not explode --- \emph{and} (ii)
+statistically separated from the baseline, z \textgreater{}
+\texttt{z\_thresh}, default 4.0, where z is the mean shift divided by
+the standard error of the difference of the two means.
 
 Both criteria are needed because they measure different things. The
 relative-change criterion (\texttt{tol}) is the \textbf{effect-size
@@ -500,11 +515,14 @@ dropout, 10x UMI saturation) that mimics biology but does not replicate
 on independent data after QC matching.
 
 \textbf{How it is computed.} When you pass a second \texttt{data}
-object, the engine re-runs GATE 1 (QC parity) and GATE 2 (n\_genes
-matching) on it; replication is recorded as PASS only if the matched
-effect passes GATE 2 on the independent data. In v0.1 this gate is a
-documented procedure demonstrated in \texttt{examples/}; without a
-second dataset it returns SKIP.
+object, the engine re-runs GATE 1 (QC parity, stratified by the same
+\texttt{within} factors) and GATE 2 (n\_genes matching) on it;
+replication is recorded as PASS only if QC parity does not stop or fail
+on the independent data --- a confound there would make the
+``replication'' itself a QC artifact --- \emph{and} the matched effect
+passes GATE 2. Running GATE 1 stratified on the replication set means an
+interaction confound is not hidden by pooling, the same trap that
+motivated the tool. Without a second dataset the gate returns SKIP.
 
 \textbf{Pass criterion.} The effect replicates on at least one
 independent dataset after QC matching. Note the weakness of this bar:
@@ -690,8 +708,8 @@ fake biology --- dropout, library size, detection-rate confounds,
 factorial-interaction confounds, platform artifacts --- and they treat
 the metric as a black box precisely so that focus is not diluted. A
 metric from another domain can be passed in, but the perturbations the
-harness knows how to apply (dropout, depth, library scaling, variance
-inflation, gene subsampling) are single-cell perturbations.
+harness knows how to apply (dropout, depth, library scaling, gene
+subsampling) are single-cell perturbations.
 
 \textbf{Scripted vs judgment gates.} Six gates run automatically from
 the data (GATE 0, 1, 2, 3, 5, 6; GATE 6 only when a second dataset is
@@ -721,17 +739,19 @@ automatic screen.
 \emph{code} audit --- a review of the software's correctness and
 robustness, not an independent scientific review of the gates' validity
 --- and 24 findings were fixed as a result. The engine ships with a
-self-test suite (32/32 passing, including the adversarial-audit
-regressions and SimpleData-vs-AnnData agreement). The suite confirms
-that the \emph{implementation behaves as specified}: on the one planted
-dataset it separates a known-confounded metric (\texttt{mi\_3bin}) from
-a known-clean one (\texttt{norm\_pearson}), catching the artifact
-without also failing the reference metric. This is a demonstration on a
-single planted confound, not a validation of the gates' sensitivity or
-specificity (see Limitations); a green test suite shows the code runs as
-written, not that the gates are scientifically sound. A validator that
-can only bless things is useless, so \texttt{mi\_3bin} is included
-specifically as a metric that \emph{should} fail.
+self-test suite (35/35 passing, including the adversarial-audit
+regressions, a follow-up integrity pass that made GATE 6 stratify and
+dropped a measured no-op perturbation, and SimpleData-vs-AnnData
+agreement). The suite confirms that the \emph{implementation behaves as
+specified}: on the one planted dataset it separates a known-confounded
+metric (\texttt{mi\_3bin}) from a known-clean one
+(\texttt{norm\_pearson}), catching the artifact without also failing the
+reference metric. This is a demonstration on a single planted confound,
+not a validation of the gates' sensitivity or specificity (see
+Limitations); a green test suite shows the code runs as written, not
+that the gates are scientifically sound. A validator that can only bless
+things is useless, so \texttt{mi\_3bin} is included specifically as a
+metric that \emph{should} fail.
 
 \textbf{Limitations.} The gates are \textbf{necessary, not sufficient}.
 Passing all eight does not prove a metric measures biology; it only
@@ -852,6 +872,49 @@ where available \texttt{tissue}, \texttt{cell\_type}.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{References and notes}\label{references-and-notes}
+
+\textbf{External references} --- single-cell QC, batch effects, and
+false-discovery methods this work builds on.
+
+\begin{itemize}
+\tightlist
+\item
+  Lun ATL, Bach K, Marioni JC (2016). Pooling across cells to normalize
+  single-cell RNA sequencing data with many zero counts. \emph{Genome
+  Biology} 17:75. doi:10.1186/s13059-016-0947-7
+\item
+  McCarthy DJ, Campbell KR, Lun ATL, Wills QF (2017). Scater:
+  pre-processing, quality control, normalization and visualization of
+  single-cell RNA-seq data in R. \emph{Bioinformatics} 33:1179--1186.
+  doi:10.1093/bioinformatics/btw777
+\item
+  Hippen AA, Falco MM, Weber LM, et al.~(2021). miQC: an adaptive
+  probabilistic framework for quality control of single-cell
+  RNA-sequencing data. \emph{PLOS Computational Biology} 17:e1009290.
+  doi:10.1371/journal.pcbi.1009290
+\item
+  Leek JT, Scharpf RB, Corrada Bravo H, et al.~(2010). Tackling the
+  widespread and critical impact of batch effects in high-throughput
+  data. \emph{Nature Reviews Genetics} 11:733--739. doi:10.1038/nrg2825
+\item
+  Luecken MD, Büttner M, Chaichoompu K, et al.~(2022). Benchmarking
+  atlas-level data integration in single-cell genomics. \emph{Nature
+  Methods} 19:41--50. doi:10.1038/s41592-021-01336-8
+\item
+  Squair JW, Gautier M, Kathe C, et al.~(2021). Confronting false
+  discoveries in single-cell differential expression. \emph{Nature
+  Communications} 12:5692. doi:10.1038/s41467-021-25960-2
+\item
+  Neufeld A, Gao LL, Popp J, Battle A, Witten D (2024). Inference after
+  latent variable estimation for single-cell RNA sequencing data.
+  \emph{Biostatistics} 25:270--287. doi:10.1093/biostatistics/kxac047
+\item
+  Lähnemann D, Köster J, Szczurek E, et al.~(2020). Eleven grand
+  challenges in single-cell data science. \emph{Genome Biology} 21:31.
+  doi:10.1186/s13059-020-1926-6
+\end{itemize}
+
+\textbf{Internal notes and data.}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
