@@ -39,7 +39,7 @@ turns that checklist into runnable behavior.
   judgment — the skill elicits them, they are not scripted.
 
 ## Self-test (this is a tool, not a hypothesis test)
-- **Result:** engine **32/32 tests pass** (synthetic gate tests + 24-finding adversarial-audit
+- **Result:** engine **35/35 tests pass** (synthetic gate tests + 24-finding adversarial-audit
   regressions + SimpleData↔AnnData compatibility). The falsification criterion holds: the gates
   separate a known-confounded metric (`mi_3bin`) from a known-clean one (`norm_pearson`) on the
   same planted data. Engine + docs both passed an adversarial multi-agent review.

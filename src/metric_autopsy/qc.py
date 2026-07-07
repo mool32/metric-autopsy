@@ -24,6 +24,11 @@ def per_cell_qc(data) -> pd.DataFrame:
 
     Returns a DataFrame (RangeIndex) aligned to cells with columns: n_genes, total_counts,
     and (if identifiable from var_names) pct_mito, pct_ribo.
+
+    Footgun to know about: if ``obs`` already carries ``n_genes_by_counts`` / ``total_counts``
+    (e.g. from scanpy's ``calculate_qc_metrics``) they are trusted verbatim, so GATES 1 & 2
+    reflect whatever produced them. If ``X`` was normalized or subset *after* those columns
+    were written they may be stale — drop the columns to force a recompute from ``X`` if unsure.
     """
     obs = data.obs
     n = len(obs)

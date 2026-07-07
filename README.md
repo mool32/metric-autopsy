@@ -21,10 +21,10 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 A metric that changes between conditions is not a finding — it might be dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics wearing a lab coat. `metric-autopsy` runs a single-cell metric through eight **gates**, each built to catch one way a number fakes biology, and stops at the first one it fails. It ships as both a Claude Code skill and a pip package.
 
 1. **Born from three real failures.** Entropy anticorrelation (ρ = −0.54, vanished on 10x, *reversed* at low depth), cardiac β (a conduction-geometry constant read as biology), and SMAD→ECM mutual information (a detection-rate confound hiding in a sex×age interaction, male-old cells detecting 2.4× fewer genes) — each survived weeks before a 45-second QC check killed it.
-2. **Eight gates, six automatic.** Mathematical independence, factorial QC parity, n_genes matching, raw-data visibility, stratified controls, and cross-dataset replication run from the data; GATE 4 (does it measure what you think) and GATE 7 (is the effect size meaningful) are judgment gates the skill *elicits*, not scripts.
+2. **Eight gates, six automatic, five that can kill.** Mathematical independence, factorial QC parity, n_genes matching, stratified controls, and cross-dataset replication run from the data *and can block* a metric; raw-data visibility (GATE 3) also runs automatically but only exports the scatter and a dropout hint for you to read — it never blocks on its own; GATE 4 (does it measure what you think) and GATE 7 (is the effect size meaningful) are judgment gates the skill *elicits*, not scripts.
 3. **The reference metric dies 0/N.** On the worked example, `mi_3bin` fails GATE 0 (expectation shifts 61%, z = 44.8, under simulated dropout) and GATE 1 (male stratum 1.94× QC ratio, 0.00 n_genes overlap); a library-normalized reference passes — the confound is *avoidable*, not universal.
 4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq QC.
-5. **Necessary, not sufficient (honest limit).** Passing all eight gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. The engine ships with 32 tests and was itself put through an adversarial code + docs audit (24 + 19 findings fixed).
+5. **Necessary, not sufficient (honest limit).** Passing all eight gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. The engine ships with 35 tests and was itself put through an adversarial code + docs audit (24 + 19 findings fixed) plus a follow-up integrity pass.
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 
@@ -75,7 +75,7 @@ curated doc map for LLMs.
 ├── scripts/run_gates.py      # thin CLI wrapper the skill invokes
 ├── examples/mi_coupling_tms/ # worked example: TMS → MI → 0/N → "not biology" (+ notebook, figures)
 ├── paper/                    # manuscript + figures  (CC-BY-4.0)
-└── tests/                    # 32 tests: synthetic gates + audit regressions + AnnData compat
+└── tests/                    # 35 tests: synthetic gates + audit regressions + AnnData compat
 ```
 
 ---

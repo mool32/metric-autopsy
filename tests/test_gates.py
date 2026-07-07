@@ -16,6 +16,7 @@ import pytest
 from metric_autopsy import (
     SimpleData, GateStatus, metrics, run_autopsy,
     gate0_independence, gate1_qc_parity, gate2_ngenes_matching, gate5_controls,
+    gate6_replication,
 )
 
 GENES = ["Smad3", "Col1a1", "Actb", "Gapdh"] + [f"Gene{i}" for i in range(36)]
@@ -137,6 +138,34 @@ def test_simpledata_masking_roundtrip():
     sub = data[mask]
     assert sub.n_obs == mask.sum()
     assert list(sub.var_names) == GENES
+
+
+def test_gate6_stratified_catches_interaction_confound_on_replication():
+    """GATE 6 applies the stratified QC-parity check to the replication data too: a confound
+    hidden in the sex x age interaction blocks a clean replication claim instead of passing
+    because the pooled effect is diluted to ~0 (the trap that motivated the tool)."""
+    data2 = make_confounded()
+    m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
+    res = gate6_replication(m, data2, "age", ("young", "old"), within=["sex"])
+    assert res.status == GateStatus.FAIL
+    assert res.detail["within"] == ["sex"]
+
+
+def test_gate6_passes_on_clean_replication():
+    data2 = make_clean()
+    m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
+    res = gate6_replication(m, data2, "age", ("young", "old"), within=["sex"])
+    assert res.status == GateStatus.PASS, res.message
+
+
+def test_whole_matrix_metric_probed_with_gene_subsample():
+    """A whole-matrix metric (no bound gene pair) is probed with the gene_subsample
+    perturbation via run_autopsy — previously that path was unreachable from any entrypoint."""
+    data = make_clean()
+    autopsy = run_autopsy(metrics.spectral_entropy, data,
+                          group_col="age", groups=("young", "old"), within=["sex"])
+    g0 = next(r for r in autopsy.results if r.gate == 0)
+    assert "gene_subsample" in g0.detail["responses"]
 
 
 if __name__ == "__main__":

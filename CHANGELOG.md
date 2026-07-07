@@ -7,6 +7,24 @@ comparability.
 
 ## [Unreleased]
 
+### Fixed
+- **GATE 6 now stratifies.** `gate6_replication` re-runs GATE 1 with the same `within` factors
+  as the primary analysis and reports replication only if QC parity does not fail/STOP on the
+  independent data (a confound hidden in an interaction there is no longer silently passed);
+  previously it ran QC parity pooled and decided on GATE 2 alone. `run_autopsy` threads
+  `within` into GATE 6. Two new tests exercise it (previously GATE 6 had zero executing tests).
+- **Removed the `variance_inflation` perturbation** from GATE 0. The only whole-matrix
+  reference metric (`spectral_entropy`) is computed from the *correlation* matrix and is
+  therefore scale-invariant, so inflating per-gene variance moved it by a measured 0.0% — a
+  false probe. GATE 0's whole-matrix probe is now `gene_subsample`, auto-enabled by
+  `run_autopsy` for metrics with no bound gene pair (the matrix-perturbation path was
+  previously unreachable from every entrypoint; a test now covers it). `spectral_entropy`'s
+  docstring is corrected: it typically *passes* GATE 0 — it is an honest whole-matrix
+  reference, not an antihero.
+- **Hardened `_safe_call`** to swallow any exception a black-box metric throws on a perturbed
+  input (not just four types), matching its documented "never crash the gate" contract.
+- Documented that `per_cell_qc` trusts precomputed `obs` QC columns (a stale-column footgun).
+
 ## [0.1.0] — 2026-07-04
 
 First release. Turns the internal "metric validation checklist" (written after the ACP,

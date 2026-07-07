@@ -30,10 +30,16 @@ def _as_simple(data) -> SimpleData:
 
 
 def _safe_call(fn):
-    """Evaluate a metric, returning None (not raising) on a perturbation it can't handle."""
+    """Evaluate a metric, returning None (not raising) on a perturbation it can't handle.
+
+    The gates treat the metric as an opaque black box and must not crash if a user's callable
+    throws on a perturbed input (e.g. a LinAlgError on a degenerate matrix, an IndexError after
+    gene subsampling). Any exception is therefore swallowed to None; the gate reports SKIP when
+    too few evaluations succeed rather than propagating a failure from inside the metric.
+    """
     try:
         v = fn()
-    except (KeyError, ValueError, TypeError, ZeroDivisionError):
+    except Exception:
         return None
     return v if (v is not None and np.isfinite(v)) else None
 
@@ -68,10 +74,6 @@ def _perturb(data: SimpleData, kind: str, rng: np.random.Generator,
     elif kind == "library_scale":
         factors = rng.uniform(0.5, 2.0, size=X.shape[0])[:, None]
         X = X * factors
-    elif kind == "variance_inflation":
-        g = rng.choice(X.shape[1], size=max(1, X.shape[1] // 10), replace=False)
-        mu = X[:, g].mean(axis=0, keepdims=True)
-        X[:, g] = mu + (X[:, g] - mu) * 3.0
     elif kind == "gene_subsample":
         keep = rng.random(X.shape[1]) < 0.8
         for j, gname in enumerate(data.var_names):
@@ -131,7 +133,12 @@ def gate0_independence(
 
     kinds = ["extra_dropout", "depth_downsample", "library_scale"]
     if include_matrix_perturbations:
-        kinds += ["variance_inflation", "gene_subsample"]
+        # gene_subsample is a whole-matrix perturbation (changes dimensionality): meaningful
+        # only for metrics that read the whole matrix, so run_autopsy auto-enables it for
+        # metrics with no bound gene pair. (A variance-inflation perturbation was removed: the
+        # only whole-matrix reference metric is correlation-based and thus scale-invariant, so
+        # inflating per-gene variance was a measured no-op — a false probe, not a real one.)
+        kinds += ["gene_subsample"]
 
     responses = {}
     for kind in kinds:
@@ -488,21 +495,39 @@ def gate6_replication(
     data2,
     group_col: str,
     groups: tuple,
+    within: Sequence[str] = (),
     thresh: float = 1.5,
 ) -> GateResult:
-    """Re-run QC parity + n_genes matching on an independent dataset."""
+    """Re-run QC parity (stratified by `within`) + n_genes matching on an independent dataset.
+
+    Replication is PASS only if BOTH hold on the independent data: QC parity does not fail or
+    STOP (otherwise the "replication" is itself confounded — a QC artifact, not biology), AND
+    the matched effect survives (GATE 2 PASS). GATE 1 is run with the same `within` factors as
+    the primary analysis, so an interaction confound on the replication set is not hidden by
+    pooling — the exact trap that motivated the whole tool.
+    """
     if data2 is None:
         return GateResult(
             6, "Replication", GateStatus.SKIP,
             "no second dataset supplied — supply an independent AnnData to run this gate",
             {},
         )
-    g1 = gate1_qc_parity(data2, group_col, groups, thresh=thresh)
+    g1 = gate1_qc_parity(data2, group_col, groups, within=within, thresh=thresh)
     g2 = gate2_ngenes_matching(metric, data2, group_col, groups)
-    replicated = g2.status == GateStatus.PASS
+    qc_ok = g1.status not in (GateStatus.STOP, GateStatus.FAIL)
+    replicated = qc_ok and g2.status == GateStatus.PASS
     status = GateStatus.PASS if replicated else GateStatus.FAIL
+    if not qc_ok:
+        note = (f" — QC parity does not hold on the independent data ({g1.status.value}); a "
+                "pooled matched effect is not trustworthy until you stratify")
+    elif g2.status != GateStatus.PASS:
+        note = " — matched effect does not survive on the independent data"
+    else:
+        note = ""
     return GateResult(
         6, "Replication", status,
-        f"independent dataset: QC parity {g1.status.value}, matched effect {g2.status.value}",
-        dict(qc_parity=g1.detail, matching=g2.detail),
+        f"independent dataset: QC parity {g1.status.value}"
+        + (" (stratified)" if within else "")
+        + f", matched effect {g2.status.value}{note}",
+        dict(qc_parity=g1.detail, matching=g2.detail, within=list(within), qc_ok=qc_ok),
     )

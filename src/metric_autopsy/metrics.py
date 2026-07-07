@@ -116,9 +116,14 @@ def norm_pearson(data, *, gene_a: str, gene_b: str) -> float:
 def spectral_entropy(data) -> float:
     """Shannon entropy of the normalized eigenvalue spectrum of the gene-gene correlation.
 
-    A dataset-level scalar (no genes to bind). CONFOUNDED BY VARIANCE STRUCTURE: inflate
-    the variance of a few genes and the spectrum — hence this 'metric' — moves, with no
-    change in biology. Included to exercise GATE 0's variance perturbation.
+    A dataset-level scalar (no genes to bind) — the whole-matrix reference metric. It is
+    computed from the *correlation* matrix, so it is invariant to per-gene rescaling; that is
+    why GATE 0 uses no variance-inflation perturbation on it (such a perturbation was measured
+    to move this metric by 0.0% — it would be a no-op). It responds only weakly to changes in
+    dimensionality (gene_subsample) and to dropout/depth via their effect on the correlation
+    estimate, and on well-behaved data those shifts stay under GATE 0's threshold — so this
+    metric typically PASSES GATE 0. It is here as an honest whole-matrix example, not an
+    antihero; `mi_3bin` is the metric that reliably fails.
     """
     from .core import as_dense
 

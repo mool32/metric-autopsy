@@ -77,7 +77,7 @@ def run_autopsy(
     neg_pair: tuple | None = None,
     data2=None,
     prereg: dict | None = None,
-    include_matrix_perturbations: bool = False,
+    include_matrix_perturbations: bool | None = None,
     stop_on_first_fail: bool = True,
 ) -> Autopsy:
     """Run the auto gates in order and collect them into an Autopsy.
@@ -90,6 +90,11 @@ def run_autopsy(
     name = _metric_name(metric)
     prereg = prereg or {}
     results: list[GateResult] = []
+
+    # Whole-matrix metrics (no bound gene pair) are probed with the gene_subsample
+    # perturbation in GATE 0; pairwise metrics are not (it is irrelevant to two fixed genes).
+    if include_matrix_perturbations is None:
+        include_matrix_perturbations = gene_pair is None
 
     def _record(r: GateResult) -> bool:
         results.append(r)
@@ -111,7 +116,7 @@ def run_autopsy(
         if not _record(_g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within)):
             return Autopsy(name, results, prereg)
     if data2 is not None:
-        if not _record(_g.gate6_replication(metric, data2, group_col, groups)):
+        if not _record(_g.gate6_replication(metric, data2, group_col, groups, within=within)):
             return Autopsy(name, results, prereg)
 
     return Autopsy(name, results, prereg)
