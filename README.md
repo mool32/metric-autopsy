@@ -111,7 +111,7 @@ If you use this work, please cite:
 
 And the archived software release (when applicable):
 
-> Spiro, T. (2026). *metric-autopsy* (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.21195680
+> Spiro, T. (2026). *metric-autopsy* (v0.1.1). Zenodo. https://doi.org/10.5281/zenodo.21195679
 
 Citation metadata is in [`CITATION.cff`](CITATION.cff).
 

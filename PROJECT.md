@@ -10,7 +10,7 @@
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
 - Preprint: none yet — manuscript ready in `paper/manuscript.md`; bioRxiv posting pending
-- Zenodo DOI: **10.5281/zenodo.21195679** (concept) · v0.1.0 `…680` — badge live
+- Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.1.1 pending release
 - Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
 ## Origin

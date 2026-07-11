@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metric-autopsy"
-version = "0.1.0"
+version = "0.1.1"
 description = "Red-team a computed metric on single-cell data before you believe it: gates that catch QC, technical, and mathematical artifacts masquerading as biology."
 readme = "README.md"
 requires-python = ">=3.9"

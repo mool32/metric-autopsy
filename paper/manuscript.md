@@ -4,7 +4,7 @@
 
 Vaika Inc. · ORCID [0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) · tspiro@vaika.org · GitHub [@mool32](https://github.com/mool32)
 
-*Preprint. Software: `metric-autopsy` (MIT). Version 0.1.0.*
+*Preprint. Software: `metric-autopsy` (MIT). Version 0.1.1.*
 
 ---
 
@@ -203,7 +203,7 @@ On the three motivating failures, the honest attribution is: only Error 3 (MI co
 - **Claude Code skill.** Drop the repository into your skills directory; the `metric-autopsy` skill (`SKILL.md`) elicits a pre-registration, then runs the gates. Progressive-disclosure references (`references/gates.md`, `references/red_flags.md`, `references/prereg_template.md`) load on demand.
 - **pip package.** `pip install metric-autopsy` exposes the `metric-autopsy` CLI (including `metric-autopsy --demo`, which runs the reference `mi_3bin` failure end-to-end) and the `run_autopsy` Python API. You bring a `metric(data) -> float` callable and your factorial `obs` column names.
 
-License: **MIT**. Repository: [github.com/mool32/metric-autopsy](https://github.com/mool32/metric-autopsy). Archived on Zenodo — concept-DOI [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679) (all versions), v0.1.0 [10.5281/zenodo.21195680](https://doi.org/10.5281/zenodo.21195680). Citation metadata: `CITATION.cff`. Reproducibility: the package targets Python 3.9+ with only `numpy` and `pandas` as required runtime dependencies — `scipy` (exact KS test), `anndata` (`.h5ad` I/O), and `matplotlib` (GATE 3 PNGs) are optional extras with pure-numpy fallbacks; `pip install metric-autopsy` followed by `metric-autopsy --demo` reproduces the synthetic numbers in Section 3 with no downloads.
+License: **MIT**. Repository: [github.com/mool32/metric-autopsy](https://github.com/mool32/metric-autopsy). Archived on Zenodo — concept DOI [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679) (all versions; resolves to the latest release, v0.1.1). Citation metadata: `CITATION.cff`. Reproducibility: the package targets Python 3.9+ with only `numpy` and `pandas` as required runtime dependencies — `scipy` (exact KS test), `anndata` (`.h5ad` I/O), and `matplotlib` (GATE 3 PNGs) are optional extras with pure-numpy fallbacks; `pip install metric-autopsy` followed by `metric-autopsy --demo` reproduces the synthetic numbers in Section 3 with no downloads.
 
 **Competing interests.** The author is affiliated with Vaika Inc.; the tool is released under a permissive open-source license and Vaika has no commercial interest in it. **Funding.** None.
 
@@ -234,7 +234,7 @@ No inputs are irreplaceable; all are public and re-downloadable. The genes used 
 **Internal notes and data.**
 
 1. **Origin document.** *Metric validation checklist: lessons from ACP, beta-heart, and MI coupling* (2026), an unpublished internal write-up (a self-report, not an independently validated result) that recorded the three failures with their numbers and first articulated the gate system, including the by-hand retroactive audit of the real MI metric. All real numbers in Sections 1 and 3 (male young/old 3670 vs 1540 = 2.4x; ACP rho = -0.54 on SmartSeq2, -0.09 on 10x, +0.38 at 500 genes; beta 12-lead AUC = 0.98 LBBB vs RBBB) are drawn from it and are not re-derived in this manuscript.
-2. **Software reference.** `metric-autopsy` v0.1.0, `references/gates.md` (prose gate rationale for the skill) and `references/red_flags.md`. These follow the implementation in `src/metric_autopsy/`; in particular GATE 0 perturbs the user's own data (a bootstrap baseline plus dropout/depth/library perturbations of the observed matrix), not a separately synthesized null dataset.
+2. **Software reference.** `metric-autopsy` v0.1.1, `references/gates.md` (prose gate rationale for the skill) and `references/red_flags.md`. These follow the implementation in `src/metric_autopsy/`; in particular GATE 0 perturbs the user's own data (a bootstrap baseline plus dropout/depth/library perturbations of the observed matrix), not a separately synthesized null dataset.
 3. **Worked example.** `examples/mi_coupling_tms/notebook.ipynb`. All numbers in Section 3 (male-stratum 1.94x n_genes ratio, 0.00 overlap; `mi_3bin` dropout shift ~61%, z = 44.8, depth 22%, z = 13.4; `norm_pearson` dropout shift 3%, z = 4.5, depth 15%, z = 16.7; pooled effect ~0 below null floor 0.054; males STOP on non-overlapping ranges) are from the **synthetic** dataset and are labeled as such throughout.
 4. **Data sources.** Tabula Muris Senis (figshare / CELLxGENE Census); human skin, CELLxGENE (cellxgene.cziscience.com). See `DATASETS.md`.
 

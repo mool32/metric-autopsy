@@ -7,7 +7,14 @@ comparability.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-07-07
+
 ### Fixed
+- **`download_data.py` resolves the Tabula Muris Senis FACS dataset by name** from the
+  CELLxGENE Census (the old query used a non-existent slug and a non-`obs` column and fetched
+  nothing); it now filters to Smart-seq2 + primary cells and maps the Census QC columns so the
+  pull is gate-ready — enabling the first real-data autopsy (preprint §4: `mi_3bin` dies at
+  GATE 0 on 110,824 real TMS FACS cells, reproducing the synthetic verdict).
 - **GATE 6 now stratifies.** `gate6_replication` re-runs GATE 1 with the same `within` factors
   as the primary analysis and reports replication only if QC parity does not fail/STOP on the
   independent data (a confound hidden in an interaction there is no longer silently passed);
@@ -72,5 +79,6 @@ cardiac-β, and MI-coupling failures) into runnable behavior with two front door
 - **Tests**: synthetic planted-confound suite proving the gates separate a confounded metric
   from a clean one on the same data.
 
-[Unreleased]: https://github.com/mool32/metric-autopsy/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mool32/metric-autopsy/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/mool32/metric-autopsy/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mool32/metric-autopsy/releases/tag/v0.1.0
