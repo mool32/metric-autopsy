@@ -10,7 +10,7 @@ best-fit arXiv archive is **q-bio.QM** (Quantitative Methods).
 | `arxiv-submission.tar.gz` | ready-to-upload source bundle: `main.tex` + `figures/` | **yes — upload this** |
 | `main.tex` | the arXiv LaTeX source (pure ASCII, pdflatex-safe, numbered sections) | (inside the tarball) |
 | `figures/fig1_qc_strata.png`, `fig2_raw_scatter.png` | the two figures `main.tex` references | (inside the tarball) |
-| `main.pdf` | compiled preview — **14 pages, 2 figures** | **no** — arXiv builds the PDF from source |
+| `main.pdf` | compiled preview — **15 pages, 4 figures** | **no** — arXiv builds the PDF from source |
 | `build_arxiv.py` | regenerates `main.tex` from `manuscript.md` (needs `pandoc`) | no |
 
 > Do **not** upload `main.pdf`. arXiv wants the LaTeX *source* and compiles it itself; uploading
@@ -31,7 +31,7 @@ best-fit arXiv archive is **q-bio.QM** (Quantitative Methods).
 2. **License** → choose **Creative Commons Attribution 4.0 (CC BY 4.0)**.
 3. **Upload** `arxiv-submission.tar.gz`. arXiv detects LaTeX and compiles with pdfLaTeX. Wait for
    processing to succeed, then **view the generated PDF** and confirm it matches `main.pdf`
-   (title page, abstract, 2 figures, ~14 pages). The source is standard LaTeX (a few UTF-8
+   (title page, abstract, 4 figures, ~15 pages). The source is standard LaTeX (a few UTF-8
    author names in the references compile fine under arXiv's pdfLaTeX via inputenc utf8).
 4. **Add/verify metadata** — paste the blocks from the bottom of this file into the matching
    fields:
@@ -78,7 +78,7 @@ Single-cell analyses routinely follow a "compute then believe" default: a scalar
 
 ### Comments
 ```
-14 pages, 2 figures. Software (MIT): https://github.com/mool32/metric-autopsy ; archived at Zenodo https://doi.org/10.5281/zenodo.21195679
+15 pages, 4 figures. Software (MIT): https://github.com/mool32/metric-autopsy ; archived at Zenodo https://doi.org/10.5281/zenodo.21195679
 ```
 
 ### Categories

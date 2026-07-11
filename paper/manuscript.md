@@ -10,7 +10,7 @@ Vaika Inc. · ORCID [0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346)
 
 ## Abstract
 
-Single-cell analyses routinely follow a "compute then believe" default: a scalar metric is calculated, it differs between conditions, and the difference is reported as biology. But a metric can move because of dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics — with no change in the biological quantity of interest. This tendency is not hypothetical: three of my own analyses each survived weeks of work before a short quality-control (QC) check invalidated them — in one case a 45-second QC check invalidated three weeks of downstream work. I present `metric-autopsy`, a metric-agnostic gate system that inverts the default from "compute then believe" to "state your commitments, red-team, then believe." The user supplies a metric as a black-box callable and the names of factorial `obs` columns; the harness probes the *data* and the *metric's response to controlled perturbations of the data* through eight gates (GATE 0–7). Six gates run automatically from the data — mathematical independence, factorial QC parity, n_genes matching, raw-data visibility, stratified controls, and cross-dataset replication (the last only when a second dataset is supplied) — and two are judgment gates the accompanying skill elicits rather than scripts. Because the automatic perturbations are single-cell-specific (dropout, depth, library size), the tool is metric-agnostic but domain-locked to scRNA-seq QC. I describe each gate faithful to the implementation, and demonstrate the workflow on a synthetic confound patterned on a mutual-information "coupling loss" driven by a sex-by-age detection artifact that was recorded, by hand, in an internal validation checklist; the real-data autopsy is not run here. The tool ships as a Claude Code skill and a pip package, and was itself subjected to an adversarial code audit (24 findings fixed). The gates are necessary, not sufficient: no correlation metric is fully depth-invariant under dropout.
+Single-cell analyses routinely follow a "compute then believe" default: a scalar metric is calculated, it differs between conditions, and the difference is reported as biology. But a metric can move because of dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics — with no change in the biological quantity of interest. This tendency is not hypothetical: three of my own analyses each survived weeks of work before a short quality-control (QC) check invalidated them — in one case a 45-second QC check invalidated three weeks of downstream work. I present `metric-autopsy`, a metric-agnostic gate system that inverts the default from "compute then believe" to "state your commitments, red-team, then believe." The user supplies a metric as a black-box callable and the names of factorial `obs` columns; the harness probes the *data* and the *metric's response to controlled perturbations of the data* through eight gates (GATE 0–7). Six gates run automatically from the data — mathematical independence, factorial QC parity, n_genes matching, raw-data visibility, stratified controls, and cross-dataset replication (the last only when a second dataset is supplied) — and two are judgment gates the accompanying skill elicits rather than scripts. Because the automatic perturbations are single-cell-specific (dropout, depth, library size), the tool is metric-agnostic but domain-locked to scRNA-seq QC. I describe each gate faithful to the implementation, and demonstrate the workflow on a synthetic confound patterned on a mutual-information "coupling loss" driven by a sex-by-age detection artifact that was recorded, by hand, in an internal validation checklist; I then run the same autopsy on the real Tabula Muris Senis FACS data (110,824 Smart-seq2 cells), where the metric reaches the same verdict — death at GATE 0, confounded by a sex-by-age detection artifact rather than measuring biology. The tool ships as a Claude Code skill and a pip package, and was itself subjected to an adversarial code audit (24 findings fixed). The gates are necessary, not sufficient: no correlation metric is fully depth-invariant under dropout.
 
 ---
 
@@ -129,7 +129,7 @@ The distributed example (`examples/mi_coupling_tms/notebook.ipynb`) runs the SMA
 
 **The numbers reported here are from a synthetic dataset, not from the real data.** The example is built on a synthetic count matrix constructed so that the biology is known: `Smad3`-`Col1a1` coupling is *identical* in young and old, and the only thing that differs is technical — male-old cells are QC-degraded to roughly 30% capture efficiency. Any "coupling loss" the metric reports is therefore, by construction, an artifact. This is deliberate: a planted ground truth lets us verify that the gates catch a confound we know is there, and it runs with no downloads.
 
-The synthetic dataset is *patterned on* — not a reproduction of — a real phenomenon that was recorded, by hand, in an internal validation checklist (ref 1): a sex-by-age detection artifact in Tabula Muris Senis that masqueraded as pathway-specific coupling loss. The automated gates were never run on that real data (the tool postdates the failures); the numbers below are the synthetic stand-ins, and where a synthetic number is chosen to echo a real one, that is stated. The example is written so that replacing one data cell with `anndata.read_h5ad(...)` (after `download_data.py`) runs the identical downstream cells on the real Tabula Muris Senis FACS and human-skin CELLxGENE data, because the gates accept any AnnData — but that real run is left to the reader and is not performed here.
+The synthetic dataset is *patterned on* — not a reproduction of — a real phenomenon that was recorded, by hand, in an internal validation checklist (ref 1): a sex-by-age detection artifact in Tabula Muris Senis that masqueraded as pathway-specific coupling loss. The automated gates were never run on that real data (the tool postdates the failures); the numbers below are the synthetic stand-ins, and where a synthetic number is chosen to echo a real one, that is stated. The example is written so that replacing one data cell with `anndata.read_h5ad(...)` (after `download_data.py`) runs the identical downstream cells on the real Tabula Muris Senis FACS and human-skin CELLxGENE data, because the gates accept any AnnData; the full-data version of that run is reported in §4.
 
 **The claim under autopsy.** `MI(Smad3; Col1a1)` with a 3-bin zero/low/high discretization declines with age ("coupling loss"), while housekeeping coupling is preserved.
 
@@ -149,9 +149,34 @@ The synthetic dataset is *patterned on* — not a reproduction of — a real phe
 
 ---
 
-## 4. Discussion
+## 4. Real-data autopsy on Tabula Muris Senis
 
-**Scope.** This is a workflow and tool contribution, not a biological-results paper: the worked example is a synthetic dataset patterned on the real phenomenon, with a documented one-line path to the real Tabula Muris Senis and CELLxGENE skin data (the real autopsy is not run here; see §3 and the closing note). The scope is deliberately single-cell QC. The gates encode the specific ways scRNA-seq metrics fake biology — dropout, library size, detection-rate confounds, factorial-interaction confounds, platform artifacts — and they treat the metric as a black box precisely so that focus is not diluted. A metric from another domain can be passed in, but the perturbations the harness knows how to apply (dropout, depth, library scaling, gene subsampling) are single-cell perturbations.
+The synthetic example is a stand-in; the real question is whether the same autopsy, run on the data the original failure came from, reaches the same verdict. It does. We pulled the Tabula Muris Senis FACS data (Smart-seq2, 110,824 cells, all primary) from the CELLxGENE Census and ran `mi_3bin` on `Smad3`-`Col1a1`, young (3 months) versus old (20 months), stratified by sex, with an expression-matched random negative control. Unlike the retroactive by-hand audit of ref 1, these are fresh automated-gate results.
+
+**GATE 1 on the full data.** Median genes detected per cell (the Census `nnz`) by sex and age:
+
+| sex | young (3 mo) | 18 mo | old (20 mo) |
+|---|---|---|---|
+| male | 2799 | 1882 | 1701 |
+| female | 2495 | 2291 | 3413 |
+
+Male detection falls monotonically with age (2799 to 1701, a **1.65x** young/old ratio); female detection does not decline (2495 to 2291 at the well-powered 18-month point; the 20-month female group is only n = 728 cells and noisy). GATE 1 flags the male stratum (1.65x > 1.5x) and passes the female stratum — the confound is a sex-by-age *interaction*, exactly what the synthetic example was built to mimic. The real run also corrects the internal checklist (ref 1) on two counts: the ratio is **1.65x, not 2.4x** (this is pooled across all 23 tissues; a single tissue may be sharper), and the FACS ages are **3 / 18 / 20 months, not 3 / 24**.
+
+![Per-cell genes detected by sex and age in the real Tabula Muris Senis FACS data (110,824 cells). Male detection falls with age (2799 to 1701) while female does not; the 20-month female group is small (n = 728). GATE 1 flags the male stratum — the sex-by-age interaction confound, on real data.](figures/fig3_tms_qc.png){width=70%}
+
+**The autopsy verdict.** `mi_3bin` dies at **GATE 0**: its expectation shifts **42% under simulated dropout (z = 63.2)** — on real data it is, by construction, a detection metric. **GATE 1** fails (male 1.65x). **GATE 2** collapses under n_genes matching: the pooled effect retains only 43% of its already near-zero magnitude, and restricted to the confounded male stratum it retains 30% and flips sign — the QC-artifact signature. The expression-matched negative control is itself instructive: even `Tst`-`Lrrc42`, two unrelated genes matched to `Smad3`/`Col1a1` on detection rate, register non-trivial mutual information (0.038), so GATE 5 fails too — not because the control is mischosen but because mutual information on sparse counts picks up shared detection, which is exactly the point.
+
+**The raw scatter.** Plotting the raw `Smad3` and `Col1a1` counts, young versus old, shows no diagonal coupling in either group — a diffuse cloud — and the only visible between-group change is *more* points collapsing onto the zero axes with age (zero-fraction 0.92 to 0.97). The "coupling loss" is dropout, made visible.
+
+![Raw Smad3 vs Col1a1 counts (log1p) in the real TMS FACS data, young vs old. No diagonal coupling in either group; the between-group change is dropout collapsing points onto the zero axes (zero-fraction 0.92 to 0.97), not a change in coupling.](figures/fig4_tms_scatter.png){width=90%}
+
+**What this shows.** On the real Tabula Muris Senis FACS data the metric reaches the same verdict as on the synthetic stand-in — **FAIL at GATE 0**, not measuring biology — with real numbers in place of planted ones. This is one metric on one dataset: a demonstration that the workflow reproduces on real data, not a measurement of the gates' sensitivity or specificity (see Limitations).
+
+---
+
+## 5. Discussion
+
+**Scope.** This is a workflow and tool contribution, not a biological-results paper: the worked example is a synthetic dataset patterned on the real phenomenon, with the real Tabula Muris Senis FACS autopsy now reported in §4 (the 10x skin cross-platform replication, GATE 6, is still left to the reader). The scope is deliberately single-cell QC. The gates encode the specific ways scRNA-seq metrics fake biology — dropout, library size, detection-rate confounds, factorial-interaction confounds, platform artifacts — and they treat the metric as a black box precisely so that focus is not diluted. A metric from another domain can be passed in, but the perturbations the harness knows how to apply (dropout, depth, library scaling, gene subsampling) are single-cell perturbations.
 
 **Scripted vs judgment gates.** Six gates run automatically from the data (GATE 0, 1, 2, 3, 5, 6; GATE 6 only when a second dataset is supplied); GATE 4 and GATE 7 are judgment gates that the skill *elicits* rather than scripts, because "does this metric uniquely correspond to the biology" and "is this effect size biologically meaningful" are not computable from data alone. GATE 3 is a hybrid: the engine computes and exports the raw scatter and zero-fractions automatically, but returns a JUDGMENT verdict for you to read. Making the tool honest about this boundary — auto where it can be, elicited where it cannot — is a design choice, not a limitation to paper over. The pre-registration form the skill walks you through *before* any computation is the mechanism that enforces the "state your commitments first" inversion.
 
@@ -171,7 +196,7 @@ On the three motivating failures, the honest attribution is: only Error 3 (MI co
 
 ---
 
-## 5. Software availability
+## 6. Software availability
 
 `metric-autopsy` is distributed through two front doors backed by one engine (`src/metric_autopsy/`, the single source of truth):
 
@@ -182,7 +207,7 @@ License: **MIT**. Repository: [github.com/mool32/metric-autopsy](https://github.
 
 **Competing interests.** The author is affiliated with Vaika Inc.; the tool is released under a permissive open-source license and Vaika has no commercial interest in it. **Funding.** None.
 
-## 6. Data availability
+## 7. Data availability
 
 The engine and its tests require **no external data** — they run on a synthetic planted confound (`metric_autopsy.cli.demo_data`, `metric-autopsy --demo`). The worked example uses only public data, re-fetchable via `examples/mi_coupling_tms/download_data.py`:
 
@@ -213,4 +238,4 @@ No inputs are irreplaceable; all are public and re-downloadable. The genes used 
 3. **Worked example.** `examples/mi_coupling_tms/notebook.ipynb`. All numbers in Section 3 (male-stratum 1.94x n_genes ratio, 0.00 overlap; `mi_3bin` dropout shift ~61%, z = 44.8, depth 22%, z = 13.4; `norm_pearson` dropout shift 3%, z = 4.5, depth 15%, z = 16.7; pooled effect ~0 below null floor 0.054; males STOP on non-overlapping ranges) are from the **synthetic** dataset and are labeled as such throughout.
 4. **Data sources.** Tabula Muris Senis (figshare / CELLxGENE Census); human skin, CELLxGENE (cellxgene.cziscience.com). See `DATASETS.md`.
 
-*Note on honesty of claims: this preprint reports a tool and a synthetic worked example with a documented path to real data. It does not report real-data autopsy results; the automated gates have not been run on the real data. The real-data outcomes cited in Sections 1 and 3 are drawn from the by-hand retroactive audit in ref 1, an unpublished internal self-report, and are attributed as such rather than presented as results of this work.*
+*Note on honesty of claims: this preprint reports a tool and a synthetic worked example with a documented path to real data. Section 4 reports fresh automated-gate results on the real Tabula Muris Senis FACS data. The historical numbers in Section 1 — including the 2.4x male-detection ratio — remain those of the by-hand audit in ref 1, an unpublished internal self-report, and are attributed as such; the automated re-run in Section 4 gives 1.65x on the pooled FACS data. The cross-platform GATE 6 replication on 10x skin is still left to the reader.*

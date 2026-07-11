@@ -116,11 +116,14 @@ domain-locked to scRNA-seq QC. I describe each gate faithful to the
 implementation, and demonstrate the workflow on a synthetic confound
 patterned on a mutual-information ``coupling loss'' driven by a
 sex-by-age detection artifact that was recorded, by hand, in an internal
-validation checklist; the real-data autopsy is not run here. The tool
-ships as a Claude Code skill and a pip package, and was itself subjected
-to an adversarial code audit (24 findings fixed). The gates are
-necessary, not sufficient: no correlation metric is fully
-depth-invariant under dropout.
+validation checklist; I then run the same autopsy on the real Tabula
+Muris Senis FACS data (110,824 Smart-seq2 cells), where the metric
+reaches the same verdict --- death at GATE 0, confounded by a sex-by-age
+detection artifact rather than measuring biology. The tool ships as a
+Claude Code skill and a pip package, and was itself subjected to an
+adversarial code audit (24 findings fixed). The gates are necessary, not
+sufficient: no correlation metric is fully depth-invariant under
+dropout.
 \end{abstract}
 
 \section{Introduction: the ``compute then believe'' failure
@@ -591,8 +594,8 @@ synthetic number is chosen to echo a real one, that is stated. The
 example is written so that replacing one data cell with
 \texttt{anndata.read\_h5ad(...)} (after \texttt{download\_data.py}) runs
 the identical downstream cells on the real Tabula Muris Senis FACS and
-human-skin CELLxGENE data, because the gates accept any AnnData --- but
-that real run is left to the reader and is not performed here.
+human-skin CELLxGENE data, because the gates accept any AnnData; the
+full-data version of that run is reported in Section 4.
 
 \textbf{The claim under autopsy.} \texttt{MI(Smad3;\ Col1a1)} with a
 3-bin zero/low/high discretization declines with age (``coupling
@@ -696,20 +699,108 @@ matching in both sexes.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
+\section{Real-data autopsy on Tabula Muris
+Senis}\label{real-data-autopsy-on-tabula-muris-senis}
+
+The synthetic example is a stand-in; the real question is whether the
+same autopsy, run on the data the original failure came from, reaches
+the same verdict. It does. We pulled the Tabula Muris Senis FACS data
+(Smart-seq2, 110,824 cells, all primary) from the CELLxGENE Census and
+ran \texttt{mi\_3bin} on \texttt{Smad3}-\texttt{Col1a1}, young (3
+months) versus old (20 months), stratified by sex, with an
+expression-matched random negative control. Unlike the retroactive
+by-hand audit of ref 1, these are fresh automated-gate results.
+
+\textbf{GATE 1 on the full data.} Median genes detected per cell (the
+Census \texttt{nnz}) by sex and age:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+sex & young (3 mo) & 18 mo & old (20 mo) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+male & 2799 & 1882 & 1701 \\
+female & 2495 & 2291 & 3413 \\
+\end{longtable}
+}
+
+Male detection falls monotonically with age (2799 to 1701, a
+\textbf{1.65x} young/old ratio); female detection does not decline (2495
+to 2291 at the well-powered 18-month point; the 20-month female group is
+only n = 728 cells and noisy). GATE 1 flags the male stratum (1.65x
+\textgreater{} 1.5x) and passes the female stratum --- the confound is a
+sex-by-age \emph{interaction}, exactly what the synthetic example was
+built to mimic. The real run also corrects the internal checklist (ref
+1) on two counts: the ratio is \textbf{1.65x, not 2.4x} (this is pooled
+across all 23 tissues; a single tissue may be sharper), and the FACS
+ages are \textbf{3 / 18 / 20 months, not 3 / 24}.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\linewidth,height=\textheight,keepaspectratio,alt={Per-cell genes detected by sex and age in the real Tabula Muris Senis FACS data (110,824 cells). Male detection falls with age (2799 to 1701) while female does not; the 20-month female group is small (n = 728). GATE 1 flags the male stratum --- the sex-by-age interaction confound, on real data.}]{figures/fig3_tms_qc.png}
+\caption{Per-cell genes detected by sex and age in the real Tabula Muris
+Senis FACS data (110,824 cells). Male detection falls with age (2799 to
+1701) while female does not; the 20-month female group is small (n =
+728). GATE 1 flags the male stratum --- the sex-by-age interaction
+confound, on real data.}
+\end{figure}
+
+\textbf{The autopsy verdict.} \texttt{mi\_3bin} dies at \textbf{GATE 0}:
+its expectation shifts \textbf{42\% under simulated dropout (z = 63.2)}
+--- on real data it is, by construction, a detection metric.
+\textbf{GATE 1} fails (male 1.65x). \textbf{GATE 2} collapses under
+n\_genes matching: the pooled effect retains only 43\% of its already
+near-zero magnitude, and restricted to the confounded male stratum it
+retains 30\% and flips sign --- the QC-artifact signature. The
+expression-matched negative control is itself instructive: even
+\texttt{Tst}-\texttt{Lrrc42}, two unrelated genes matched to
+\texttt{Smad3}/\texttt{Col1a1} on detection rate, register non-trivial
+mutual information (0.038), so GATE 5 fails too --- not because the
+control is mischosen but because mutual information on sparse counts
+picks up shared detection, which is exactly the point.
+
+\textbf{The raw scatter.} Plotting the raw \texttt{Smad3} and
+\texttt{Col1a1} counts, young versus old, shows no diagonal coupling in
+either group --- a diffuse cloud --- and the only visible between-group
+change is \emph{more} points collapsing onto the zero axes with age
+(zero-fraction 0.92 to 0.97). The ``coupling loss'' is dropout, made
+visible.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio,alt={Raw Smad3 vs Col1a1 counts (log1p) in the real TMS FACS data, young vs old. No diagonal coupling in either group; the between-group change is dropout collapsing points onto the zero axes (zero-fraction 0.92 to 0.97), not a change in coupling.}]{figures/fig4_tms_scatter.png}
+\caption{Raw Smad3 vs Col1a1 counts (log1p) in the real TMS FACS data,
+young vs old. No diagonal coupling in either group; the between-group
+change is dropout collapsing points onto the zero axes (zero-fraction
+0.92 to 0.97), not a change in coupling.}
+\end{figure}
+
+\textbf{What this shows.} On the real Tabula Muris Senis FACS data the
+metric reaches the same verdict as on the synthetic stand-in ---
+\textbf{FAIL at GATE 0}, not measuring biology --- with real numbers in
+place of planted ones. This is one metric on one dataset: a
+demonstration that the workflow reproduces on real data, not a
+measurement of the gates' sensitivity or specificity (see Limitations).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 \section{Discussion}\label{discussion}
 
 \textbf{Scope.} This is a workflow and tool contribution, not a
 biological-results paper: the worked example is a synthetic dataset
-patterned on the real phenomenon, with a documented one-line path to the
-real Tabula Muris Senis and CELLxGENE skin data (the real autopsy is not
-run here; see Section 3 and the closing note). The scope is deliberately
-single-cell QC. The gates encode the specific ways scRNA-seq metrics
-fake biology --- dropout, library size, detection-rate confounds,
-factorial-interaction confounds, platform artifacts --- and they treat
-the metric as a black box precisely so that focus is not diluted. A
-metric from another domain can be passed in, but the perturbations the
-harness knows how to apply (dropout, depth, library scaling, gene
-subsampling) are single-cell perturbations.
+patterned on the real phenomenon, with the real Tabula Muris Senis FACS
+autopsy now reported in Section 4 (the 10x skin cross-platform
+replication, GATE 6, is still left to the reader). The scope is
+deliberately single-cell QC. The gates encode the specific ways
+scRNA-seq metrics fake biology --- dropout, library size, detection-rate
+confounds, factorial-interaction confounds, platform artifacts --- and
+they treat the metric as a black box precisely so that focus is not
+diluted. A metric from another domain can be passed in, but the
+perturbations the harness knows how to apply (dropout, depth, library
+scaling, gene subsampling) are single-cell perturbations.
 
 \textbf{Scripted vs judgment gates.} Six gates run automatically from
 the data (GATE 0, 1, 2, 3, 5, 6; GATE 6 only when a second dataset is
@@ -953,11 +1044,13 @@ false-discovery methods this work builds on.
 \end{enumerate}
 
 \emph{Note on honesty of claims: this preprint reports a tool and a
-synthetic worked example with a documented path to real data. It does
-not report real-data autopsy results; the automated gates have not been
-run on the real data. The real-data outcomes cited in Sections 1 and 3
-are drawn from the by-hand retroactive audit in ref 1, an unpublished
-internal self-report, and are attributed as such rather than presented
-as results of this work.}
+synthetic worked example with a documented path to real data. Section 4
+reports fresh automated-gate results on the real Tabula Muris Senis FACS
+data. The historical numbers in Section 1 --- including the 2.4x
+male-detection ratio --- remain those of the by-hand audit in ref 1, an
+unpublished internal self-report, and are attributed as such; the
+automated re-run in Section 4 gives 1.65x on the pooled FACS data. The
+cross-platform GATE 6 replication on 10x skin is still left to the
+reader.}
 
 \end{document}
