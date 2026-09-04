@@ -38,7 +38,8 @@ the agent runs the autopsy. Three entry points, one engine:
 - **Claude Code skill** — [`SKILL.md`](SKILL.md). The skill elicits a pre-registration, then runs the gates.
 - **MCP server** — for any MCP-capable agent (Claude Desktop, Cursor, Cline…):
   ```bash
-  pip install "metric-autopsy[mcp]"
+  # not on PyPI yet — install from the repository
+  pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"
   metric-autopsy-mcp          # stdio transport
   ```
   Register it in your agent (e.g. Claude Desktop `claude_desktop_config.json`):

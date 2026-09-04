@@ -13,7 +13,7 @@ then believe**, never "compute → believe."
    - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --pos-pair Actb Gapdh --neg-pair G1 G2`
    - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(...)` → `.to_markdown()`.
 2. **As a Claude Code skill.** `SKILL.md` — elicit a pre-registration first, then run the gates, then emit the autopsy. This is the skill's required behavior; follow it verbatim when invoked.
-3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp]"` then `metric-autopsy-mcp`. Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
+3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"` then `metric-autopsy-mcp` (not on PyPI yet). Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
 
 ## The one rule that matters
 
