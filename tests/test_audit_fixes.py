@@ -177,20 +177,43 @@ def test_metric_name_unwraps_partial():
     assert _metric_name(partial(metrics.mi_3bin, gene_a="x", gene_b="y")) == "mi_3bin"
 
 
+def _verdict_line(markdown: str) -> str:
+    """The verdict sentence printed under '## Verdict' (bold markers stripped)."""
+    lines = markdown.splitlines()
+    i = lines.index("## Verdict")
+    return next(line for line in lines[i + 1:] if line.strip()).strip("* ")
+
+
 # --- #12 : spectral_entropy (no-genes metric) does not crash via CLI -------
 def test_spectral_entropy_cli_no_crash(capsys):
     cli.main(["--demo", "--metric", "spectral_entropy", "--no-stop"])
     out = capsys.readouterr().out
-    assert "spectral_entropy" in out and "Verdict" in out
+    assert "spectral_entropy" in out
+    assert _verdict_line(out).split(" ")[0] in ("PASS", "FAIL", "INCONCLUSIVE")
 
 
-# --- #20 : CLI can reach a provisional PASS via --resolve-judgment ---------
-def test_cli_resolve_judgment_enables_pass(capsys):
+# --- #20 : --resolve-judgment is plumbed through, and CLI == API -----------
+def test_cli_verdict_matches_api_with_resolve_judgment(capsys):
+    """The CLI must print exactly the verdict the Python API gives for the same inputs."""
     cli.main(["--demo", "--metric", "norm_pearson", "--resolve-judgment", "--no-stop"])
-    out = capsys.readouterr().out
-    # norm_pearson clears the auto gates on the demo's non-degraded strata;
-    # with judgment resolved the verdict is reachable as PASS (not INCONCLUSIVE).
-    assert "Verdict" in out
+    cli_verdict = _verdict_line(capsys.readouterr().out)
+    api = run_autopsy(
+        partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1"), cli.demo_data(),
+        group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"),
+        pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
+        prereg={"judgment_pending": False}, stop_on_first_fail=False,
+    )
+    assert cli_verdict == api.verdict
+
+
+def test_resolving_judgment_turns_inconclusive_into_provisional_pass():
+    """With every auto gate clear, pending judgment gates hold the verdict at INCONCLUSIVE;
+    resolving them (and only that) makes the provisional PASS reachable."""
+    m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
+    kw = dict(group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"))
+    d = make_clean()
+    assert run_autopsy(m, d, **kw).verdict.startswith("INCONCLUSIVE")
+    assert run_autopsy(m, d, prereg={"judgment_pending": False}, **kw).verdict.startswith("PASS")
 
 
 if __name__ == "__main__":

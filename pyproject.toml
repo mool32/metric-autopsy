@@ -49,4 +49,4 @@ metric_autopsy = ["py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["tests"]
+testpaths = ["tests", "validation/probes"]
