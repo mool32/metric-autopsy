@@ -610,6 +610,11 @@ def gate4_signal_response(
     """Inject a known construct change (``injected_signal``) and require the metric to move,
     reliably and in the declared direction. A metric that ignores its construct (a random
     number, a constant) cannot pass this.
+
+    The response is measured against the injector's matched *sham* (``inject.sham``: the same
+    thinning without the signal) when it has one, else against the untouched data. Against
+    the untouched data the thinning noise is confounded with the signal: a valid correlation
+    metric on an already strongly coupled pair fell (z = -2.6) and FAILed.
     """
     from .injected_signal import describe
 
@@ -619,16 +624,19 @@ def gate4_signal_response(
     if base is None:
         return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
                           "metric could not be evaluated on the data", {})
+    sham = getattr(inject, "sham", None)
     deltas = []
     for _ in range(n_rep):
         try:
             injected = inject(sd, rng)
+            reference = sham(sd, rng) if sham is not None else None
         except Exception as e:  # e.g. non-count input
             return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
                               f"signal could not be injected: {e}", {})
         v = _safe_call(lambda: metric(injected))
-        if v is not None:
-            deltas.append(v - base)
+        ref = base if reference is None else _safe_call(lambda: metric(reference))
+        if v is not None and ref is not None:
+            deltas.append(v - ref)
     if len(deltas) < 3:
         return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
                           "metric could not be evaluated on injected data", {})
@@ -638,11 +646,12 @@ def gate4_signal_response(
     z = mean / se if se > 0 else (float("inf") * np.sign(mean) if mean else 0.0)
     signed_z = z if direction == "increase" else -z
     detail = dict(injection=describe(inject), direction=direction, base=base,
+                  reference="sham" if sham is not None else "untouched data",
                   mean_response=mean, sd_response=sd_, z=float(z), n_rep=len(deltas), z_min=z_min)
     if signed_z >= z_min:
         return GateResult(4, "Construct response (injected signal)", GateStatus.PASS,
-                          f"responds to {describe(inject)}: {mean:+.4g} (z={z:.1f}, expected {direction})",
-                          detail)
+                          f"responds to {describe(inject)}: {mean:+.4g} against the "
+                          f"{detail['reference']} (z={z:.1f}, expected {direction})", detail)
     return GateResult(4, "Construct response (injected signal)", GateStatus.FAIL,
                       f"does not respond to {describe(inject)} as declared ({direction}): "
                       f"{mean:+.4g} (z={z:.1f}, need z >= {z_min} in that direction)", detail)

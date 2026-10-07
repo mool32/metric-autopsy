@@ -166,8 +166,12 @@ replicates?
 **The correction follows the pre-registered estimand.**
 
 - **composition** (relative expression: correlations, module scores, MI of normalized
-  counts): the deeper group of every stratum is **binomially thinned** to the other group's
-  depth quantiles. Thinning keeps every cell and preserves expected composition.
+  counts): the deeper group of every stratum is **binomially thinned** by one common ratio,
+  the ratio of the two groups' mean depths. Thinning keeps every cell and preserves expected
+  composition; under a capture difference it is exact for every gene and keeps their joint
+  distribution. (Matching each cell to the other group's depth *quantiles* does not: the
+  keep-probability then depends on the cell's own total, which includes the genes the metric
+  reads, and 18% of a pure MI artifact survived the correction in the dev data.)
 - **content** (amount of RNA: total counts, genes detected, CytoTRACE-like scores): thinning
   to equal depth would delete the signal itself. The groups are thinned to equal **spike-in
   (ERCC) capture**. Without spike-ins, capture and content cannot be separated:
@@ -243,7 +247,11 @@ by *responding* to signal, not merely by resisting nuisance — a metric that re
 numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b)` or
 `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
 (seqgendiff-style, so the data stay valid counts with real technical noise), and the metric
-must move reliably (z >= 3) in the declared direction. Otherwise **FAIL**. A positive control
+must move reliably (z >= 3) in the declared direction **relative to a matched sham** — the
+same thinning without the signal (independent keep-probabilities for a coupling; all genes
+thinned for a module). Otherwise **FAIL**. Against the untouched data the thinning noise is
+confounded with the signal: injecting coupling into an already strongly coupled pair *lowered*
+a valid correlation (z = −2.6) and failed it. A positive control
 that beats its null (GATE 5) is the other way to demonstrate response. With neither, the
 metric is **UNTESTED** and no positive verdict is reachable.
 

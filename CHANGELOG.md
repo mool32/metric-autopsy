@@ -30,8 +30,10 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   `min_cells`; a confident imbalance is WARN (handled by the correction), STOP only when no
   stratum contains both groups. (v0.1 flagged 82% of null datasets at 64 × 20 cells.)
 - **GATE 2 is the estimand-dependent correction** (`effect.estimate_effect`): binomial
-  thinning to equal depth for a *composition* estimand, to equal spike-in capture for a
-  *content* estimand, UNIDENTIFIABLE without spike-ins or without a declared estimand.
+  thinning by one common ratio per stratum, to equal mean depth for a *composition* estimand
+  and to equal spike-in capture for a *content* estimand; UNIDENTIFIABLE without spike-ins or
+  without a declared estimand. (Per-cell quantile matching was tried first and biased the
+  joint distribution of the genes a metric reads.)
   `gate2_ngenes_matching` is deprecated (n_genes is downstream of biology) and unused by
   `run_autopsy`.
 - **Replicate-level inference with a graded rule** (`replicate_col`): ≥ 4 replicates per group
@@ -67,7 +69,8 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 
 ### Added
 - `gate4_signal_response` and `injected_signal.coupling` / `injected_signal.module`: response
-  to a known construct change planted by binomial thinning.
+  to a known construct change planted by binomial thinning, measured against a matched sham
+  (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
 - `stats` (t and permutation tests without scipy, TOST, MDE), `equalize` (thinning),
   `provenance` (hashes, versions, run log), `effect`.

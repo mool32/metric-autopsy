@@ -6,6 +6,12 @@ an ``inject(data, rng) -> data`` callable for ``run_autopsy(signal_test=...)``. 
 only removes molecules, so the injected data stay valid counts with real technical noise
 (the approach of seqgendiff; Gerard 2020).
 
+Each injector carries ``inject.sham``: the same thinning, of the same intensity, without the
+signal. GATE 4 contrasts the metric on injected data with the metric on sham data. Contrasting
+with the untouched data instead confuses the signal with the thinning noise: injecting coupling
+into a pair that is already strongly coupled *lowers* its correlation against the original
+(0.541 -> 0.524) while raising it against the sham (0.370 -> 0.524).
+
 Not to be confused with ERCC *spike-ins*, the external RNA standard used for content
 estimands (see ``equalize``).
 """
@@ -56,21 +62,39 @@ def module(genes: Sequence[str], fold: float = 2.0, frac: float = 0.3):
             obs["total_counts"] = tot
         return SimpleData(X, obs, sd.var_names)
 
+    def sham(data, rng):
+        """Thin *every* gene to 1/fold in the same share of cells: the same loss of depth,
+        no change in composition."""
+        sd = _materialize(data)
+        _require_counts(sd.X, "module injection")
+        cells = np.where(rng.random(sd.n_obs) < frac)[0]
+        X = sd.X
+        X[cells] = rng.binomial(X[cells].astype(np.int64), 1.0 / fold).astype(float)
+        obs = sd.obs
+        if "total_counts" in obs:
+            tot = np.asarray(obs["total_counts"], dtype=float)
+            tot[cells] = tot[cells] / fold
+            obs["total_counts"] = tot
+        return SimpleData(X, obs, sd.var_names)
+
     inject.description = f"module({len(genes)} genes, fold={fold}, frac={frac})"
+    inject.sham = sham
     return inject
 
 
 def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
     """Induce co-variation between two genes: both are thinned with the same per-cell
-    keep-probability ``sigmoid(strength * z)``, ``z ~ N(0, 1)`` (a shared factor)."""
+    keep-probability ``sigmoid(strength * z)``, ``z ~ N(0, 1)`` (a shared factor). The sham
+    thins each gene with its own, independent factor of the same distribution."""
 
-    def inject(data, rng):
+    def _thin(data, rng, shared: bool):
         sd = _materialize(data)
         _require_counts(sd.X, "coupling injection")
         cols = [unique_col_index(sd.var_names, gene_a), unique_col_index(sd.var_names, gene_b)]
-        p = 1.0 / (1.0 + np.exp(-strength * rng.normal(size=sd.n_obs)))
+        z = rng.normal(size=(sd.n_obs, 1)) if shared else rng.normal(size=(sd.n_obs, 2))
+        p = 1.0 / (1.0 + np.exp(-strength * z))
         before = sd.X[:, cols]
-        after = rng.binomial(before.astype(np.int64), p[:, None]).astype(float)
+        after = rng.binomial(before.astype(np.int64), np.broadcast_to(p, before.shape)).astype(float)
         sd.X[:, cols] = after
         obs = sd.obs
         if "total_counts" in obs:
@@ -78,7 +102,14 @@ def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
                                    - (before - after).sum(axis=1))
         return SimpleData(sd.X, obs, sd.var_names)
 
+    def inject(data, rng):
+        return _thin(data, rng, shared=True)
+
+    def sham(data, rng):
+        return _thin(data, rng, shared=False)
+
     inject.description = f"coupling({gene_a}, {gene_b}, strength={strength})"
+    inject.sham = sham
     return inject
 
 

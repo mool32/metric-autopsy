@@ -41,6 +41,17 @@ noisy (between-mouse SD 0.04-0.08 against a raw difference of 0.035-0.075), so p
 slowly with N. Rather than relax the criterion, the candidate set was extended to
 {20, 24, 32} with the same criterion; the amendment was committed before those runs.
 
+**Amendment D1b (2026-10-07) — the design run exposed an engine bias, fixed before rerunning.**
+With N >= 20 the raw difference was detected in 40/40 datasets, yet "explained by depth" fell
+to 30-35/40: at equal depth the corrected effect was itself detected. The depth correction
+thinned each cell to the other group's depth *quantiles*, so a cell's keep-probability depended
+on its own total, which includes the genes the metric reads; that distorted their joint
+distribution. With 24 mice per group, 18% of the raw MI difference survived the correction
+(+0.0136, 7 standard errors) and was detected in 5 of 20 datasets; thinning by one common ratio
+per stratum leaves 5% (+0.0049) and 1 of 20. The engine now thins by the common ratio
+(`equalize.thin_to_match`), and the design is rerun with the same rule and candidates
+(`p11b_design.log`). This was a bug in the correction, not a change to the probe.
+
 ## D2 — the p01 rescaling and p10 lock-in tests (2026-10-07; decided by the project owner)
 
 Revised when the verdict scheme changed, so that they test the v0.3 meaning instead of

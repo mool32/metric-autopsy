@@ -3,7 +3,20 @@
 The pNN_*.py scripts call the gates with the v0.1.1 signatures (no replicate unit, no
 estimand), so their verdict lines cannot show the v0.3 verdict on each truth. This script
 re-runs each truth exactly as `test_probes.py` does and prints the fields, plus the null
-rates and the robustness checks behind them. Deterministic; ~8 min.
+rates and the robustness checks behind them.
+
+The last section has two axes per case, each a rate with its 95% Clopper-Pearson interval over
+independent datasets:
+
+* **errors** — verdicts outside the set that is correct *given the design* (e.g. INCONCLUSIVE
+  is allowed for a pure depth artifact with 4 vs 4 mice, SUPPORTED never is), and false
+  SUPPORTED on nulls, artifacts and useless metrics;
+* **decisiveness** — on cases whose truth is establishable under their design, the share of
+  definite verdicts (anything but INCONCLUSIVE; an UNTESTED metric makes any effect claim
+  INCONCLUSIVE, so "not UNTESTED" is included) and of correct definite verdicts.
+
+A validator that never errs because it never commits is useless; both axes are reported.
+Deterministic; ~25 min.
 
     python validation/probes/verdicts_v03.py > validation/probes/verdicts_v0.3.0.dev0.log
 
@@ -18,11 +31,20 @@ import sys
 from functools import partial
 from pathlib import Path
 
+from dataclasses import dataclass
+from typing import Callable, Optional
+
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import test_probes as tp  # noqa: E402  (builders and the frozen calls)
+from test_gates import add_mice, make_clean  # noqa: E402
+from test_v03_verdict import (  # noqa: E402
+    blind_pair_metric, capture_confound_mice, log_total_endogenous, mean_lognorm_gene5, with_ercc,
+)
+from metric_autopsy.core import SimpleData  # noqa: E402
+from metric_autopsy.stats import fmt_rate  # noqa: E402
 from metric_autopsy import (  # noqa: E402
     GateStatus, __version__, gate0_independence, gate1_qc_parity, gate5_controls, injected_signal,
     metrics, run_autopsy,
@@ -169,5 +191,154 @@ def main():
                                prereg=tp.COMPOSITION, stop_on_first_fail=False, **AGE))
 
 
+# --------------------------------------------------------------------------- #
+# errors and decisiveness, case by case
+# --------------------------------------------------------------------------- #
+P11B_MICE = None  # set from p11b_design.log (journal D1a)
+
+
+@dataclass
+class Case:
+    name: str
+    make: Callable  # seed -> (metric, data, run_autopsy kwargs)
+    allowed: tuple  # verdict prefixes that are correct given the design
+    definite: Optional[tuple] = None  # expected definite verdicts if the truth is establishable
+    null: bool = False  # a null, an artifact or a useless metric: SUPPORTED is a false positive
+    n: int = 10
+
+
+def _matches(verdict: str, prefixes) -> bool:
+    return any(verdict.startswith(p) for p in prefixes)
+
+
+def _xist_demo_seeded(seed: int, mice: int = 4):
+    d = demo_data(seed=seed)
+    rng = np.random.default_rng(seed + 7)
+    female = np.asarray(d.obs["sex"]) == "female"
+    old_male = (~female) & (np.asarray(d.obs["age"]) == "old")
+    xist = rng.poisson(np.where(female, 25.0, 0.0) * np.where(old_male, 0.30, 1.0)).astype(float)
+    dx = SimpleData(np.column_stack([d.X, xist]), d.obs, list(d.var_names) + ["Xist"])
+    return tp._with_mice(dx, mice, ["sex", "age"], seed=seed)
+
+
+def _demo_males(seed: int, n_mice: int):
+    d = demo_data(seed=seed, n=100 * n_mice, mice_per_block=n_mice)
+    return d[np.asarray(d.obs["sex"]) == "male"]
+
+
+def _random_metric(seed):
+    rng = np.random.default_rng(seed)
+    return lambda data: float(rng.normal())
+
+
+SIGNAL = injected_signal.coupling("Smad3", "Col1a1")
+CTRL = dict(pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"))
+G2M = injected_signal.module(tp.G2M_GENES, fold=2.0, frac=0.3)
+
+
+def cases():
+    out = [
+        Case("p01 random-number metric, full design (mice, estimand, injected signal)",
+             lambda s: (_random_metric(s), add_mice(make_clean(seed=s)),
+                        dict(within=["sex"], replicate_col="mouse", signal_test=SIGNAL, prereg=tp.RESOLVED, **AGE)),
+             allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True),
+        Case("p01 constant metric",
+             lambda s: (lambda data: 0.0, add_mice(make_clean(seed=s)),
+                        dict(replicate_col="mouse", prereg=tp.RESOLVED, **AGE)),
+             allowed=("DEGENERATE METRIC",), definite=("DEGENERATE METRIC",), null=True),
+        Case("blind pair metric (ignores gene b), its own controls, 800 cells per stratum",
+             lambda s: (partial(blind_pair_metric, gene_a="Smad3", gene_b="Col1a1"), add_mice(make_clean(seed=s)),
+                        dict(within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
+                             pair_metric=blind_pair_metric, pos_pair=("Actb", "Gapdh"),
+                             neg_pair=("Gene0", "Gene1"), prereg=tp.RESOLVED, **AGE)),
+             allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True),
+        Case("p02 sorted G2M vs G1, 4 plates each (real, huge)",
+             lambda s: (tp.probe_sim.mean_g2m_score, tp._sorted_cell_cycle(seed=s + 1),
+                        dict(group_col="sorted_phase", groups=("G2M", "G1"), replicate_col="plate",
+                             signal_test=G2M, prereg=tp.RESOLVED)),
+             allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
+        Case("p03 proliferation 35% -> 5%, 3 mice per sex x age (real)",
+             lambda s: (tp.probe_sim.mean_g2m_score, tp._proliferation(seed=s + 2),
+                        dict(within=["sex"], replicate_col="mouse", signal_test=G2M, prereg=tp.RESOLVED, **AGE)),
+             allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
+        Case("p04 Xist female > male, demo data, 4 mice per block (real, QC gap)",
+             lambda s: (tp._mean_lognorm_xist, _xist_demo_seeded(s),
+                        dict(group_col="sex", groups=("female", "male"), within=["age"], replicate_col="mouse",
+                             signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=tp.RESOLVED)),
+             allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
+        Case("p07 no effect, 3 vs 3 mice with mouse variance (not establishable)",
+             lambda s: (tp.NPR, tp._mice(3, mouse_sd=0.35, seed=s), dict(replicate_col="mouse", prereg=tp.COMPOSITION, **AGE)),
+             allowed=("INCONCLUSIVE", "NO DETECTABLE EFFECT", "NOT SUPPORTED"), null=True, n=20),
+        Case("p09 no effect, 6 vs 6, SESOI 0.15, injected signal (establishable absence)",
+             lambda s: (tp.NPR, tp._mice(6, seed=s),
+                        dict(replicate_col="mouse", signal_test=SIGNAL,
+                             prereg={**tp.RESOLVED, "sesoi": 0.15}, **AGE)),
+             allowed=("NO DETECTABLE EFFECT", "INCONCLUSIVE", "NOT SUPPORTED"), definite=("NO DETECTABLE EFFECT",),
+             null=True, n=20),
+        Case("p09 moderate effect (coupling 1.5 vs 1.2), 6 vs 6, injected signal (real)",
+             lambda s: (tp.NPR, tp._mice(6, c_old=1.2, seed=s),
+                        dict(replicate_col="mouse", signal_test=SIGNAL, prereg=tp.RESOLVED, **AGE)),
+             allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
+        Case("p11a pure depth artifact, 4 vs 4 mice (not establishable)",
+             lambda s: (tp.MI, _demo_males(s, 4), dict(replicate_col="mouse", prereg=tp.COMPOSITION, **AGE)),
+             allowed=("NOT SUPPORTED", "INCONCLUSIVE"), null=True, n=20),
+        Case("level metric on a pure depth artifact, 6 vs 6, injected module",
+             lambda s: (mean_lognorm_gene5, capture_confound_mice(seed=s),
+                        dict(replicate_col="mouse", signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
+                             prereg=tp.RESOLVED, **AGE)),
+             allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True, n=20),
+        Case("content estimand, capture halved, ERCC present (artifact)",
+             lambda s: (log_total_endogenous, with_ercc(capture=(1.0, 0.5), seed=s),
+                        dict(replicate_col="mouse", prereg={"estimand": "content"}, **AGE)),
+             allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True),
+        Case("content estimand, capture halved, no spike-ins",
+             lambda s: (log_total_endogenous, with_ercc(capture=(1.0, 0.5), spikes=False, seed=s),
+                        dict(replicate_col="mouse", prereg={"estimand": "content"}, **AGE)),
+             allowed=("UNIDENTIFIABLE",), definite=("UNIDENTIFIABLE",), null=True),
+    ]
+    if P11B_MICE:
+        out.insert(10, Case(f"p11b pure depth artifact, {P11B_MICE} vs {P11B_MICE} mice (establishable)",
+                            lambda s: (tp.MI, _demo_males(s, P11B_MICE),
+                                       dict(replicate_col="mouse", prereg=tp.COMPOSITION, **AGE)),
+                            allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True, n=20))
+    return out
+
+
+def decisiveness():
+    print("=== errors and decisiveness (95% Clopper-Pearson; independent datasets per case)")
+    tot = dict(n=0, out=0, null_n=0, false_sup=0, est_n=0, definite=0, correct=0)
+    for c in cases():
+        verdicts = []
+        for s in range(c.n):
+            metric, data, kw = c.make(s)
+            verdicts.append(run_autopsy(metric, data, log_path="off", **kw).verdict)
+        out = sum(not _matches(v, c.allowed) for v in verdicts)
+        line = f"  {c.name}\n    outside the allowed set: {fmt_rate(out, c.n)}"
+        tot["n"] += c.n
+        tot["out"] += out
+        if c.null:
+            fs = sum(v.startswith("SUPPORTED") for v in verdicts)
+            line += f"; false SUPPORTED: {fmt_rate(fs, c.n)}"
+            tot["null_n"] += c.n
+            tot["false_sup"] += fs
+        if c.definite:
+            dfn = sum(not v.startswith("INCONCLUSIVE") for v in verdicts)
+            cor = sum(_matches(v, c.definite) for v in verdicts)
+            line += f"; definite: {fmt_rate(dfn, c.n)}; correct definite: {fmt_rate(cor, c.n)}"
+            tot["est_n"] += c.n
+            tot["definite"] += dfn
+            tot["correct"] += cor
+        else:
+            line += "; not establishable under this design (decisiveness not scored)"
+        kinds = sorted({v.split(" — ")[0].split(" [")[0] for v in verdicts})
+        print(line + f"\n    verdicts seen: {kinds}", flush=True)
+    print("  POOLED (dev set):")
+    print(f"    outside the allowed set: {fmt_rate(tot['out'], tot['n'])}")
+    print(f"    false SUPPORTED on nulls, artifacts and useless metrics: {fmt_rate(tot['false_sup'], tot['null_n'])}")
+    print(f"    decisiveness on establishable cases: {fmt_rate(tot['definite'], tot['est_n'])}; "
+          f"correct definite: {fmt_rate(tot['correct'], tot['est_n'])}")
+
+
 if __name__ == "__main__":
     main()
+    decisiveness()

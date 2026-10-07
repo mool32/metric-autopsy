@@ -7,6 +7,7 @@ replicate unless stated), so the assertion is the verdict a correct validator mu
 from __future__ import annotations
 
 import json
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -221,6 +222,35 @@ def test_depth_thinning_equalizes_depth_within_strata_and_leaves_the_other_group
     assert np.array_equal(eq.X[om], d.X[om])  # the shallower group is untouched
     male = next(r for r in info["strata"] if r["stratum"] == {"sex": "male"})
     assert male["thinned_group"] == "young" and male["depth_ratio"] < 0.5
+
+
+def pair_dominated(n=20000, eff_shallow=0.3, seed=0):
+    """Identical biology in two groups; the coupled pair is a large share of each cell's total."""
+    rng = np.random.default_rng(seed)
+    parts = []
+    for g, eff in (("deep", 1.0), ("shallow", eff_shallow)):
+        lat = rng.normal(0, 1, n)
+        smad = np.exp(1.2 + 0.9 * lat + rng.normal(0, 0.3, n))
+        col = np.exp(1.2 + 0.9 * lat + rng.normal(0, 0.3, n))
+        filler = np.exp(0.4 + rng.normal(0, 0.5, (n, 20)))
+        parts.append((rng.poisson(np.column_stack([smad, col, filler]) * eff).astype(float),
+                      pd.DataFrame({"grp": [g] * n})))
+    return SimpleData(np.vstack([x for x, _ in parts]), pd.concat([o for _, o in parts], ignore_index=True),
+                      ["Smad3", "Col1a1"] + [f"g{i}" for i in range(20)])
+
+
+@pytest.mark.parametrize("seed", [0, 1])
+def test_depth_thinning_keeps_the_joint_distribution_of_the_genes(seed):
+    """Thinning the deeper group to the other's depth must reproduce the other group's MI when
+    biology is identical. Matching each cell to depth *quantiles* failed this (+0.0145 here; on
+    the p11b design 18% of a pure artifact survived, 7 SE): a cell's keep-probability then
+    depends on its own total, which includes the genes the metric reads. One common ratio does not."""
+    d = pair_dominated(seed=seed)
+    tot = np.asarray(per_cell_qc(d)["total_counts"], dtype=float)
+    lab = np.asarray(d.obs["grp"])
+    eq, _ = thin_to_match(d, "grp", ("deep", "shallow"), totals=tot, rng=np.random.default_rng(seed + 1))
+    mi = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
+    assert abs(mi(eq[lab == "deep"]) - mi(d[lab == "shallow"])) < 0.008
 
 
 # --------------------------------------------------------------------------- #
