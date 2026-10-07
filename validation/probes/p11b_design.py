@@ -16,7 +16,10 @@ P(NOT SUPPORTED and explained_by_depth) over 40 independent datasets (data seeds
 with its own split into mice) is >= 0.80. Same generator as the demo (`demo_data`), 100 cells
 per mouse, male stratum only, mi_3bin on Smad3-Col1a1, composition estimand.
 
-    python validation/probes/p11b_design.py > validation/probes/p11b_design.log    # ~10 min
+Amendment D1a (journal): no candidate up to 16 met the rule (N = 16: 37/40, lower bound 0.796),
+so the candidate set was extended to {20, 24, 32} with the same criterion, before running them.
+
+    python validation/probes/p11b_design.py > validation/probes/p11b_design.log    # ~30 min
 """
 from __future__ import annotations
 
@@ -35,7 +38,7 @@ from metric_autopsy.cli import demo_data  # noqa: E402
 from metric_autopsy.stats import clopper_pearson, fmt_rate  # noqa: E402
 
 MI = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
-CANDIDATES = (4, 6, 8, 10, 12, 16)
+CANDIDATES = (4, 6, 8, 10, 12, 16, 20, 24, 32)
 N_DATASETS = 40
 CELLS_PER_MOUSE = 100
 LOWER_BOUND_MIN = 0.80
