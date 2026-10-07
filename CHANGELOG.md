@@ -94,6 +94,12 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   truth it checked.
 
 ### Fixed
+- **GATE 5's controls count only for the metric they test.** `run_autopsy` took on trust that
+  `pair_metric` bound to `gene_pair` is the judged metric: a metric blind to gene b given
+  `norm_pearson`'s controls was certified and SUPPORTED (3 of 3 dev datasets), and a
+  random-number metric passed metric validity. The controls now run only when
+  `pair_metric(data, *gene_pair)` equals `metric(data)`; otherwise GATE 5 is SKIP with the two
+  values. The CLI and the MCP server always bind both from the same function.
 - **The MCP server starts with mcp 2.x.** `pip install "metric-autopsy[mcp]"` now resolves
   to mcp 2.x, where `mcp.server.fastmcp.FastMCP` was renamed to `mcp.server.mcpserver.MCPServer`;
   `metric-autopsy-mcp` failed at start-up for every fresh install. `build_server` supports both.

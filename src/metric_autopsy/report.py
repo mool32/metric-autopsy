@@ -211,6 +211,24 @@ def _slim(detail: dict) -> dict:
 # --------------------------------------------------------------------------- #
 # field assembly
 # --------------------------------------------------------------------------- #
+def _controls_tie(metric, pair_metric, data, gene_pair) -> tuple[bool, str, dict]:
+    """GATE 5 runs `pair_metric` on the control pairs, so it is evidence about `metric` only if
+    `pair_metric` bound to `gene_pair` *is* `metric`. Both are black boxes: compare their values on
+    the data. A mismatch would let a valid pair metric certify a blind or random one."""
+    if gene_pair is None:
+        return False, ("no gene_pair, so pair_metric cannot be checked against the metric: the "
+                       "controls would test another metric"), {}
+    v = _g._safe_call(lambda: metric(data))
+    w = _g._safe_call(lambda: pair_metric(data, gene_a=gene_pair[0], gene_b=gene_pair[1]))
+    detail = dict(metric_value=v, pair_metric_value=w)
+    if v is not None and w is not None and np.isclose(v, w, rtol=1e-6, atol=1e-12):
+        return True, "", detail
+    fmt = (lambda x: "no finite value" if x is None else f"{x:.6g}")
+    return False, (f"pair_metric on {gene_pair[0]}–{gene_pair[1]} gives {fmt(w)} and the metric gives "
+                   f"{fmt(v)}: the controls would test another metric (bind the metric from "
+                   "pair_metric, and seed it if it is stochastic)"), detail
+
+
 def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | None) -> Assessment:
     lvl = g0.detail.get("level_shifts", {}) if g0 else {}
     detail = dict(gate0=g0.status.value if g0 else None, level_shifts=lvl,
@@ -245,6 +263,7 @@ def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | Non
                           flags, detail)
     why = ("the positive control did not beat its null in any stratum"
            if g5 is not None and g5.status == GateStatus.WARN else
+           f"controls not run: {g5.message}" if g5 is not None and g5.status == GateStatus.SKIP else
            "supply a positive control pair or an injected signal")
     return Assessment("UNTESTED", f"no nuisance bias, but no demonstrated response to signal ({why})."
                       + lvl_txt, flags, detail)
@@ -338,7 +357,9 @@ def run_autopsy(
     """Run the gates and assemble the four-field verdict.
 
     `metric(data) -> float` is the bound metric. Controls (GATE 5) need the unbound
-    `pair_metric(data, *, gene_a, gene_b)` and both control pairs. `replicate_col` names the
+    `pair_metric(data, *, gene_a, gene_b)`, `gene_pair` and both control pairs; they count only if
+    `pair_metric` on `gene_pair` gives the metric's value on the data (else GATE 5 is SKIP: the
+    controls would test another metric). `replicate_col` names the
     biological replicate (mouse, donor, plate): without it there is no effect verdict.
     `signal_test` is an ``injected_signal`` constructor result. `prereg` carries
     ``estimand`` ('composition' | 'content'), ``sesoi`` (construct scale), ``min_replicates``,
@@ -380,10 +401,16 @@ def run_autopsy(
     results.append(g0)
     g5 = None
     if pair_metric is not None and pos_pair is not None and neg_pair is not None:
-        g5 = _g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within, alpha=alpha,
-                               exclude=gene_pair or (), seed=seed,
-                               pos_dose=float(prereg["positive_control_dose"]),
-                               pos_power_min=float(prereg["positive_control_power"]))
+        tied, why_not, tie = _controls_tie(metric, pair_metric, data, gene_pair)
+        if tied:
+            g5 = _g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within, alpha=alpha,
+                                   exclude=gene_pair or (), seed=seed,
+                                   pos_dose=float(prereg["positive_control_dose"]),
+                                   pos_power_min=float(prereg["positive_control_power"]))
+            g5.detail.update(controls_tied=True, **tie)
+        else:
+            g5 = GateResult(5, "Controls", GateStatus.SKIP, why_not,
+                            detail=dict(controls_tied=False, **tie))
         results.append(g5)
     g4 = None
     if signal_test is not None:

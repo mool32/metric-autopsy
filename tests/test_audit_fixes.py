@@ -158,15 +158,19 @@ def test_markdown_cell_escapes_pipe_and_newline():
 
 # --- #21 : stop_on_first_fail honored for pairwise gates -------------------
 def test_stop_halts_before_gate6_after_gate5_fail():
+    # v0.3: the controls must test the judged metric (pair_metric was mi_3bin under a bound
+    # norm_pearson, which now skips GATE 5), so both are norm_pearson; the coupled pair offered
+    # as the negative control still fails GATE 5.
     d = make_clean()
     m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
     autopsy = run_autopsy(
         m, d, group_col="age", groups=("young", "old"), within=["sex"],
         gene_pair=("Smad3", "Col1a1"),
-        pair_metric=metrics.mi_3bin, pos_pair=("Actb", "Gapdh"), neg_pair=("Actb", "Gapdh"),
+        pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Actb", "Gapdh"),
         data2=d, stop_on_first_fail=True,
     )
     gates_run = {r.gate for r in autopsy.results}
+    assert next(r for r in autopsy.results if r.gate == 5).status == GateStatus.FAIL
     assert 5 in gates_run and 6 not in gates_run  # GATE 5 blocked -> GATE 6 never ran
 
 

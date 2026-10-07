@@ -135,6 +135,11 @@ Found while checking the robustness of these results, and fixed:
   injecting it into an already strongly coupled pair lowered a valid correlation (z = −2.6) and
   failed the metric; against the same thinning without the signal it rises (+0.15, z = 23.8).
   Random, constant and wrong-gene metrics still fail.
+- **Controls of another metric.** GATE 5 runs `pair_metric` on the control pairs, and the API
+  took on trust that it is the judged metric. A metric blind to gene b, given `norm_pearson`'s
+  controls, was certified and SUPPORTED (found while building the decisiveness cases, which now
+  give every metric its own controls). The controls now count only when `pair_metric` on the
+  analysed pair gives the metric's value (`test_controls_count_only_for_the_metric_they_test`).
 
 ### Errors and decisiveness
 

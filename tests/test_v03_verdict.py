@@ -370,6 +370,30 @@ def blind_pair_metric(data, *, gene_a, gene_b):
     return float(np.mean(gene_column(data, gene_a)))
 
 
+def test_controls_count_only_for_the_metric_they_test():
+    """GATE 5 runs pair_metric on the control pairs. The API took on trust that pair_metric bound
+    to gene_pair is the judged metric: at 677d1b8 a metric blind to gene b given norm_pearson's
+    controls was certified and SUPPORTED (make_clean seeds 0-2, 3 of 3), and a random-number
+    metric got metric validity PASS. The controls now count only when
+    pair_metric(data, *gene_pair) == metric(data)."""
+    d = add_mice(make_clean())
+    kw = dict(within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
+              pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
+              prereg={**COMPOSITION, "judgment_pending": False}, log_path="off")
+    blind = _run(d, metric=partial(blind_pair_metric, gene_a="Smad3", gene_b="Col1a1"), **kw)
+    g5 = next(r for r in blind.results if r.gate == 5)
+    assert g5.status == GateStatus.SKIP and g5.detail["controls_tied"] is False
+    assert blind.metric_validity.status == "UNTESTED" and not blind.verdict.startswith("SUPPORTED")
+    rng = np.random.default_rng(0)
+    assert _run(d, metric=lambda data: float(rng.normal()), **kw).metric_validity.status == "UNTESTED"
+    same = _run(d, **kw)  # NPR is norm_pearson on Smad3-Col1a1: its own controls count
+    g5 = next(r for r in same.results if r.gate == 5)
+    assert g5.status != GateStatus.SKIP and g5.detail["controls_tied"] is True
+    assert same.metric_validity.status == "PASS"
+    no_pair = _run(d, **{**kw, "gene_pair": None})  # nothing to tie the controls to
+    assert next(r for r in no_pair.results if r.gate == 5).status == GateStatus.SKIP
+
+
 def test_blind_metric_fails_where_the_design_has_power_and_is_untested_where_not():
     """Decided 2026-10-07: a silent positive control is UNTESTED only when the stratum lacked the
     power to show it; with power >= 0.8 for an injected coupling of the pre-registered dose it is

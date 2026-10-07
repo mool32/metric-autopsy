@@ -280,6 +280,13 @@ that property*, not a separate biological process. The judgment is pending by de
 **Question.** Does a known-positive control show the effect and a known-negative control not —
 in **every** factorial combination, not just pooled?
 
+**Which metric the controls test.** The controls run `pair_metric(data, gene_a, gene_b)` on the
+control pairs, so they are evidence about the judged metric only if `pair_metric` bound to the
+analysed gene pair *is* that metric. `run_autopsy` checks it by value on the data (both are black
+boxes); on a mismatch, or without a gene pair, GATE 5 is SKIP and the controls count for nothing.
+Before this check a metric that ignores gene b, given `norm_pearson`'s controls, was certified
+and SUPPORTED in 3 of 3 dev datasets, and a random-number metric passed metric validity.
+
 **How the engine tests it.** Per stratum (with at least `min_cells` cells), against empirical
 nulls instead of a fixed band, Bonferroni across strata:
 
