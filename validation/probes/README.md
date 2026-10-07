@@ -173,3 +173,18 @@ per group that a rule committed before the run finds sufficient (20; `p11b_desig
 `p11b_design.log`). A per-mouse test of the depth component (raw − corrected) was tried and
 rejected: the untouched group's component is zero by construction, which makes that permutation
 test anti-conservative (complete separation under the null with probability 1/8).
+
+### Found after the rework: GATE 0 and depth at a realistic scale (p13, open)
+
+`p13_depth_bias_at_scale.py` (log: `p13_depth_bias_at_scale.log`; not in `run_all.sh`, ~20 min)
+runs `norm_pearson` on a truly coupled pair in a negative-binomial simulation with 16 donors,
+cell-size variation and 2,000–5,000 genes. GATE 0's null carries the CP10k ratio correlation of
+p06, and halving the depth raises it. GATE 0 sizes that shift in units of the pair's signal above
+the null, so once there are enough cells to resolve it the depth response is classified as
+*bias*: FAIL in 0/4, 1/4 and 4/4 datasets at 200, 400 and 800 cells per donor (2,000 genes),
+with the null moving by 31–50% of the signal at 800. By the current rule the metric is then
+invalid and the analysis stops. Yet with a capture loss of 0.5 in one group and identical
+biology, the effect field alone (thinning to equal depth, permutation over 8 vs 8 donors) never
+detects a difference (0/10) and reaches NO DETECTABLE EFFECT in 8/10, INCONCLUSIVE in 2/10.
+Whether a depth bias that the pre-registered correction removes between groups should block the
+metric is open (`validation/prereg/v1.md`, decision 6). No expected verdict is frozen for p13.

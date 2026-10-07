@@ -115,6 +115,12 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   explained in 40 of 40 datasets (p11b; dev-set journal D1).
 - GATE 0's null still shuffles genes within depth bins, the null that let a depth-only pair pass
   as a positive control before GATE 5 moved to depth-matched draws (open before the freeze).
+- At a realistic scale GATE 0 classifies depth as *bias* for log-normalized Pearson
+  (`norm_pearson`) on a truly coupled pair: the CP10k ratio correlation in its null grows when
+  depth is halved, and with enough cells the shift is both resolved and material
+  (`validation/probes/p13_depth_bias_at_scale.py`). The metric is then invalid and the analysis
+  stops, although the composition correction removes a between-group depth difference. Open
+  before the freeze (`validation/prereg/v1.md`, decision 6).
 
 ## [0.1.1] — 2026-07-07
 
