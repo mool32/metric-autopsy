@@ -59,6 +59,36 @@ def _betainc(a: float, b: float, x: float) -> float:
     return 1.0 - front * _betacf(b, a, 1.0 - x) / b
 
 
+def _beta_ppf(q: float, a: float, b: float) -> float:
+    """Quantile of Beta(a, b) by bisection on the regularized incomplete beta."""
+    lo, hi = 0.0, 1.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if _betainc(a, b, mid) < q:
+            lo = mid
+        else:
+            hi = mid
+        if hi - lo < 1e-12:
+            break
+    return 0.5 * (lo + hi)
+
+
+def clopper_pearson(k: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
+    """Exact (Clopper-Pearson) two-sided 1 - alpha interval for a binomial proportion k / n."""
+    k, n = int(k), int(n)
+    if n <= 0:
+        return (float("nan"), float("nan"))
+    lo = 0.0 if k == 0 else _beta_ppf(alpha / 2.0, k, n - k + 1)
+    hi = 1.0 if k == n else _beta_ppf(1.0 - alpha / 2.0, k + 1, n - k)
+    return (float(lo), float(hi))
+
+
+def fmt_rate(k: int, n: int, alpha: float = 0.05) -> str:
+    """'k/n = p% [lo%, hi%]' with the Clopper-Pearson interval."""
+    lo, hi = clopper_pearson(k, n, alpha)
+    return f"{k}/{n} = {100 * k / n:.0f}% [{100 * lo:.0f}%, {100 * hi:.0f}%]" if n else "0/0"
+
+
 def t_cdf(t: float, df: float) -> float:
     """Student t CDF."""
     if not np.isfinite(t):

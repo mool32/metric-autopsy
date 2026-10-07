@@ -19,9 +19,9 @@ Real analysis on your AnnData:
 ``--metric`` names a function in ``metric_autopsy.metrics``. Bring-your-own metrics are
 supported from Python via ``metric_autopsy.run_autopsy``; the CLI covers the reference set.
 A pre-registration can be given as JSON (``--prereg``); explicit flags override it. Every
-run on real data is appended to a JSON-lines run log (``--log``, default
-``metric_autopsy_runs.jsonl`` or ``$METRIC_AUTOPSY_LOG``; ``--no-log`` disables). The demo
-is not a claim and logs only when ``--log`` or ``$METRIC_AUTOPSY_LOG`` is given.
+run with a pre-registration is appended to a JSON-lines run log (``--log``, default
+``$METRIC_AUTOPSY_LOG`` or ``metric_autopsy_runs.jsonl``; ``--no-log`` disables) — the same
+rule as the Python API. The demo is not a claim and logs only when ``--log`` is given.
 """
 from __future__ import annotations
 
@@ -108,7 +108,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--data2", help="second .h5ad for GATE 6 replication")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--json", help="write the full JSON report (hashes, parameters) to this path")
-    p.add_argument("--log", help=f"append to this run log (default ${{METRIC_AUTOPSY_LOG}} or {_prov.DEFAULT_CLI_LOG})")
+    p.add_argument("--log", help=f"append to this run log (default ${{METRIC_AUTOPSY_LOG}} or {_prov.DEFAULT_LOG}; "
+                                 "runs with a pre-registration are always logged)")
     p.add_argument("--no-log", action="store_true", help="do not write a run log")
     p.add_argument("--no-stop", action="store_true",
                    help="estimate the effect even when the metric is invalid")
@@ -161,8 +162,8 @@ def main(argv=None):
     signal = (injected_signal.coupling(*gene_pair) if (args.inject_signal == "coupling" and gene_pair)
               else None)
     is_demo = bool(args.demo or not args.h5ad)
-    log_path = None if args.no_log else (
-        args.log or _prov.resolve_log_path(None, None if is_demo else _prov.DEFAULT_CLI_LOG))
+    # None lets run_autopsy apply the shared rule (logged iff pre-registered)
+    log_path = "off" if args.no_log else (args.log or ("off" if is_demo else None))
 
     autopsy = run_autopsy(
         metric, data,
@@ -178,7 +179,7 @@ def main(argv=None):
         replicate_col=args.replicate_col,
         signal_test=signal,
         seed=args.seed,
-        log_path=log_path if log_path is not None else "off",
+        log_path=log_path,
     )
     autopsy.metric_name = args.metric
     print(autopsy.to_markdown())

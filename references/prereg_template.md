@@ -38,6 +38,9 @@ SESOI:               ___  smallest effect size of interest, on the construct sca
 Alpha / power:       ___ / ___  (defaults 0.05 / 0.8)
 Signal direction:    increase | decrease   (for an injected-signal test)
 Positive control pair: ___   Negative control pair: ___
+Positive-control dose / power: ___ / ___  (defaults 2.0 / 0.8: a silent positive control
+                          FAILs GATE 5 where the design could show an injected coupling of this
+                          dose with this power, and is UNTESTED where it could not)
 Spike-in prefix:     ___  (default "ERCC-")
 ```
 
@@ -53,6 +56,7 @@ Graded replicate rule (fixed in the engine, not chosen per analysis):
 ```json
 {"estimand": "composition", "min_replicates": 3, "sesoi": 0.1, "alpha": 0.05,
  "power": 0.8, "signal_direction": "increase",
+ "positive_control_dose": 2.0, "positive_control_power": 0.8,
  "hypothesis": "Smad3-Col1a1 coupling declines with age in fibroblasts",
  "simplest_non_biological_explanation": "old cells are sequenced shallower"}
 ```
@@ -125,6 +129,7 @@ Larger than test–retest variability?      ___
 
 *Record the hash of the filled form in `PROJECT.md` before you look at any outcome. A pre-reg you
 edit after seeing results is not a pre-reg. The engine helps: every report carries
-`prereg_sha256`, and the run log (`metric_autopsy_runs.jsonl` for the CLI and MCP server)
-counts how many times the same claim — same data, pre-registration and comparison — has been
-run, so "re-run until it passes" is visible.*
+`prereg_sha256`, and every run with a pre-registration — Python API, CLI or MCP — is appended
+to the run log (`metric_autopsy_runs.jsonl`, or `$METRIC_AUTOPSY_LOG`), which counts how many
+times the same claim — same data, pre-registration and comparison — has been run, so "re-run
+until it passes" is visible.*

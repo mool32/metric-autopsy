@@ -23,7 +23,6 @@ from functools import partial
 from typing import Sequence
 
 from . import injected_signal, metrics
-from . import provenance as _prov
 from . import qc as _qc
 from .report import run_autopsy
 
@@ -85,7 +84,8 @@ def autopsy_report(
     metric's response to an injected coupling of (gene_a, gene_b). data2_path: GATE 6.
     resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
     prereg_path: pre-registration JSON (explicit arguments override it). json_path: write the
-    JSON report. log_path: run log (default $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl).
+    JSON report. log_path: run log; a pre-registered run is always logged (default
+    $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl; "off" disables).
     """
     import json
 
@@ -118,8 +118,7 @@ def autopsy_report(
         replicate_col=replicate_col,
         signal_test=signal,
         seed=seed,
-        log_path=log_path if log_path is not None else
-        (_prov.resolve_log_path(None, _prov.DEFAULT_CLI_LOG) or "off"),
+        log_path=log_path,  # None: the shared rule (logged iff pre-registered)
     )
     autopsy.metric_name = metric
     if json_path:

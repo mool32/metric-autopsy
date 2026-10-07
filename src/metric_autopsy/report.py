@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import functools
 import json
+import os
 from dataclasses import dataclass, field
 from typing import Sequence
 
@@ -37,7 +38,8 @@ from . import gates as _g
 from . import provenance as _prov
 
 DEFAULT_PREREG = dict(judgment_pending=True, alpha=0.05, power=0.8, min_replicates=3,
-                      signal_direction="increase", spikein_prefix="ERCC-")
+                      signal_direction="increase", spikein_prefix="ERCC-",
+                      positive_control_dose=2.0, positive_control_power=0.8)
 
 NOT_RUN = "NOT_RUN"
 
@@ -340,11 +342,14 @@ def run_autopsy(
     biological replicate (mouse, donor, plate): without it there is no effect verdict.
     `signal_test` is an ``injected_signal`` constructor result. `prereg` carries
     ``estimand`` ('composition' | 'content'), ``sesoi`` (construct scale), ``min_replicates``,
-    ``alpha``, ``judgment_pending`` and free-text commitments. Its hash is recorded.
+    ``alpha``, ``judgment_pending`` and free-text commitments. Its hash is recorded, and a run
+    with a pre-registration is appended to the run log (`log_path`, else
+    ``$METRIC_AUTOPSY_LOG``, else ``metric_autopsy_runs.jsonl``; ``"off"`` disables).
     With `stop_on_first_fail`, an invalid or degenerate metric stops the analysis before the
     effect is estimated.
     """
     name = _metric_name(metric)
+    preregistered = bool(prereg)
     prereg = normalize_prereg(prereg)
     groups = tuple(groups)
     within = list(within)
@@ -376,7 +381,9 @@ def run_autopsy(
     g5 = None
     if pair_metric is not None and pos_pair is not None and neg_pair is not None:
         g5 = _g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within, alpha=alpha,
-                               exclude=gene_pair or (), seed=seed)
+                               exclude=gene_pair or (), seed=seed,
+                               pos_dose=float(prereg["positive_control_dose"]),
+                               pos_power_min=float(prereg["positive_control_power"]))
         results.append(g5)
     g4 = None
     if signal_test is not None:
@@ -427,6 +434,8 @@ def run_autopsy(
     rp = _replication(g6)
 
     autopsy = Autopsy(name, results, prereg, mv, da, eff, rp, params)
+    if log_path is None and not preregistered and "METRIC_AUTOPSY_LOG" not in os.environ:
+        log_path = "off"  # no pre-registration: nothing to protect, nothing logged by default
     autopsy.provenance = _provenance(autopsy, data, data2, group_col, within, replicate_col, log_path)
     return autopsy
 
@@ -441,7 +450,7 @@ def _provenance(a: Autopsy, data, data2, group_col, within, replicate_col, log_p
                 data_sha256=data_sha, data_shape=list(getattr(data.X, "shape", ())),
                 data2_sha256=_prov.sha256_data(data2, cols) if data2 is not None else None,
                 prereg_sha256=prereg_sha, claim_id=claim, log=None)
-    path = _prov.resolve_log_path(log_path)
+    path = _prov.resolve_log_path(log_path, _prov.DEFAULT_LOG)
     if path is not None:
         previous = [r for r in _prov.read_log(path) if r.get("claim_id") == claim]
         prov["log"] = dict(path=str(path), attempt=len(previous) + 1,

@@ -53,9 +53,11 @@ estimated; design adequacy, which does not depend on the metric, is still report
 
 **Provenance.** Every report carries `data_sha256` (X, var_names and the obs columns used),
 `prereg_sha256`, a `claim_id` (data + pre-registration + comparison), versions and the seed
-(`Autopsy.to_json()`, strict JSON). With a run log (CLI/MCP default
-`metric_autopsy_runs.jsonl`, or `$METRIC_AUTOPSY_LOG`), the report states which attempt at
-this claim it is and what the earlier attempts said.
+(`Autopsy.to_json()`, strict JSON). Every run with a pre-registration — through the Python
+API, the CLI or MCP — is appended to the run log (`metric_autopsy_runs.jsonl`, or
+`$METRIC_AUTOPSY_LOG`; `log_path="off"` disables), and the report states which attempt at this
+claim it is and what the earlier attempts said. Runs without a pre-registration (they cannot
+reach an effect verdict) and the demo are not logged unless a path is given.
 
 ---
 
@@ -198,6 +200,10 @@ noise as an effect; probe p07). Graded rule, by replicates per group (or pairs):
   after the correction, is not, with less than half retained → **NOT SUPPORTED**. A raw
   difference that is not itself detected across replicates cannot be "explained"; the effect
   is INCONCLUSIVE and the reason states how much of it the correction left.
+- **reversed by the correction** — a detected raw difference becomes a detected difference of
+  the *opposite* sign at equal depth → INCONCLUSIVE: the technical difference is larger than
+  the effect, so the direction depends on how exactly the correction removed it. (In the dev
+  data this turned three false SUPPORTED verdicts on a pure depth artifact into INCONCLUSIVE.)
 
 **Power.** The SESOI is declared on the construct scale. GATE 0's attenuation under depth
 halving gives a reliability-model estimate λ of how much of a construct-scale difference
@@ -275,12 +281,17 @@ nulls instead of a fixed band, Bonferroni across strata:
   from zero means the metric reports association between unrelated genes (e.g. closure from
   library-size normalization, which made the "robust" `norm_pearson` fail its own negative
   control on null data in v0.1; probe p06);
-- the **positive control** pair is compared with 200 shuffles of the *same* pair, gene b
-  permuted within depth bins: coupling destroyed, technology kept. It must stand out. (An
-  expression-matched pair null is unsuitable here: other truly coupled genes contaminate it.)
+- the **positive control** pair is compared with 200 self-nulls of the *same* pair: gene b is
+  replaced, cell by cell, by the count of a random neighbouring cell at least as deep, thinned
+  binomially to the cell's own depth. Coupling is destroyed and the dependence on depth is kept
+  exactly. It must stand out. (A shuffle *within depth bins* is not enough: the depth variation
+  left inside each bin let a pair coupled only through cell size pass as a positive control in
+  5 of 5 null datasets. An expression-matched pair null is unsuitable too: other truly coupled
+  genes contaminate it.)
 
-Depth bins hold at least 10 cells (fewer bins in small strata): a one-cell bin cannot be
-shuffled, which in an earlier draft made the positive control's null equal the data.
+Depth bins (used by GATE 0's null and for non-count input) hold at least 10 cells: a one-cell
+bin cannot be shuffled, which in an earlier draft made the positive control's null equal the
+data.
 
 p values are rank-based Monte Carlo p values, `(1 + #at least as extreme) / (1 + n)`, valid
 at any n. When a control sits in the extreme tail of the first 200 draws and alpha/K is
@@ -289,19 +300,33 @@ tail is assumed: a normal tail is wrong for skewed nulls such as MI's. With few 
 of distinct unrelated pairs bounds the resolution; when alpha/K is below it, the negative
 control cannot fail, and the gate's message says so.
 
+**Was the positive control's silence informative?** In a stratum where the positive control
+does not beat its null, the engine measures the *design's* power to show a coupling: it
+destroys the pair's own coupling, injects a coupling of known dose (`injected_signal.coupling`,
+the same injection as GATE 4; pre-registered `positive_control_dose`, default 2.0, which induces
+a Spearman correlation of about 0.34 between genes with ~7 counts per cell — dose 1.0 gives
+0.13), and tests it with a reference detector (Spearman on raw counts) against the same
+depth-matched self-null at the same alpha/K, 40 times. The power belongs to the design, not to
+the metric: measured with the metric itself, a blind metric would always look underpowered and
+stay UNTESTED forever.
+
 **Read-out.**
-- **FAIL** — the negative control stands out in some stratum: the metric reports association
-  where there is none.
-- **WARN** — the negative control is fine everywhere, but the positive control does not beat
-  its null in some strata (or in any). That is absence of evidence — small strata have little
-  power — not evidence that the metric is invalid. If it fires nowhere, the metric's response
-  stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal shows it).
+- **FAIL** — the negative control stands out in some stratum (the metric reports association
+  where there is none), **or** the positive control is silent in a stratum with power ≥
+  `positive_control_power` (default 0.8): the metric is insensitive to the coupling, or the
+  control is not coupled there.
+- **WARN** — the negative control is fine everywhere, and the positive control is silent only
+  where the power was below the threshold: absence of evidence. If it fires nowhere, the
+  metric's response stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal
+  shows it).
 - **PASS** — positive control beats its null and negative control stays inside its null, in
   all strata.
 
-A positive control that fires in at least one stratum (Bonferroni across strata) is evidence of
-response for `metric_validity`. Passing `pos_min` / `neg_max` restores the legacy fixed-band
-rule, where a silent positive control FAILs. A control that "passes" only after averaging over
+In the dev data a metric that ignores gene b fails GATE 5 in 9–10 of 10 datasets from 100
+cells per stratum and is UNTESTED at ≤ 30 cells, where the power is ~0.25. A positive control
+that fires in at least one stratum (Bonferroni across strata) is evidence of response for
+`metric_validity`. Passing `pos_min` / `neg_max` selects the legacy fixed band (not the
+default), where a silent positive control FAILs without a power check. A control that "passes" only after averaging over
 a confound is worthless: our HK control looked stable pooled, but declined in males once
 stratified — confounded the same way as the test.
 

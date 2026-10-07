@@ -22,7 +22,10 @@ Steps (``estimate_effect``):
 4. **Decision.** DETECTED, or NO_DETECTABLE_EFFECT (TOST: the (1-2 alpha) interval lies
    inside ±SESOI), or INCONCLUSIVE. ``explained_by_depth`` marks a raw difference that is
    detected at the replicate level and disappears after the correction (corrected effect
-   not detected, less than half retained). A raw difference that is not itself detected
+   not detected, less than half retained). ``reversed_by_correction`` marks a detected raw
+   difference whose sign the correction reverses, also detected: INCONCLUSIVE, because the
+   direction then depends on how exactly a technical difference larger than the effect was
+   removed. A raw difference that is not itself detected
    cannot be "explained": the effect is then INCONCLUSIVE, and the reason reports how much
    of it the correction left. (Testing raw minus corrected per replicate instead would be
    anti-conservative: the untouched group's component is zero by construction.)
@@ -387,6 +390,11 @@ def estimate_effect(
     explained = bool(design["correction"] in THINNING and inf_raw["detected"] and not inf["detected"]
                      and np.isfinite(retained) and abs(retained) < 0.5)
     detail["explained_by_depth"] = explained
+    # a detected raw difference whose sign the correction reverses: the estimate then hinges on
+    # how exactly the correction removed a technical difference larger than the effect
+    reversed_ = bool(design["correction"] in THINNING and inf_raw["detected"] and inf["detected"]
+                     and np.isfinite(raw_est) and np.isfinite(est) and np.sign(est) != np.sign(raw_est))
+    detail["reversed_by_correction"] = reversed_
 
     ci = inf["ci"]
     p_txt = (f"p={inf['perm'].p:.3g} ({inf['perm'].method} permutation)" if tier == "permutation"
@@ -399,6 +407,13 @@ def estimate_effect(
             f"the raw difference {raw_est:+.4g} is explained by {what}: at equal {what} it is "
             f"{est_txt} ({retained:.0%} retained), {p_txt}",
             flags, detail), public_design(design)
+    if reversed_:
+        what = "depth" if design["correction"] == "depth_thinning" else "capture"
+        return Assessment(
+            "INCONCLUSIVE",
+            f"the correction reversed the sign: raw {raw_est:+.4g} (detected) -> {est_txt} at equal "
+            f"{what}, {p_txt}; the technical difference is larger than the effect, so its direction "
+            "depends on how exactly the correction removed it", flags, detail), public_design(design)
     if inf["detected"]:
         return Assessment("DETECTED", f"effect {est_txt}, {p_txt}", flags, detail), public_design(design)
     if equivalent:

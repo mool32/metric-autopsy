@@ -4,9 +4,11 @@ Every number that leaves the engine should be traceable to the exact data, the e
 pre-registration and the exact code. A run log (JSON lines) also records how many times a
 claim has been run, so that "re-run until it passes" is visible rather than silent.
 
-The log path is ``run_autopsy(log_path=...)``, else the ``METRIC_AUTOPSY_LOG`` environment
-variable (``off`` disables), else no log for library calls. The CLI and the MCP server
-default to ``metric_autopsy_runs.jsonl`` in the working directory.
+Every run with a pre-registration is logged, in every interface (Python API, CLI, MCP):
+agents work through the API, which is where "re-run until it passes" is most tempting. The
+path is ``run_autopsy(log_path=...)`` (``off`` disables), else ``$METRIC_AUTOPSY_LOG``, else
+``metric_autopsy_runs.jsonl`` in the working directory. Runs without a pre-registration (which
+cannot reach an effect verdict: no estimand) and the demo are not logged unless a path is given.
 """
 from __future__ import annotations
 
@@ -21,7 +23,8 @@ from typing import Iterable
 import numpy as np
 
 SCHEMA = "metric-autopsy/report/v1"
-DEFAULT_CLI_LOG = "metric_autopsy_runs.jsonl"
+DEFAULT_LOG = "metric_autopsy_runs.jsonl"
+DEFAULT_CLI_LOG = DEFAULT_LOG  # backward-compatible name
 
 
 def _canonical(obj) -> str:

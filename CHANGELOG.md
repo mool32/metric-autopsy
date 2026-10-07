@@ -41,7 +41,8 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   INSUFFICIENT_REPLICATION, no effect verdict. Nested and paired designs; partially crossed
   replicates are UNIDENTIFIABLE. NO DETECTABLE EFFECT needs a pre-registered SESOI (TOST) and a
   valid metric. A raw difference detected across replicates that vanishes after the correction
-  is NOT SUPPORTED — explained by depth (or capture).
+  is NOT SUPPORTED — explained by depth (or capture); one whose sign the correction reverses
+  (both detected) is INCONCLUSIVE.
 - **Power.** GATE 0's attenuation under depth halving gives λ, the fraction of a construct-scale
   difference that survives at the analysed depth; the design is UNDERPOWERED when the MDE
   exceeds λ × SESOI.
@@ -49,9 +50,15 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   expression-matched unrelated pairs, the positive control against within-depth-bin shuffles
   of itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
   control that does not beat its null is WARN (absence of evidence), and the metric stays
-  UNTESTED if it fires nowhere. Depth bins hold at least 10 cells. p values are rank-based
-  Monte Carlo p values with a two-stage extension to the resolution alpha/K needs (no normal
-  tail; null pairs drawn without replacement). `pos_min`/`neg_max` restore the legacy band.
+  UNTESTED if it fires nowhere — unless the stratum had the power to show it: a silent
+  positive control FAILs where the design establishes an injected coupling of the
+  pre-registered dose (`positive_control_dose`, default 2.0) with power ≥
+  `positive_control_power` (default 0.8), measured with a reference detector so that a blind
+  metric cannot shelter in UNTESTED. The positive control's self-null replaces gene b with a
+  depth-matched, thinned draw from neighbouring cells (a shuffle within depth bins let a pair
+  coupled only through depth pass). p values are rank-based Monte Carlo p values with a
+  two-stage extension to the resolution alpha/K needs (no normal tail; null pairs drawn without
+  replacement). `pos_min`/`neg_max` select the legacy band (not the default).
 - **GATE 6** re-estimates the effect on the second dataset with the same estimand, correction,
   replicate rule and strata: REPLICATED / NOT_REPLICATED (equivalent to zero, or opposite sign)
   / INCONCLUSIVE.
@@ -61,12 +68,14 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 ### Added
 - `gate4_signal_response` and `injected_signal.coupling` / `injected_signal.module`: response
   to a known construct change planted by binomial thinning.
+- `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
 - `stats` (t and permutation tests without scipy, TOST, MDE), `equalize` (thinning),
   `provenance` (hashes, versions, run log), `effect`.
 - **Provenance.** Every report carries `data_sha256`, `prereg_sha256`, a `claim_id`,
   versions and the seed; `Autopsy.to_json()` / `save_json()` (strict JSON). A JSON-lines run
-  log (`log_path=`, `$METRIC_AUTOPSY_LOG`; CLI/MCP default `metric_autopsy_runs.jsonl`, off for
-  the demo) counts attempts per claim.
+  log counts attempts per claim: every run with a pre-registration is logged in every interface,
+  the Python API included (`log_path=`, else `$METRIC_AUTOPSY_LOG`, else
+  `metric_autopsy_runs.jsonl`; `"off"` disables); runs without one and the demo are not.
 - CLI flags `--replicate-col`, `--estimand`, `--sesoi`, `--min-replicates`, `--prereg`,
   `--inject-signal coupling`, `--seed`, `--json`, `--log`, `--no-log`; the same parameters on the
   MCP `autopsy_report` tool.

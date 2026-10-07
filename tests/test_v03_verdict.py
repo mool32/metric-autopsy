@@ -18,7 +18,7 @@ from metric_autopsy import (
 )
 from metric_autopsy import cli, mcp_server
 from metric_autopsy import provenance as prov
-from metric_autopsy.core import as_dense
+from metric_autopsy.core import as_dense, gene_column
 from metric_autopsy.equalize import thin_to_match
 from metric_autopsy.qc import per_cell_qc
 from metric_autopsy.report import Autopsy
@@ -307,9 +307,9 @@ def test_gate5_skewed_metric_is_calibrated_with_many_strata():
     """mi_3bin's null is right-skewed. With 16 strata alpha/K = 0.003 is below the resolution of
     200 draws; a normal tail there failed 17-33% of null datasets, and re-drawing the same few
     unrelated pairs gave a false resolution (10-23%). Both are gone."""
-    fails = sum(gate5_controls(metrics.mi_3bin, null_control_strata(16, 30, s), *CTRL,
-                               within=["stratum"]).status == GateStatus.FAIL for s in range(10))
-    assert fails <= 1
+    results = [gate5_controls(metrics.mi_3bin, null_control_strata(16, 30, s), *CTRL,
+                              within=["stratum"], n_power=10) for s in range(10)]
+    assert sum(not row["neg_ok"] for r in results for row in r.detail["rows"]) <= 1
 
 
 def test_matched_null_pairs_are_distinct_and_unrelated():
@@ -335,16 +335,121 @@ def test_positive_control_null_is_not_degenerate_in_a_tiny_stratum():
     assert row["pos_null_center"] != pytest.approx(row["pos"])
 
 
-def test_silent_positive_control_leaves_the_metric_untested_not_invalid():
-    """A 'positive control' that is in fact two independent genes never fires. That is
-    absence of evidence of response, not evidence of invalidity."""
+def blind_pair_metric(data, *, gene_a, gene_b):
+    """A 'coupling' metric that ignores gene b entirely: blind to any coupling."""
+    return float(np.mean(gene_column(data, gene_a)))
+
+
+def test_blind_metric_fails_where_the_design_has_power_and_is_untested_where_not():
+    """Decided 2026-10-07: a silent positive control is UNTESTED only when the stratum lacked the
+    power to show it; with power >= 0.8 for an injected coupling of the pre-registered dose it is
+    evidence that the metric is insensitive (FAIL). Otherwise UNTESTED would shelter blind
+    metrics forever. The power is the design's (a reference detector), not the metric's."""
+    for s in range(3):
+        powered = gate5_controls(blind_pair_metric, null_control_strata(1, 600, s), *CTRL)
+        row = powered.detail["rows"][0]
+        assert powered.status == GateStatus.FAIL and row["pos_insensitive"] and row["pos_power"] >= 0.8
+        assert "insensitive" in powered.message
+    tiny = gate5_controls(blind_pair_metric, null_control_strata(1, 10, 0), *CTRL)
+    assert tiny.status == GateStatus.WARN and tiny.detail["pos_demonstrated"] is False
+    assert tiny.detail["rows"][0]["pos_power"] < 0.8
+
+
+def test_uncoupled_positive_control_in_a_powered_design_invalidates_the_metric_check():
+    """Two independent genes offered as the positive control: in a stratum that could detect the
+    dose, its silence FAILs GATE 5 (insensitive metric or a control that is not coupled), and
+    the metric is not certified."""
     d = add_mice(make_clean())
     res = gate5_controls(metrics.norm_pearson, d, ("Gene2", "Gene3"), ("Gene0", "Gene1"), within=["sex"])
-    assert res.status == GateStatus.WARN and res.detail["pos_demonstrated"] is False
+    assert res.status == GateStatus.FAIL and res.detail["pos_demonstrated"] is False
     a = _run(d, within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
              pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"))
-    assert a.metric_validity.status == "UNTESTED"
-    assert "did not beat its null" in a.metric_validity.reason
+    assert a.metric_validity.status == "FAIL" and not a.verdict.startswith("SUPPORTED")
+
+
+def test_positive_control_power_settings_come_from_the_preregistration():
+    a = _run(add_mice(make_clean()), within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
+             pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"),
+             prereg={**COMPOSITION, "positive_control_dose": 0.5, "positive_control_power": 0.95})
+    g5 = next(r for r in a.results if r.gate == 5)
+    assert g5.detail["pos_dose"] == 0.5 and g5.detail["pos_power_min"] == 0.95
+    assert g5.status == GateStatus.WARN  # a weak dose cannot be established here: untested, not invalid
+
+
+def depth_only_pair(n=600, n_genes=300, seed=0):
+    """Genes A and B independent given cell size; size varies widely (log-SD 0.8)."""
+    rng = np.random.default_rng(seed)
+    size = np.exp(rng.normal(0, 0.8, n))
+    mu = np.exp(rng.normal(0.5, 0.6, n_genes))
+    X = rng.poisson(size[:, None] * mu[None, :] * 3).astype(float)
+    obs = pd.DataFrame({"age": ["young"] * (n // 2) + ["old"] * (n - n // 2)})
+    return SimpleData(X, obs, ["A", "B"] + [f"g{i}" for i in range(n_genes - 2)])
+
+
+def test_pair_coupled_only_through_depth_is_not_a_positive_control():
+    """The positive control's self-null must keep the dependence on depth. A pair coupled only
+    through cell size correlates strongly on raw counts (a plain shuffle rejects it every time),
+    but must not beat the depth-matched null more often than alpha. A shuffle within depth bins
+    did not achieve this: residual within-bin depth variation let such a pair pass 5/5 times."""
+    fired = 0
+    for s in range(10):
+        d = depth_only_pair(seed=s)
+        res = gate5_controls(metrics.pearson, d, ("A", "B"), ("g0", "g1"))
+        fired += res.detail["rows"][0]["pos_fires"]
+        a, b = gene_column(d, "A"), gene_column(d, "B")
+        rng = np.random.default_rng(s)
+        plain = np.array([np.corrcoef(a, rng.permutation(b))[0, 1] for _ in range(200)])
+        assert np.corrcoef(a, b)[0, 1] > plain.max()  # coupled on raw counts, through depth
+    assert fired <= 2
+
+
+def capture_confound_mice(n_per_group=6, cells=150, eff_old=0.5, seed=0):
+    """Identical biology; old cells have half the capture (a pure depth artifact)."""
+    rng = np.random.default_rng(seed)
+    blocks = []
+    for age, eff in (("young", 1.0), ("old", eff_old)):
+        for m in range(n_per_group):
+            X, o = _block(rng, cells, coupling=1.5, efficiency=eff, age=age, sex="female")
+            o["mouse"] = f"{age}{m}"
+            blocks.append((X, o))
+    return _assemble(blocks)
+
+
+def mean_lognorm_gene5(data):
+    """A level metric: mean log1p(CP10k) of a low-expression gene (its zeros move with depth)."""
+    X = as_dense(data.X)
+    tot = X.sum(axis=1)
+    tot[tot == 0] = 1
+    return float(np.mean(np.log1p(X[:, list(data.var_names).index("Gene5")] / tot * 1e4)))
+
+
+def test_level_metric_driven_by_depth_is_caught_by_the_effect_field():
+    """A level metric (no gene-gene structure: GATE 0 can only report its level shift) on a pure
+    depth artifact, with a demonstrated response to signal (metric PASS) and resolved judgment.
+    The effect field must catch it after equalization: never SUPPORTED."""
+    verdicts, explained = [], 0
+    for s in range(10):
+        a = run_autopsy(mean_lognorm_gene5, capture_confound_mice(seed=s), group_col="age",
+                        groups=("young", "old"), replicate_col="mouse",
+                        signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
+                        prereg={**COMPOSITION, "judgment_pending": False})
+        assert a.metric_validity.status == "PASS" and "LEVEL_SHIFT" in a.metric_validity.flags
+        verdicts.append(a.verdict)
+        explained += bool(a.effect.detail["explained_by_depth"])
+    assert not any(v.startswith("SUPPORTED") for v in verdicts), verdicts
+    assert explained >= 8
+
+
+def test_effect_reversed_by_the_correction_is_inconclusive():
+    """Seed 3 of the capture confound: raw +0.64 (detected) becomes -0.33 (detected) at equal
+    depth. Before the rule this was a false SUPPORTED."""
+    a = run_autopsy(mean_lognorm_gene5, capture_confound_mice(seed=3), group_col="age",
+                    groups=("young", "old"), replicate_col="mouse",
+                    signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
+                    prereg={**COMPOSITION, "judgment_pending": False})
+    assert a.effect.detail["reversed_by_correction"] is True
+    assert a.effect.status == "INCONCLUSIVE" and a.verdict.startswith("INCONCLUSIVE")
+    assert "reversed the sign" in a.verdict
 
 
 def test_legacy_fixed_band_still_fails_a_silent_positive_control():
@@ -435,14 +540,32 @@ def test_run_log_counts_attempts_per_claim(tmp_path):
     assert len(prov.read_log(log)) == 3
 
 
-def test_library_calls_do_not_log_unless_asked(tmp_path, monkeypatch):
+def test_run_log_is_on_with_a_preregistration_in_the_python_api(tmp_path, monkeypatch):
+    """Agents work through the Python API, so a pre-registered run is logged there by default
+    (decided 2026-10-07). Without a pre-registration there is no verdict to hunt: no log."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("METRIC_AUTOPSY_LOG", raising=False)
-    a = _run(nested_mice(4), replicate_col="mouse")
-    assert a.provenance["log"] is None and not list(tmp_path.iterdir())
+    d = nested_mice(4)
+    bare = run_autopsy(NPR, d, group_col="age", groups=("young", "old"), replicate_col="mouse")
+    assert bare.provenance["log"] is None and not (tmp_path / prov.DEFAULT_LOG).exists()
+    first = _run(d, replicate_col="mouse")
+    second = _run(d, replicate_col="mouse")
+    assert (tmp_path / prov.DEFAULT_LOG).exists()
+    assert (first.provenance["log"]["attempt"], second.provenance["log"]["attempt"]) == (1, 2)
+    assert _run(d, replicate_col="mouse", log_path="off").provenance["log"] is None
     monkeypatch.setenv("METRIC_AUTOPSY_LOG", str(tmp_path / "env.jsonl"))
-    b = _run(nested_mice(4), replicate_col="mouse")
-    assert b.provenance["log"]["attempt"] == 1
+    via_env = _run(d, replicate_col="mouse")
+    assert via_env.provenance["log"]["path"].endswith("env.jsonl")
+
+
+def test_cli_demo_is_not_logged_unless_asked(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("METRIC_AUTOPSY_LOG", raising=False)
+    cli.main(["--demo", "--no-stop"])
+    assert not (tmp_path / prov.DEFAULT_LOG).exists()
+    cli.main(["--demo", "--no-stop", "--log", str(tmp_path / "demo.jsonl")])
+    assert len(prov.read_log(tmp_path / "demo.jsonl")) == 1
+    capsys.readouterr()
 
 
 # --------------------------------------------------------------------------- #

@@ -696,31 +696,146 @@ def _matched_null_draw(pair_metric, sub, pool: list):
     return draw
 
 
-def _shuffled_null(pair_metric, sub, pair, n_null, rng):
-    """Self null: the same two genes, with gene b permuted across cells *within depth bins*.
+DEPTH_SWAP_WINDOW = 20
 
-    Destroys the pair's biological coupling while keeping both genes' distributions and the
-    depth structure exactly. This is the reference for a positive control: does the metric
-    register the known coupling above its technical baseline? An expression-matched pair
-    null is unsuitable here, because other truly coupled genes contaminate it.
+
+def _depth_matched_draw(b: np.ndarray, depth: np.ndarray, rng, window: int = DEPTH_SWAP_WINDOW) -> np.ndarray:
+    """Gene b's counts with its link to every other gene destroyed and its depth dependence kept.
+
+    Each cell receives the count of a random cell among the next `window` cells at least as
+    deep, binomially thinned to its own depth (``Binomial(b_j, depth_i / depth_j)``). Thinning
+    a count to a lower depth is exact for sampling, so the draw follows b's depth dependence
+    cell by cell, not just per bin. A shuffle *within depth bins* leaves the depth variation
+    inside each bin, and a pair coupled only through depth then passed as a positive control
+    (p = 0.005 in 5 of 5 null datasets with a log-depth SD of 0.8). The deepest cell has no
+    deeper neighbour and keeps its own count (conservative: one cell keeps its coupling).
+    """
+    n = len(b)
+    depth = np.asarray(depth, float)
+    order = np.argsort(depth, kind="mergesort")
+    rank = np.empty(n, dtype=int)
+    rank[order] = np.arange(n)
+    width_up = np.minimum(window, n - 1 - rank)
+    u = rng.random(n)
+    partner = np.where(width_up > 0, rank + 1 + np.floor(u * np.maximum(width_up, 1)).astype(int), rank)
+    j = order[np.clip(partner, 0, n - 1)]
+    ratio = np.where(depth[j] > 0, depth / np.where(depth[j] > 0, depth[j], 1.0), 1.0)
+    return rng.binomial(np.round(np.asarray(b, float)[j]).astype(np.int64),
+                        np.clip(ratio, 0.0, 1.0)).astype(float)
+
+
+def _pair_depth(X: np.ndarray, ia: int, ib: int) -> np.ndarray:
+    """Per-cell depth for the pair's null: total counts of all *other* genes."""
+    return X.sum(axis=1) - X[:, ia] - X[:, ib]
+
+
+def _shuffled_null(pair_metric, sub, pair, n_null, rng):
+    """Self null: the same two genes, with gene b replaced by a depth-matched draw from
+    neighbouring cells (``_depth_matched_draw``).
+
+    Destroys the pair's biological coupling while keeping both genes' distributions and their
+    dependence on depth. This is the reference for a positive control: does the metric register
+    the known coupling above its technical baseline? An expression-matched pair null is
+    unsuitable here, because other truly coupled genes contaminate it. Non-count input falls
+    back to a shuffle within depth bins.
     """
     sd = _as_simple(sub)
-    bins = _depth_bins(sd)
-    jb = list(map(str, sd.var_names)).index(str(pair[1]))
+    names = list(map(str, sd.var_names))
+    ia, jb = names.index(str(pair[0])), names.index(str(pair[1]))
     original = sd.X[:, jb].copy()
-    groups = [np.where(bins == b)[0] for b in np.unique(bins)]
+    counts = _looks_like_counts(sd.X[:, [ia, jb]])
+    depth = _pair_depth(sd.X, ia, jb)
+    groups = None
+    if not counts:
+        bins = _depth_bins(sd)
+        groups = [np.where(bins == k)[0] for k in np.unique(bins)]
     vals = []
     for _ in range(n_null):
-        col = original.copy()
-        for idx in groups:
-            if len(idx) > 1:
-                col[idx] = col[rng.permutation(idx)]
-        sd.X[:, jb] = col
+        sd.X[:, jb] = (_depth_matched_draw(original, depth, rng) if counts
+                       else _shuffle_within(original, groups, rng))
         v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
         if v is not None:
             vals.append(v)
     sd.X[:, jb] = original
     return np.asarray(vals)
+
+
+POSITIVE_CONTROL_DOSE = 2.0  # induces a Spearman correlation of ~0.34 between genes with ~7 counts per cell
+POSITIVE_CONTROL_POWER = 0.8
+
+
+def _shuffle_within(col: np.ndarray, groups: list, rng) -> np.ndarray:
+    out = col.copy()
+    for idx in groups:
+        if len(idx) > 1:
+            out[idx] = col[rng.permutation(idx)]
+    return out
+
+
+def _ranks(x: np.ndarray) -> np.ndarray:
+    _, inv, counts = np.unique(x, return_inverse=True, return_counts=True)
+    order = np.argsort(x, kind="mergesort")
+    r = np.empty(len(x))
+    r[order] = np.arange(len(x))
+    return (np.bincount(inv, weights=r) / counts)[inv]
+
+
+def _ref_coupling(a: np.ndarray, b: np.ndarray, rest=None) -> float:
+    """Reference coupling detector for the power check: Spearman correlation of raw counts.
+
+    Rank-based and free of normalization artifacts (closure); the depth-matched self-null
+    carries the depth dependence. Among log-CP10k Pearson, raw Pearson, raw Spearman and
+    log1p Pearson it had the highest power for an injected coupling in the dev data, together
+    with log1p Pearson, and it is the least sensitive to outliers.
+    """
+    ra, rb = _ranks(np.asarray(a, float)), _ranks(np.asarray(b, float))
+    ra, rb = ra - ra.mean(), rb - rb.mean()
+    den = float(np.sqrt((ra * ra).sum() * (rb * rb).sum()))
+    return float((ra * rb).sum() / den) if den > 0 else 0.0
+
+
+def _positive_control_power(sub, pair, dose: float, alpha_s: float, rng, n_rep: int = 40,
+                            n_null: int = 200, threshold: float = POSITIVE_CONTROL_POWER) -> float:
+    """Power of this stratum to establish a coupling of known `dose` between the control genes.
+
+    The pair's own coupling is destroyed (gene b replaced by a depth-matched draw), a coupling
+    of `dose` is injected (``injected_signal.coupling``, the same injection as GATE 4), and a
+    *reference* detector is tested against the same depth-matched self-null at the same
+    alpha/K. The power belongs to the design, not to the metric under test: measured with the
+    metric itself, a blind metric would always look underpowered and stay UNTESTED forever.
+    Replicates stop as soon as ``power >= threshold`` is decided, so the returned estimate is
+    exact for that decision but not unbiased.
+    """
+    from .injected_signal import coupling
+
+    X = as_dense(sub.X)
+    names = [str(g) for g in sub.var_names]
+    ia, ib = names.index(str(pair[0])), names.index(str(pair[1]))
+    if not _looks_like_counts(X[:, [ia, ib]]):
+        return float("nan")  # the injection needs counts
+    a0, b0 = X[:, ia].astype(float), X[:, ib].astype(float)
+    rest = _pair_depth(X, ia, ib)
+    obs = pd.DataFrame(index=range(len(a0)))
+    inject = coupling("a", "b", strength=dose)
+    need = int(np.ceil(threshold * n_rep))
+    hits = done = 0
+    for _ in range(n_rep):
+        base = SimpleData(np.column_stack([a0, _depth_matched_draw(b0, rest, rng), rest]), obs,
+                          ["a", "b", "rest"])
+        inj = inject(base, rng).X
+        a, b = inj[:, 0], inj[:, 1]
+        x = _ref_coupling(a, b, rest)
+
+        def draw(k, a=a, b=b):
+            return np.array([_ref_coupling(a, _depth_matched_draw(b, rest, rng), rest)
+                             for _ in range(int(k))])
+        _, p, _ = extend_null(x, draw, n_null, alpha_s)
+        hits += bool(np.isfinite(p) and p < alpha_s)
+        done += 1
+        # stop once the remaining replicates cannot change "power >= threshold"
+        if hits >= need or hits + (n_rep - done) < need:
+            break
+    return hits / done
 
 
 def gate5_controls(
@@ -736,6 +851,9 @@ def gate5_controls(
     alpha: float = 0.05,
     exclude: Sequence[str] = (),
     seed: int = 0,
+    pos_dose: float = POSITIVE_CONTROL_DOSE,
+    pos_power_min: float = POSITIVE_CONTROL_POWER,
+    n_power: int = 40,
 ) -> GateResult:
     """Positive control must fire and negative control must stay null — in every stratum —
     judged against **empirical nulls** instead of a fixed band.
@@ -750,22 +868,29 @@ def gate5_controls(
       is reported: a centre far from zero means the metric reports association between
       unrelated genes. With few genes the pool of distinct pairs bounds the resolution; when
       alpha/K is below it, the negative control cannot fail and the message says so.
-    * Positive control: compared with `n_null` shuffles of the *same* pair, with gene b
-      permuted within depth bins. Coupling is destroyed, technology kept. It must stand
-      out (p < alpha/K).
+    * Positive control: compared with `n_null` self-nulls of the *same* pair, gene b replaced
+      by a depth-matched draw from neighbouring cells (thinned to each cell's depth). Coupling
+      is destroyed, the dependence on depth kept exactly. It must stand out (p < alpha/K).
 
     p values are rank-based Monte Carlo p values. When a control lies in the extreme tail of
     the first `n_null` draws and alpha/K is below their resolution, the null is extended to
     ``2K/alpha`` draws (at most 5000; ``stats.extend_null``) instead of assuming a normal tail.
 
-    Status: FAIL when the negative control stands out in any stratum — evidence that the
-    metric reports association where there is none. A positive control that does not stand
-    out is *absence* of evidence (small strata have little power), not evidence that the
-    metric is invalid: WARN when it fires in some strata but not all, and WARN with
-    ``detail["pos_demonstrated"] = False`` when it fires in none, so the metric's response
-    stays undemonstrated (UNTESTED) unless an injected signal shows it. PASS needs both
-    controls right in every stratum. Passing explicit `pos_min` / `neg_max` restores the
-    legacy fixed-band rule (where a silent positive control FAILs).
+    Status:
+
+    * FAIL when the negative control stands out in any stratum (the metric reports
+      association where there is none), or when the positive control does not stand out in a
+      stratum that had the power to show it: the stratum establishes an injected coupling of
+      dose `pos_dose` with power >= `pos_power_min` (``_positive_control_power``; defaults 2.0
+      and 0.8, pre-registered as ``positive_control_dose`` / ``positive_control_power``). The
+      metric is then insensitive to the coupling (or the control is not coupled there).
+    * WARN when the positive control is silent only in strata without that power: absence of
+      evidence. If it fires nowhere, ``detail["pos_demonstrated"]`` is False and the metric's
+      response stays undemonstrated (UNTESTED) unless an injected signal shows it.
+    * PASS when both controls behave in every stratum.
+
+    Passing explicit `pos_min` / `neg_max` selects the legacy fixed band (not the default),
+    where a silent positive control FAILs without a power check.
     """
     import itertools
 
@@ -823,6 +948,11 @@ def gate5_controls(
                 pos_fires=bool(np.isfinite(p_pos) and p_pos < alpha_s),
                 neg_ok=bool(not np.isfinite(p_neg) or p_neg >= alpha_s),
             )
+        if not legacy and not row["pos_fires"]:
+            power = _positive_control_power(sub, pos_pair, pos_dose, alpha_s, rng, n_rep=n_power,
+                                            n_null=n_null, threshold=pos_power_min)
+            row.update(pos_power=power, pos_power_dose=pos_dose, pos_power_reps=n_power,
+                       pos_insensitive=bool(np.isfinite(power) and power >= pos_power_min))
         row["ok"] = bool(row["pos_fires"] and row["neg_ok"])
         rows.append(row)
         if not row["ok"]:
@@ -831,7 +961,8 @@ def gate5_controls(
     n_pos = sum(r["pos_fires"] for r in rows)
     detail = dict(rows=rows, alpha=alpha, alpha_per_stratum=alpha_s, n_null=n_null,
                   legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
-                  pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos))
+                  pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
+                  pos_dose=pos_dose, pos_power_min=pos_power_min)
     centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
     centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
                    if centres and not legacy else "")
@@ -843,29 +974,39 @@ def gate5_controls(
                         "distinct unrelated pairs)")
     neg_bad = [r for r in rows if not r["neg_ok"]]
     pos_miss = [r for r in rows if not r["pos_fires"]]
-    if neg_bad or (legacy and pos_miss):
-        f0 = (neg_bad or pos_miss)[0]
+    insensitive = [r for r in pos_miss if r.get("pos_insensitive")]
+    if neg_bad or insensitive or (legacy and pos_miss):
+        f0 = (neg_bad or insensitive or pos_miss)[0]
         why = []
         if not f0["neg_ok"]:
             why.append(f"negative control {f0['neg']:.3g} outside the null"
                        + (f" (p={f0['p_neg']:.3g}, null centre {f0['null_center']:.3g})" if not legacy else ""))
+        if f0.get("pos_insensitive"):
+            why.append(f"positive control {f0['pos']:.3g} inside its null (p={f0['p_pos']:.3g}) although "
+                       f"the stratum establishes an injected coupling of dose {pos_dose:g} with power "
+                       f"{f0['pos_power']:.2f} >= {pos_power_min:g} — the metric is insensitive to the "
+                       "coupling (or the control is not coupled here)")
         if legacy and not f0["pos_fires"]:
             why.append(f"positive control {f0['pos']:.3g} below the band")
+        n_bad = (len(failures) if legacy else
+                 sum(1 for r in rows if not r["neg_ok"] or r.get("pos_insensitive")))
         return GateResult(
             5, "Controls", GateStatus.FAIL,
-            f"{len(failures)}/{len(rows)} strata fail controls (e.g. {f0['stratum']}: "
+            f"{n_bad}/{len(rows)} strata fail controls (e.g. {f0['stratum']}: "
             + "; ".join(why) + ")",
             detail,
         )
     if pos_miss:
-        where = ", ".join(f"{r['stratum']} (n={r['n_cells']}, p={r['p_pos']:.3g})" for r in pos_miss[:3])
+        where = ", ".join(f"{r['stratum']} (n={r['n_cells']}, p={r['p_pos']:.3g}, power "
+                          f"{r.get('pos_power', float('nan')):.2f})" for r in pos_miss[:3])
         lead = (f"positive control beats its null in {n_pos}/{len(rows)} strata; not demonstrated in "
                 if n_pos else "positive control not demonstrated in any stratum — ")
         return GateResult(
             5, "Controls", GateStatus.WARN,
             lead + where + ("…" if len(pos_miss) > 3 else "")
-            + f" (alpha {alpha_s:.3g} per stratum; absence of evidence, not a failure); negative "
-            f"control inside the null in all strata{centre_note}",
+            + f" (power < {pos_power_min:g} for an injected coupling of dose {pos_dose:g} at alpha "
+            f"{alpha_s:.3g}: absence of evidence, not a failure); negative control inside the null "
+            f"in all strata{centre_note}",
             detail,
         )
     return GateResult(
