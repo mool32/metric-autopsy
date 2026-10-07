@@ -22,7 +22,8 @@ from metric_autopsy.core import as_dense
 from metric_autopsy.equalize import thin_to_match
 from metric_autopsy.qc import per_cell_qc
 from metric_autopsy.report import Autopsy
-from metric_autopsy.stats import permutation_test_nested, permutation_test_paired, t_cdf
+from metric_autopsy.stats import (empirical_two_sided_p, extend_null, permutation_test_nested,
+                                  permutation_test_paired, t_cdf)
 
 from test_gates import MI, NPR, _assemble, _block, add_mice, make_clean, make_confounded
 
@@ -300,6 +301,32 @@ def test_gate5_does_not_fail_null_controls_in_small_strata(n_strata, cells):
     assert sum(r.status == GateStatus.FAIL for r in results) <= 3
     assert all(r.status != GateStatus.FAIL or any(not row["neg_ok"] for row in r.detail["rows"])
                for r in results)  # only the negative control can fail the gate
+
+
+def test_gate5_skewed_metric_is_calibrated_with_many_strata():
+    """mi_3bin's null is right-skewed. With 16 strata alpha/K = 0.003 is below the resolution of
+    200 draws; a normal tail there failed 17-33% of null datasets, and re-drawing the same few
+    unrelated pairs gave a false resolution (10-23%). Both are gone."""
+    fails = sum(gate5_controls(metrics.mi_3bin, null_control_strata(16, 30, s), *CTRL,
+                               within=["stratum"]).status == GateStatus.FAIL for s in range(10))
+    assert fails <= 1
+
+
+def test_matched_null_pairs_are_distinct_and_unrelated():
+    from metric_autopsy.gates import _matched_pool
+    d = make_clean()
+    pool = _matched_pool(d, ("Gene0", "Gene1"), {"Gene0", "Gene1", "Actb", "Gapdh"}, np.random.default_rng(0))
+    assert len(pool) == len(set(pool)) and all(a < b for a, b in pool)
+    assert not ({g for pr in pool for g in pr} & {"Gene0", "Gene1", "Actb", "Gapdh"})
+
+
+def test_monte_carlo_p_never_assumes_a_parametric_tail():
+    null = np.random.default_rng(0).exponential(size=100)  # skewed
+    p, method = empirical_two_sided_p(50.0, null, alpha=0.001)
+    assert p == pytest.approx(1 / 101) and "unattainable" in method
+    draws = iter([np.random.default_rng(1).exponential(size=200), np.random.default_rng(2).exponential(size=800)])
+    null2, p2, method2 = extend_null(50.0, lambda k: next(draws)[:k], 200, alpha=0.0025)
+    assert len(null2) == 800 and p2 == pytest.approx(1 / 801) and method2 == "empirical"
 
 
 def test_positive_control_null_is_not_degenerate_in_a_tiny_stratum():

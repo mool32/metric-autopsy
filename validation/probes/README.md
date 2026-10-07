@@ -18,7 +18,7 @@ every truth through the v0.3 API, as the tests do; its output is
 ```bash
 ./run_all.sh                 # ~15 min on this branch; prints to stdout
 WITH_MEMORY=1 ./run_all.sh   # also runs p12 (peaks at ~6 GB RAM)
-python verdicts_v03.py       # ~4 min; the v0.3 verdict on every truth
+python verdicts_v03.py       # ~8 min; the v0.3 verdict on every truth
 ```
 
 `test_probes.py` turns every probe into a regression test that asserts the
@@ -93,6 +93,14 @@ Found while checking the robustness of these results, and fixed:
   underpowered stratum counted as FAIL. Depth bins now hold ≥ 10 cells, and only the negative
   control can fail the gate; a silent positive control is WARN (absence of evidence).
   After: FAIL 0/20 at 1 × 10 and 1/20 at 4 × 30 cells.
+- **GATE 5 with a skewed metric and many strata.** At 16 strata alpha/K = 0.003 is below the
+  resolution of 200 null draws. The engine then assumed a normal tail, which is wrong for MI's
+  right-skewed null: `mi_3bin` failed 17–33% of null datasets (`run_all.sh` at commit
+  `96d4e53`, p05). Extending the null instead exposed a second flaw: the unrelated pairs were
+  drawn with replacement from a few hundred candidates in this 40-gene panel, so an extended
+  null repeated pairs and overstated its resolution. Pairs are now distinct, the null is
+  extended only as far as distinct pairs allow, and no parametric tail is assumed (after: the
+  16-strata rows of `verdicts_v0.3.0.dev0.log` and the p05 rows of `after_v0.3.0.dev0.log`).
 - **GATE 0 on level metrics.** The gene shuffle removes cell-size covariance and moves a mean
   log total by ~0.5%. GATE 0 took that as the metric's "signal" and judged depth shifts in its
   units (30–137×), failing a content metric even on null data. A null signal smaller than

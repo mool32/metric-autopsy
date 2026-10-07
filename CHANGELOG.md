@@ -49,8 +49,9 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   expression-matched unrelated pairs, the positive control against within-depth-bin shuffles
   of itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
   control that does not beat its null is WARN (absence of evidence), and the metric stays
-  UNTESTED if it fires nowhere. Depth bins hold at least 10 cells. `pos_min`/`neg_max` restore
-  the legacy band.
+  UNTESTED if it fires nowhere. Depth bins hold at least 10 cells. p values are rank-based
+  Monte Carlo p values with a two-stage extension to the resolution alpha/K needs (no normal
+  tail; null pairs drawn without replacement). `pos_min`/`neg_max` restore the legacy band.
 - **GATE 6** re-estimates the effect on the second dataset with the same estimand, correction,
   replicate rule and strata: REPLICATED / NOT_REPLICATED (equivalent to zero, or opposite sign)
   / INCONCLUSIVE.

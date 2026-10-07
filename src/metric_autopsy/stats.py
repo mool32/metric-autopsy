@@ -283,21 +283,46 @@ def permutation_test_paired(d, *, n_perm: int = 1000, rng=None, max_exact: int =
 # empirical nulls
 # --------------------------------------------------------------------------- #
 def empirical_two_sided_p(x: float, null: np.ndarray, alpha: float) -> tuple[float, str]:
-    """Two-sided p of ``x`` against an empirical null, centred on the null median.
+    """Two-sided Monte Carlo p of ``x`` against an empirical null, centred on the null median:
+    ``(1 + #at least as extreme) / (1 + n)``, which is valid at any ``n``.
 
-    Rank-based ``(1 + #more extreme) / (1 + n)`` when ``alpha`` is attainable with ``n``
-    draws; otherwise a normal approximation (mean, sd of the null), reported as such.
+    No parametric tail is substituted when ``alpha`` is below the resolution ``1 / (n + 1)``
+    (a normal tail is wrong for skewed nulls such as mutual information, and failed 17-33% of
+    null datasets at 16 strata); the method then reads ``empirical (alpha unattainable)`` and
+    the test cannot reject. Draw more null values (``extend_null``) to reach ``alpha``.
     """
     null = np.asarray(null, float)
     null = null[np.isfinite(null)]
     n = len(null)
     if n < 5 or not np.isfinite(x):
         return float("nan"), "none"
-    if 1.0 / (n + 1) < alpha:
-        c = float(np.median(null))
-        more = int(np.sum(np.abs(null - c) >= abs(x - c)))
-        return (1.0 + more) / (1.0 + n), "empirical"
-    sd = float(null.std(ddof=1))
-    if sd == 0:
-        return (0.0 if x != float(null.mean()) else 1.0), "normal"
-    return float(2.0 * norm_sf(abs(x - float(null.mean())) / sd)), "normal"
+    c = float(np.median(null))
+    more = int(np.sum(np.abs(null - c) >= abs(x - c)))
+    p = (1.0 + more) / (1.0 + n)
+    return p, ("empirical" if 1.0 / (n + 1) < alpha else "empirical (alpha unattainable)")
+
+
+def extend_null(x: float, draw, n_first: int, alpha: float, n_max: int = 5000,
+                stop_after: int = 10) -> tuple[np.ndarray, float, str]:
+    """Two-stage Monte Carlo test with enough resolution for ``alpha``.
+
+    ``draw(k)`` returns ``k`` null values. Stage 1 draws ``n_first``. If at least
+    ``stop_after`` of them are as extreme as ``x``, the p value is already far above any
+    alpha <= 0.05 and the test stops (it can only stop *without* rejecting, so the error rate
+    is not inflated). Otherwise stage 2 extends the null to ``ceil(2 / alpha)`` draws (at most
+    ``n_max``), so that the smallest attainable p is about alpha / 2.
+    Returns (null, p, method).
+    """
+    null = np.asarray(draw(n_first), float)
+    null = null[np.isfinite(null)]
+    p, method = empirical_two_sided_p(x, null, alpha)
+    if not np.isfinite(p):
+        return null, p, method
+    c = float(np.median(null))
+    more = int(np.sum(np.abs(null - c) >= abs(x - c)))
+    need = min(int(np.ceil(2.0 / alpha)), int(n_max))
+    if more < stop_after and len(null) < need:
+        extra = np.asarray(draw(need - len(null)), float)
+        null = np.concatenate([null, extra[np.isfinite(extra)]])
+        p, method = empirical_two_sided_p(x, null, alpha)
+    return null, p, method

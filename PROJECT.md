@@ -57,9 +57,10 @@ turns that checklist into runnable behavior.
   are a dev set with no confirmatory weight.
 - **Rework (v0.3.0.dev0, step 2):** four-field verdict, replicate-level inference with the graded
   rule, estimand-dependent correction, empirical-null controls, hashes and a run log. All 18
-  dev-set failures pass their frozen tests. Two further miscalibrations were found and fixed while
+  dev-set failures pass their frozen tests. Further miscalibrations were found and fixed while
   checking robustness (GATE 0 failed level metrics on an immaterial null signal; GATE 5 failed
-  small strata on a degenerate null and on silent positive controls). One dev-set expectation is
+  small strata on a degenerate null and on silent positive controls, and skewed metrics at many
+  strata on a normal tail and on repeated null pairs). One dev-set expectation is
   fragile: p11 reaches NOT SUPPORTED for 3 of 10 splits of its cells into mice (INCONCLUSIVE
   otherwise). Development results only.
 

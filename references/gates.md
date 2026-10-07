@@ -269,8 +269,9 @@ in **every** factorial combination, not just pooled?
 **How the engine tests it.** Per stratum (with at least `min_cells` cells), against empirical
 nulls instead of a fixed band, Bonferroni across strata:
 
-- the **negative control** pair is compared with 200 unrelated pairs drawn from the same
-  expression neighbourhoods; it must not stand out. The null centre is reported: a centre far
+- the **negative control** pair is compared with 200 distinct unrelated pairs (never
+  repeated) from the same expression neighbourhoods — the 20 genes closest in mean
+  expression, or 5% of all genes; it must not stand out. The null centre is reported: a centre far
   from zero means the metric reports association between unrelated genes (e.g. closure from
   library-size normalization, which made the "robust" `norm_pearson` fail its own negative
   control on null data in v0.1; probe p06);
@@ -280,6 +281,13 @@ nulls instead of a fixed band, Bonferroni across strata:
 
 Depth bins hold at least 10 cells (fewer bins in small strata): a one-cell bin cannot be
 shuffled, which in an earlier draft made the positive control's null equal the data.
+
+p values are rank-based Monte Carlo p values, `(1 + #at least as extreme) / (1 + n)`, valid
+at any n. When a control sits in the extreme tail of the first 200 draws and alpha/K is
+below their resolution, the null is extended to 2K/alpha draws (at most 5000). No parametric
+tail is assumed: a normal tail is wrong for skewed nulls such as MI's. With few genes the pool
+of distinct unrelated pairs bounds the resolution; when alpha/K is below it, the negative
+control cannot fail, and the gate's message says so.
 
 **Read-out.**
 - **FAIL** — the negative control stands out in some stratum: the metric reports association

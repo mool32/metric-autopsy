@@ -3,7 +3,7 @@
 The pNN_*.py scripts call the gates with the v0.1.1 signatures (no replicate unit, no
 estimand), so their verdict lines cannot show the v0.3 verdict on each truth. This script
 re-runs each truth exactly as `test_probes.py` does and prints the fields, plus the null
-rates and the robustness checks behind them. Deterministic; ~4 min.
+rates and the robustness checks behind them. Deterministic; ~8 min.
 
     python validation/probes/verdicts_v03.py > validation/probes/verdicts_v0.3.0.dev0.log
 
@@ -93,12 +93,14 @@ def main():
     flagged = sum(gate1_qc_parity(tp._null_qc_strata(64, 20, s), "age", ("young", "old"),
                                   within=["stratum"]).status != GateStatus.PASS for s in range(30))
     print(f"  GATE 1, 64 strata x 20 cells: {flagged}/30 null datasets not PASS (v0.1.1: 82%)")
-    for k, n, n_sets in ((4, 400, 20), (4, 30, 20), (1, 10, 20)):
-        res = [gate5_controls(metrics.norm_pearson, tp._null_controls(k, n, s), ("Actb", "Gapdh"),
+    for name, k, n, n_sets in (("norm_pearson", 4, 400, 20), ("norm_pearson", 4, 30, 20),
+                               ("norm_pearson", 1, 10, 20), ("norm_pearson", 16, 100, 20),
+                               ("mi_3bin", 16, 100, 20), ("mi_3bin", 16, 400, 20)):
+        res = [gate5_controls(getattr(metrics, name), tp._null_controls(k, n, s), ("Actb", "Gapdh"),
                               ("Gene0", "Gene1"), within=["stratum"]) for s in range(n_sets)]
         fails = sum(r.status == GateStatus.FAIL for r in res)
         warns = sum(r.status == GateStatus.WARN for r in res)
-        print(f"  GATE 5 norm_pearson, {k} x {n} cells: FAIL {fails}/{n_sets}, WARN {warns}/{n_sets} "
+        print(f"  GATE 5 {name}, {k} x {n} cells: FAIL {fails}/{n_sets}, WARN {warns}/{n_sets} "
               f"(positive control not demonstrated in some stratum)")
 
     print("=== p06 negative control under CP10k closure (demo data)")

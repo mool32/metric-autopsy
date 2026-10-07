@@ -23,7 +23,7 @@ import pandas as pd
 
 from .core import GateResult, GateStatus, SimpleData, as_dense, warn_if_dense_too_large
 from . import qc as _qc
-from .stats import empirical_two_sided_p
+from .stats import extend_null
 
 Metric = Callable[[object], float]
 # PairMetric: fn(data, *, gene_a, gene_b) -> float  (used by GATES 3 & 5)
@@ -651,35 +651,49 @@ def gate4_signal_response(
 # --------------------------------------------------------------------------- #
 # GATE 5 — controls against an empirical null, in every stratum
 # --------------------------------------------------------------------------- #
-def _matched_partners(means: np.ndarray, names: list, target: str, exclude: set,
-                      n: int, rng, k_min: int = 10, frac: float = 0.05) -> list:
-    """`n` genes drawn from the expression neighbourhood of `target` (excluding `exclude`)."""
+MATCHED_NEIGHBOURS_MIN = 20
+
+
+def _neighbourhood(means: np.ndarray, names: list, target: str, exclude: set,
+                   k_min: int = MATCHED_NEIGHBOURS_MIN, frac: float = 0.05) -> list:
+    """The genes closest to `target` in mean expression (at least `k_min`, or `frac` of all)."""
     pos = names.index(target)
     k = max(k_min, int(np.ceil(frac * len(names))))
     dist = np.abs(means - means[pos])
     order = [j for j in np.argsort(dist, kind="mergesort") if names[j] not in exclude and j != pos]
-    cand = order[:k]
-    if not cand:
-        return []
-    return [names[j] for j in rng.choice(cand, size=n, replace=True)]
+    return [names[j] for j in order[:k]]
 
 
-def _matched_null(pair_metric, sub, pair, exclude, n_null, rng):
-    """Expression-matched null: `pair_metric` on `n_null` unrelated gene pairs whose genes sit
-    in the expression neighbourhoods of the pair's genes (used for the negative control)."""
+def _matched_pool(sub, pair, exclude, rng) -> list:
+    """Distinct unrelated gene pairs from the expression neighbourhoods of `pair`, shuffled.
+
+    Pairs are unordered and never repeated: the null's resolution is limited by the number of
+    distinct pairs, and drawing the same pair twice would overstate it (a small panel offers
+    only a few hundred)."""
     X = as_dense(sub.X)
     names = [str(g) for g in sub.var_names]
     means = X.mean(axis=0)
-    pa = _matched_partners(means, names, pair[0], exclude, n_null, rng)
-    pb = _matched_partners(means, names, pair[1], exclude, n_null, rng)
-    vals = []
-    for a, b in zip(pa, pb):
-        if a == b:
-            continue
-        v = _safe_call(lambda: pair_metric(sub, gene_a=a, gene_b=b))
-        if v is not None:
-            vals.append(v)
-    return np.asarray(vals)
+    na = _neighbourhood(means, names, str(pair[0]), exclude)
+    nb = _neighbourhood(means, names, str(pair[1]), exclude)
+    pool = sorted({tuple(sorted((a, b))) for a in na for b in nb if a != b})
+    return [pool[i] for i in rng.permutation(len(pool))]
+
+
+def _matched_null_draw(pair_metric, sub, pool: list):
+    """`draw(k)` for ``stats.extend_null``: the metric on the next `k` pairs of the pool
+    (without replacement; fewer when the pool runs out)."""
+    state = dict(next=0)
+
+    def draw(k):
+        i = state["next"]
+        state["next"] = i + int(k)
+        vals = []
+        for a, b in pool[i:i + int(k)]:
+            v = _safe_call(lambda: pair_metric(sub, gene_a=a, gene_b=b))
+            if v is not None:
+                vals.append(v)
+        return np.asarray(vals)
+    return draw
 
 
 def _shuffled_null(pair_metric, sub, pair, n_null, rng):
@@ -730,13 +744,19 @@ def gate5_controls(
     noise. Library-size normalization alone makes unrelated genes correlate (closure), so the
     "robust" reference metric failed its own negative control on null data.
 
-    * Negative control: compared with `n_null` unrelated pairs from the same expression
-      neighbourhoods. It must not stand out (two-sided p >= alpha/K, K = assessable strata,
-      Bonferroni). The null centre is reported: a centre far from zero means the metric
-      reports association between unrelated genes.
+    * Negative control: compared with `n_null` distinct unrelated pairs from the same
+      expression neighbourhoods (the 20 genes closest in mean, or 5% of genes). It must not
+      stand out (two-sided p >= alpha/K, K = assessable strata, Bonferroni). The null centre
+      is reported: a centre far from zero means the metric reports association between
+      unrelated genes. With few genes the pool of distinct pairs bounds the resolution; when
+      alpha/K is below it, the negative control cannot fail and the message says so.
     * Positive control: compared with `n_null` shuffles of the *same* pair, with gene b
       permuted within depth bins. Coupling is destroyed, technology kept. It must stand
       out (p < alpha/K).
+
+    p values are rank-based Monte Carlo p values. When a control lies in the extreme tail of
+    the first `n_null` draws and alpha/K is below their resolution, the null is extended to
+    ``2K/alpha`` draws (at most 5000; ``stats.extend_null``) instead of assuming a normal tail.
 
     Status: FAIL when the negative control stands out in any stratum — evidence that the
     metric reports association where there is none. A positive control that does not stand
@@ -788,15 +808,17 @@ def gate5_controls(
             nm = neg_max if neg_max is not None else float("inf")
             row.update(pos_fires=abs(pos) > pm, neg_ok=abs(neg) <= nm, method="fixed band")
         else:
-            null_neg = _matched_null(pair_metric, sub, neg_pair, excl, n_null, rng)
-            null_pos = _shuffled_null(pair_metric, sub, pos_pair, n_null, rng)
-            p_neg, m_neg = empirical_two_sided_p(neg, null_neg, alpha_s)
-            p_pos, m_pos = empirical_two_sided_p(pos, null_pos, alpha_s)
+            pool = _matched_pool(sub, neg_pair, excl, rng)
+            null_neg, p_neg, m_neg = extend_null(neg, _matched_null_draw(pair_metric, sub, pool),
+                                                 n_null, alpha_s)
+            null_pos, p_pos, m_pos = extend_null(
+                pos, lambda k, sub=sub: _shuffled_null(pair_metric, sub, pos_pair, k, rng),
+                n_null, alpha_s)
             row.update(
                 null_center=float(np.median(null_neg)) if len(null_neg) else float("nan"),
                 null_sd=float(np.std(null_neg, ddof=1)) if len(null_neg) > 1 else float("nan"),
                 pos_null_center=float(np.median(null_pos)) if len(null_pos) else float("nan"),
-                n_null=(int(len(null_neg)), int(len(null_pos))),
+                n_null=(int(len(null_neg)), int(len(null_pos))), n_pairs_available=len(pool),
                 p_neg=p_neg, p_pos=p_pos, method=f"{m_neg}/{m_pos}",
                 pos_fires=bool(np.isfinite(p_pos) and p_pos < alpha_s),
                 neg_ok=bool(not np.isfinite(p_neg) or p_neg >= alpha_s),
@@ -813,6 +835,12 @@ def gate5_controls(
     centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
     centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
                    if centres and not legacy else "")
+    weak_neg = [r for r in rows if "unattainable" in str(r.get("method", "")).split("/")[0]]
+    detail["neg_test_unattainable"] = [r["stratum"] for r in weak_neg]
+    if weak_neg:
+        centre_note += (f"; in {len(weak_neg)}/{len(rows)} strata the negative-control test "
+                        f"cannot reach alpha {alpha_s:.3g} (only {min(r['n_null'][0] for r in weak_neg)} "
+                        "distinct unrelated pairs)")
     neg_bad = [r for r in rows if not r["neg_ok"]]
     pos_miss = [r for r in rows if not r["pos_fires"]]
     if neg_bad or (legacy and pos_miss):
