@@ -75,7 +75,8 @@ these probes, so none of this is confirmatory.
 | p03 | proliferation 35% → 5% | FAIL at GATE 2 (27–30% retained) | SUPPORTED (provisional), 101% retained after thinning |
 | p04 | Xist female > male, demo data | FAIL at GATE 1 | SUPPORTED (provisional), 99% retained, CORRECTED |
 | p05 | null strata, 64 × 20 cells | GATE 1 flags 82% | 0/30 |
-| p05 | null controls, 4 × 400 cells | GATE 5 fails 70% | FAIL 2/20 (only the negative control can fail) |
+| p05 | null controls, 4 × 400 cells | GATE 5 fails 70% | FAIL 1/20 (only the negative control can fail) |
+| p05 | null controls, 16 strata, `mi_3bin` | GATE 5 fails 100 / 100 / 83 / 0% at 10 / 30 / 100 / 400 cells | FAIL 0/20 at 100 and at 400 cells (`after_v0.3.0.dev0.log`: 3 / 0 / 0 / 2%) |
 | p06 | unrelated genes under CP10k closure | negative control fails | PASS; the null centre (+0.09 female, +0.29 male) is reported |
 | p07 | no age effect, 3 vs 3 mice | 22/40 "effect survives" | 0/20 detected (parametric only); no verdict without a replicate unit |
 | p07 | no age effect, 6 vs 6 mice | — | 1/30 detected (exact permutation over mice) |
@@ -92,7 +93,7 @@ Found while checking the robustness of these results, and fixed:
   so the positive control's null equalled the data, and a silent positive control in an
   underpowered stratum counted as FAIL. Depth bins now hold ≥ 10 cells, and only the negative
   control can fail the gate; a silent positive control is WARN (absence of evidence).
-  After: FAIL 0/20 at 1 × 10 and 1/20 at 4 × 30 cells.
+  After: FAIL 0/20 at 1 × 10 and 0/20 at 4 × 30 cells.
 - **GATE 5 with a skewed metric and many strata.** At 16 strata alpha/K = 0.003 is below the
   resolution of 200 null draws. The engine then assumed a normal tail, which is wrong for MI's
   right-skewed null: `mi_3bin` failed 17–33% of null datasets (`run_all.sh` at commit

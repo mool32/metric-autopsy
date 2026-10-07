@@ -1,0 +1,62 @@
+# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 0b99f33, python 3.13.16, numpy 2.5.3
+=== p01 useless, constant and offset metrics
+  random-number metric (make_clean)
+    metric_validity=UNTESTED | design_adequacy=UNIDENTIFIABLE | effect=NOT_ESTIMABLE | replication=NOT_RUN
+    VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  constant metric
+    metric_validity=DEGENERATE | design_adequacy=UNIDENTIFIABLE | effect=NOT_RUN | replication=NOT_RUN
+    VERDICT: DEGENERATE METRIC — the metric returned the same value (0) on every resample, null and perturbation — it carries no information about the data
+  GATE 0 on mi_3bin + 0.5: PASS (same as mi_3bin: True; identical shifts: True)
+  GATE 0 on mi_3bin + 10: PASS (same as mi_3bin: True; identical shifts: True)
+=== p02 sorted G2M vs G1 (2.4x RNA in G2M), plates as replicates
+  mean G2M score + injected module
+    metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED] | effect=DETECTED | replication=NOT_RUN
+    VERDICT: SUPPORTED (provisional until replicated)
+=== p03 proliferation 35% -> 5% cycling, 3 mice per sex x age
+  mean G2M score, retained 101% after depth thinning
+    metric_validity=PASS[LEVEL_SHIFT] | design_adequacy=ADEQUATE[POWER_NOT_ASSESSED] | effect=DETECTED | replication=NOT_RUN
+    VERDICT: SUPPORTED (provisional until replicated)
+=== p04 Xist female > male on the demo data (male-old capture 30%)
+  mean log Xist, retained 99%
+    metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED] | effect=DETECTED | replication=NOT_RUN
+    VERDICT: SUPPORTED (provisional until replicated)
+=== p05 null strata: flag / FAIL rates
+  GATE 1, 64 strata x 20 cells: 0/30 null datasets not PASS (v0.1.1: 82%)
+  GATE 5 norm_pearson, 4 x 400 cells: FAIL 1/20, WARN 0/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 4 x 30 cells: FAIL 0/20, WARN 13/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 1 x 10 cells: FAIL 0/20, WARN 9/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 16 x 100 cells: FAIL 1/20, WARN 3/20 (positive control not demonstrated in some stratum)
+  GATE 5 mi_3bin, 16 x 100 cells: FAIL 0/20, WARN 17/20 (positive control not demonstrated in some stratum)
+  GATE 5 mi_3bin, 16 x 400 cells: FAIL 0/20, WARN 0/20 (positive control not demonstrated in some stratum)
+=== p06 negative control under CP10k closure (demo data)
+  GATE 5: PASS; null centre of unrelated pairs: female +0.091, male +0.292
+=== p07 pseudoreplication: no age effect, mouse-level variation
+  3 vs 3 mice: DETECTED 0/20 (parametric only); without replicate_col: ['INSUFFICIENT_REPLICATION'] (v0.1.1: 22/40 'effect survives')
+  6 vs 6 mice: DETECTED 1/30 (exact permutation over mice)
+=== p08 attenuation of a truly coupled pair
+  GATE 0: PASS; extra_dropout attenuation −50%, depth_downsample attenuation −20%, library_scale none
+=== p09 equivalence needs a SESOI; stability across tool seeds
+  coupling 1.5 vs 1.2, 3 datasets: ['DETECTED', 'DETECTED', 'DETECTED']
+  null data: no SESOI -> INCONCLUSIVE; SESOI 0.15 -> NO_DETECTABLE_EFFECT
+  one dataset, tool seeds 0-3: ['DETECTED']
+=== p10 mi_3bin sensitivity is reported as attenuation (demo data, default perturbations)
+  GATE 0: PASS; attenuation extra_dropout −61%, depth_downsample −24%
+=== p11 pure depth artifact (demo male stratum, 4 vs 4 mice): robustness over mouse splits
+  split 0: raw +0.0830 (p=0.029) -> at equal depth +0.0127 (+15% retained): NOT SUPPORTED
+  split 1: raw +0.0704 (p=0.086) -> at equal depth +0.0120 (+17% retained): INCONCLUSIVE
+  split 2: raw +0.0821 (p=0.086) -> at equal depth +0.0078 (+10% retained): INCONCLUSIVE
+  split 3: raw +0.0929 (p=0.029) -> at equal depth +0.0075 (+8% retained): NOT SUPPORTED
+  split 4: raw +0.0687 (p=0.057) -> at equal depth +0.0094 (+14% retained): INCONCLUSIVE
+  split 5: raw +0.0758 (p=0.086) -> at equal depth -0.0044 (-6% retained): INCONCLUSIVE
+  split 6: raw +0.0904 (p=0.057) -> at equal depth +0.0131 (+15% retained): INCONCLUSIVE
+  split 7: raw +0.0597 (p=0.114) -> at equal depth -0.0046 (-8% retained): INCONCLUSIVE
+  split 8: raw +0.0977 (p=0.029) -> at equal depth +0.0120 (+12% retained): NOT SUPPORTED
+  split 9: raw +0.0768 (p=0.114) -> at equal depth +0.0011 (+1% retained): INCONCLUSIVE
+  NOT SUPPORTED in 3/10 splits, otherwise INCONCLUSIVE; never SUPPORTED: True
+=== demo (CLI defaults): mi_3bin and norm_pearson
+  mi_3bin
+    metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED,ATTENUATION] | effect=INCONCLUSIVE | replication=NOT_RUN
+    VERDICT: INCONCLUSIVE — effect -0.003202 [-0.0855, +0.07909], p=0.926 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested; the raw difference +0.02553 (not detected at the replicate level, p=0.518) shrinks to -13% at equal depth
+  norm_pearson
+    metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED,ATTENUATION] | effect=INCONCLUSIVE | replication=NOT_RUN
+    VERDICT: INCONCLUSIVE — effect -0.03789 [-0.1318, +0.05598], p=0.403 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested
