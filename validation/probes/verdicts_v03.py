@@ -194,7 +194,7 @@ def main():
 # --------------------------------------------------------------------------- #
 # errors and decisiveness, case by case
 # --------------------------------------------------------------------------- #
-P11B_MICE = None  # set from p11b_design.log (journal D1a)
+P11B_MICE = 20  # p11b_design.log (journal D1a/D1b)
 
 
 @dataclass

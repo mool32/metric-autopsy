@@ -1,0 +1,12 @@
+# p11b design — metric-autopsy 0.3.0.dev0, git d96d747, python 3.13.16, numpy 2.5.3
+# rule: smallest N with lower 95% CP bound of P(explained by depth) >= 0.8 over 40 datasets; 100 cells per mouse
+N= 4 vs  4: explained by depth 5/40 = 12% [4%, 27%]; raw detected 5/40 = 12% [4%, 27%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N= 6 vs  6: explained by depth 25/40 = 62% [46%, 77%]; raw detected 26/40 = 65% [48%, 79%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N= 8 vs  8: explained by depth 25/40 = 62% [46%, 77%]; raw detected 26/40 = 65% [48%, 79%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=10 vs 10: explained by depth 26/40 = 65% [48%, 79%]; raw detected 27/40 = 68% [51%, 81%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=12 vs 12: explained by depth 30/40 = 75% [59%, 87%]; raw detected 33/40 = 82% [67%, 93%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=16 vs 16: explained by depth 34/40 = 85% [70%, 94%]; raw detected 38/40 = 95% [83%, 99%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=20 vs 20: explained by depth 40/40 = 100% [91%, 100%]; raw detected 40/40 = 100% [91%, 100%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=24 vs 24: explained by depth 38/40 = 95% [83%, 99%]; raw detected 40/40 = 100% [91%, 100%]; SUPPORTED 0/40 = 0% [0%, 9%]
+N=32 vs 32: explained by depth 37/40 = 92% [80%, 98%]; raw detected 40/40 = 100% [91%, 100%]; SUPPORTED 0/40 = 0% [0%, 9%]
+CHOSEN N = 20

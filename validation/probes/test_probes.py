@@ -429,18 +429,42 @@ def test_p10_mi3bin_detection_sensitivity_seen_at_5pct_dropout(monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
-# p11 — a pure depth artifact must be explained by depth
+# p11 — a pure depth artifact: the expected verdict depends on what the design can establish
 # --------------------------------------------------------------------------- #
+# Split by design on 2026-10-07 (JOURNAL.md, D1/D1a/D1b). The frozen v0.1.1-era expectation
+# ("4 vs 4 mice: NOT SUPPORTED, explained by depth") passed only for the split it was written
+# with: with 4 vs 4 the raw difference is detectable only at complete separation of the mice.
+P11B_MICE = 20  # p11b_design.log: smallest N with lower 95% CP bound of P(explained) >= 0.80
+
+
 # fixed in v0.3.0.dev0 — v0.1.1 failure (p11): no depth equalization
-def test_p11_depth_artifact_is_explained_by_depth():
-    """Truth: biology is identical; old-male capture is 30%, so mi_3bin is lower in old
-    males. At equal depth the difference must vanish, and the claim is NOT SUPPORTED."""
-    a = run_autopsy(MI, _demo_male_with_mice(), group_col="age", groups=("young", "old"),
-                    replicate_col="mouse", prereg=COMPOSITION)
-    assert a.effect.detail["explained_by_depth"] is True
-    assert a.effect.status != "DETECTED"
-    assert abs(a.effect.detail["retained"]) <= 0.25
-    assert a.verdict.startswith("NOT SUPPORTED")
+def test_p11a_depth_artifact_with_4_vs_4_mice_is_never_supported():
+    """Truth: biology is identical; old-male capture is 30%. With 4 vs 4 mice it is not
+    establishable whether the raw difference exists across mice, so NOT SUPPORTED (explained by
+    depth) and INCONCLUSIVE are both correct; SUPPORTED is the only error. Every split of the
+    cells into mice must obey that."""
+    d = demo_data()
+    males = d[np.asarray(d.obs["sex"]) == "male"]
+    for split in range(10):
+        a = run_autopsy(MI, _with_mice(males, 4, ["age"], seed=split), group_col="age",
+                        groups=("young", "old"), replicate_col="mouse", prereg=COMPOSITION)
+        assert a.verdict.startswith(("NOT SUPPORTED", "INCONCLUSIVE")), a.verdict
+        assert a.effect.status != "DETECTED"
+
+
+def test_p11b_depth_artifact_with_enough_mice_is_explained_by_depth():
+    """Truth as p11a, with 20 mice per group (100 cells each): the raw difference is
+    establishable across mice, so the verdict must be NOT SUPPORTED — explained by depth, with
+    at most a quarter of the raw difference left at equal depth."""
+    for seed in range(3):
+        d = demo_data(seed=seed, n=100 * P11B_MICE, mice_per_block=P11B_MICE)
+        males = d[np.asarray(d.obs["sex"]) == "male"]
+        a = run_autopsy(MI, males, group_col="age", groups=("young", "old"),
+                        replicate_col="mouse", prereg=COMPOSITION)
+        assert a.effect.detail["explained_by_depth"] is True
+        assert a.effect.status != "DETECTED"
+        assert abs(a.effect.detail["retained"]) <= 0.25
+        assert a.verdict.startswith("NOT SUPPORTED")
 
 
 # --------------------------------------------------------------------------- #

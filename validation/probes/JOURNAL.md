@@ -52,6 +52,10 @@ per stratum leaves 5% (+0.0049) and 1 of 20. The engine now thins by the common 
 (`equalize.thin_to_match`), and the design is rerun with the same rule and candidates
 (`p11b_design.log`). This was a bug in the correction, not a change to the probe.
 
+**Result (2026-10-07, `p11b_design.log`, engine `d96d747`).** N = 20: explained by depth
+40/40 (95% CP 91-100%), raw difference detected 40/40, SUPPORTED 0/40. SUPPORTED was 0/40 at
+every N from 4 to 32. p11b uses 20 mice per group; p11a keeps 4.
+
 ## D2 — the p01 rescaling and p10 lock-in tests (2026-10-07; decided by the project owner)
 
 Revised when the verdict scheme changed, so that they test the v0.3 meaning instead of
