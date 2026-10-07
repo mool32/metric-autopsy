@@ -16,7 +16,7 @@ every truth through the v0.3 API, as the tests do; its output is
 `verdicts_v0.3.0.dev0.log`.
 
 ```bash
-./run_all.sh                 # ~15 min on this branch; prints to stdout
+./run_all.sh                 # ~45 min on this branch (GATE 5's power rule in p05); prints to stdout
 WITH_MEMORY=1 ./run_all.sh   # also runs p12 (peaks at ~6 GB RAM)
 python verdicts_v03.py       # ~12 min; the v0.3 verdict on every truth, then errors and decisiveness
 ```
@@ -77,7 +77,7 @@ these probes, so none of this is confirmatory.
 | p05 | null strata, 64 × 20 cells | GATE 1 flags 82% | 0/30 |
 | p05 | null controls, 4 × 400 cells | GATE 5 fails 70% | FAIL 1/20 |
 | p05 | null controls, 4 × 30 and 1 × 10 cells | — | FAIL 0/20 and 0/20; WARN (positive control silent, power < 0.8) 4/20 and 5/20 |
-| p05 | null controls, 16 strata, `mi_3bin` | GATE 5 fails 100 / 100 / 83 / 0% at 10 / 30 / 100 / 400 cells | FAIL 1/20 at 100 and 0/20 at 400 cells |
+| p05 | null controls, 16 strata, `mi_3bin` | GATE 5 fails 100 / 100 / 83 / 0% at 10 / 30 / 100 / 400 cells | FAIL 1/20 at 100 and 0/20 at 400 cells (`after_v0.3.0.dev0.log`, 60 datasets per size: 3 / 0 / 2 / 2%) |
 | p06 | unrelated genes under CP10k closure | negative control fails | PASS; the null centre (+0.09 female, +0.29 male) is reported |
 | p07 | no age effect, 3 vs 3 mice | 22/40 "effect survives" | 0/20 detected (parametric only); no verdict without a replicate unit |
 | p07 | no age effect, 6 vs 6 mice | — | 1/30 detected (exact permutation over mice) |
