@@ -1,4 +1,4 @@
-# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 0b99f33, python 3.13.16, numpy 2.5.3
+# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 677d1b8, python 3.13.16, numpy 2.5.3
 === p01 useless, constant and offset metrics
   random-number metric (make_clean)
     metric_validity=UNTESTED | design_adequacy=UNIDENTIFIABLE | effect=NOT_ESTIMABLE | replication=NOT_RUN
@@ -13,7 +13,7 @@
     metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED] | effect=DETECTED | replication=NOT_RUN
     VERDICT: SUPPORTED (provisional until replicated)
 === p03 proliferation 35% -> 5% cycling, 3 mice per sex x age
-  mean G2M score, retained 101% after depth thinning
+  mean G2M score, retained 100% after depth thinning
     metric_validity=PASS[LEVEL_SHIFT] | design_adequacy=ADEQUATE[POWER_NOT_ASSESSED] | effect=DETECTED | replication=NOT_RUN
     VERDICT: SUPPORTED (provisional until replicated)
 === p04 Xist female > male on the demo data (male-old capture 30%)
@@ -23,10 +23,10 @@
 === p05 null strata: flag / FAIL rates
   GATE 1, 64 strata x 20 cells: 0/30 null datasets not PASS (v0.1.1: 82%)
   GATE 5 norm_pearson, 4 x 400 cells: FAIL 1/20, WARN 0/20 (positive control not demonstrated in some stratum)
-  GATE 5 norm_pearson, 4 x 30 cells: FAIL 0/20, WARN 13/20 (positive control not demonstrated in some stratum)
-  GATE 5 norm_pearson, 1 x 10 cells: FAIL 0/20, WARN 9/20 (positive control not demonstrated in some stratum)
-  GATE 5 norm_pearson, 16 x 100 cells: FAIL 1/20, WARN 3/20 (positive control not demonstrated in some stratum)
-  GATE 5 mi_3bin, 16 x 100 cells: FAIL 0/20, WARN 17/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 4 x 30 cells: FAIL 0/20, WARN 4/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 1 x 10 cells: FAIL 0/20, WARN 5/20 (positive control not demonstrated in some stratum)
+  GATE 5 norm_pearson, 16 x 100 cells: FAIL 1/20, WARN 0/20 (positive control not demonstrated in some stratum)
+  GATE 5 mi_3bin, 16 x 100 cells: FAIL 1/20, WARN 1/20 (positive control not demonstrated in some stratum)
   GATE 5 mi_3bin, 16 x 400 cells: FAIL 0/20, WARN 0/20 (positive control not demonstrated in some stratum)
 === p06 negative control under CP10k closure (demo data)
   GATE 5: PASS; null centre of unrelated pairs: female +0.091, male +0.292
@@ -42,21 +42,68 @@
 === p10 mi_3bin sensitivity is reported as attenuation (demo data, default perturbations)
   GATE 0: PASS; attenuation extra_dropout −61%, depth_downsample −24%
 === p11 pure depth artifact (demo male stratum, 4 vs 4 mice): robustness over mouse splits
-  split 0: raw +0.0830 (p=0.029) -> at equal depth +0.0127 (+15% retained): NOT SUPPORTED
-  split 1: raw +0.0704 (p=0.086) -> at equal depth +0.0120 (+17% retained): INCONCLUSIVE
-  split 2: raw +0.0821 (p=0.086) -> at equal depth +0.0078 (+10% retained): INCONCLUSIVE
-  split 3: raw +0.0929 (p=0.029) -> at equal depth +0.0075 (+8% retained): NOT SUPPORTED
-  split 4: raw +0.0687 (p=0.057) -> at equal depth +0.0094 (+14% retained): INCONCLUSIVE
-  split 5: raw +0.0758 (p=0.086) -> at equal depth -0.0044 (-6% retained): INCONCLUSIVE
-  split 6: raw +0.0904 (p=0.057) -> at equal depth +0.0131 (+15% retained): INCONCLUSIVE
-  split 7: raw +0.0597 (p=0.114) -> at equal depth -0.0046 (-8% retained): INCONCLUSIVE
-  split 8: raw +0.0977 (p=0.029) -> at equal depth +0.0120 (+12% retained): NOT SUPPORTED
-  split 9: raw +0.0768 (p=0.114) -> at equal depth +0.0011 (+1% retained): INCONCLUSIVE
+  split 0: raw +0.0830 (p=0.029) -> at equal depth +0.0084 (+10% retained): NOT SUPPORTED
+  split 1: raw +0.0704 (p=0.086) -> at equal depth +0.0060 (+9% retained): INCONCLUSIVE
+  split 2: raw +0.0821 (p=0.086) -> at equal depth +0.0031 (+4% retained): INCONCLUSIVE
+  split 3: raw +0.0929 (p=0.029) -> at equal depth +0.0037 (+4% retained): NOT SUPPORTED
+  split 4: raw +0.0687 (p=0.057) -> at equal depth +0.0021 (+3% retained): INCONCLUSIVE
+  split 5: raw +0.0758 (p=0.086) -> at equal depth -0.0087 (-11% retained): INCONCLUSIVE
+  split 6: raw +0.0904 (p=0.057) -> at equal depth +0.0065 (+7% retained): INCONCLUSIVE
+  split 7: raw +0.0597 (p=0.114) -> at equal depth -0.0068 (-11% retained): INCONCLUSIVE
+  split 8: raw +0.0977 (p=0.029) -> at equal depth +0.0075 (+8% retained): NOT SUPPORTED
+  split 9: raw +0.0768 (p=0.114) -> at equal depth -0.0012 (-2% retained): INCONCLUSIVE
   NOT SUPPORTED in 3/10 splits, otherwise INCONCLUSIVE; never SUPPORTED: True
 === demo (CLI defaults): mi_3bin and norm_pearson
   mi_3bin
     metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED,ATTENUATION] | effect=INCONCLUSIVE | replication=NOT_RUN
-    VERDICT: INCONCLUSIVE — effect -0.003202 [-0.0855, +0.07909], p=0.926 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested; the raw difference +0.02553 (not detected at the replicate level, p=0.518) shrinks to -13% at equal depth
+    VERDICT: INCONCLUSIVE — effect -0.007312 [-0.08865, +0.07403], p=0.836 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested; the raw difference +0.02553 (not detected at the replicate level, p=0.518) shrinks to -29% at equal depth
   norm_pearson
     metric_validity=PASS | design_adequacy=CORRECTED[POWER_NOT_ASSESSED,ATTENUATION] | effect=INCONCLUSIVE | replication=NOT_RUN
-    VERDICT: INCONCLUSIVE — effect -0.03789 [-0.1318, +0.05598], p=0.403 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested
+    VERDICT: INCONCLUSIVE — effect -0.04575 [-0.1391, +0.04763], p=0.309 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested
+=== errors and decisiveness (95% Clopper-Pearson; independent datasets per case)
+  p01 random-number metric, full design (mice, estimand, injected signal)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['NOT SUPPORTED']
+  p01 constant metric
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['DEGENERATE METRIC']
+  blind pair metric (ignores gene b), its own controls, 800 cells per stratum
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['NOT SUPPORTED']
+  p02 sorted G2M vs G1, 4 plates each (real, huge)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['SUPPORTED (provisional until replicated)']
+  p03 proliferation 35% -> 5%, 3 mice per sex x age (real)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['SUPPORTED (provisional until replicated)']
+  p04 Xist female > male, demo data, 4 mice per block (real, QC gap)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['SUPPORTED (provisional until replicated)']
+  p07 no effect, 3 vs 3 mice with mouse variance (not establishable)
+    outside the allowed set: 0/20 = 0% [0%, 17%]; false SUPPORTED: 0/20 = 0% [0%, 17%]; not establishable under this design (decisiveness not scored)
+    verdicts seen: ['INCONCLUSIVE']
+  p09 no effect, 6 vs 6, SESOI 0.15, injected signal (establishable absence)
+    outside the allowed set: 1/20 = 5% [0%, 25%]; false SUPPORTED: 1/20 = 5% [0%, 25%]; definite: 20/20 = 100% [83%, 100%]; correct definite: 19/20 = 95% [75%, 100%]
+    verdicts seen: ['NO DETECTABLE EFFECT', 'SUPPORTED (provisional until replicated)']
+  p09 moderate effect (coupling 1.5 vs 1.2), 6 vs 6, injected signal (real)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['SUPPORTED (provisional until replicated)']
+  p11a pure depth artifact, 4 vs 4 mice (not establishable)
+    outside the allowed set: 0/20 = 0% [0%, 17%]; false SUPPORTED: 0/20 = 0% [0%, 17%]; not establishable under this design (decisiveness not scored)
+    verdicts seen: ['INCONCLUSIVE', 'NOT SUPPORTED']
+  p11b pure depth artifact, 20 vs 20 mice (establishable)
+    outside the allowed set: 0/20 = 0% [0%, 17%]; false SUPPORTED: 0/20 = 0% [0%, 17%]; definite: 20/20 = 100% [83%, 100%]; correct definite: 20/20 = 100% [83%, 100%]
+    verdicts seen: ['NOT SUPPORTED']
+  level metric on a pure depth artifact, 6 vs 6, injected module
+    outside the allowed set: 0/20 = 0% [0%, 17%]; false SUPPORTED: 0/20 = 0% [0%, 17%]; definite: 18/20 = 90% [68%, 99%]; correct definite: 18/20 = 90% [68%, 99%]
+    verdicts seen: ['INCONCLUSIVE', 'NOT SUPPORTED']
+  content estimand, capture halved, ERCC present (artifact)
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 9/10 = 90% [55%, 100%]; correct definite: 9/10 = 90% [55%, 100%]
+    verdicts seen: ['INCONCLUSIVE', 'NOT SUPPORTED']
+  content estimand, capture halved, no spike-ins
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
+    verdicts seen: ['UNIDENTIFIABLE']
+  POOLED (dev set):
+    outside the allowed set: 1/190 = 1% [0%, 3%]
+    false SUPPORTED on nulls, artifacts and useless metrics: 1/150 = 1% [0%, 4%]
+    decisiveness on establishable cases: 147/150 = 98% [94%, 100%]; correct definite: 146/150 = 97% [93%, 99%]

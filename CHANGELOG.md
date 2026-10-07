@@ -49,8 +49,8 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   difference that survives at the analysed depth; the design is UNDERPOWERED when the MDE
   exceeds λ × SESOI.
 - **GATE 5** judges controls against empirical nulls: the negative control against
-  expression-matched unrelated pairs, the positive control against within-depth-bin shuffles
-  of itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
+  expression-matched unrelated pairs, the positive control against depth-matched draws of
+  itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
   control that does not beat its null is WARN (absence of evidence), and the metric stays
   UNTESTED if it fires nowhere — unless the stratum had the power to show it: a silent
   positive control FAILs where the design establishes an injected coupling of the
@@ -72,6 +72,11 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   to a known construct change planted by binomial thinning, measured against a matched sham
   (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
+- `validation/probes/verdicts_v03.py` scores errors (verdict outside the set allowed by the
+  design, false SUPPORTED) and decisiveness (definite verdicts where the design makes the truth
+  establishable) per case, with Clopper-Pearson intervals. `validation/probes/JOURNAL.md`
+  records every change to a frozen dev-set expectation (D1: p11 split into p11a / p11b by
+  design; D2: lock-in tests).
 - `stats` (t and permutation tests without scipy, TOST, MDE), `equalize` (thinning),
   `provenance` (hashes, versions, run log), `effect`.
 - **Provenance.** Every report carries `data_sha256`, `prereg_sha256`, a `claim_id`,
@@ -96,10 +101,14 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 - `per_cell_qc` and the gates warn before densifying a large sparse matrix (probe p12).
 
 ### Known limitations
-- Development results only: the fixes were developed against the probes that found the bugs.
+- Development results only: the fixes were developed against the probes that found the bugs
+  (errors and decisiveness on the dev cases: `validation/probes/verdicts_v0.3.0.dev0.log`).
 - With 4 replicates per group the exact permutation reaches p < 0.05 only at complete
-  separation, so "explained by depth" is often INCONCLUSIVE instead (probe p11 reaches its
-  expected NOT SUPPORTED for 3 of 10 splits of its cells into mice).
+  separation, so a pure depth artifact is often INCONCLUSIVE rather than "explained by depth"
+  (p11a: NOT SUPPORTED in 3 of 10 splits of its cells into mice); with 20 mice per group it is
+  explained in 40 of 40 datasets (p11b; dev-set journal D1).
+- GATE 0's null still shuffles genes within depth bins, the null that let a depth-only pair pass
+  as a positive control before GATE 5 moved to depth-matched draws (open before the freeze).
 
 ## [0.1.1] — 2026-07-07
 

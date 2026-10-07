@@ -81,7 +81,7 @@ The gates, and what each catches (full detail in `references/gates.md`):
 | **2 Estimand-dependent correction** | the raw difference is depth or capture: thinning to equal depth (composition) or spike-in capture (content), then replicate-level inference | effect |
 | **3 Raw visibility** | effect isn't visible in the raw scatter; a "shape change" is really dropout | export + judgment |
 | **4 Measures what you think** | the metric does not respond to an injected signal (auto); more than one non-biological scenario explains the result (judgment — you ask) | metric validity |
-| **5 Controls** | negative control fires (FAIL), positive control does not beat its null (WARN), per stratum, against empirical nulls | metric validity |
+| **5 Controls** | negative control fires, or positive control silent where the design had the power to show it (FAIL); positive control silent where it had not (WARN); per stratum, against empirical nulls | metric validity |
 | **6 Replication** | the corrected, replicate-level effect does not hold on independent data | replication |
 | **7 Effect size** | statistically real but biologically negligible — declare it as the SESOI | judgment — you ask |
 

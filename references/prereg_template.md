@@ -106,7 +106,7 @@ Tests that separate them from the biological explanation: ___
 
 ## GATE 5 — Controls (against empirical nulls)
 ```
-Positive control pair ___   beats its self-shuffled null in every stratum? ___
+Positive control pair ___   beats its depth-matched self-null in every stratum? ___
 Negative control pair ___   inside its expression-matched pair null?       ___
 Checked per factorial combination?       ___
 ```

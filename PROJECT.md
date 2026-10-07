@@ -60,9 +60,16 @@ turns that checklist into runnable behavior.
   dev-set failures pass their frozen tests. Further miscalibrations were found and fixed while
   checking robustness (GATE 0 failed level metrics on an immaterial null signal; GATE 5 failed
   small strata on a degenerate null and on silent positive controls, and skewed metrics at many
-  strata on a normal tail and on repeated null pairs). One dev-set expectation is
-  fragile: p11 reaches NOT SUPPORTED for 3 of 10 splits of its cells into mice (INCONCLUSIVE
-  otherwise). Development results only.
+  strata on a normal tail and on repeated null pairs). One dev-set expectation asked for more
+  than its design can establish: p11 (4 vs 4 mice) is split by design into p11a (NOT SUPPORTED
+  or INCONCLUSIVE) and p11b (20 vs 20 mice, explained by depth in 40/40), journal D1.
+- **Step 2b (2026-10-07):** a silent positive control FAILs where the design had the power to
+  show it; the positive control's null is depth-matched; the depth correction thins by one
+  common ratio; a sign reversed by the correction is INCONCLUSIVE; GATE 4 is contrasted with a
+  sham; every pre-registered run is logged. On the dev cases (`verdicts_v0.3.0.dev0.log`):
+  false SUPPORTED 1/150 (the effect test's alpha), outside the allowed set 1/190, decisiveness
+  147/150. Development results only. Pre-registration of step 3: `validation/prereg/v1.md`
+  (draft, awaiting approval).
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
