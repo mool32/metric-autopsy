@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metric-autopsy"
-version = "0.1.1"
+version = "0.3.0.dev0"
 description = "Red-team a computed metric on single-cell data before you believe it: gates that catch QC, technical, and mathematical artifacts masquerading as biology."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -31,7 +31,8 @@ scipy = ["scipy>=1.7"]          # exact KS test (a fallback is bundled)
 anndata = ["anndata>=0.8"]      # read real .h5ad datasets
 plots = ["matplotlib>=3.4"]     # GATE 3 scatter PNGs
 mcp = ["mcp>=1.2", "anndata>=0.8"]  # MCP server: use the gates from any agent
-dev = ["pytest>=7", "scipy>=1.7", "anndata>=0.8", "matplotlib>=3.4"]
+dev = ["pytest>=7", "scipy>=1.7", "anndata>=0.8", "matplotlib>=3.4",
+       "mcp>=1.2; python_version >= '3.10'"]
 
 [project.scripts]
 metric-autopsy = "metric_autopsy.cli:main"

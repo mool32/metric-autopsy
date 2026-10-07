@@ -78,9 +78,13 @@ def test_gate1_stop_when_no_common_stratum():
 
 
 # --- #6 / #7 : GATE 0 noise-vs-bias and near-zero baseline -----------------
-def test_gate0_passes_invariant_constant_metric():
+def test_gate0_constant_metric_is_degenerate_not_confounded():
+    # #7 locked in that a zero baseline is not a false 'confounded' FAIL. v0.3 keeps that and
+    # names the real problem: a metric that never varies is DEGENERATE (v0.1.1 said PASS).
     d = make_clean()
-    assert gate0_independence(lambda data: 0.0, d).status == GateStatus.PASS
+    res = gate0_independence(lambda data: 0.0, d)
+    assert res.status == GateStatus.DEGENERATE
+    assert not any(r.get("confounded") for r in res.detail["responses"].values())
 
 
 def test_gate0_scale_invariant_response_not_flagged():
@@ -184,36 +188,56 @@ def _verdict_line(markdown: str) -> str:
     return next(line for line in lines[i + 1:] if line.strip()).strip("* ")
 
 
+VERDICT_PREFIXES = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE",
+                    "UNIDENTIFIABLE", "DEGENERATE METRIC")
+
+
 # --- #12 : spectral_entropy (no-genes metric) does not crash via CLI -------
 def test_spectral_entropy_cli_no_crash(capsys):
-    cli.main(["--demo", "--metric", "spectral_entropy", "--no-stop"])
+    cli.main(["--demo", "--metric", "spectral_entropy", "--no-stop", "--no-log"])
     out = capsys.readouterr().out
     assert "spectral_entropy" in out
-    assert _verdict_line(out).split(" ")[0] in ("PASS", "FAIL", "INCONCLUSIVE")
+    assert _verdict_line(out).startswith(VERDICT_PREFIXES)
 
 
 # --- #20 : --resolve-judgment is plumbed through, and CLI == API -----------
 def test_cli_verdict_matches_api_with_resolve_judgment(capsys):
     """The CLI must print exactly the verdict the Python API gives for the same inputs."""
-    cli.main(["--demo", "--metric", "norm_pearson", "--resolve-judgment", "--no-stop"])
+    cli.main(["--demo", "--metric", "norm_pearson", "--resolve-judgment", "--no-stop", "--no-log"])
     cli_verdict = _verdict_line(capsys.readouterr().out)
     api = run_autopsy(
         partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1"), cli.demo_data(),
         group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"),
         pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
-        prereg={"judgment_pending": False}, stop_on_first_fail=False,
+        replicate_col="mouse", prereg={"estimand": "composition", "judgment_pending": False},
+        stop_on_first_fail=False, log_path="off",
     )
     assert cli_verdict == api.verdict
 
 
-def test_resolving_judgment_turns_inconclusive_into_provisional_pass():
-    """With every auto gate clear, pending judgment gates hold the verdict at INCONCLUSIVE;
-    resolving them (and only that) makes the provisional PASS reachable."""
-    m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
+def test_resolving_judgment_is_necessary_but_not_sufficient_for_supported():
+    """v0.3 meaning: resolving the judgment gates is the last step to SUPPORTED, never a way
+    around the other three requirements. With a valid metric (positive control), a declared
+    estimand and a replicate-level DETECTED effect, pending judgment holds the verdict at
+    INCONCLUSIVE and resolving it — only that — gives the provisional SUPPORTED. Without
+    replicates or without a control, resolving it changes nothing. (v0.1.1: resolving the
+    judgment turned INCONCLUSIVE into PASS on a cell-level comparison with no control.)"""
+    from test_gates import CONTROLS, NPR, add_mice
+    d = add_mice(make_clean())
     kw = dict(group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"))
-    d = make_clean()
-    assert run_autopsy(m, d, **kw).verdict.startswith("INCONCLUSIVE")
-    assert run_autopsy(m, d, prereg={"judgment_pending": False}, **kw).verdict.startswith("PASS")
+    full = dict(kw, replicate_col="mouse", **CONTROLS)
+    pending = run_autopsy(NPR, d, prereg={"estimand": "composition"}, **full)
+    resolved = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False}, **full)
+    assert pending.verdict.startswith("INCONCLUSIVE") and "judgment" in pending.verdict
+    assert resolved.verdict == "SUPPORTED (provisional until replicated)"
+    assert ({k: v.status for k, v in pending.fields().items()}
+            == {k: v.status for k, v in resolved.fields().items()})  # only the judgment differs
+    no_reps = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False},
+                          **dict(kw, **CONTROLS))
+    no_control = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False},
+                             **dict(kw, replicate_col="mouse"))
+    for a in (no_reps, no_control):
+        assert a.verdict.startswith("INCONCLUSIVE"), a.verdict
 
 
 if __name__ == "__main__":

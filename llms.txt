@@ -5,10 +5,13 @@
 > Claude Code skill, a pip package, and an MCP server. The design principle: invert the
 > default from "compute → believe" to "state your commitments → red-team → then believe."
 
-You pass a black-box `metric(data) -> float` and your factorial `obs` column names; eight
-gates probe the data and the metric's response to controlled perturbations, stopping at the
-first blocking failure. Six gates run automatically; GATE 4 and GATE 7 are judgment gates a
-human/agent resolves.
+You pass a black-box `metric(data) -> float`, your factorial `obs` column names, the
+biological replicate column and a pre-registration (estimand, SESOI). Eight gates probe the
+data and the metric's response to controlled perturbations; one rule (`report.decide`) turns
+four fields — metric validity, design adequacy, effect (replicate-level, at equal depth or
+spike-in capture), replication — into the verdict. GATE 4 (alternative explanations) and
+GATE 7 (effect size) are judgment a human/agent resolves. Status: v0.x under validation
+(see validation/probes/README.md); do not present a verdict as validated.
 
 ## Start here
 - [README.md](README.md): pitch, quickstart, the reference `--demo` failure, install.
@@ -25,13 +28,22 @@ human/agent resolves.
 
 ## Code (source of truth)
 - [src/metric_autopsy/gates.py](src/metric_autopsy/gates.py): the gates as functions.
-- [src/metric_autopsy/qc.py](src/metric_autopsy/qc.py): factorial QC parity + n_genes matching.
+- [src/metric_autopsy/qc.py](src/metric_autopsy/qc.py): factorial QC parity (+ legacy n_genes matching).
+- [src/metric_autopsy/effect.py](src/metric_autopsy/effect.py): estimand-dependent correction, replicate-level effect, graded rule, power.
+- [src/metric_autopsy/equalize.py](src/metric_autopsy/equalize.py): thinning to equal depth / spike-in capture.
+- [src/metric_autopsy/stats.py](src/metric_autopsy/stats.py): t and permutation tests, TOST, MDE.
+- [src/metric_autopsy/injected_signal.py](src/metric_autopsy/injected_signal.py): injected construct changes for GATE 4.
+- [src/metric_autopsy/provenance.py](src/metric_autopsy/provenance.py): hashes, versions, run log.
 - [src/metric_autopsy/metrics.py](src/metric_autopsy/metrics.py): reference metrics.
-- [src/metric_autopsy/report.py](src/metric_autopsy/report.py): run_autopsy orchestration + verdict.
+- [src/metric_autopsy/report.py](src/metric_autopsy/report.py): run_autopsy orchestration, the four fields, `decide`.
+
+## Validation
+- [validation/probes/README.md](validation/probes/README.md): exploratory dev set — what the probes found, before/after.
+- [validation/flagship_audit/README.md](validation/flagship_audit/README.md): audit of the preprint's real-data run.
 
 ## Worked example
-- [examples/mi_coupling_tms/README.md](examples/mi_coupling_tms/README.md): the MI-coupling autopsy (0/N).
-- [examples/mi_coupling_tms/notebook.ipynb](examples/mi_coupling_tms/notebook.ipynb): executed notebook with figures.
+- [examples/mi_coupling_tms/README.md](examples/mi_coupling_tms/README.md): the MI-coupling autopsy (v0.1.1; under audit).
+- [examples/mi_coupling_tms/notebook.ipynb](examples/mi_coupling_tms/notebook.ipynb): executed notebook with figures (v0.1.1 outputs).
 
 ## Paper
-- [paper/manuscript.md](paper/manuscript.md): the preprint methods/tool write-up.
+- [paper/manuscript.md](paper/manuscript.md): the preprint methods/tool write-up (describes v0.1.1; to be rewritten after the confirmatory freeze).

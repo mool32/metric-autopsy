@@ -27,10 +27,14 @@ turns that checklist into runnable behavior.
   The checks cost ~1 hour. A tool that enforces them, with dual distribution, is high-leverage.
 - **What would falsify it:** If the gates cannot separate a known-confounded metric (mi_3bin on a
   planted QC confound) from a known-clean one on the same data — i.e. if they neither catch the
-  artifact nor pass the real signal. *(Status 2026-10-07: **not met at the verdict level.** On
-  the planted demo data `norm_pearson` also gets FAIL (GATE 1 is data-level; GATE 5's negative
-  control trips on a closure artifact). The separation holds only for GATE 0 in isolation.
-  See `validation/probes/`.)*
+  artifact nor pass the real signal. *(Status 2026-10-07, v0.1.1: **not met at the verdict
+  level.** On the planted demo data `norm_pearson` also gets FAIL (GATE 1 is data-level; GATE
+  5's negative control trips on a closure artifact). The separation holds only for GATE 0 in
+  isolation. See `validation/probes/`. v0.3.0.dev0 (this branch, dev set only): on the demo,
+  where biology is identical, neither metric is supported (both INCONCLUSIVE after depth
+  thinning; `norm_pearson` metric validity PASS); on QC-matched data with a real coupling
+  difference `norm_pearson` reaches the provisional SUPPORTED only with replicates, an estimand,
+  a positive control and resolved judgment. Whether this holds outside the dev set is step 3.)*
 
 ## Design decisions (locked for v1)
 - **Metric as a plugin.** Gates take `metric(data) -> float` as a black box; they know scRNA-seq
@@ -51,6 +55,13 @@ turns that checklist into runnable behavior.
   female>male, a sorted cell-cycle control, a proliferation shift) dies at GATE 1/2. Cell-level
   permutations certify mouse-to-mouse noise. Each failure is a strict-xfail test. These probes
   are a dev set with no confirmatory weight.
+- **Rework (v0.3.0.dev0, step 2):** four-field verdict, replicate-level inference with the graded
+  rule, estimand-dependent correction, empirical-null controls, hashes and a run log. All 18
+  dev-set failures pass their frozen tests. Two further miscalibrations were found and fixed while
+  checking robustness (GATE 0 failed level metrics on an immaterial null signal; GATE 5 failed
+  small strata on a degenerate null and on silent positive controls). One dev-set expectation is
+  fragile: p11 reaches NOT SUPPORTED for 3 of 10 splits of its cells into mice (INCONCLUSIVE
+  otherwise). Development results only.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

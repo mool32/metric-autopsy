@@ -16,7 +16,7 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 
 > **Status: v0.x under validation. Do not treat a verdict as validated.** Probing the
 > validator itself (exploratory dev set: [`validation/probes/`](validation/probes/))
-> shows that v0.1.1 errs in both directions:
+> showed that the released v0.1.1 errs in both directions:
 > - **It passes useless metrics.** A metric that returns random numbers receives
 >   "PASS — cleared 3 auto gates".
 > - **GATE 1 blocks real biology.** "Xist is higher in female cells" dies at GATE 1
@@ -26,24 +26,25 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 > - **Permutations run over cells, not biological replicates.** With 3 vs 3 mice and no
 >   age effect, 22 of 40 null runs report a QC-robust "effect".
 >
-> Further known failures are listed in
-> [`validation/probes/README.md`](validation/probes/README.md), each with a strict-xfail
-> regression test: GATE 0 depends on the metric's location, the stratum checks are
-> uncalibrated, and attenuation is scored as confounding. The engine is being reworked:
-> a four-field verdict, replicate-level inference, and depth correction that depends on
-> the estimand. Confirmatory validation will run on a frozen tag and a new, blind panel.
+> This branch (v0.3.0.dev0) reworks the engine: a four-field verdict (metric validity,
+> design adequacy, effect, replication), replicate-level inference with a graded rule,
+> depth or spike-in correction chosen by the pre-registered estimand, empirical nulls for
+> the controls, and data/pre-registration hashes in every report. All 18 failures found by
+> the probes now pass their regression tests — but the fixes were developed against those
+> probes, so that is a development result with no confirmatory weight. Confirmatory
+> validation will run on a frozen tag and a new, blind panel.
 
 ---
 
 ## Brief Summary
 
-A metric that changes between conditions is not a finding — it might be dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics wearing a lab coat. `metric-autopsy` runs a single-cell metric through eight **gates**, each built to catch one way a number fakes biology, and stops at the first one it fails. It ships as both a Claude Code skill and a pip package.
+A metric that changes between conditions is not a finding — it might be dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics wearing a lab coat. `metric-autopsy` runs a single-cell metric through eight **gates**, each built to catch one way a number fakes biology, and decides one verdict from four fields: is the metric valid, is the design adequate, is there an effect at equal depth across biological replicates, does it replicate. It ships as a Claude Code skill, a pip package and an MCP server.
 
 1. **Born from three real failures.** Entropy anticorrelation (ρ = −0.54, vanished on 10x, *reversed* at low depth), cardiac β (a conduction-geometry constant read as biology), and SMAD→ECM mutual information (a detection-rate confound hiding in a sex×age interaction, male-old cells detecting 2.4× fewer genes) — each survived weeks before a 45-second QC check killed it.
-2. **Eight gates, six automatic, five that can kill.** Mathematical independence, factorial QC parity, n_genes matching, stratified controls, and cross-dataset replication run from the data *and can block* a metric; raw-data visibility (GATE 3) also runs automatically but only exports the scatter and a dropout hint for you to read — it never blocks on its own; GATE 4 (does it measure what you think) and GATE 7 (is the effect size meaningful) are judgment gates the skill *elicits*, not scripts.
-3. **The reference metric dies 0/N.** On the worked example, `mi_3bin` fails GATE 0 (expectation shifts 61%, z = 44.8, under simulated dropout) and GATE 1 (male stratum 1.94× QC ratio, 0.00 n_genes overlap); a library-normalized reference passes — the confound is *avoidable*, not universal.
-4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq QC.
-5. **Necessary, not sufficient (honest limit).** Passing all eight gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. The engine ships with a regression test suite and was itself put through an adversarial code + docs audit (24 + 19 findings fixed) plus a follow-up integrity pass; a later self-probe of the validator found the failures listed under Status above.
+2. **Eight gates, four fields, one rule.** GATE 0 separates nuisance *bias* (FAIL) from *attenuation* (reported, and used as a power check); GATE 4 checks that the metric responds to an injected signal; GATE 5 judges positive and negative controls against empirical nulls — together they decide **metric validity**, which needs a demonstrated response, not just invariance. GATE 1 (stratified QC parity) is a diagnostic; GATE 2 removes the technical difference the way the pre-registered **estimand** allows (thinning to equal depth for composition, to equal spike-in capture for content, otherwise UNIDENTIFIABLE) and infers the **effect** across biological replicates (exact permutation at ≥ 4 per group, *parametric only* at 3, no verdict at ≤ 2). GATE 6 re-estimates it on independent data (**replication**). GATE 3 exports the raw scatter; GATES 4 (alternative explanations) and 7 (effect size, declared as the SESOI) are judgment the skill elicits.
+3. **The reference metric is diagnosed, not just killed.** On the bundled demo (`mi_3bin`, biology identical, male-old capture degraded) GATE 0 measures attenuation (dropout −61%, depth halving −24%), GATE 1 flags the male stratum (1.94× QC ratio, 0.00 n_genes overlap), and at equal depth the raw MI difference shrinks to −13% of itself and is not detected across 16 mice: INCONCLUSIVE, not supported. The real-data run of the preprint (§4) used v0.1.1 and is under audit ([`validation/flagship_audit/`](validation/flagship_audit/)).
+4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq (RNA only in v1).
+5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's own operating characteristics are not established yet (see Status).
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 
@@ -65,9 +66,11 @@ the agent runs the autopsy. Three entry points, one engine:
   ```json
   {"mcpServers": {"metric-autopsy": {"command": "metric-autopsy-mcp"}}}
   ```
-  Tools exposed: `autopsy_report` (full gate sequence on an `.h5ad`), `qc_parity_report`
-  (GATE 1 only), `list_metrics`, and `demo_report` (runs on bundled synthetic data — no file
-  needed). See [`src/metric_autopsy/mcp_server.py`](src/metric_autopsy/mcp_server.py).
+  Tools exposed: `autopsy_report` (full gate sequence on an `.h5ad`, four-field verdict,
+  optional JSON report), `qc_parity_report` (GATE 1 only), `list_metrics`, and `demo_report`
+  (runs on bundled synthetic data — no file needed). The CLI, the MCP server and the Python
+  API share one verdict rule (`report.decide`). See
+  [`src/metric_autopsy/mcp_server.py`](src/metric_autopsy/mcp_server.py).
 - **CLI** — `metric-autopsy --demo` (or `--h5ad …`), scriptable from any agent shell.
 
 Agents landing in the repo should read [`AGENTS.md`](AGENTS.md); [`llms.txt`](llms.txt) is a
@@ -95,8 +98,10 @@ curated doc map for LLMs.
 ├── scripts/run_gates.py      # thin CLI wrapper the skill invokes
 ├── examples/mi_coupling_tms/ # worked example: TMS → MI → 0/N → "not biology" (+ notebook, figures)
 ├── paper/                    # manuscript + figures  (CC-BY-4.0)
-├── tests/                    # synthetic gate tests + audit regressions + AnnData compat
-└── validation/probes/        # exploratory dev set: probes of the validator + strict-xfail tests
+├── tests/                    # synthetic gate tests, v0.3 verdict tests, audit regressions, AnnData compat
+└── validation/
+    ├── probes/               # exploratory dev set: probes of the validator + regression tests
+    └── flagship_audit/       # audit of the preprint §4 real-data run (pinned to v0.1.1)
 ```
 
 ---
@@ -107,13 +112,15 @@ curated doc map for LLMs.
 # 1. Install (only numpy + pandas required; scipy/anndata/matplotlib are optional extras)
 pip install -e ".[dev]"
 
-# 2. Run the test suite (tests/ + validation/probes; known failures are strict xfail)
+# 2. Run the test suite (tests/ + the validation/probes dev set)
 pytest -q
 
-# 3. Reproduce the reference failure end-to-end, no downloads (~2 s)
-metric-autopsy --demo --no-stop
+# 3. Run the reference autopsy end-to-end on the bundled demo, no downloads (~5 s);
+#    --json writes the full report with data and pre-registration hashes
+metric-autopsy --demo --no-stop --json demo_autopsy.json
 
-# 4. Re-execute the worked-example notebook (~30 s)
+# 4. Re-execute the worked-example notebook (~30 s). Its committed outputs and narrative
+#    were produced with v0.1.1; re-executing on this branch shows the v0.3 fields.
 jupyter nbconvert --to notebook --execute --inplace examples/mi_coupling_tms/notebook.ipynb
 ```
 

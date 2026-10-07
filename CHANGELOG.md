@@ -7,6 +7,87 @@ comparability.
 
 ## [Unreleased]
 
+Version `0.3.0.dev0` — the verdict logic reworked against the exploratory probes in
+`validation/probes/` (a development set with no confirmatory weight). **Breaking:** the
+verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
+
+### Changed
+- **Four-field verdict.** `Autopsy` carries `metric_validity`, `design_adequacy`, `effect`
+  and `replication` (`core.Assessment`: status, reason, flags, detail); `report.decide` is
+  the single verdict rule used by the API, the CLI and the MCP server. Verdicts: SUPPORTED —
+  replicated / SUPPORTED (provisional until replicated) / NOT SUPPORTED / NO DETECTABLE EFFECT
+  / INCONCLUSIVE / UNIDENTIFIABLE / DEGENERATE METRIC, qualified by *parametric only* and
+  *underpowered*. Metric validity PASS now needs a demonstrated response (a positive control
+  that beats its null, or an injected signal); a random-number metric is no longer certified.
+- **GATE 0** classifies each nuisance response as *bias* (the nuisance moves the gene-shuffled
+  null, reverses or inflates the signal: FAIL), *attenuation* (the signal shrinks toward the
+  null: reported, passed to design adequacy as a power check) or *level shift* (no material
+  structure to classify it: reported). Rules are invariant to affine re-expressions of the
+  metric (v0.1 divided by |baseline|). A metric that never varies is DEGENERATE. A detectable
+  but immaterial null signal (< `tol` × the effect scale) no longer becomes the unit in which
+  level metrics are judged.
+- **GATE 1 is a diagnostic.** Bootstrap intervals, Bonferroni across assessable strata and
+  `min_cells`; a confident imbalance is WARN (handled by the correction), STOP only when no
+  stratum contains both groups. (v0.1 flagged 82% of null datasets at 64 × 20 cells.)
+- **GATE 2 is the estimand-dependent correction** (`effect.estimate_effect`): binomial
+  thinning to equal depth for a *composition* estimand, to equal spike-in capture for a
+  *content* estimand, UNIDENTIFIABLE without spike-ins or without a declared estimand.
+  `gate2_ngenes_matching` is deprecated (n_genes is downstream of biology) and unused by
+  `run_autopsy`.
+- **Replicate-level inference with a graded rule** (`replicate_col`): ≥ 4 replicates per group
+  — exact (or Monte Carlo, with MC error) permutation over replicates is the test, the t
+  interval the estimate; 3 — the t interval is the test, flagged PARAMETRIC_ONLY, the
+  permutation p reported as unable to reach alpha; ≤ 2 or no replicate unit —
+  INSUFFICIENT_REPLICATION, no effect verdict. Nested and paired designs; partially crossed
+  replicates are UNIDENTIFIABLE. NO DETECTABLE EFFECT needs a pre-registered SESOI (TOST) and a
+  valid metric. A raw difference detected across replicates that vanishes after the correction
+  is NOT SUPPORTED — explained by depth (or capture).
+- **Power.** GATE 0's attenuation under depth halving gives λ, the fraction of a construct-scale
+  difference that survives at the analysed depth; the design is UNDERPOWERED when the MDE
+  exceeds λ × SESOI.
+- **GATE 5** judges controls against empirical nulls: the negative control against
+  expression-matched unrelated pairs, the positive control against within-depth-bin shuffles
+  of itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
+  control that does not beat its null is WARN (absence of evidence), and the metric stays
+  UNTESTED if it fires nowhere. Depth bins hold at least 10 cells. `pos_min`/`neg_max` restore
+  the legacy band.
+- **GATE 6** re-estimates the effect on the second dataset with the same estimand, correction,
+  replicate rule and strata: REPLICATED / NOT_REPLICATED (equivalent to zero, or opposite sign)
+  / INCONCLUSIVE.
+- The CLI demo data gain a `mouse` column (4 per sex × age block, drawn from a separate RNG, so
+  X is unchanged); the demo now runs with `--replicate-col mouse --estimand composition`.
+
+### Added
+- `gate4_signal_response` and `injected_signal.coupling` / `injected_signal.module`: response
+  to a known construct change planted by binomial thinning.
+- `stats` (t and permutation tests without scipy, TOST, MDE), `equalize` (thinning),
+  `provenance` (hashes, versions, run log), `effect`.
+- **Provenance.** Every report carries `data_sha256`, `prereg_sha256`, a `claim_id`,
+  versions and the seed; `Autopsy.to_json()` / `save_json()` (strict JSON). A JSON-lines run
+  log (`log_path=`, `$METRIC_AUTOPSY_LOG`; CLI/MCP default `metric_autopsy_runs.jsonl`, off for
+  the demo) counts attempts per claim.
+- CLI flags `--replicate-col`, `--estimand`, `--sesoi`, `--min-replicates`, `--prereg`,
+  `--inject-signal coupling`, `--seed`, `--json`, `--log`, `--no-log`; the same parameters on the
+  MCP `autopsy_report` tool.
+- `DenseMemoryWarning` (threshold `$METRIC_AUTOPSY_DENSE_WARN_GB`, default 2).
+- Tests: `tests/test_v03_verdict.py` (graded rule, designs, estimands, power, provenance,
+  GATE 4/5, `decide`, API/CLI/MCP parity); the dev-set tests in `validation/probes/` are
+  collected by `pytest`. The v0.1.1 tests were revised to the new semantics, each keeping the
+  truth it checked.
+
+### Fixed
+- **The MCP server starts with mcp 2.x.** `pip install "metric-autopsy[mcp]"` now resolves
+  to mcp 2.x, where `mcp.server.fastmcp.FastMCP` was renamed to `mcp.server.mcpserver.MCPServer`;
+  `metric-autopsy-mcp` failed at start-up for every fresh install. `build_server` supports both.
+  The `dev` extra now includes `mcp` (Python ≥ 3.10), so CI exercises the MCP front door.
+- `per_cell_qc` and the gates warn before densifying a large sparse matrix (probe p12).
+
+### Known limitations
+- Development results only: the fixes were developed against the probes that found the bugs.
+- With 4 replicates per group the exact permutation reaches p < 0.05 only at complete
+  separation, so "explained by depth" is often INCONCLUSIVE instead (probe p11 reaches its
+  expected NOT SUPPORTED for 3 of 10 splits of its cells into mice).
+
 ## [0.1.1] — 2026-07-07
 
 ### Fixed

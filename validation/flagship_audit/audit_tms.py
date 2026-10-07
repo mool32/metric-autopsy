@@ -34,10 +34,14 @@ the human-written report.
 from __future__ import annotations
 
 import argparse
+import datetime
+import hashlib
 import importlib.util
 import itertools
 import json
+import platform
 import re
+import subprocess
 import sys
 from functools import partial
 from pathlib import Path
@@ -47,6 +51,7 @@ import pandas as pd
 
 REPO = Path(__file__).resolve().parents[2]
 PINNED_ENGINE = "0.1.1"
+DOWNLOAD_MODULE = REPO / "examples" / "mi_coupling_tms" / "download_data.py"
 
 PAIR = ("Smad3", "Col1a1")
 POS_PAIR = ("Actb", "Gapdh")
@@ -74,8 +79,7 @@ PAPER = {
 # --------------------------------------------------------------------------- #
 def _load_download_module():
     """examples/mi_coupling_tms/download_data.py, imported by path (it is not a package)."""
-    path = REPO / "examples" / "mi_coupling_tms" / "download_data.py"
-    spec = importlib.util.spec_from_file_location("ma_download_data", path)
+    spec = importlib.util.spec_from_file_location("ma_download_data", DOWNLOAD_MODULE)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -443,6 +447,70 @@ def write_report(out: Path, meta, ab, c, d, e, f, groups, synthetic: bool):
 
 
 # --------------------------------------------------------------------------- #
+# provenance (self-contained: the pinned v0.1.1 engine has no provenance module)
+# --------------------------------------------------------------------------- #
+OBS_HASH_COLS = ("donor_id", "sex", "development_stage", "tissue", "assay", "age",
+                 "n_genes_by_counts", "total_counts")
+
+
+def _sha256_file(path: Path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def sha256_anndata(adata, obs_columns=OBS_HASH_COLS) -> str:
+    """Content hash of X (sparse or dense), var_names and the obs columns the audit reads —
+    the same recipe as metric_autopsy.provenance.sha256_data in v0.3."""
+    h = hashlib.sha256()
+    X = adata.X
+    if hasattr(X, "tocsr"):
+        csr = X.tocsr()
+        h.update(f"csr{csr.shape}{csr.dtype}".encode())
+        for arr in (csr.indptr, csr.indices, csr.data):
+            h.update(np.ascontiguousarray(arr).tobytes())
+    else:
+        arr = np.ascontiguousarray(np.asarray(X))
+        h.update(f"dense{arr.shape}{arr.dtype}".encode())
+        h.update(arr.tobytes())
+    h.update("\x1f".join(map(str, adata.var_names)).encode())
+    for col in sorted(c for c in obs_columns if c in adata.obs.columns):
+        h.update(col.encode() + b"\x1e")
+        h.update("\x1f".join(map(str, np.asarray(adata.obs[col]))).encode())
+    return h.hexdigest()
+
+
+def provenance(adata, args, download_module_path, cached_h5ad=None) -> dict:
+    def git(*cmd):
+        try:
+            return subprocess.run(["git", *cmd], cwd=REPO, capture_output=True, text=True).stdout.strip()
+        except Exception:
+            return None
+    versions = dict(python=platform.python_version(), numpy=np.__version__, pandas=pd.__version__)
+    for mod in ("anndata", "scipy", "cellxgene_census"):
+        try:
+            from importlib import metadata
+            versions[mod] = metadata.version(mod.replace("_", "-"))
+        except Exception:
+            versions[mod] = None
+    import metric_autopsy  # the imported module, not the (possibly stale) editable-install metadata
+    versions["metric_autopsy"] = metric_autopsy.__version__
+    params = {k: v for k, v in vars(args).items() if k not in ("out", "cache")}
+    return dict(
+        timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        git_commit=git("rev-parse", "HEAD"), git_dirty=bool(git("status", "--porcelain")),
+        script_sha256=_sha256_file(Path(__file__)),
+        download_module_sha256=_sha256_file(download_module_path),
+        data_sha256=sha256_anndata(adata), data_hash_obs_columns=list(OBS_HASH_COLS),
+        cached_h5ad_sha256=_sha256_file(cached_h5ad) if cached_h5ad and cached_h5ad.exists() else None,
+        params=params, params_sha256=hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest(),
+        versions=versions,
+    )
+
+
+# --------------------------------------------------------------------------- #
 # synthetic dry run (offline check of the code path; NOT TMS)
 # --------------------------------------------------------------------------- #
 def synthetic_tms(seed=0):
@@ -518,6 +586,10 @@ def main(argv=None):
     c = dict(census_var_ercc=meta.get("census_var_ercc"))
     if args.source_h5ad and not args.dry_run_synthetic:
         c["source_h5ad"] = check_source_h5ad(meta["tms_dataset_ids"], args.census_version, Path(args.cache))
+
+    cached = (None if args.dry_run_synthetic else
+              Path(args.cache) / f"tms_facs_audit_genes_{args.census_version}.h5ad")
+    meta["provenance"] = provenance(adata, args, DOWNLOAD_MODULE, cached)
 
     d = section_d(adata, groups)
     e = section_e(adata, groups)

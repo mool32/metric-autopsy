@@ -4,9 +4,9 @@ Every test states the TRUTH, known by construction, and the verdict a correct va
 must give on it. Expected verdicts are frozen here, before any fix. A fix has to satisfy
 them without editing them.
 
-Tests marked ``xfail(strict=True)`` document a known failure of v0.1.1. When a fix makes
-one pass, strict mode reports XPASS as a failure until the marker is removed, so every
-flip is explicit in the diff. These probes found the bugs, and the fixes are developed
+Tests marked ``xfail(strict=True)`` documented the known failures of v0.1.1. Every one was
+flipped by the v0.3.0.dev0 rework and its marker replaced by a ``# fixed in`` comment that
+names the original failure. These probes found the bugs, and the fixes were developed
 against them: this is a DEVELOPMENT set with no confirmatory weight (see README.md).
 
 The tests are written against the target (v0.3) API, which v0.1.1 does not have yet:
@@ -15,7 +15,8 @@ The tests are written against the target (v0.3) API, which v0.1.1 does not have 
   four independent assessments ``metric_validity``, ``design_adequacy``, ``effect``,
   ``replication``, each with ``.status`` / ``.reason`` / ``.detail``, plus ``.verdict``.
 * metric_validity  ∈ PASS | FAIL | UNTESTED | DEGENERATE
-* design_adequacy  ∈ ADEQUATE | CORRECTED | INSUFFICIENT_REPLICATES | UNIDENTIFIABLE
+* design_adequacy  ∈ ADEQUATE | CORRECTED | INSUFFICIENT_REPLICATION | UNIDENTIFIABLE
+  (flags: UNDERPOWERED, PARAMETRIC_ONLY)
 * effect           ∈ DETECTED | NO_DETECTABLE_EFFECT | INCONCLUSIVE | NOT_ESTIMABLE | NOT_RUN
 * verdict starts with SUPPORTED | NOT SUPPORTED | NO DETECTABLE EFFECT | INCONCLUSIVE |
   UNIDENTIFIABLE | DEGENERATE METRIC
@@ -46,7 +47,6 @@ from metric_autopsy import gates as _gates  # noqa: E402
 from metric_autopsy.cli import demo_data  # noqa: E402
 from metric_autopsy.core import as_dense, unique_col_index  # noqa: E402
 
-KNOWN = "known v0.1.1 failure (dev probe {}): {}"
 NPR = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
 MI = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
 G2M_GENES = [f"M{i}" for i in range(probe_sim.N_G2M)]
@@ -186,7 +186,7 @@ def _demo_male_with_mice(mice=4):
 # --------------------------------------------------------------------------- #
 # p01 — useless, constant and offset metrics
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p01", "a metric returning random numbers gets PASS"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p01): a metric returning random numbers gets PASS
 def test_p01_random_metric_is_not_certified():
     """Truth: the metric ignores the data. It must not be certified valid or 'supported'."""
     rng = np.random.default_rng(0)
@@ -196,7 +196,7 @@ def test_p01_random_metric_is_not_certified():
     assert not a.verdict.startswith("SUPPORTED")
 
 
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p01", "a constant metric is diagnosed as a QC artifact"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p01): a constant metric is diagnosed as a QC artifact
 def test_p01_constant_metric_is_reported_degenerate():
     """Truth: the metric is constant. The verdict must say so, not blame QC."""
     a = run_autopsy(lambda data: 0.0, make_clean(), group_col="age", groups=("young", "old"))
@@ -205,7 +205,7 @@ def test_p01_constant_metric_is_reported_degenerate():
     assert "QC artifact" not in a.to_markdown()
 
 
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p01", "GATE 0 divides the shift by |baseline|"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p01): GATE 0 divides the shift by |baseline|
 @pytest.mark.parametrize("C", [0.5, 1.0, 10.0])
 def test_p01_gate0_is_invariant_to_adding_a_constant(C):
     """Truth: mi_3bin + C is the same metric as mi_3bin. GATE 0 must agree on both."""
@@ -219,22 +219,30 @@ def test_p01_gate0_is_invariant_to_adding_a_constant(C):
 
 @pytest.mark.parametrize("k", [100.0, 0.01, -1.0])
 def test_p01_gate0_is_invariant_to_rescaling(k):
-    """Lock-in (holds in v0.1.1): rescaling or sign-flipping a metric must not change GATE 0."""
+    """Truth: k·mi_3bin is the same metric. Rescaling or sign-flipping must leave GATE 0's
+    status, every classification (bias / attenuation / none) and every |shift| (in scale
+    units) unchanged. (Revised for the v0.3 scheme: v0.1.1 compared statuses only.)"""
     d = make_clean()
-    assert gate0_independence(lambda data: k * MI(data), d).status == gate0_independence(MI, d).status
+    base = gate0_independence(MI, d)
+    scaled = gate0_independence(lambda data: k * MI(data), d)
+    assert scaled.status == base.status
+    for kind, r in base.detail["responses"].items():
+        s_r = scaled.detail["responses"][kind]
+        assert s_r["classification"] == r["classification"]
+        assert abs(s_r["shift_std"]) == pytest.approx(abs(r["shift_std"]), rel=1e-6)
 
 
 # --------------------------------------------------------------------------- #
 # p02 — sorted G1 vs G2M: the positive control whose biology moves QC
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p02", "GATE 1 kills a real effect that GATE 2 retains at 99%"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p02): GATE 1 kills a real effect that GATE 2 retains at 99%
 def test_p02_sorted_g2m_vs_g1_is_supported():
     """Truth: sorted G2M cells have a far higher G2M score than G1 cells; G2M cells also
     carry 2.4x RNA (biology). With a positive signal test, the claim must be SUPPORTED."""
-    from metric_autopsy import spikes
+    from metric_autopsy import injected_signal
     a = run_autopsy(probe_sim.mean_g2m_score, _sorted_cell_cycle(),
                     group_col="sorted_phase", groups=("G2M", "G1"), replicate_col="plate",
-                    signal_test=spikes.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
     assert a.effect.status == "DETECTED" and a.effect.detail["effect"] > 0
     assert a.metric_validity.status == "PASS"
     assert a.design_adequacy.status in ("ADEQUATE", "CORRECTED")
@@ -244,14 +252,14 @@ def test_p02_sorted_g2m_vs_g1_is_supported():
 # --------------------------------------------------------------------------- #
 # p03 — proliferation decline: n_genes is downstream of the biology
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p03", "n_genes matching removes a real effect"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p03): n_genes matching removes a real effect
 def test_p03_proliferation_decline_is_supported_and_not_removed():
     """Truth: young tissue proliferates (35% cycling) and old does not (5%); cycling cells
     carry more RNA. For a composition estimand the effect must survive depth correction."""
-    from metric_autopsy import spikes
+    from metric_autopsy import injected_signal
     a = run_autopsy(probe_sim.mean_g2m_score, _proliferation(),
                     group_col="age", groups=("young", "old"), within=["sex"], replicate_col="mouse",
-                    signal_test=spikes.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
     assert a.effect.status == "DETECTED"
     assert a.effect.detail["retained"] >= 0.8
     assert a.metric_validity.status == "PASS"
@@ -261,14 +269,14 @@ def test_p03_proliferation_decline_is_supported_and_not_removed():
 # --------------------------------------------------------------------------- #
 # p04 — Xist on the demo data: the same-data positive control
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p04", "Xist female>male dies at GATE 1"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p04): Xist female>male dies at GATE 1
 def test_p04_xist_female_vs_male_is_supported_on_demo_data():
     """Truth: Xist is expressed in female cells only. The old stratum has a 2x QC gap
     (male-old capture 30%). The claim must be SUPPORTED, with the QC gap corrected."""
-    from metric_autopsy import spikes
+    from metric_autopsy import injected_signal
     a = run_autopsy(_mean_lognorm_xist, _xist_demo(), group_col="sex", groups=("female", "male"),
                     within=["age"], replicate_col="mouse",
-                    signal_test=spikes.module(["Xist"], fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=RESOLVED)
     assert a.effect.status == "DETECTED"
     assert a.effect.detail["retained"] >= 0.9
     assert a.design_adequacy.status == "CORRECTED"
@@ -278,7 +286,7 @@ def test_p04_xist_female_vs_male_is_supported_on_demo_data():
 # --------------------------------------------------------------------------- #
 # p05 — null strata: the diagnostics must be calibrated
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p05", "GATE 1 flags 82% of null datasets (64 x 20 cells)"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p05): GATE 1 flags 82% of null datasets (64 x 20 cells)
 def test_p05_gate1_does_not_flag_null_strata():
     """Truth: no stratum has any QC difference. Flag rate must stay <= 20% (30 datasets)."""
     flagged = sum(
@@ -288,7 +296,7 @@ def test_p05_gate1_does_not_flag_null_strata():
     assert flagged <= 6
 
 
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p05", "GATE 5 fails 70% of null datasets (4 x 400 cells)"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p05): GATE 5 fails 70% of null datasets (4 x 400 cells)
 def test_p05_gate5_calibrated_on_null_controls():
     """Truth: controls behave in every stratum. FAIL rate must stay <= 20% (20 datasets)."""
     fails = sum(
@@ -301,7 +309,7 @@ def test_p05_gate5_calibrated_on_null_controls():
 # --------------------------------------------------------------------------- #
 # p06 — the negative control must be judged against an empirical null
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p06", "closure-inflated negative control fails GATE 5"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p06): closure-inflated negative control fails GATE 5
 def test_p06_negative_control_judged_against_empirical_null():
     """Truth: Gene0-Gene1 are independent in every stratum of the demo data; CP10k closure
     makes unrelated genes correlate (~+0.08). GATE 5 must pass and surface that null centre."""
@@ -314,20 +322,27 @@ def test_p06_negative_control_judged_against_empirical_null():
 # --------------------------------------------------------------------------- #
 # p07 — pseudoreplication
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p07", "cell-level permutation certifies mouse noise"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p07): cell-level permutation certifies mouse noise
 def test_p07_pseudoreplicated_null_yields_no_effect_claim():
-    """Truth: no age effect; mice differ from each other (3 vs 3). No run may report a
-    detected effect, with or without the replicate column declared."""
-    for s in range(10):
+    """Truth: no age effect; mice differ from each other (3 vs 3). Graded replicate rule
+    (decided 2026-10-07): without a declared replicate unit there is no effect verdict; with
+    3 mice per group the t interval is the test, flagged PARAMETRIC_ONLY. It is calibrated, so
+    false detections stay near alpha (<= 3 of 20), and every detection carries the flag."""
+    detected = 0
+    for s in range(20):
         d = _mice(3, mouse_sd=0.35, seed=s)
         with_rep = run_autopsy(NPR, d, group_col="age", groups=("young", "old"),
                                replicate_col="mouse", prereg=COMPOSITION)
         without_rep = run_autopsy(NPR, d, group_col="age", groups=("young", "old"), prereg=COMPOSITION)
-        assert with_rep.effect.status != "DETECTED"
         assert without_rep.effect.status != "DETECTED"
+        assert without_rep.design_adequacy.status == "INSUFFICIENT_REPLICATION"
+        if with_rep.effect.status == "DETECTED":
+            detected += 1
+            assert "PARAMETRIC_ONLY" in with_rep.effect.flags
+    assert detected <= 3
 
 
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p07", "no replicate-level inference"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p07): no replicate-level inference
 def test_p07_replicate_level_inference_is_calibrated():
     """Truth: no age effect, 6 vs 6 mice with mouse-level variation. A calibrated test at
     alpha = 0.05 detects an effect in at most ~13% of 30 null datasets."""
@@ -341,7 +356,7 @@ def test_p07_replicate_level_inference_is_calibrated():
 # --------------------------------------------------------------------------- #
 # p08 — attenuation is a reliability property, not bias
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p08", "attenuation is scored as confounding"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p08): attenuation is scored as confounding
 def test_p08_attenuation_is_not_scored_as_bias():
     """Truth: a truly coupled pair; groups are depth-matched random halves. Thinning shrinks
     the correlation toward its null (attenuation). That must be reported as attenuation,
@@ -355,7 +370,7 @@ def test_p08_attenuation_is_not_scored_as_bias():
 # --------------------------------------------------------------------------- #
 # p09 — absence of evidence is not evidence of absence; verdicts must be stable
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p09", "'the groups simply do not differ' without a test"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p09): 'the groups simply do not differ' without a test
 def test_p09_equivalence_requires_a_sesoi():
     """Truth: a moderate real effect (coupling 1.5 vs 1.2) must never be called 'no
     difference'. On null data, 'no detectable effect' needs a pre-registered SESOI
@@ -374,7 +389,7 @@ def test_p09_equivalence_requires_a_sesoi():
     assert with_sesoi.effect.status == "NO_DETECTABLE_EFFECT"
 
 
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p09", "null floor from 20 permutations flips verdicts"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p09): null floor from 20 permutations flips verdicts
 def test_p09_effect_verdict_is_stable_across_tool_seeds():
     """Truth: one fixed dataset with a moderate real effect. The tool's own randomness
     (permutations, thinning draws) must not change the effect verdict."""
@@ -389,7 +404,8 @@ def test_p09_effect_verdict_is_stable_across_tool_seeds():
 # --------------------------------------------------------------------------- #
 def test_p10_mi3bin_detection_sensitivity_seen_at_5pct_dropout(monkeypatch):
     """Truth: mi_3bin is driven by detection. Even a 5% extra dropout must move it by
-    >25% of its value, reliably (z > 4). Keeps GATE 0's sensitivity from regressing."""
+    >25% of its value, reliably (z > 4). Keeps GATE 0's sensitivity from regressing, and
+    checks that the sensitivity is now reported as attenuation rather than a FAIL."""
     orig = _gates._perturb
 
     def mild(data, kind, rng, protect=frozenset()):
@@ -406,12 +422,16 @@ def test_p10_mi3bin_detection_sensitivity_seen_at_5pct_dropout(monkeypatch):
     r = g0.detail["responses"]["extra_dropout"]
     rel = abs(r["mean_perturbed"] - g0.detail["baseline"]) / abs(g0.detail["baseline"])
     assert rel > 0.25 and r["z"] > 4
+    # v0.3 meaning (decided 2026-10-07): this sensitivity is attenuation — reported with its
+    # size, not failed; a differential version is caught by the effect field after equalization
+    assert r["classification"] == "attenuation" and r["signal_loss"] > 0.25
+    assert g0.status != GateStatus.FAIL
 
 
 # --------------------------------------------------------------------------- #
 # p11 — a pure depth artifact must be explained by depth
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p11", "no depth equalization"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p11): no depth equalization
 def test_p11_depth_artifact_is_explained_by_depth():
     """Truth: biology is identical; old-male capture is 30%, so mi_3bin is lower in old
     males. At equal depth the difference must vanish, and the claim is NOT SUPPORTED."""
@@ -426,7 +446,7 @@ def test_p11_depth_artifact_is_explained_by_depth():
 # --------------------------------------------------------------------------- #
 # p12 — atlas-scale memory: warn before densifying
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(strict=True, reason=KNOWN.format("p12", "silent densification of sparse X"))
+# fixed in v0.3.0.dev0 — v0.1.1 failure (p12): silent densification of sparse X
 def test_p12_warns_before_densifying_a_large_sparse_matrix(monkeypatch):
     """Truth: densifying this sparse matrix exceeds the configured budget. The engine must
     warn (naming the dense size) before it allocates."""

@@ -1,18 +1,61 @@
 # The Gates — full definitions
 
 *Progressive-disclosure reference for the `metric-autopsy` skill. Loaded on demand;
-the thin protocol lives in `../SKILL.md`. This file is also the source text for the
-methods section of the preprint — one text, two purposes.*
-
-Before you claim that a computed metric reveals a biological signal, the metric has to
-survive these gates **in order**. A failure at any gate means **STOP and fix before
-proceeding** — a downstream gate cannot rescue an upstream failure. Each gate exists
-because a real analysis died on it.
+the thin protocol lives in `../SKILL.md`. This file describes the engine in this checkout
+(v0.3.0.dev0, under validation). The preprint's methods (`paper/manuscript.md`) still describe
+v0.1.1 and will be rewritten after the confirmatory freeze.*
 
 The gates are **metric-agnostic**. You supply a callable `metric(data) -> float` and the
 names of your factorial `obs` columns; the gates treat the metric as a black box and probe
-the *data* and the metric's *response to controlled perturbations of the data*. That is the
-whole design: the harness knows single-cell QC, not your metric.
+the *data* and the metric's *response to controlled perturbations of the data*. The harness
+knows single-cell QC, not your metric.
+
+> **Status: v0.x under validation.** The probes in `validation/probes/` are a development
+> set: the fixes described here were developed against them, so passing them proves nothing
+> about the validator's operating characteristics. Do not present a verdict as validated.
+
+---
+
+## How the verdict is decided
+
+A metric that changes between conditions is not a finding. The verdict is not "the first
+gate that fails" any more. It is decided by one rule (`report.decide`, shared by the Python
+API, the CLI and the MCP server) from **four independent fields**, each answering a
+different question:
+
+| Field | Question | Statuses |
+|---|---|---|
+| `metric_validity` | Does the metric respond to its construct and resist nuisance? | PASS · FAIL · UNTESTED · DEGENERATE |
+| `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED) |
+| `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN |
+| `replication` | Does it hold on independent data? | REPLICATED · NOT_REPLICATED · INCONCLUSIVE · NOT_RUN |
+
+`decide` reads them in this order; the first matching line is the verdict:
+
+1. metric DEGENERATE → **DEGENERATE METRIC**
+2. metric FAIL (nuisance bias, failed control, no response to an injected signal) → **NOT SUPPORTED — metric invalid**
+3. design UNIDENTIFIABLE (no estimand, content estimand without spike-ins, partially crossed replicates, groups confounded with a stratifier) → **UNIDENTIFIABLE**
+4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
+5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
+6. effect NO_DETECTABLE_EFFECT → **NO DETECTABLE EFFECT**, only if the metric is PASS (absence of an effect cannot be claimed with a metric whose response is untested)
+7. effect not DETECTED → **INCONCLUSIVE**
+8. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
+9. replication NOT_REPLICATED → **NOT SUPPORTED**
+10. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
+11. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+
+The verdict names the assumption it rests on: *parametric only* (too few replicates for the
+permutation test to reach alpha) and *underpowered relative to the SESOI*.
+
+**No rescue language.** A FAIL in an earlier field is never softened by a later one. With
+`stop_on_first_fail` (the default) an invalid metric stops the analysis before the effect is
+estimated; design adequacy, which does not depend on the metric, is still reported.
+
+**Provenance.** Every report carries `data_sha256` (X, var_names and the obs columns used),
+`prereg_sha256`, a `claim_id` (data + pre-registration + comparison), versions and the seed
+(`Autopsy.to_json()`, strict JSON). With a run log (CLI/MCP default
+`metric_autopsy_runs.jsonl`, or `$METRIC_AUTOPSY_LOG`), the report states which attempt at
+this claim it is and what the earlier attempts said.
 
 ---
 
@@ -35,81 +78,132 @@ is the anatomy*. → **GATE 4**.
 with age while housekeeping coupling is preserved. Reality: male old cells detect 2.4× fewer
 genes (3670 → 1540, p = 9.5e-56); female cells are stable. MI with a zero-bin is driven by
 detection rate. The "pathway-specific coupling loss" was QC in the sex×age interaction —
-invisible in the young-vs-old marginal. → **GATES 1, 2, 5, 6**.
+invisible in the young-vs-old marginal. → **GATES 1, 2, 5, 6**. *(These numbers come from the
+by-hand analysis; the automated real-data run is under audit in `validation/flagship_audit/`.)*
 
 ---
 
-## GATE 0 — Mathematical independence  · *auto*
+## GATE 0 — Mathematical independence: bias vs attenuation  · *auto*
 
-**Question.** Can the metric move between conditions purely from a change in a summary
-statistic (mean, variance, sparsity, dimensionality, n) with **no change** in the biological
-quantity of interest?
+**Question.** Can a technical nuisance *create or inflate* a difference in the metric with
+**no change** in the biology? Or does it only *shrink* the metric's signal?
 
-**How the engine tests it.** It perturbs *your own data* — it does not synthesize a separate
-null. First it builds a **bootstrap baseline**: resample cells with replacement and re-evaluate
-the metric ~60× to characterise the metric's own sampling spread (its estimator noise with the
-biology intact). Then it applies each technical nuisance ~20× to the same data and re-evaluates:
-`extra_dropout` (zero out a fraction of detected entries), `depth_downsample` (binomial thinning
-of counts; per-cell scaling for non-count input), `library_scale` (per-cell library factors),
-and — for whole-matrix metrics, auto-enabled when no gene pair is bound — `gene_subsample` (the
-genes the metric is bound to are protected from subsampling). (A `variance_inflation`
-perturbation existed before v0.1.1; it was removed as a measured no-op on the correlation-based
-whole-matrix metric.) A nuisance is flagged as confounding
-only if the perturbed mean is **both** meaningfully large relative to the metric's scale
-(relative change > `tol`, default 0.25, with a floored denominator so a near-zero baseline can't
-explode) **and** statistically separated from the baseline (z > `z_thresh`, default 4). The
-two-part rule is the point: it separates a real shift in the metric's *expectation* (a confound)
-from mere estimator *noise*, so a noisy-but-unbiased metric is not wrongly failed.
+**How the engine tests it.** On *your own data*:
+
+1. a **bootstrap baseline** (cells resampled with replacement, 60×): the metric's sampling spread;
+2. an **automatic null**: every gene permuted independently across cells *within depth
+   deciles* (10×). Gene-gene structure is destroyed, each gene's distribution and the depth
+   structure are kept. *Signal* = baseline − null;
+3. each **nuisance perturbation** (20×): `extra_dropout` (20% of detected entries zeroed),
+   `depth_downsample` (binomial thinning to half depth; per-cell scaling for non-count
+   input), `library_scale` (per-cell factors 0.5–2), and for whole-matrix metrics
+   `gene_subsample` (80% of genes, the bound genes protected).
+
+A shift counts only if it is beyond estimator noise (z > `z_thresh`, default 4). It is then
+classified:
+
+- **bias** — the perturbation moves the *null* by more than `tol` (0.25) of the signal, or
+  reverses the signal, or inflates it by more than `tol`. A nuisance that does this can create
+  a difference with no biology: **FAIL**.
+- **attenuation** — the signal shrinks toward the null while the null stays put. This is
+  reliability, not confounding (Spearman): uniform attenuation pulls an effect toward zero
+  and cannot create one. It is **reported, not failed** — the fraction of signal lost goes to
+  `design_adequacy` as a power check (below).
+- **level_shift** — the metric has no material gene-gene structure (e.g. a mean score, or a
+  signal above the null smaller than `tol` × the effect scale), so attenuation and bias
+  cannot be told apart. A shift larger than `tol` × the effect scale (observed difference or
+  SESOI) is flagged and reported; a between-group version is removed by the effect field's
+  equalization.
+
+A metric that returns the same value on every resample, null and perturbation is
+**DEGENERATE**. Every rule is invariant to affine re-expressions `a·m + b` of the metric
+(v0.1 divided the shift by |baseline|, so adding a constant passed a confounded metric).
 
 **Classic confounded forms.** MI with a zero-bin (sparsity); eigenvalue ratios (variance);
 correlations across differing zero-inflation; any ratio whose numerator/denominator scale
-differently with library size.
+differently with library size. On QC-matched synthetic data `mi_3bin` loses ~63% of its signal
+under extra dropout and ~25% under depth halving (attenuation); `norm_pearson` loses none
+measurably.
 
-**Pass.** The metric's expectation is stable under every nuisance perturbation (no shift beyond
-estimator noise) — **or** you ship an explicit correction for every statistic it responds to.
+**Pass.** No nuisance biases the metric. Attenuation and level shifts are reported with their
+size.
 
 ---
 
-## GATE 1 — QC parity across ALL factorial combinations  · *auto · crown jewel*
+## GATE 1 — QC parity across ALL factorial combinations  · *auto · a design diagnostic*
 
 **Question.** Do the groups you compare have equivalent technical quality — in *every*
 stratification you will use, not just the primary axis?
 
-**How the engine tests it.** For each combination of `age × sex × batch × tissue × cell_type`
-(whichever `obs` columns you name), the gate flags any stratum where the two compared groups'
-median `n_genes_by_counts` differs by more than **1.5×** (`thresh`) **or** whose `n_genes`
-distributions barely overlap — where overlap is the shared fraction of the *narrower* group's
-10th–90th-percentile range, flagged below `overlap_min` (default 0.2). `per_cell_qc` also
-reports `total_counts` and, where identifiable from `var_names`, mito/ribo fractions for
-inspection, but only n_genes ratio and overlap drive the pass/fail; there is no per-gene
-detection-rate criterion.
+**How the engine tests it.** For each combination of the `obs` columns you name (`age × sex ×
+batch × tissue × cell_type`), it compares the two groups' median `n_genes_by_counts` and the
+matchability overlap of their n_genes ranges. A stratum is flagged only when the breach is
+**confident**: the (1 − α/K) bootstrap interval of the log median ratio lies beyond
+±log(1.5), or the upper bootstrap bound of the overlap is below 0.2, where K is the number of
+assessable strata (Bonferroni). Strata with fewer than `min_cells` (10) cells in either group
+are reported, not assessed. (v0.1 flagged 82% of null datasets at 64 strata × 20 cells.)
 
-**Why it is the crown jewel.** This is the check that kills the most work for the least effort.
-We compared young vs old pooling sexes; the confound lived in sex×age — only male-old was
-degraded. A 45-second QC check would have caught what three weeks of MI analysis did not.
+**Why it is not a kill switch any more.** Biology moves QC: cycling cells carry ~2× more RNA,
+and Xist is higher in female cells whatever the depth. A terminal GATE 1 killed both (probes
+p02, p04). GATE 1 now returns **WARN** for a confident imbalance and hands it to the
+estimand-dependent correction (GATE 2); **STOP** only when no stratum contains both groups.
 
-**Pass.** All compared factorial pairs < 1.5× QC difference — **or** you restrict every metric
-computation to QC-matched subsets (GATE 2).
+**Why it is still the first thing to look at.** It is the check that finds the most for the
+least effort. We compared young vs old pooling sexes; the confound lived in sex×age — only
+male-old was degraded. A 45-second stratified QC check would have shown what three weeks of
+MI analysis did not. Always stratify by every factor: pooling erases interaction confounds.
 
 ---
 
-## GATE 2 — n_genes matching preserves the signal  · *auto · crown jewel*
+## GATE 2 — Estimand-dependent correction, and the effect  · *auto*
 
-**Question.** When you equalize cell quality between groups, does the signal survive?
+**Question.** When the technical difference between the groups is removed, in the way that is
+valid for what the metric claims to measure, is there still a difference — across biological
+replicates?
 
-**How the engine tests it.** Find the overlapping n_genes range (10th–90th pct) between groups;
-keep only cells inside it; confirm the matched subsets are balanced (median n_genes within
-~1.1×); recompute the metric on the matched subset via your callable; compare to the unmatched
-result. Guards both ends: an effect below a permutation-null floor has nothing to preserve, and
-one that *amplifies* far beyond the unmatched value flags selection on the quality axis.
+**The correction follows the pre-registered estimand.**
+
+- **composition** (relative expression: correlations, module scores, MI of normalized
+  counts): the deeper group of every stratum is **binomially thinned** to the other group's
+  depth quantiles. Thinning keeps every cell and preserves expected composition.
+- **content** (amount of RNA: total counts, genes detected, CytoTRACE-like scores): thinning
+  to equal depth would delete the signal itself. The groups are thinned to equal **spike-in
+  (ERCC) capture**. Without spike-ins, capture and content cannot be separated:
+  **UNIDENTIFIABLE**.
+- no estimand declared → **UNIDENTIFIABLE**.
+
+*(v0.1 matched cells on n_genes. n_genes is downstream of biology — cell size, cycling, RNA
+content — so matching on it is a bad control and deleted real effects; probe p03.
+`gate2_ngenes_matching` is kept for backward compatibility, unused by `run_autopsy`.)*
+
+**Replicate-level inference.** The metric is computed per biological replicate (`replicate_col`:
+mouse, donor, plate), nested in groups and strata, or paired within replicates. The unit of
+inference is the replicate, never the cell (v0.1 permuted cells and certified mouse-to-mouse
+noise as an effect; probe p07). Graded rule, by replicates per group (or pairs):
+
+- **>= 4**: an exact permutation over replicates (stratified; Monte Carlo with an MC error when
+  enumeration is too large) is the test; the t interval estimates the effect. If the design
+  cannot reach alpha (e.g. 5 pairs: min p = 0.0625), the t interval is the test, marked
+  *parametric only*;
+- **3**: the t interval on replicate values is the test, marked *parametric only*; the
+  permutation p is reported with the note that alpha is unattainable by construction;
+- **<= 2**, fewer than the pre-registered minimum, or no replicate unit:
+  **INSUFFICIENT_REPLICATION** — estimates only, no effect verdict.
 
 **Read-out.**
-- Survives matching (> 50% of original effect) → likely biological.
-- Disappears with matching → likely a QC artifact.
-- Distributions do not overlap → groups are **incomparable. STOP.** (In MI-coupling, male
-  young vs old had *3 cells* in the overlap.)
+- **DETECTED** — the corrected effect is significant at the replicate level.
+- **NO_DETECTABLE_EFFECT** — the (1 − 2α) interval lies inside ±(attenuated) SESOI (TOST).
+  Needs a pre-registered SESOI; without one the result is INCONCLUSIVE.
+- **explained by depth / capture** — the raw difference is detected across replicates and,
+  after the correction, is not, with less than half retained → **NOT SUPPORTED**. A raw
+  difference that is not itself detected across replicates cannot be "explained"; the effect
+  is INCONCLUSIVE and the reason states how much of it the correction left.
 
-**Pass.** Signal survives n_genes matching with > 50% of the original effect size.
+**Power.** The SESOI is declared on the construct scale. GATE 0's attenuation under depth
+halving gives a reliability-model estimate λ of how much of a construct-scale difference
+survives at the analysed depth (noise ∝ 1/depth; the equalization's depth ratio is included).
+The design is **UNDERPOWERED** when the minimum detectable effect exceeds λ × SESOI; the same
+attenuated SESOI is used for the equivalence test.
 
 ---
 
@@ -134,12 +228,21 @@ change is not merely dropout — without needing the metric to surface it.
 
 ---
 
-## GATE 4 — The metric measures what you think  · *judgment (the skill asks)*
+## GATE 4 — The metric measures what you think  · *auto (injected signal) + judgment*
 
 **Question.** Does a change in the metric correspond **uniquely** to a change in the biology?
 
-Enumerate every scenario that could move the metric and decide which your result is consistent
-with:
+**Automatic part: response to an injected signal.** A metric earns `metric_validity` PASS only
+by *responding* to signal, not merely by resisting nuisance — a metric that returns random
+numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b)` or
+`injected_signal.module(genes)`): a known construct change is planted by binomial thinning
+(seqgendiff-style, so the data stay valid counts with real technical noise), and the metric
+must move reliably (z >= 3) in the declared direction. Otherwise **FAIL**. A positive control
+that beats its null (GATE 5) is the other way to demonstrate response. With neither, the
+metric is **UNTESTED** and no positive verdict is reachable.
+
+**Judgment part.** Enumerate every scenario that could move the metric and decide which your
+result is consistent with:
 
 | Scenario | Metric moves? | Biology moves? | Verdict |
 |---|---|---|---|
@@ -153,41 +256,61 @@ with:
 
 If more than one row explains your result, you owe a test that separates them. This is also
 where β-heart dies: a metric that perfectly tracks a physical/geometric property is *measuring
-that property*, not a separate biological process.
-
-**Pass.** You can rule out every non-biological row — or you state the ambiguity in the paper.
+that property*, not a separate biological process. The judgment is pending by default
+(`judgment_pending`), which holds the verdict at INCONCLUSIVE.
 
 ---
 
-## GATE 5 — Controls behave in ALL strata  · *auto*
+## GATE 5 — Controls behave in ALL strata, against empirical nulls  · *auto*
 
 **Question.** Does a known-positive control show the effect and a known-negative control not —
 in **every** factorial combination, not just pooled?
 
-**How the engine tests it.** Runs your metric on a positive-control pair (housekeeping,
-Actb↔Gapdh — should always couple) and a negative-control pair (random — should not), **per
-stratum**. The null band is anchored to the *positive* control's magnitude (not the negative
-control's own value, which is the quantity under test): the negative must stay below ~20% of the
-positive signal, and the positive must clear that band. A control that "passes" only after
-averaging over a confound is worthless: our HK control looked stable pooled, but declined in
-males once stratified — confounded the same way as the test.
+**How the engine tests it.** Per stratum (with at least `min_cells` cells), against empirical
+nulls instead of a fixed band, Bonferroni across strata:
 
-**Pass.** Positive control positive, negative control null, in all strata.
+- the **negative control** pair is compared with 200 unrelated pairs drawn from the same
+  expression neighbourhoods; it must not stand out. The null centre is reported: a centre far
+  from zero means the metric reports association between unrelated genes (e.g. closure from
+  library-size normalization, which made the "robust" `norm_pearson` fail its own negative
+  control on null data in v0.1; probe p06);
+- the **positive control** pair is compared with 200 shuffles of the *same* pair, gene b
+  permuted within depth bins: coupling destroyed, technology kept. It must stand out. (An
+  expression-matched pair null is unsuitable here: other truly coupled genes contaminate it.)
+
+Depth bins hold at least 10 cells (fewer bins in small strata): a one-cell bin cannot be
+shuffled, which in an earlier draft made the positive control's null equal the data.
+
+**Read-out.**
+- **FAIL** — the negative control stands out in some stratum: the metric reports association
+  where there is none.
+- **WARN** — the negative control is fine everywhere, but the positive control does not beat
+  its null in some strata (or in any). That is absence of evidence — small strata have little
+  power — not evidence that the metric is invalid. If it fires nowhere, the metric's response
+  stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal shows it).
+- **PASS** — positive control beats its null and negative control stays inside its null, in
+  all strata.
+
+A positive control that fires in at least one stratum (Bonferroni across strata) is evidence of
+response for `metric_validity`. Passing `pos_min` / `neg_max` restores the legacy fixed-band
+rule, where a silent positive control FAILs. A control that "passes" only after averaging over
+a confound is worthless: our HK control looked stable pooled, but declined in males once
+stratified — confounded the same way as the test.
 
 ---
 
-## GATE 6 — Cross-platform / cross-species replication  · *auto if a 2nd dataset is supplied*
+## GATE 6 — Replication on independent data  · *auto if a 2nd dataset is supplied*
 
 **Question.** Does the effect replicate on independent data with different technical
-characteristics — after QC matching?
+characteristics?
 
-**How the engine tests it.** Re-runs GATES 1–2 and the metric on a second `data` object you pass
-(different platform, lab, or species). Platform-specific artifacts (SmartSeq2 dropout, 10x UMI
-saturation) mimic biology but do not replicate: mouse TMS (SmartSeq2) showed coupling loss;
-human skin (10x) showed it unmatched, but n_genes-matched it vanished even in the young.
-
-**Pass.** Effect replicates on ≥ 1 independent dataset after QC matching. *(In v1 this gate is a
-documented procedure demonstrated in `examples/`; supply a second dataset to run it.)*
+**How the engine tests it.** Re-estimates the effect on the second dataset with the *same*
+estimand, correction, replicate rule and strata, and re-runs the stratified QC diagnostic
+there. **REPLICATED** = effect detected with the primary sign; **NOT_REPLICATED** = equivalent
+to zero within the SESOI, or detected with the opposite sign (→ NOT SUPPORTED); anything else
+INCONCLUSIVE. Platform-specific artifacts (SmartSeq2 dropout, 10x UMI saturation) mimic
+biology but do not replicate. *(The automated GATE 6 has not yet been run on a real second
+platform; the TMS → human skin result in the worked example is the by-hand analysis.)*
 
 ---
 
@@ -197,10 +320,12 @@ documented procedure demonstrated in `examples/`; supply a second dataset to run
 
 Calibrate against the metric value expected for a known, validated interaction; against test–
 retest variability; against whether the change would move downstream expression enough to be
-phenotypically relevant. **Red flag:** if you need 10,000+ cells to reach significance, it may be
-real but biologically irrelevant — biology runs at single-cell scale.
+phenotypically relevant. Declare the answer *before* the analysis as the SESOI: the engine
+then uses it for equivalence and power. **Red flag:** if you need 10,000+ cells to reach
+significance, it may be real but biologically irrelevant — biology runs at single-cell scale.
 
-**Pass.** Effect exceeds test–retest variability and is in range for a real regulatory interaction.
+**Pass.** Effect exceeds test–retest variability and the SESOI, and is in range for a real
+regulatory interaction.
 
 ---
 
@@ -208,15 +333,16 @@ real but biologically irrelevant — biology runs at single-cell scale.
 
 ```
 Step 0  State the hypothesis in one sentence.
-Step 1  QC across ALL factorial combinations (age×sex×batch×tissue×cell_type). Flag >1.5× now.
-Step 2  Plot QC distributions — do they overlap? If not, those groups are incomparable. Stop.
-Step 3  Plan the n_genes-matched analysis from the start.
-Step 4  Define positive control, negative control, and what would disprove the claim.
-Step 5  NOW compute the metric.
+Step 1  Pre-register: estimand (composition | content), replicate unit, minimum replicates,
+        SESOI, alpha, controls, and the simplest non-biological explanation.
+Step 2  QC across ALL factorial combinations (age×sex×batch×tissue×cell_type).
+Step 3  Check the design: enough replicates per group? spike-ins for a content estimand?
+Step 4  Define positive control, negative control (or an injected signal), and what would
+        disprove the claim.
+Step 5  NOW compute the metric — per replicate, at equal depth/capture.
 Step 6  Scatter the raw data, stratified by sex and QC quartile.
-Step 7  Recompute on the QC-matched subset.
-Step 8  Vary the main hyperparameter 2×.
-Step 9  Replicate on a second platform/species if available.
+Step 7  Vary the main hyperparameter 2×.
+Step 8  Replicate on a second platform/species if available.
 ```
 
 The order is the point. We spent three weeks and 500+ lines on MI before checking QC; the QC
@@ -225,12 +351,16 @@ The cost of skipping them is weeks and a false conclusion.
 
 ---
 
-## Retroactive audit (what the gates would have said)
+## Retroactive audit (v0.1 judgments)
 
-| Metric | First failing gate | Verdict |
+| Metric | First failing gate (v0.1 logic) | Verdict |
 |---|---|---|
 | ACP eigenvalue / entropy | GATE 0 (variance-structure function) | not biology |
 | Cardiac β | GATE 4 (physical constant) | real, but physics not biology |
-| MI SMAD→ECM (zero-bin) | GATE 0 (first applicable) | FAIL at the first applicable gate (GATE 0) and additionally 1, 2, 3, 6, with GATE 5 a partial fail; judgment gates 4/7 not scored — **not measuring biology** |
+| MI SMAD→ECM (zero-bin) | GATE 0 (first applicable), and 1, 2, 3, 6, with GATE 5 a partial fail | **not measuring biology** — under re-audit with the v0.3 logic (`validation/flagship_audit/`) |
+
+Under v0.3, mi_3bin's dropout sensitivity is attenuation (reported), and the depth confound is
+handled by the correction; on the bundled demo the raw MI difference (+0.026) is not detected
+across mice and shrinks to −13% of itself at equal depth (INCONCLUSIVE, not supported).
 
 *Re-read this before starting any new metric analysis.*
