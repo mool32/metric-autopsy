@@ -31,6 +31,13 @@ Output: `out/audit_report.md` (tables) and `out/audit_results.json` (everything)
 script writes numbers, not conclusions. The human-written step-1 report decides which
 §4 claims still hold.
 
+Provenance (`meta.provenance` in both files): the git commit and whether the tree was dirty,
+sha256 of this script and of `download_data.py` (whose QC mapping it applies), a content hash
+of the analysed AnnData (X, var_names and the obs columns read — the recipe of
+`metric_autopsy.provenance.sha256_data`), the sha256 of the cached `.h5ad`, the parameters
+and their hash, and the library versions (with the engine version taken from the imported
+module). A number quoted from the audit should carry `data_sha256` and `script_sha256`.
+
 ## What it checks
 
 | | Question | Why it matters for §4 |
