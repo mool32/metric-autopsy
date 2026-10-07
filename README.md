@@ -14,6 +14,25 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
 
+> **Status: v0.x under validation. Do not treat a verdict as validated.** Probing the
+> validator itself (exploratory dev set: [`validation/probes/`](validation/probes/))
+> shows that v0.1.1 errs in both directions:
+> - **It passes useless metrics.** A metric that returns random numbers receives
+>   "PASS — cleared 3 auto gates".
+> - **GATE 1 blocks real biology.** "Xist is higher in female cells" dies at GATE 1
+>   on the demo data because one stratum has a QC gap, even though GATE 2 retains 100% of
+>   the effect. A sorted G1-vs-G2M cell-cycle control and a proliferation shift die the
+>   same way once cycling cells carry ~2× more RNA.
+> - **Permutations run over cells, not biological replicates.** With 3 vs 3 mice and no
+>   age effect, 22 of 40 null runs report a QC-robust "effect".
+>
+> Further known failures are listed in
+> [`validation/probes/README.md`](validation/probes/README.md), each with a strict-xfail
+> regression test: GATE 0 depends on the metric's location, the stratum checks are
+> uncalibrated, and attenuation is scored as confounding. The engine is being reworked:
+> a four-field verdict, replicate-level inference, and depth correction that depends on
+> the estimand. Confirmatory validation will run on a frozen tag and a new, blind panel.
+
 ---
 
 ## Brief Summary
@@ -24,7 +43,7 @@ A metric that changes between conditions is not a finding — it might be dropou
 2. **Eight gates, six automatic, five that can kill.** Mathematical independence, factorial QC parity, n_genes matching, stratified controls, and cross-dataset replication run from the data *and can block* a metric; raw-data visibility (GATE 3) also runs automatically but only exports the scatter and a dropout hint for you to read — it never blocks on its own; GATE 4 (does it measure what you think) and GATE 7 (is the effect size meaningful) are judgment gates the skill *elicits*, not scripts.
 3. **The reference metric dies 0/N.** On the worked example, `mi_3bin` fails GATE 0 (expectation shifts 61%, z = 44.8, under simulated dropout) and GATE 1 (male stratum 1.94× QC ratio, 0.00 n_genes overlap); a library-normalized reference passes — the confound is *avoidable*, not universal.
 4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq QC.
-5. **Necessary, not sufficient (honest limit).** Passing all eight gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. The engine ships with 35 tests and was itself put through an adversarial code + docs audit (24 + 19 findings fixed) plus a follow-up integrity pass.
+5. **Necessary, not sufficient (honest limit).** Passing all eight gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. The engine ships with a regression test suite and was itself put through an adversarial code + docs audit (24 + 19 findings fixed) plus a follow-up integrity pass; a later self-probe of the validator found the failures listed under Status above.
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 
@@ -76,7 +95,8 @@ curated doc map for LLMs.
 ├── scripts/run_gates.py      # thin CLI wrapper the skill invokes
 ├── examples/mi_coupling_tms/ # worked example: TMS → MI → 0/N → "not biology" (+ notebook, figures)
 ├── paper/                    # manuscript + figures  (CC-BY-4.0)
-└── tests/                    # 35 tests: synthetic gates + audit regressions + AnnData compat
+├── tests/                    # synthetic gate tests + audit regressions + AnnData compat
+└── validation/probes/        # exploratory dev set: probes of the validator + strict-xfail tests
 ```
 
 ---
@@ -87,7 +107,7 @@ curated doc map for LLMs.
 # 1. Install (only numpy + pandas required; scipy/anndata/matplotlib are optional extras)
 pip install -e ".[dev]"
 
-# 2. Run the test suite (32 tests)
+# 2. Run the test suite (tests/ + validation/probes; known failures are strict xfail)
 pytest -q
 
 # 3. Reproduce the reference failure end-to-end, no downloads (~2 s)

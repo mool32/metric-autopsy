@@ -51,8 +51,10 @@ the metric ~60× to characterise the metric's own sampling spread (its estimator
 biology intact). Then it applies each technical nuisance ~20× to the same data and re-evaluates:
 `extra_dropout` (zero out a fraction of detected entries), `depth_downsample` (binomial thinning
 of counts; per-cell scaling for non-count input), `library_scale` (per-cell library factors),
-and — for whole-matrix metrics — optional `variance_inflation` and `gene_subsample` (the genes
-the metric is bound to are protected from subsampling). A nuisance is flagged as confounding
+and — for whole-matrix metrics, auto-enabled when no gene pair is bound — `gene_subsample` (the
+genes the metric is bound to are protected from subsampling). (A `variance_inflation`
+perturbation existed before v0.1.1; it was removed as a measured no-op on the correlation-based
+whole-matrix metric.) A nuisance is flagged as confounding
 only if the perturbed mean is **both** meaningfully large relative to the metric's scale
 (relative change > `tol`, default 0.25, with a floored denominator so a near-zero baseline can't
 explode) **and** statistically separated from the baseline (z > `z_thresh`, default 4). The

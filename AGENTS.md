@@ -6,6 +6,10 @@ and mathematical artifacts. Its thesis is that metric validation should be *agen
 so driving it is exactly what you're for. Default posture: **state commitments → red-team →
 then believe**, never "compute → believe."
 
+> **Status: v0.x under validation.** The validator has known failures in both directions:
+> it can pass useless metrics and block real biology. They are listed in
+> `validation/probes/README.md`. Never present a verdict from this version as validated.
+
 ## Three ways to drive it
 
 1. **This repo, directly (you're here).** Use the CLI or the Python API.
@@ -39,7 +43,7 @@ that pooling erases.
 ## Working on the code
 
 - **Install:** `pip install -e ".[dev]"` (core needs only numpy+pandas; scipy/anndata/matplotlib/mcp are optional extras).
-- **Test:** `pytest -q` — 32 tests must stay green (`tests/`). Add a regression test for any behavior change.
+- **Test:** `pytest -q` must stay green. It collects `tests/` and the dev set `validation/probes/`. Known validator failures are `xfail(strict=True)`: a fix that makes one pass shows up as an XPASS error until its marker is removed. Add a regression test for any behavior change, and never edit a dev probe's expected verdict to make it pass.
 - **Contract:** the gates take a black-box `metric(data) -> float`; `data` is any object with `.X`, `.obs`, `.var_names`, and `data[mask]` — real `anndata.AnnData` or the bundled `SimpleData`. Keep gates metric-agnostic; keep optional deps lazily imported.
 - **Adding a reference metric:** add a keyword-only `fn(data, *, gene_a, gene_b) -> float` to `metrics.py`, then it's usable by name in the CLI and MCP tools.
 

@@ -21,7 +21,12 @@ hides it completely.
 | 2 n_genes matching | **STOP** (in males) | young/old n_genes distributions don't overlap — incomparable |
 | 3 Raw visibility | dropout-driven | the "shape change" in the Smad3×Col1a1 scatter is points collapsing onto the zero axes |
 | 5 Controls | HK also declines in males | the negative/housekeeping control is confounded the same way |
-| 6 Replication | **FAIL** | human skin (10x) shows it unmatched, but n_genes-matched it vanishes even in the young |
+| 6 Replication | **not run by the tool** | by-hand result from the internal checklist only: human skin (10x) showed the effect unmatched, but n_genes-matched it vanished even in the young. The automated GATE 6 run on 10x skin has not been done. |
+
+*Where the numbers come from:* 1.94× is the synthetic demo; 2.4× is the by-hand internal
+checklist. The automated real-data run (preprint §4) gives 1.65× pooled across tissues.
+Its age groups and replicate counts are under audit; see
+[`validation/flagship_audit/`](../../validation/flagship_audit/).
 
 **Verdict: the metric was not measuring biology.** What *did* survive: the sex dimorphism in
 cell quality itself (male-old cells detect far fewer genes) — real, whether biological or

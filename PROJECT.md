@@ -5,7 +5,7 @@
 
 **Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · 4 Write-up · **5 Publish** · 6 Archive  ← current
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
-**Started:** 2026-07-04   **Last update:** 2026-07-04
+**Started:** 2026-07-04   **Last update:** 2026-10-07
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
@@ -26,8 +26,10 @@ turns that checklist into runnable behavior.
   The checks cost ~1 hour. A tool that enforces them, with dual distribution, is high-leverage.
 - **What would falsify it:** If the gates cannot separate a known-confounded metric (mi_3bin on a
   planted QC confound) from a known-clean one on the same data — i.e. if they neither catch the
-  artifact nor pass the real signal. *(Currently: 32 tests show the separation holds, including
-  adversarial-audit regressions and SimpleData↔AnnData agreement.)*
+  artifact nor pass the real signal. *(Status 2026-10-07: **not met at the verdict level.** On
+  the planted demo data `norm_pearson` also gets FAIL (GATE 1 is data-level; GATE 5's negative
+  control trips on a closure artifact). The separation holds only for GATE 0 in isolation.
+  See `validation/probes/`.)*
 
 ## Design decisions (locked for v1)
 - **Metric as a plugin.** Gates take `metric(data) -> float` as a black box; they know scRNA-seq
@@ -39,10 +41,15 @@ turns that checklist into runnable behavior.
   judgment — the skill elicits them, they are not scripted.
 
 ## Self-test (this is a tool, not a hypothesis test)
-- **Result:** engine **35/35 tests pass** (synthetic gate tests + 24-finding adversarial-audit
-  regressions + SimpleData↔AnnData compatibility). The falsification criterion holds: the gates
-  separate a known-confounded metric (`mi_3bin`) from a known-clean one (`norm_pearson`) on the
-  same planted data. Engine + docs both passed an adversarial multi-agent review.
+- **Result (v0.1.1):** the regression suite passes (synthetic gate tests + 24-finding
+  adversarial-audit regressions + SimpleData↔AnnData compatibility), and engine + docs passed an
+  adversarial multi-agent review. A green suite shows the code runs as specified. It does
+  **not** show the validator is right.
+- **Self-probe (2026-10-07):** the exploratory probes in `validation/probes/` show the validator
+  errs in both directions. A random-number metric gets PASS. Real biology that moves QC (Xist
+  female>male, a sorted cell-cycle control, a proliferation shift) dies at GATE 1/2. Cell-level
+  permutations certify mouse-to-mouse noise. Each failure is a strict-xfail test. These probes
+  are a dev set with no confirmatory weight.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
@@ -56,3 +63,10 @@ turns that checklist into runnable behavior.
 - [ ] Post preprint to bioRxiv (manuscript ready); then fill preprint DOI in README/CITATION/manuscript.
 - [ ] Portfolio: add to `mool32.github.io/_data/publications.yml` + `papers.bib`.
 - [ ] v1.1: turnkey GATE 6 second-platform replication, more example datasets.
+- [ ] Validation plan (2026-10-07):
+  0. preserve the dev set and set the status;
+  1. audit the flagship TMS data;
+  2. rework the verdict logic;
+  3. confirmatory validation on frozen tag `v0.3.0-prereg` with a new, blind panel;
+  4. external verdicts;
+  5. paper untouched until step 3 is done.
