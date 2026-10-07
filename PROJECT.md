@@ -3,7 +3,8 @@
 > The single source of truth for where this project is. Update it at every stage transition.
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
-**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · 4 Write-up · **5 Publish** · 6 Archive  ← current
+**Stage:** 0 Seed · 1 Pre-reg · **2 Execute** · 3 Verdict · 4 Write-up · 5 Publish · 6 Archive  ← current
+*(Moved back from 5 Publish on 2026-10-07: the validator is under validation. See the validation plan below.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
 **Started:** 2026-07-04   **Last update:** 2026-10-07
 
