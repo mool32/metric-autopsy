@@ -222,9 +222,26 @@ def test_runner_runs_the_engine_on_claim_cards(bgs, tmp_path):
     import run_panel as R
     summary = R.run(tmp_path / "panel", tmp_path / "reports", workers=1)
     assert summary["run"] == 3 and summary["errors"] == 0 and not summary["logged_twice"]
+    assert summary["machine"]["cpus"] >= 1
     for cid in pick:
         rep = json.loads((tmp_path / "reports" / f"{cid}.json").read_text())
         assert rep["verdict"] and rep["elapsed_seconds"] > 0
     assert R.run(tmp_path / "panel", tmp_path / "reports", workers=1)["skipped"] == 3  # one attempt per card
     log = (tmp_path / "reports" / "runlog.jsonl").read_text().splitlines()
     assert len(log) == 3
+
+
+def test_runner_pins_one_blas_thread_per_worker_before_numpy_loads():
+    """The thread variables count only if they are set before numpy loads its BLAS; a forked
+    worker inherits the pool numpy was loaded with."""
+    import os
+    import subprocess
+    env = {k: v for k, v in os.environ.items() if k not in (
+        "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")}
+    code = "import json, run_panel; print(json.dumps(run_panel.machine()))"
+    out = subprocess.run([sys.executable, "-c", code], cwd=HERE, env=env, capture_output=True,
+                         text=True, check=True).stdout
+    m = json.loads(out)
+    assert set(m["blas_env"].values()) == {"1"}
+    if m["blas_threads_in_use"] is not None:  # read with threadpoolctl where it is installed
+        assert m["blas_threads_in_use"] == [1]

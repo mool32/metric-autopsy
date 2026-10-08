@@ -19,7 +19,14 @@ import time
 from functools import partial
 from pathlib import Path
 
-import numpy as np
+# One BLAS thread per worker process. OpenBLAS and MKL size their thread pools when numpy loads
+# them, so the variables are set before numpy is imported (timing.py does the same); a value
+# already set wins. machine() records the thread count numpy's BLAS actually uses.
+BLAS_VARS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
+for _var in BLAS_VARS:
+    os.environ.setdefault(_var, "1")
+
+import numpy as np  # noqa: E402
 
 MODULE_FOLD, MODULE_FRAC = 2.0, 0.3
 
@@ -89,9 +96,16 @@ def run_card(job) -> dict:
     return dict(id=card["id"], seconds=rep["elapsed_seconds"], error="error" in rep)
 
 
-def _init_worker():
-    for var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
-        os.environ[var] = "1"
+def machine() -> dict:
+    """Cores and BLAS threads of the run, for the record (v1.md, section 4). The threads in use
+    are read with threadpoolctl when it is installed (None otherwise)."""
+    try:
+        from threadpoolctl import threadpool_info
+        used = sorted({i["num_threads"] for i in threadpool_info() if i.get("user_api") == "blas"})
+    except ImportError:
+        used = None
+    return dict(cpus=os.cpu_count(), blas_threads_in_use=used,
+                blas_env={v: os.environ.get(v) for v in BLAS_VARS})
 
 
 def run(panel_dir: Path, out_dir: Path, workers: int = 1, limit: int | None = None) -> dict:
@@ -105,7 +119,7 @@ def run(panel_dir: Path, out_dir: Path, workers: int = 1, limit: int | None = No
         results = [run_card(j) for j in jobs]
     else:
         import multiprocessing as mp
-        with mp.get_context("fork").Pool(workers, initializer=_init_worker) as pool:
+        with mp.get_context("fork").Pool(workers) as pool:
             results = list(pool.imap_unordered(run_card, jobs, chunksize=1))
     wall = time.time() - t0
     merged, seen, twice = [], set(), []
@@ -121,7 +135,8 @@ def run(panel_dir: Path, out_dir: Path, workers: int = 1, limit: int | None = No
     secs = [r["seconds"] for r in results if "seconds" in r]
     summary = dict(cards=len(jobs), run=len(secs), skipped=sum(r.get("skipped", False) for r in results),
                    errors=sum(r.get("error", False) for r in results), workers=workers,
-                   wall_seconds=wall, mean_seconds=float(np.mean(secs)) if secs else None,
+                   machine=machine(), wall_seconds=wall,
+                   mean_seconds=float(np.mean(secs)) if secs else None,
                    median_seconds=float(np.median(secs)) if secs else None, logged_twice=twice)
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
     return summary

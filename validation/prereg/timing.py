@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -18,7 +19,10 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 
-import numpy as np
+for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_var, "1")  # as run_panel.py: one BLAS thread per worker, set before numpy
+
+import numpy as np  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -43,6 +47,7 @@ def main(argv=None):
     rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=HERE, capture_output=True,
                          text=True).stdout.strip() or "?"
     print(f"# timing pilot — git {rev}, python {platform.python_version()}, numpy {np.__version__}")
+    print(f"# machine: {json.dumps(R.machine())}")
     bgs = {"B1": simulated_background("B1", donors=24, cells=220, n_genes=args.genes),
            "B2": simulated_background("B2", donors=12, cells=220, n_genes=args.genes, seed=1)}
     pilot = dict(sesoi=0.1, key_dose=2.0)
