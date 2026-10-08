@@ -1,0 +1,20 @@
+# metric-autopsy probe p14 — git 317080e, python 3.13.16, numpy 2.5.3
+# pool  0 high   ['GENE7', 'GENE6'] mean 8.37/7.79 detected 0.95/0.95
+# pool  1 high   ['GENE10', 'GENE11'] mean 8.62/4.73 detected 0.96/0.89
+# pool  2 high   ['GENE0', 'GENE1'] mean 7.68/6.00 detected 0.95/0.92
+# pool  3 high   ['GENE9', 'GENE8'] mean 9.25/7.53 detected 0.96/0.95
+# pool  4 medium ['GENE839', 'GENE840'] mean 1.78/1.55 detected 0.69/0.65
+# pool  5 medium ['GENE841', 'GENE842'] mean 1.58/1.41 detected 0.65/0.61
+# pool  6 medium ['GENE843', 'GENE844'] mean 1.52/1.22 detected 0.64/0.58
+# pool  7 medium ['GENE837', 'GENE838'] mean 1.55/1.35 detected 0.64/0.62
+# pool  8 low    ['GENE1668', 'GENE1669'] mean 0.53/0.53 detected 0.35/0.35
+# pool  9 low    ['GENE2192', 'GENE1789'] mean 0.45/0.40 detected 0.34/0.31
+# pool 10 low    ['GENE1674', 'GENE1675'] mean 0.45/0.39 detected 0.32/0.28
+# pool 11 low    ['GENE2417', 'GENE2492'] mean 0.31/0.27 detected 0.25/0.22
+GATE 4 on log-normalized Pearson, null datasets 2 x 8 donors x 200 cells, 12 per row
+  strength 1.0, high  : FAIL 0/12; z median  21.4 [ 15.2,  32.1]; response median +0.1431
+  strength 1.0, medium: FAIL 8/12; z median   2.8 [  2.1,   6.5]; response median +0.0518
+  strength 1.0, low   : FAIL 12/12; z median  -0.6 [ -2.9,   1.4]; response median -0.0143
+  strength 2.0, high  : FAIL 0/12; z median  26.9 [ 21.6,  34.6]; response median +0.2399
+  strength 2.0, medium: FAIL 2/12; z median   4.0 [  2.9,   6.2]; response median +0.0735
+  strength 2.0, low   : FAIL 12/12; z median   0.0 [ -4.0,   1.6]; response median +0.0004

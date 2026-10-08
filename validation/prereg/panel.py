@@ -1,36 +1,45 @@
 """The blinded panel of the confirmatory validation (validation/prereg/v1.md, section 3).
 
-    python validation/prereg/panel.py --key-seed SEED --backgrounds backgrounds.json \
-        --pilot pilot.json --out DIR
+This module holds the design (conditions, variants, numbers of datasets), the key assignment,
+the backgrounds' fixed genes and pairs, the truth generators and the claim cards. The panel is
+built on the fly by ``blind.py`` (in GitHub Actions or one local run): no dataset is stored,
+every dataset and claim card is identified by a canonical sha256 (``dataset_sha256``,
+``card_sha256``), and the datasets are reproducible from the key after it is revealed.
 
-The key seed (held by the project owner, never in the repository) decides every dataset's
-condition, variant (dose or step), side and seed, and the order of the dataset IDs. For each ID
-the script writes ``DIR/<ID>.npz`` (counts, obs, genes) and ``DIR/<ID>.json`` (the claim card,
-which does not depend on the condition); ``DIR/manifest.json`` lists the IDs with the sha256 of
-both files. ``score.py`` re-derives the assignment from the same seed after the engine has run.
+The key (generated and held by the project owner) is 128 bits written as 32 lowercase hex
+characters (``secrets.token_hex(16)``); its public commitment is the sha256 of that string in
+UTF-8 (``key_commitment``). It decides every dataset's condition, variant (dose or step), side,
+gene pair and seed, and the order of the dataset IDs; the pair is drawn independently of the
+condition.
 
 Independence: the truth is generated here, with this module's own binomial thinning (as in
 seqgendiff, Gerard 2020), never with the engine's modules; this file does not import
-``metric_autopsy``. ``backgrounds.json`` maps "B1" and "B2" to {"path": .h5ad or .npz, "donor":
-obs column, "filter": {obs column: value}}; ``pilot.json`` holds the SESOI, the dose ladder and
-the establishable conditions (written by ``oracle.py pilot``).
+``metric_autopsy``.
 """
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-KEY_N = 600            # datasets per key null condition (oc.log: S1 needs >= 506)
-DONORS_PER_GROUP = 8   # N1-N3, N6, E1-E3: 2 x 8 donors from B1
-CELLS_PER_DONOR = 200  # cells drawn per donor and dataset
-N_GENES = 2000         # genes kept per background: the most expressed, plus the named genes
+KEY_N = 790            # datasets per key null condition (oc.log: S1 as a whole, 5 conditions)
+DONORS_PER_GROUP = 8   # N1-N3, N6, N8, E1-E3: 2 x 8 donors from B1
+CELLS_PER_DONOR = 200  # cells drawn per donor and dataset; donors with fewer are not used
+N_GENES = 2000         # genes kept per background: the named genes, then the most expressed
 RANDOM_SCORE_GENES = 50
+LEVELS = ("high", "medium", "low")
+PAIRS_PER_LEVEL = 4    # analysed pairs per level; the pool has len(LEVELS) * PAIRS_PER_LEVEL
+LEVEL_CANDIDATES = 1000  # the most expressed eligible genes of a level enter its pair search
+PLAN_CELLS_PER_DONOR = 200  # cells per donor (public seed) on which pair correlations are computed
+MIN_DONOR_DETECTION = 0.05  # a pair gene is detected in >= 5% of the cells of every donor
+NEG_MAX_R = 0.02       # a negative control's |partial correlation| is below this
+N8_BETA = (2.0, 2.0)   # N8: per-cell capture ~ Beta(2, 2) in one group (mean 0.5)
+PLAN_SEED = 20261008   # public seed of the plan's cell subsample and N6c's random genes
 
 # Tirosh et al. 2016 G2/M genes (human symbols); the module the random-gene score claims to
 # measure (N6c). Genes absent from a background are dropped.
@@ -45,6 +54,8 @@ G2M_GENES = (
 # --------------------------------------------------------------------------- #
 NULL_ALLOWED = ("NO DETECTABLE EFFECT", "INCONCLUSIVE", "NOT SUPPORTED")
 EFFECT_ALLOWED = ("SUPPORTED", "INCONCLUSIVE")
+LABELS = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE", "UNIDENTIFIABLE",
+          "DEGENERATE METRIC")
 
 
 @dataclass(frozen=True)
@@ -52,81 +63,156 @@ class Condition:
     name: str
     background: str
     variants: tuple            # ((variant label, number of datasets), ...)
-    allowed: tuple
-    definite: str | None       # expected verdict where the oracle finds it establishable
+    allowed: tuple             # for E1-E3 the base set; NO DETECTABLE EFFECT joins where |Δ*| < SESOI
     null: bool                 # scored for false SUPPORTED
     key: bool = False          # key null condition (criterion S1), at its key variant
     key_variant: str | None = None
     cards: int = 1             # claim cards per dataset (N4: without and with a replicate column)
+    oracle: bool = True        # whether the oracle can establish a definite verdict (N4: no)
 
 
 CONDITIONS = (
-    Condition("N1", "B1", (("null", KEY_N),), NULL_ALLOWED, "NO DETECTABLE EFFECT", True, True, "null"),
+    Condition("N1", "B1", (("null", KEY_N),), NULL_ALLOWED, True, True, "null"),
     Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 100), ("c=0.7", 100), ("c=0.3", 100)),
-              NULL_ALLOWED, "NOT SUPPORTED", True, True, "c=0.5"),
-    Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)),
-              NULL_ALLOWED, "NOT SUPPORTED", True),
+              NULL_ALLOWED, True, True, "c=0.5"),
+    Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)), NULL_ALLOWED, True),
     Condition("N4", "B1", (("3v3", 100),), ("INCONCLUSIVE", "NO DETECTABLE EFFECT", "NOT SUPPORTED"),
-              None, True, cards=2),
-    Condition("N5", "B1", (("sham", KEY_N),), ("NO DETECTABLE EFFECT", "INCONCLUSIVE"),
-              "NO DETECTABLE EFFECT", True, True, "sham"),
-    Condition("N6a", "B1", (("random", 100),), ("NOT SUPPORTED", "INCONCLUSIVE"), "NOT SUPPORTED", True),
-    Condition("N6b", "B1", (("constant", 50),), ("DEGENERATE METRIC",), "DEGENERATE METRIC", True),
-    Condition("N6c", "B1", (("random-genes", KEY_N),), ("NOT SUPPORTED", "INCONCLUSIVE"),
-              "NOT SUPPORTED", True, True, "random-genes"),
-    Condition("N7", "B2", (("mice", 200),), NULL_ALLOWED, "NO DETECTABLE EFFECT", True),
+              True, cards=2, oracle=False),
+    Condition("N5", "B1", (("sham", KEY_N),), ("NO DETECTABLE EFFECT", "INCONCLUSIVE"), True, True, "sham"),
+    Condition("N6a", "B1", (("random", 100),), ("NOT SUPPORTED", "INCONCLUSIVE"), True),
+    Condition("N6b", "B1", (("constant", 50),), ("DEGENERATE METRIC",), True),
+    Condition("N6c", "B1", (("random-genes", KEY_N),), ("NOT SUPPORTED", "INCONCLUSIVE"), True, True,
+              "random-genes"),
+    Condition("N7", "B2", (("mice", 200),), NULL_ALLOWED, True),
+    Condition("N8", "B1", (("beta(2,2)", KEY_N),), NULL_ALLOWED, True, True, "beta(2,2)"),
     Condition("E1", "B1", (("dose=key", 200), ("dose=0.25", 100), ("dose=0.5", 100), ("dose=1.5", 100)),
-              EFFECT_ALLOWED, "SUPPORTED", False),
-    Condition("E2", "B1", (("against", 200),), EFFECT_ALLOWED, "SUPPORTED", False),
-    Condition("E3", "B1", (("with", 200),), EFFECT_ALLOWED, "SUPPORTED", False),
+              EFFECT_ALLOWED, False),
+    Condition("E2", "B1", (("against", 200),), EFFECT_ALLOWED, False),
+    Condition("E3", "B1", (("with", 200),), EFFECT_ALLOWED, False),
 )
+
+# The drop order of v1.md section 4 (compute budget): whole variants, never replicates of the
+# rest, and never a key null condition or E1-E3 at the key dose.
+DROP_ORDER = (("N3", "f=0.1"), ("N3", "f=0.2"), ("N3", "f=0.4"), ("E1", "dose=0.25"), ("E1", "dose=0.5"),
+              ("E1", "dose=1.5"), ("N2", "c=0.9"), ("N2", "c=0.7"), ("N2", "c=0.3"), ("N4", "3v3"))
 
 
 def conditions() -> dict:
     return {c.name: c for c in CONDITIONS}
 
 
-def n_datasets() -> int:
-    return sum(n for c in CONDITIONS for _, n in c.variants)
+def _dropped(name: str, variant: str, dropped) -> bool:
+    return any(d in (name, f"{name}:{variant}") for d in (dropped or ()))
+
+
+def check_dropped(dropped) -> list:
+    """Drops are allowed only in DROP_ORDER, as a prefix of it (v1.md section 4)."""
+    dropped = list(dropped or ())
+    allowed = [f"{n}:{v}" for n, v in DROP_ORDER]
+    if dropped != allowed[:len(dropped)]:
+        raise ValueError(f"drops must be a prefix of the pre-registered order {allowed}, got {dropped}")
+    return dropped
+
+
+def n_datasets(dropped=()) -> int:
+    return sum(n for c in CONDITIONS for v, n in c.variants if not _dropped(c.name, v, dropped))
+
+
+def n_cards(dropped=(), null: bool | None = None) -> int:
+    return sum(n * c.cards for c in CONDITIONS for v, n in c.variants
+               if not _dropped(c.name, v, dropped) and (null is None or c.null == null))
+
+
+def level_of_pair(pair_index: int) -> str:
+    return LEVELS[pair_index // PAIRS_PER_LEVEL]
 
 
 # --------------------------------------------------------------------------- #
-# the key: condition, variant, side and seed of every dataset ID
+# the key: condition, variant, side, gene pair and seed of every dataset ID
 # --------------------------------------------------------------------------- #
-def assign(key_seed: int) -> list[dict]:
-    """Every dataset of the design, in an order and with seeds decided by the key seed.
+def check_key(key: str) -> str:
+    if not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{32}", key):
+        raise ValueError("the key is 128 bits as 32 lowercase hex characters (secrets.token_hex(16))")
+    return key
 
-    Deterministic in the seed; nothing about an entry is visible in its ID."""
+
+def key_commitment(key: str) -> str:
+    """The public commitment to the key: sha256 of its hex string in UTF-8."""
+    return hashlib.sha256(check_key(key).encode("utf-8")).hexdigest()
+
+
+def assign(key: str, dropped=()) -> list[dict]:
+    """Every dataset of the design, in an order and with sides, gene pairs and seeds decided by
+    the key. Deterministic in the key; nothing about an entry is visible in its ID, and the gene
+    pair is drawn independently of the condition."""
+    dropped = check_dropped(dropped)
     entries = [dict(condition=c.name, variant=v, index=i)
-               for c in CONDITIONS for v, n in c.variants for i in range(n)]
-    ss = np.random.SeedSequence(int(key_seed))
+               for c in CONDITIONS for v, n in c.variants if not _dropped(c.name, v, dropped)
+               for i in range(n)]
+    ss = np.random.SeedSequence(int(check_key(key), 16))
     order_seq, *data_seqs = ss.spawn(len(entries) + 1)
-    rng = np.random.default_rng(order_seq)
-    perm = rng.permutation(len(entries))
-    out = []
+    perm = np.random.default_rng(order_seq).permutation(len(entries))
     width = len(str(len(entries)))
+    out = []
     for rank, k in enumerate(perm):
         e = dict(entries[k])
-        side_rng = np.random.default_rng(data_seqs[k].spawn(1)[0])
-        e.update(id=f"D{rank + 1:0{width}d}", side=("A", "B")[int(side_rng.integers(2))],
+        draw = np.random.default_rng(data_seqs[k].spawn(1)[0])
+        e.update(id=f"D{rank + 1:0{width}d}", side=("A", "B")[int(draw.integers(2))],
+                 pair=int(draw.integers(len(LEVELS) * PAIRS_PER_LEVEL)),
                  seed=int(data_seqs[k].generate_state(1)[0]))
         out.append(e)
     return out
 
 
+def card_ids(entry: dict) -> list[str]:
+    return [entry["id"]] if conditions()[entry["condition"]].cards == 1 else [f"{entry['id']}a", f"{entry['id']}b"]
+
+
 # --------------------------------------------------------------------------- #
-# backgrounds: genes, analysed pair and controls, fixed before the key
+# allowed sets (the pilot's Δ* decides NO DETECTABLE EFFECT for the real effects)
+# --------------------------------------------------------------------------- #
+def e1_factor(variant: str) -> float:
+    return 1.0 if variant == "dose=key" else float(variant.split("=")[1])
+
+
+def delta_of(cond_name: str, variant: str, pair_index: int, pilot: dict) -> dict:
+    """Δ*, the population difference of the metric (signal side minus the other) in the version
+    of the condition without its artifact, for the dataset's pair: E1 at its dose; E2 and E3 as
+    E1 at the key dose (pilot.json, written before the key)."""
+    factor = e1_factor(variant) if cond_name == "E1" else 1.0
+    return pilot["delta"][str(pair_index)][f"{factor:g}"]
+
+
+def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> tuple:
+    """The verdicts correct for this design. For a real effect NO DETECTABLE EFFECT is correct
+    only where |Δ*| < SESOI of the pair's level; where |Δ*| >= SESOI it is an error (E2 and E3
+    included, whose attenuation should make the engine report UNDERPOWERED, i.e. INCONCLUSIVE)."""
+    if not cond.name.startswith("E"):
+        return cond.allowed
+    d = float(delta_of(cond.name, variant, pair_index, pilot)["value"])
+    sesoi = float(pilot["sesoi"][level_of_pair(pair_index)])
+    return cond.allowed + (("NO DETECTABLE EFFECT",) if abs(d) < sesoi else ())
+
+
+def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> tuple:
+    """The correct definite verdicts: in the allowed set and not INCONCLUSIVE."""
+    return tuple(v for v in allowed(cond, variant, pair_index, pilot) if v != "INCONCLUSIVE")
+
+
+# --------------------------------------------------------------------------- #
+# backgrounds: genes, the pair pool and its controls, fixed before the key
 # --------------------------------------------------------------------------- #
 @dataclass
 class Background:
-    """Raw counts of one background (cells x genes) with the donor of every cell."""
-    X: np.ndarray
+    """Raw counts of one background (cells x genes; numpy or scipy.sparse) with the donor of
+    every cell. `plan_background` fixes the plan and compacts it to the qualifying donors' cells
+    and the kept genes (dense int32)."""
+    X: object
     genes: list
     donor: np.ndarray
     name: str = "B?"
     extra_obs: pd.DataFrame | None = None
     plan: dict = field(default_factory=dict)
-    plan_cols: list = field(default_factory=list)
 
     @property
     def donors(self) -> list:
@@ -134,96 +220,269 @@ class Background:
         return [str(v) for v, c in zip(vals, counts) if c >= CELLS_PER_DONOR]
 
 
+def _is_sparse(X) -> bool:
+    return hasattr(X, "tocsr") and not isinstance(X, np.ndarray)
+
+
+def _counts_matrix(ad, spec: dict):
+    """The raw counts of an AnnData and gene symbols: spec['counts'] is 'raw' (raw.X), 'X', or
+    'layer:<name>'; 'auto' (default) takes raw.X if present, else layers['counts'], else X.
+    Symbols come from spec['gene_symbols'] (a var column; 'feature_name' if present), else var_names."""
+    how = spec.get("counts", "auto")
+    if how == "auto":
+        how = "raw" if ad.raw is not None else ("layer:counts" if "counts" in ad.layers else "X")
+    if how == "raw":
+        X, var = ad.raw.X, ad.raw.var
+    elif how.startswith("layer:"):
+        X, var = ad.layers[how.split(":", 1)[1]], ad.var
+    elif how == "X":
+        X, var = ad.X, ad.var
+    else:
+        raise ValueError(f"unknown counts source {how!r}")
+    col = spec.get("gene_symbols") or ("feature_name" if "feature_name" in var.columns
+                                       or "feature_name" in ad.var.columns else None)
+    if col is None:
+        genes = [str(g) for g in var.index]
+    elif col in var.columns:
+        genes = [str(g) for g in var[col]]
+    else:
+        genes = [str(g) for g in ad.var.loc[var.index, col]]
+    return X, genes
+
+
 def load_background(name: str, spec: dict) -> Background:
-    """An .h5ad (raw counts in X or layers['counts']) or an .npz written by `save_npz`."""
+    """An .h5ad (raw counts as `_counts_matrix` finds them; cells filtered by spec['filter'] before
+    anything is loaded into memory) or an .npz written by `save_npz`. Counts stay sparse."""
     path = Path(spec["path"])
+    filters = spec.get("filter") or {}
     if path.suffix == ".npz":
         z = np.load(path, allow_pickle=False)
-        X, genes, obs = z["X"], list(z["genes"]), pd.DataFrame({k[4:]: z[k] for k in z.files if k.startswith("obs_")})
+        obs = pd.DataFrame({k[4:]: z[k] for k in z.files if k.startswith("obs_")})
+        if "X_data" in z.files:
+            from scipy import sparse
+            X = sparse.csr_matrix((z["X_data"], z["X_indices"], z["X_indptr"]), shape=tuple(z["X_shape"]))
+        else:
+            X = z["X"]
+        genes = [str(g) for g in z["genes"]]
+        keep = np.ones(len(obs), bool)
+        for col, val in filters.items():
+            keep &= np.asarray(obs[col]).astype(str) == str(val)
+        X, obs = X[keep], obs[keep].reset_index(drop=True)
     else:
         import anndata  # lazily: only the panel run needs it
-        ad = anndata.read_h5ad(path)
-        X = ad.layers["counts"] if "counts" in ad.layers else ad.X
-        X = X.toarray() if hasattr(X, "toarray") else np.asarray(X)
-        genes, obs = [str(g) for g in ad.var_names], ad.obs.reset_index(drop=True)
-    for col, val in (spec.get("filter") or {}).items():
-        keep = np.asarray(obs[col]).astype(str) == str(val)
-        X, obs = X[keep], obs[keep].reset_index(drop=True)
-    X = np.asarray(X, dtype=np.float64)
-    if not (np.all(X >= 0) and np.allclose(X, np.round(X))):
+        ad = anndata.read_h5ad(path, backed="r")
+        keep = np.ones(ad.n_obs, bool)
+        for col, val in filters.items():
+            keep &= np.asarray(ad.obs[col]).astype(str) == str(val)
+        sub = ad[np.where(keep)[0]].to_memory()
+        X, genes = _counts_matrix(sub, spec)
+        obs = sub.obs.reset_index(drop=True)
+    X = X.tocsr() if _is_sparse(X) else np.asarray(X)
+    vals = X.data if _is_sparse(X) else X
+    if not (np.all(vals >= 0) and np.all(vals == np.round(vals))):
         raise ValueError(f"{name}: the panel needs raw counts")
     return Background(X, genes, np.asarray(obs[spec["donor"]]).astype(str), name, obs)
 
 
+def resolve_background(spec_path: Path, name: str, spec: dict, data_dir=None) -> dict:
+    """A backgrounds.json entry with its local path: "path" (relative to the JSON) or "file" in
+    `data_dir` (default: next to the JSON); the file must match the entry's "sha256" if given."""
+    spec = dict(spec)
+    if "path" in spec:
+        p = Path(spec["path"])
+        spec["path"] = str(p if p.is_absolute() else Path(spec_path).parent / p)
+    else:
+        spec["path"] = str(Path(data_dir or Path(spec_path).parent) / spec["file"])
+    if spec.get("sha256") and sha256(Path(spec["path"])) != spec["sha256"]:
+        raise ValueError(f"{name}: {spec['path']} does not match the sha256 in {Path(spec_path).name}")
+    return spec
 
-def load_backgrounds(spec_path) -> dict:
-    """Every background of a backgrounds JSON ({"B1": {"path", "donor", "filter"}, ...}, written by
-    the rule of v1.md section 3.1), loaded and planned (`plan_background`)."""
+
+def load_backgrounds(spec_path, data_dir=None) -> dict:
+    """Every background of a backgrounds JSON (written by the rule of v1.md section 3.1: per
+    background the url, file, sha256, cell filter, donor column, counts source and gene-symbol
+    column), loaded from `data_dir`, checked against its sha256 and planned (`plan_background`)."""
     spec = json.loads(Path(spec_path).read_text())
-    bgs = {k: load_background(k, v) for k, v in spec.items()}
-    for bg in bgs.values():
-        plan_background(bg)
+    bgs = {}
+    for k, v in spec.items():
+        bgs[k] = load_background(k, resolve_background(spec_path, k, v, data_dir))
+        plan_background(bgs[k])
     return bgs
 
-def _norm_log(X: np.ndarray) -> np.ndarray:
-    tot = X.sum(axis=1, keepdims=True)
-    return np.log1p(X / np.where(tot > 0, tot, 1.0) * 1e4)
+
+def level_of(mean: float, detection: float) -> str | None:
+    """A gene's expression level: low - detected in a minority of cells (10% to 50%); medium -
+    in a majority, with a mean below 2 counts per cell; high - in a majority, mean >= 2."""
+    if 0.10 <= detection < 0.50:
+        return "low"
+    if detection >= 0.50:
+        return "high" if mean >= 2.0 else "medium"
+    return None
 
 
-def _corr_cols(Y: np.ndarray) -> np.ndarray:
-    Y = Y - Y.mean(axis=0)
-    sd = np.sqrt((Y ** 2).sum(axis=0))
-    C = (Y.T @ Y) / np.outer(np.where(sd > 0, sd, 1.0), np.where(sd > 0, sd, 1.0))
-    return C
+def _col_stats(X):
+    """Mean count and detected share per gene, from exact integer sums (the same floats for a
+    dense and a sparse matrix of the same counts)."""
+    n = X.shape[0]
+    if _is_sparse(X):
+        X = X.tocsr()
+        total = np.asarray(X.sum(axis=0, dtype=np.int64)).ravel()
+        nnz = np.bincount(X.indices[X.data > 0], minlength=X.shape[1])
+    else:
+        total = np.asarray(X).sum(axis=0).astype(np.int64)
+        nnz = (np.asarray(X) > 0).sum(axis=0)
+    return total / n, nnz / n
 
 
-def plan_background(bg: Background, seed: int = 20261008) -> dict:
-    """Fixed before the key: kept genes, analysed pair, positive and negative control pairs and
-    the random genes of N6c. Rule: among the 300 most expressed genes other than mitochondrial
-    and ribosomal ones, the analysed pair is the most correlated pair of log-normalized
-    expression; the positive control the most correlated pair disjoint from it; the negative
-    control the pair closest in mean expression to the analysed pair whose correlation is below
-    0.02 in absolute value."""
+def _dense(X) -> np.ndarray:
+    return X.toarray() if _is_sparse(X) else np.asarray(X)
+
+
+def _partial_corr(blocks, libs) -> np.ndarray:
+    """Pooled within-donor correlation of log-normalized expression over all cells, with the log
+    library size partialled out per donor: the co-variation of two genes that depth does not
+    explain. `blocks` holds one donor's log-normalized values each, `libs` its log totals."""
+    G = blocks[0].shape[1]
+    S = np.zeros((G, G))
+    for Y, L in zip(blocks, libs):
+        Yc = Y - Y.mean(axis=0)
+        Lc = L - L.mean()
+        ll = float(Lc @ Lc)
+        R = Yc - np.outer(Lc, (Lc @ Yc) / ll) if ll > 0 else Yc
+        S += R.T @ R
+    sd = np.sqrt(np.clip(np.diag(S), 0, None))
+    den = np.outer(sd, sd)
+    return np.divide(S, den, out=np.full_like(S, np.nan), where=den > 0)
+
+
+def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
+    """Fixed before the key: the pair pool, its controls, the kept genes and N6c's random genes.
+
+    Rule (v1.md section 3.1): only donors with >= CELLS_PER_DONOR cells; a gene is eligible for
+    a pair if it is not mitochondrial or ribosomal and is detected in >= 5% of the cells of every
+    donor; eligible genes are split into levels (`level_of`); in each level the 1,000 most
+    expressed enter the search. A pair's correlation is the pooled within-donor correlation of
+    log-normalized expression over all cells with the log library size partialled out
+    (`_partial_corr`), on 200 cells per donor (public seed): what the two genes share beyond
+    depth. Per level the PAIRS_PER_LEVEL most correlated disjoint pairs form the pool; the next
+    disjoint pair of the high level is the background's positive control (GATE 5), as a
+    housekeeping pair would be; each pool pair's negative control is the unused pair of its level
+    closest to it in mean expression whose |partial correlation| is below 0.02."""
     rng = np.random.default_rng(seed)
-    means = bg.X.mean(axis=0)
+    donor_all = np.asarray(bg.donor).astype(str)
+    vals, counts = np.unique(donor_all, return_counts=True)
+    donors = vals[counts >= CELLS_PER_DONOR]
+    rows = np.where(np.isin(donor_all, donors))[0]
+    X = bg.X[rows]
+    donor = donor_all[rows]
     names = [str(g) for g in bg.genes]
     upper = [g.upper() for g in names]
+    mean, det = _col_stats(X)
+    donor_det = np.full(len(names), np.inf)
+    for d in donors:
+        donor_det = np.minimum(donor_det, _col_stats(X[donor == d])[1])
     skip = np.array([u.startswith(("MT-", "RPS", "RPL")) for u in upper])
-    order = np.argsort(-means, kind="mergesort")
-    cand = [j for j in order if not skip[j]][:300]
-    sub = bg.X if bg.X.shape[0] <= 5000 else bg.X[rng.choice(bg.X.shape[0], 5000, replace=False)]
-    C = _corr_cols(_norm_log(sub)[:, cand])
-    np.fill_diagonal(C, -np.inf)
-    flat = np.argsort(-C, axis=None, kind="mergesort")
-    pairs = [(cand[i // len(cand)], cand[i % len(cand)]) for i in flat[: 4 * len(cand)]]
-    pairs = [(a, b) for a, b in pairs if a < b]
-    a1, b1 = pairs[0]
-    pos = next((a, b) for a, b in pairs if len({a, b, a1, b1}) == 4)
-    np.fill_diagonal(C, 1.0)
-    target = (means[a1] + means[b1]) / 2
-    neg, best = None, np.inf
-    at = {g: k for k, g in enumerate(cand)}
-    for i, a in enumerate(cand):
-        for b in cand[i + 1:]:
-            if len({a, b, a1, b1, *pos}) < 6 or abs(C[at[a], at[b]]) >= 0.02:
+    eligible = ~skip & (donor_det >= MIN_DONOR_DETECTION)
+    level = np.array([level_of(m, f) if ok else None for m, f, ok in zip(mean, det, eligible)], dtype=object)
+    order = np.argsort(-mean, kind="mergesort")
+    tot = (np.asarray(X.sum(axis=1, dtype=np.int64)).ravel() if _is_sparse(X)
+           else np.asarray(X).sum(axis=1).astype(np.int64)).astype(float)
+    plan_rows = [np.sort(rng.choice(np.where(donor == d)[0], size=min(PLAN_CELLS_PER_DONOR, int((donor == d).sum())),
+                                    replace=False)) for d in donors]
+    used: set = set()
+    levels, pool, positive = {}, [], None
+    for li, lvl in enumerate(LEVELS):
+        cand = [int(j) for j in order if level[j] == lvl][:LEVEL_CANDIDATES]
+        need = PAIRS_PER_LEVEL + (1 if lvl == "high" else 0)
+        if len(cand) < 4 * need:
+            raise ValueError(f"{bg.name}: level {lvl!r} has {len(cand)} eligible genes, too few for its "
+                             f"pairs and their negative controls")
+        lib = [np.where(tot[r] > 0, tot[r], 1.0) for r in plan_rows]
+        blocks = [np.log1p(_dense(X[r][:, cand]) / t[:, None] * 1e4) for r, t in zip(plan_rows, lib)]
+        # rounded so that the summation order of the matrix products cannot reorder near-ties
+        C = np.round(_partial_corr(blocks, [np.log(t) for t in lib]), 10)
+        iu = np.triu_indices(len(cand), 1)
+        r = C[iu]
+        top = [t for t in np.argsort(-np.nan_to_num(r, nan=-np.inf), kind="mergesort") if np.isfinite(r[t])]
+        chosen = []
+        for t in top:
+            a, b = cand[iu[0][t]], cand[iu[1][t]]
+            if a in used or b in used:
                 continue
-            gap = abs((means[a] + means[b]) / 2 - target)
-            if gap < best:
-                neg, best = (a, b), gap
-    if neg is None:
-        raise ValueError(f"{bg.name}: no expression-matched pair with |r| < 0.02 for the negative control")
+            chosen.append((a, b, float(r[t])))
+            used.update((a, b))
+            if len(chosen) == need:
+                break
+        if len(chosen) < need:
+            raise ValueError(f"{bg.name}: level {lvl!r}: fewer than {need} disjoint pairs")
+        if lvl == "high":
+            positive = chosen.pop()
+        avg = (mean[cand][:, None] + mean[cand][None, :]) / 2
+        for k, (a, b, rab) in enumerate(chosen):
+            free = np.array([g not in used for g in cand])
+            ok = np.triu((np.abs(np.nan_to_num(C, nan=np.inf)) < NEG_MAX_R) & np.outer(free, free), 1)
+            gap = np.where(ok, np.abs(avg - (mean[a] + mean[b]) / 2), np.inf)
+            if not np.isfinite(gap).any():
+                raise ValueError(f"{bg.name}: no negative control with |r| < {NEG_MAX_R} for {names[a]}-{names[b]}")
+            i, j = np.unravel_index(int(np.argmin(gap)), gap.shape)
+            c, d = cand[i], cand[j]
+            used.update((c, d))
+            pool.append(dict(level=lvl, index=li * PAIRS_PER_LEVEL + k, pair=[names[a], names[b]], r=rab,
+                             mean=[float(mean[a]), float(mean[b])], detection=[float(det[a]), float(det[b])],
+                             neg_pair=[names[c], names[d]], neg_r=float(C[i, j]),
+                             neg_mean=[float(mean[c]), float(mean[d])]))
+        levels[lvl] = dict(eligible_genes=int(sum(level == lvl)), candidates=len(cand),
+                           median_r=float(np.nanmedian(r)))
+    pos_pair = [names[positive[0]], names[positive[1]]]
+    for pe in pool:
+        pe["pos_pair"] = pos_pair
     g2m = [g for g in G2M_GENES if g in upper]
-    named = {a1, b1, *pos, *neg} | {upper.index(g) for g in g2m}
-    keep = list(dict.fromkeys([*named, *[j for j in order if j not in named]]))[:max(N_GENES, len(named))]
-    pool = [j for j in keep if j not in named]
-    random_genes = sorted(rng.choice(pool, size=min(RANDOM_SCORE_GENES, len(pool)), replace=False).tolist())
-    plan = dict(genes=[names[j] for j in sorted(keep)],
-                pair=[names[a1], names[b1]], pos_pair=[names[pos[0]], names[pos[1]]],
-                neg_pair=[names[neg[0]], names[neg[1]]],
+    named = set(used) | {upper.index(g) for g in g2m}
+    keep = list(dict.fromkeys([*sorted(named), *[int(j) for j in order if j not in named]]))
+    keep = sorted(keep[:max(N_GENES, len(named))])
+    free = [j for j in keep if j not in named]
+    random_genes = sorted(rng.choice(free, size=min(RANDOM_SCORE_GENES, len(free)), replace=False).tolist())
+    plan = dict(rule=dict(cells_per_donor=CELLS_PER_DONOR, min_donor_detection=MIN_DONOR_DETECTION,
+                          level_rule="low: detected in [10%, 50%); medium: >= 50%, mean < 2; high: >= 50%, mean >= 2",
+                          level_candidates=LEVEL_CANDIDATES, plan_cells_per_donor=PLAN_CELLS_PER_DONOR,
+                          neg_max_r=NEG_MAX_R, pairs_per_level=PAIRS_PER_LEVEL,
+                          seed=seed),
+                donors=[str(d) for d in donors], cells=int(len(rows)), genes=[names[j] for j in keep],
+                levels=levels, pool=pool,
+                positive_control=dict(pair=pos_pair, r=positive[2],
+                                      mean=[float(mean[positive[0]]), float(mean[positive[1]])]),
                 g2m=[names[upper.index(g)] for g in g2m], random_genes=[names[j] for j in random_genes])
+    kept = X[:, keep]
+    bg.X = (kept.astype(np.int32).toarray() if _is_sparse(kept) else np.asarray(kept, dtype=np.int32))
+    bg.genes = [names[j] for j in keep]
+    bg.donor = donor
+    if bg.extra_obs is not None and len(bg.extra_obs) == len(donor_all):
+        bg.extra_obs = bg.extra_obs.iloc[rows].reset_index(drop=True)
     bg.plan = plan
-    bg.plan_cols = [names.index(g) for g in plan["genes"]]
     return plan
+
+
+def background_sha256(bg: Background) -> str:
+    """Canonical sha256 of a planned background: its counts, genes, donors and plan."""
+    h = hashlib.sha256(b"metric-autopsy panel background v1\n")
+    h.update(json.dumps(dict(name=bg.name, shape=list(bg.X.shape), genes=bg.genes, plan=bg.plan),
+                        sort_keys=True).encode())
+    h.update(np.ascontiguousarray(bg.X, dtype="<i4").tobytes())
+    h.update("\x1f".join(map(str, bg.donor)).encode())
+    return h.hexdigest()
+
+
+def save_compact(bg: Background, path: Path) -> None:
+    """A planned background as one .npz (counts of the kept genes, donors, plan)."""
+    np.savez_compressed(path, X=np.asarray(bg.X, dtype=np.int32), genes=np.asarray(bg.genes),
+                        donor=np.asarray(bg.donor).astype(str), plan=np.asarray(json.dumps(bg.plan)),
+                        name=np.asarray(bg.name))
+
+
+def load_compact(path: Path) -> Background:
+    z = np.load(path, allow_pickle=False)
+    return Background(z["X"], [str(g) for g in z["genes"]], z["donor"].astype(str), str(z["name"]),
+                      plan=json.loads(str(z["plan"])))
 
 
 # --------------------------------------------------------------------------- #
@@ -243,6 +502,11 @@ def drop_out(X: np.ndarray, frac: float, rng) -> np.ndarray:
         pick = nz[rng.choice(len(nz), size=k, replace=False)]
         out[pick[:, 0], pick[:, 1]] = 0.0
     return out
+
+
+def variable_capture(X: np.ndarray, rng, beta=N8_BETA) -> np.ndarray:
+    """N8: every cell keeps its molecules with its own probability, drawn from Beta(a, b)."""
+    return thin(X, rng.beta(beta[0], beta[1], size=X.shape[0])[:, None], rng)
 
 
 def _keep(z: np.ndarray, dose: float) -> np.ndarray:
@@ -279,7 +543,7 @@ def _draw_cells(bg: Background, donors, rng):
         rows.append(pick)
         donor_of += [d] * len(pick)
     rows = np.concatenate(rows)
-    return bg.X[np.ix_(rows, bg.plan_cols)].copy(), np.asarray(donor_of)
+    return np.asarray(bg.X[rows], dtype=np.float64), np.asarray(donor_of)
 
 
 def _two_groups(bg: Background, rng, per_group: int):
@@ -289,16 +553,22 @@ def _two_groups(bg: Background, rng, per_group: int):
     return X, donor, np.array([group_of[d] for d in donor])
 
 
+def pool_entry(bg: Background, entry: dict) -> dict:
+    return bg.plan["pool"][entry["pair"]]
+
+
 def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame, list, list[dict]]:
-    """Counts, obs, genes and claim card(s) of one dataset."""
+    """Counts, obs, genes and claim card(s) of one dataset. `pilot` holds the SESOI and the key
+    dose per level and Δ* (whose sign is the true direction of a real effect)."""
     cond = conditions()[entry["condition"]]
     bg = bgs[cond.background]
     rng = np.random.default_rng(entry["seed"])
-    genes = list(bg.plan["genes"])
-    ia, ib = genes.index(bg.plan["pair"][0]), genes.index(bg.plan["pair"][1])
+    pe = pool_entry(bg, entry)
+    level = pe["level"]
+    genes = list(bg.genes)
+    ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
     side, other = entry["side"], ("B" if entry["side"] == "A" else "A")
     variant = entry["variant"]
-    replicate_col = "donor"
     if cond.name == "N5":
         donors = rng.choice(bg.donors, size=DONORS_PER_GROUP, replace=False)
         X, donor = _draw_cells(bg, donors, rng)
@@ -306,19 +576,19 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
     elif cond.name == "N4":
         X, donor, group = _two_groups(bg, rng, 3)
     elif cond.name == "N7":
-        per = len(bg.donors) // 2
-        X, donor, group = _two_groups(bg, rng, per)
+        X, donor, group = _two_groups(bg, rng, len(bg.donors) // 2)
     else:
         X, donor, group = _two_groups(bg, rng, DONORS_PER_GROUP)
     in_side = group == side
     if cond.name == "N2":
-        c = float(variant.split("=")[1])
-        X[in_side] = thin(X[in_side], c, rng)
+        X[in_side] = thin(X[in_side], float(variant.split("=")[1]), rng)
     elif cond.name == "N3":
         X[in_side] = drop_out(X[in_side], float(variant.split("=")[1]), rng)
+    elif cond.name == "N8":
+        X[in_side] = variable_capture(X[in_side], rng)
     elif cond.name.startswith("E"):
-        factor = 1.0 if cond.name != "E1" or variant == "dose=key" else float(variant.split("=")[1])
-        dose = factor * float(pilot["key_dose"])
+        factor = e1_factor(variant) if cond.name == "E1" else 1.0
+        dose = factor * float(pilot["key_dose"][level])
         X[in_side] = inject_coupling(X[in_side], ia, ib, dose, rng)
         X[~in_side] = sham_coupling(X[~in_side], ia, ib, dose, rng)
         if cond.name == "E2":   # artifact against the effect: capture loss where the signal is
@@ -328,36 +598,67 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
     obs = pd.DataFrame({"group": group, "donor": donor})
     obs["total_counts"] = X.sum(axis=1)
     obs["n_genes_by_counts"] = (X > 0).sum(axis=1)
-    # the claim's direction: the signal side is the higher one (E); a coin for the nulls, so the
-    # card does not reveal the condition
-    higher = side if cond.name.startswith("E") else ("A", "B")[int(rng.integers(2))]
+    # the claim's direction: for a real effect the true one (the signal side is higher where
+    # Δ* > 0); for a null a coin, so that the card does not reveal the condition
+    if cond.name.startswith("E"):
+        known = str(entry["pair"]) in (pilot.get("delta") or {})
+        positive = (not known) or float(delta_of(cond.name, variant, entry["pair"], pilot)["value"]) >= 0
+        higher = side if positive else other
+    else:
+        higher = ("A", "B")[int(rng.integers(2))]
     direction = "decrease" if higher == "A" else "increase"  # change from A to B
     metric = {"N6a": "random", "N6b": "constant", "N6c": "score"}.get(cond.name, "norm_pearson")
-    base = dict(id=entry["id"], background=cond.background, metric=metric,
-                gene_pair=bg.plan["pair"], pos_pair=bg.plan["pos_pair"], neg_pair=bg.plan["neg_pair"],
+    base = dict(id=entry["id"], background=cond.background, metric=metric, gene_pair=pe["pair"],
+                pos_pair=pe["pos_pair"], neg_pair=pe["neg_pair"],
                 score_genes=bg.plan["random_genes"] if metric == "score" else None,
-                group_col="group", groups=["A", "B"], replicate_col=replicate_col,
+                group_col="group", groups=["A", "B"], replicate_col="donor",
                 signal_test=(dict(kind="module", genes=bg.plan["g2m"]) if metric == "score"
-                             else dict(kind="coupling", genes=bg.plan["pair"])),
-                prereg=dict(estimand="composition", direction=direction, sesoi=float(pilot["sesoi"]),
-                            judgment_pending=False))
+                             else dict(kind="coupling", genes=pe["pair"])),
+                prereg=dict(estimand="composition", direction=direction,
+                            sesoi=float(pilot["sesoi"][level]), judgment_pending=False))
     cards = [base]
     if cond.cards == 2:  # N4: the same cells analysed without and with the replicate unit
-        cards = [dict(base, id=f"{entry['id']}a", replicate_col=None),
-                 dict(base, id=f"{entry['id']}b")]
+        cards = [dict(base, id=f"{entry['id']}a", replicate_col=None), dict(base, id=f"{entry['id']}b")]
     return X, obs, genes, cards
 
 
 # --------------------------------------------------------------------------- #
-# files
+# canonical hashes and files
 # --------------------------------------------------------------------------- #
-def save_npz(path: Path, X: np.ndarray, obs: pd.DataFrame, genes: list) -> None:
-    """Plain arrays only (strings as fixed-width unicode), loadable without pickle."""
+def dataset_sha256(X: np.ndarray, obs: pd.DataFrame, genes: list) -> str:
+    """Canonical sha256 of a dataset (counts as little-endian int32, genes, obs columns); the
+    same bytes on any machine, so a revealed key reproduces it."""
+    h = hashlib.sha256(b"metric-autopsy panel dataset v1\n")
+    Xi = np.ascontiguousarray(np.round(np.asarray(X)), dtype="<i4")
+    h.update(json.dumps(dict(shape=list(Xi.shape), genes=list(genes), obs=list(obs.columns))).encode())
+    h.update(Xi.tobytes())
+    for c in obs.columns:
+        v = np.asarray(obs[c])
+        if np.issubdtype(v.dtype, np.number):
+            h.update(np.ascontiguousarray(v, dtype="<f8").tobytes())
+        else:
+            h.update("\x1f".join(map(str, v)).encode())
+    return h.hexdigest()
+
+
+def card_sha256(card: dict) -> str:
+    return hashlib.sha256(json.dumps(card, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def save_npz(path: Path, X, obs: pd.DataFrame, genes: list) -> None:
+    """Plain arrays only (strings as fixed-width unicode), loadable without pickle; a sparse X is
+    stored as CSR arrays."""
     arrays = {}
     for c in obs.columns:
         v = np.asarray(obs[c])
         arrays[f"obs_{c}"] = v.astype(str) if v.dtype == object else v
-    np.savez_compressed(path, X=np.asarray(X, dtype=np.int32), genes=np.asarray(genes), **arrays)
+    if _is_sparse(X):
+        X = X.tocsr()
+        arrays.update(X_data=X.data.astype(np.int32), X_indices=X.indices, X_indptr=X.indptr,
+                      X_shape=np.asarray(X.shape))
+        np.savez_compressed(path, genes=np.asarray(genes), **arrays)
+    else:
+        np.savez_compressed(path, X=np.asarray(X, dtype=np.int32), genes=np.asarray(genes), **arrays)
 
 
 def sha256(path: Path) -> str:
@@ -366,40 +667,3 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
-
-
-def write_panel(key_seed: int, bgs: dict, pilot: dict, out: Path, only: list | None = None) -> dict:
-    out.mkdir(parents=True, exist_ok=True)
-    entries = assign(key_seed)
-    if only is not None:
-        entries = [e for e in entries if e["id"] in set(only)]
-    manifest = dict(n_datasets=n_datasets(), pilot=pilot, backgrounds={k: bg.plan for k, bg in bgs.items()},
-                    datasets=[])
-    for e in entries:
-        X, obs, genes, cards = build(e, bgs, pilot)
-        data_path = out / f"{e['id']}.npz"
-        save_npz(data_path, X, obs, genes)
-        for card in cards:
-            card_path = out / f"{card['id']}.json"
-            card_path.write_text(json.dumps(dict(card, data=data_path.name), indent=1))
-            manifest["datasets"].append(dict(id=card["id"], data=data_path.name, data_sha256=sha256(data_path),
-                                             card=card_path.name, card_sha256=sha256(card_path)))
-    (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
-    return manifest
-
-
-def main(argv=None):
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    p.add_argument("--key-seed", type=int, required=True)
-    p.add_argument("--backgrounds", required=True, help="JSON: {B1: {path, donor, filter}, B2: {...}}")
-    p.add_argument("--pilot", required=True, help="pilot.json from oracle.py")
-    p.add_argument("--out", required=True)
-    args = p.parse_args(argv)
-    bgs = load_backgrounds(args.backgrounds)
-    pilot = json.loads(Path(args.pilot).read_text())
-    m = write_panel(args.key_seed, bgs, pilot, Path(args.out))
-    print(f"{len(m['datasets'])} claim cards from {m['n_datasets']} datasets written to {args.out}")
-
-
-if __name__ == "__main__":
-    main()

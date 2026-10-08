@@ -1,17 +1,15 @@
-"""Run the frozen engine once on every claim card of the panel (v1.md, section 8, step 4).
+"""Run the frozen engine once on every claim card of the panel, each dataset built on the fly
+(validation/prereg/v1.md, section 8). Used by blind.py (the blind run) and timing.py.
 
-    python validation/prereg/run_panel.py --panel DIR --out REPORTS --workers 8
-
-Each card is run through the Python API with its pre-registration; the JSON report goes to
-REPORTS/<id>.json with the run time. A card whose report exists is not run again (one attempt
-per card); an engine exception is written as {"error": ...} and scored as a verdict outside the
-allowed set. Workers write their own run logs (REPORTS/runlog.<worker>.jsonl), merged into
-REPORTS/runlog.jsonl at the end; a claim logged twice is reported. Commit REPORTS with the
-sha256 of every file before the key is revealed.
+Every dataset is built from the key's entry by ``panel.build`` inside a worker process and never
+written: the manifest records its canonical sha256 (``panel.dataset_sha256``), its donors, and
+per claim card the card's and the report's sha256. A card whose report exists is not run again
+(one attempt per card); an engine exception is written as {"error": ...} and scored as a verdict
+outside the allowed set. Workers write their own run logs (``runlog.<pid>.jsonl``), merged into
+``runlog.jsonl`` at the end; a claim logged twice is reported.
 """
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import os
@@ -20,27 +18,21 @@ from functools import partial
 from pathlib import Path
 
 # One BLAS thread per worker process. OpenBLAS and MKL size their thread pools when numpy loads
-# them, so the variables are set before numpy is imported (timing.py does the same); a value
-# already set wins. machine() records the thread count numpy's BLAS actually uses.
+# them, so the variables are set before numpy is imported (timing.py and blind.py do the same);
+# a value already set wins. machine() records the thread count numpy's BLAS actually uses.
 BLAS_VARS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 for _var in BLAS_VARS:
     os.environ.setdefault(_var, "1")
 
 import numpy as np  # noqa: E402
 
+import panel as P  # noqa: E402
+
 MODULE_FOLD, MODULE_FRAC = 2.0, 0.3
 
 
 def _seed(card_id: str) -> int:
     return int(hashlib.sha256(card_id.encode()).hexdigest()[:8], 16)
-
-
-def load(card: dict, panel_dir: Path):
-    from metric_autopsy import SimpleData
-    import pandas as pd
-    z = np.load(panel_dir / card["data"], allow_pickle=False)
-    obs = pd.DataFrame({k[4:]: z[k] for k in z.files if k.startswith("obs_")})
-    return SimpleData(z["X"].astype(np.float64), obs, [str(g) for g in z["genes"]])
 
 
 def make_run_args(card: dict):
@@ -76,26 +68,6 @@ def make_run_args(card: dict):
     return metric, kw
 
 
-def run_card(job) -> dict:
-    card_path, panel_dir, out_dir, worker_log = job
-    from metric_autopsy import run_autopsy
-    card = json.loads(Path(card_path).read_text())
-    out = Path(out_dir) / f"{card['id']}.json"
-    if out.exists():
-        return dict(id=card["id"], skipped=True)
-    t0 = time.time()
-    try:
-        data = load(card, Path(panel_dir))
-        metric, kw = make_run_args(card)
-        a = run_autopsy(metric, data, log_path=worker_log, **kw)
-        rep = a.to_dict()
-        rep.update(id=card["id"], elapsed_seconds=time.time() - t0)
-    except Exception as exc:  # scored as outside the allowed set
-        rep = dict(id=card["id"], error=repr(exc), elapsed_seconds=time.time() - t0)
-    out.write_text(json.dumps(rep, allow_nan=False, default=str))
-    return dict(id=card["id"], seconds=rep["elapsed_seconds"], error="error" in rep)
-
-
 def machine() -> dict:
     """Cores and BLAS threads of the run, for the record (v1.md, section 4). The threads in use
     are read with threadpoolctl when it is installed (None otherwise)."""
@@ -108,20 +80,55 @@ def machine() -> dict:
                 blas_env={v: os.environ.get(v) for v in BLAS_VARS})
 
 
-def run(panel_dir: Path, out_dir: Path, workers: int = 1, limit: int | None = None) -> dict:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    manifest = json.loads((panel_dir / "manifest.json").read_text())
-    cards = [panel_dir / d["card"] for d in manifest["datasets"]][:limit]
-    jobs = [(str(c), str(panel_dir), str(out_dir), str(out_dir / f"runlog.{k % max(workers, 1)}.jsonl"))
-            for k, c in enumerate(cards)]
+_STATE: dict = {}  # backgrounds, pilot and output directory, inherited by forked workers
+
+
+def run_entry(entry: dict) -> dict:
+    """Build one dataset, run the engine on each of its claim cards, return its manifest row."""
+    from metric_autopsy import SimpleData, run_autopsy
+    bgs, pilot, out_dir = _STATE["bgs"], _STATE["pilot"], _STATE["out"]
+    X, obs, genes, cards = P.build(entry, bgs, pilot)
+    row = dict(id=entry["id"], data_sha256=P.dataset_sha256(X, obs, genes),
+               donors=sorted(set(map(str, obs["donor"]))), cards=[])
+    for card in cards:
+        out = out_dir / "reports" / f"{card['id']}.json"
+        rec = dict(id=card["id"], card_sha256=P.card_sha256(card))
+        if out.exists():
+            rec.update(skipped=True, report_sha256=hashlib.sha256(out.read_bytes()).hexdigest())
+            row["cards"].append(rec)
+            continue
+        t0 = time.time()
+        try:
+            metric, kw = make_run_args(card)
+            a = run_autopsy(metric, SimpleData(X.copy(), obs.copy(), list(genes)),
+                            log_path=str(out_dir / f"runlog.{os.getpid()}.jsonl"), **kw)
+            rep = a.to_dict()
+            rep.update(id=card["id"], elapsed_seconds=time.time() - t0)
+        except Exception as exc:  # scored as outside the allowed set
+            rep = dict(id=card["id"], error=repr(exc), elapsed_seconds=time.time() - t0)
+        text = json.dumps(rep, allow_nan=False, default=str)
+        out.write_text(text)
+        rec.update(report_sha256=hashlib.sha256(text.encode()).hexdigest(), seconds=rep["elapsed_seconds"],
+                   error="error" in rep)
+        row["cards"].append(rec)
+    return row
+
+
+def run(entries: list[dict], bgs: dict, pilot: dict, out_dir: Path, workers: int = 1) -> dict:
+    """Run every entry (in parallel with `workers` forked processes); write manifest.json,
+    runlog.jsonl and summary.json to out_dir and return the summary."""
+    out_dir = Path(out_dir)
+    (out_dir / "reports").mkdir(parents=True, exist_ok=True)
+    _STATE.update(bgs=bgs, pilot=pilot, out=out_dir)
     t0 = time.time()
     if workers <= 1:
-        results = [run_card(j) for j in jobs]
+        rows = [run_entry(e) for e in entries]
     else:
         import multiprocessing as mp
         with mp.get_context("fork").Pool(workers) as pool:
-            results = list(pool.imap_unordered(run_card, jobs, chunksize=1))
+            rows = list(pool.imap_unordered(run_entry, entries, chunksize=1))
     wall = time.time() - t0
+    rows.sort(key=lambda r: r["id"])
     merged, seen, twice = [], set(), []
     for f in sorted(out_dir.glob("runlog.*.jsonl")):
         for line in f.read_text().splitlines():
@@ -130,27 +137,18 @@ def run(panel_dir: Path, out_dir: Path, workers: int = 1, limit: int | None = No
                 twice.append(rec.get("claim_id"))
             seen.add(rec.get("claim_id"))
             merged.append(rec)
+        f.unlink()
     merged.sort(key=lambda r: r.get("timestamp_utc", ""))
-    (out_dir / "runlog.jsonl").write_text("".join(json.dumps(r) + "\n" for r in merged))
-    secs = [r["seconds"] for r in results if "seconds" in r]
-    summary = dict(cards=len(jobs), run=len(secs), skipped=sum(r.get("skipped", False) for r in results),
-                   errors=sum(r.get("error", False) for r in results), workers=workers,
+    with open(out_dir / "runlog.jsonl", "a") as fh:
+        fh.write("".join(json.dumps(r) + "\n" for r in merged))
+    (out_dir / "manifest.json").write_text(json.dumps(dict(datasets=rows), indent=1))
+    cards = [c for r in rows for c in r["cards"]]
+    secs = [c["seconds"] for c in cards if "seconds" in c]
+    summary = dict(datasets=len(rows), cards=len(cards), run=len(secs),
+                   skipped=sum(c.get("skipped", False) for c in cards),
+                   errors=sum(c.get("error", False) for c in cards), workers=workers,
                    machine=machine(), wall_seconds=wall,
                    mean_seconds=float(np.mean(secs)) if secs else None,
                    median_seconds=float(np.median(secs)) if secs else None, logged_twice=twice)
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
     return summary
-
-
-def main(argv=None):
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    p.add_argument("--panel", required=True)
-    p.add_argument("--out", required=True)
-    p.add_argument("--workers", type=int, default=1)
-    p.add_argument("--limit", type=int)
-    args = p.parse_args(argv)
-    print(json.dumps(run(Path(args.panel), Path(args.out), args.workers, args.limit), indent=1))
-
-
-if __name__ == "__main__":
-    main()

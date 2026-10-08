@@ -88,10 +88,19 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
 - `validation/prereg/`: the confirmatory validation's protocol (`v1.md`) and its code —
-  `panel.py` (design, key assignment, truth generators, claim cards; never imports the engine),
-  `oracle.py` (establishability, SESOI and key dose by an oracle told the truth), `run_panel.py`
-  (one engine run per claim card, in parallel, with the run log), `score.py` (decoding and the
-  criteria), `oc.py` (thresholds by one principle), `timing.py` and `test_prereg.py`.
+  `panel.py` (design, 128-bit key and its sha256 commitment, a pool of gene pairs at three
+  expression levels drawn by the key independently of the condition, truth generators including
+  N8's per-cell variable capture, claim cards, allowed sets by the true effect Δ\*, canonical
+  sha256 of datasets and cards; never imports the engine), `oracle.py` (per level: SESOI, key
+  dose, Δ\*, N2's informativeness; establishability by any correct definite verdict),
+  `run_panel.py` (datasets built on the fly, one engine run per claim card, in parallel),
+  `blind.py` and `.github/workflows/panel.yml` (the blind run from the tag with the key in a
+  secret; a dry run on pull requests; a one-machine fallback), `score.py` (criteria, per-level
+  rates, a shared-donor interval), `oc.py` (thresholds by one principle, S1 as a whole),
+  `simulate.py`, `timing.py` and `test_prereg.py`.
+- `validation/probes/p14_gate4_by_expression_level.py`: GATE 4 fails the valid metric where its
+  response to the injected coupling is weak (medium expression, 8 of 12 simulated datasets at
+  the default strength) or absent (low expression, 12 of 12); open, put to the project owner.
 - `validation/probes/verdicts_v03.py` scores errors (verdict outside the set allowed by the
   design, false SUPPORTED) and decisiveness (definite verdicts where the design makes the truth
   establishable) per case, with Clopper-Pearson intervals. `validation/probes/JOURNAL.md`
@@ -137,6 +146,8 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 - GATE 0's depth-matched null can sit slightly above the data for leverage-heavy raw metrics
   in small samples, because the deepest cells have few deeper neighbours; for a depth-only pair
   the signal above the null stays below 0.01 (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
+- GATE 4 has no power rule: a metric whose response to the injected signal is real but weak
+  fails as if it ignored its construct (probe p14).
 - "Explained by depth" is a diagnosis the design must be able to establish: in p11b's
   conditions it needs about 20 mice per group; on typical designs the tool protects against a
   false SUPPORTED but does not prove the artifact (`paper/drafts/limitations.md`).

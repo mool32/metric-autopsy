@@ -73,10 +73,16 @@ turns that checklist into runnable behavior.
   pre-registered direction); GATE 0's null is depth-matched; a depth bias the declared
   correction removes no longer blocks, other biases block only beyond `bias_tolerance` x SESOI
   (probe p13 is the regression); the limitation of "explained by depth" is drafted in
-  `paper/drafts/limitations.md`. Pre-registration of step 3: `validation/prereg/v1.md`, final
-  draft awaiting approval, with its panel code (`panel.py`, `oracle.py`, `run_panel.py`,
-  `score.py`, tests) and the criteria recomputed by one principle (600 datasets per key null
-  condition). No tag yet.
+  `paper/drafts/limitations.md`. Pre-registration of step 3: `validation/prereg/v1.md`.
+- **Step 2d (second round of 2026-10-08; the first final draft was not approved):** the
+  unsized-bias message says to declare a SESOI; a test pins that a directional claim is tested
+  two-sided at alpha. The panel: gene pairs at three expression levels drawn by the key, N8
+  (per-cell variable capture) as a fifth key null condition, allowed sets of the real effects by
+  the true effect Δ\*, S1 as a whole (790 datasets per key condition), S3 on correct definite
+  verdicts, a 128-bit key with a sha256 commitment, and the blind run in GitHub Actions from the
+  tag with the key in a secret and no dataset stored (`blind.py`, `.github/workflows/panel.yml`).
+  Probe p14 found that GATE 4 fails the valid metric where its response is weak or absent
+  (open). Second-round final draft awaiting an independent code review and approval. No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

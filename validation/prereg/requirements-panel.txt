@@ -1,0 +1,18 @@
+# The panel's environment, frozen with the tag (installed by .github/workflows/panel.yml, Python 3.13).
+# The engine itself is installed from the checked-out tag with `pip install --no-deps -e .`.
+numpy==2.5.3
+pandas==2.3.3
+scipy==1.18.1
+anndata==0.13.4
+h5py==3.16.0
+threadpoolctl==3.7.0
+array-api-compat==1.15.0
+legacy-api-wrap==1.5
+natsort==8.4.0
+numcodecs==0.17.0
+packaging==26.3
+python-dateutil==2.9.0.post0
+pytz==2026.5
+six==1.17.0
+tzdata==2026.5
+zarr==3.4.0

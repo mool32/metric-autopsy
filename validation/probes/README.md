@@ -197,3 +197,20 @@ SESOI with its 95% lower bound. The regression
 `test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked` checks that at 800 cells per donor
 the depth response is still classified as bias and no longer blocks. The log records the finding
 under the earlier rule (git ac8f1a8).
+
+### Found while building the confirmatory panel: GATE 4 by expression level (p14, open)
+
+`p14_gate4_by_expression_level.py` (log: `p14_gate4_by_expression_level.log`; not in `run_all.sh`,
+~5 min) runs GATE 4 on `norm_pearson` for the pair pool of the confirmatory panel
+(`validation/prereg/panel.py`: pairs at three expression levels) on simulated backgrounds of the
+panel's size, null datasets of 2 x 8 donors x 200 cells, with the claim cards' injected coupling
+(strength 1.0) and with strength 2.0. GATE 4 requires the metric to move by z >= 3. It fails the
+valid metric in 0/12, 8/12 and 12/12 datasets at the high, medium and low level at strength 1.0,
+and in 0/12, 2/12 and 12/12 at strength 2.0. At the medium level the response is real but weak
+(median z 2.8 and 4.0): a false FAIL, since GATE 4 has no power rule (GATE 5's silent positive
+control has one). At the low level the metric does not respond at all (median z -0.6 and 0.0):
+it is computed on co-detected cells, whose low counts are mostly 1 and whose log-normalized values
+follow the cells' totals, so a coupling that acts through co-detection is invisible to it; there
+"metric invalid" is right. No expectation is frozen: what GATE 4 should do with a weak response,
+and which verdicts are correct for a real effect the metric cannot see, are put to the project
+owner (validation/prereg/v1.md, section 10).
