@@ -1037,6 +1037,110 @@ def test_the_census_is_counted_in_chunks_on_its_category_codes():
     assert "unknown" not in set(picked["donor_id"]) and len(ids) == 2000
 
 
+def _fake_census(monkeypatch, obs_by_org, raw_ok=True):
+    """A stand-in for cellxgene_census with the API the selection uses: obs read in Arrow chunks with
+    dictionary columns (a TableReadIter with .concat()), and get_anndata returning only the obs columns
+    asked for, on a string index."""
+    import sys
+    import types
+    pa = pytest.importorskip("pyarrow")
+    sparse = pytest.importorskip("scipy.sparse")
+
+    class ReadIter:
+        def __init__(self, tables):
+            self.tables = tables
+
+        def __iter__(self):
+            return iter(self.tables)
+
+        def concat(self):
+            return pa.concat_tables(self.tables)
+
+    def _filter(df, value_filter):
+        if 'dataset_id == "' in value_filter:
+            df = df[df["dataset_id"] == value_filter.split('dataset_id == "')[1].split('"')[0]]
+        return df
+
+    class Obs:
+        def __init__(self, df):
+            self.df = df
+
+        def read(self, value_filter, column_names):
+            df = _filter(self.df, value_filter)[list(column_names)]
+            cat = df.astype({c: "category" for c in column_names if c != "soma_joinid"})
+            return ReadIter([pa.Table.from_pandas(cat.iloc[i:i + 700], preserve_index=False)
+                             for i in range(0, len(cat), 700)])
+
+    class Census(dict):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class Datasets:
+        def read(self):
+            ids = sorted({d for df in obs_by_org.values() for d in df["dataset_id"]})
+            return ReadIter([pa.table({"dataset_id": ids, "dataset_title": [f"title of {d}" for d in ids]})])
+
+    class Ad:
+        def __init__(self, X, obs, var):
+            self.X, self.obs, self.var = X, obs, var
+            self.n_obs, self.n_vars = X.shape
+
+        def __getitem__(self, idx):
+            return Ad(self.X[idx], self.obs.iloc[idx], self.var)
+
+    def get_anndata(census, organism, X_name, obs_coords, obs_column_names, var_column_names):
+        df = obs_by_org[organism].set_index("soma_joinid", drop=False).loc[list(obs_coords)]
+        obs = df[list(obs_column_names)].reset_index(drop=True)
+        obs.index = obs.index.astype(str)
+        rng = np.random.default_rng(0)
+        X = rng.poisson(1.0, size=(len(obs), 30)).astype(np.float32)
+        if not raw_ok:
+            X = X * 0.5
+        return Ad(sparse.csr_matrix(X), obs, pd.DataFrame({"feature_name": [f"G{j}" for j in range(30)]}))
+
+    census = Census(census_info={"datasets": Datasets()},
+                    census_data={o.lower().replace(" ", "_"): types.SimpleNamespace(obs=Obs(df))
+                                 for o, df in obs_by_org.items()})
+    mod = types.SimpleNamespace(
+        get_census_version_description=lambda v: {"release_build": "2099-01-01", "lts": True},
+        open_soma=lambda census_version: census, get_anndata=get_anndata)
+    monkeypatch.setitem(sys.modules, "cellxgene_census", mod)
+
+
+def test_the_census_selection_runs_end_to_end_on_a_stand_in(monkeypatch, tmp_path):
+    """select_census on a stand-in Census: the rehearsal names no identity and keeps no file; the real
+    selection lists the candidates, extracts the chosen one with its sha256, and moves to the next
+    rank when a candidate's counts are not raw."""
+    import select_backgrounds as SB
+    rng = np.random.default_rng(5)
+    human = _census_like(rng, [("h1", "T cell", f"a{i}", 210, "female") for i in range(25)]
+                         + [("h2", "B cell", f"b{i}", 230, "male") for i in range(25)])
+    mouse = _census_like(rng, [("m1", "fibroblast", f"f{i}", 205, "female") for i in range(7)]
+                         + [("m1", "fibroblast", f"m{i}", 205, "male") for i in range(6)])
+    for df in (human, mouse):
+        df["development_stage"] = "adult"
+    orgs = {"Homo sapiens": human, "Mus musculus": mouse}
+    _fake_census(monkeypatch, orgs)
+    spec, lines = SB.select_census(tmp_path, rehearsal=True)
+    assert spec == {} and not list(tmp_path.iterdir())
+    text = "\n".join(lines)
+    assert "h2" not in text and "B cell" not in text and "m1" not in text and "chosen rank 1" in text
+    spec, lines = SB.select_census(tmp_path)
+    assert spec["B1"]["source"]["dataset_id"] == "h2" and spec["B1"]["source"]["rank"] == 1
+    assert spec["B1"]["source"]["extracted_cells"] == 25 * 230  # tie on 25 donors: more cells per donor
+    assert spec["B2"]["source"]["qualifying_donors"] == 13 and spec["B2"]["source"]["rule"].startswith("all donors")
+    z = np.load(tmp_path / "B1.npz")
+    assert P.sha256(tmp_path / "B1.npz") == spec["B1"]["sha256"] and set(z["obs_cell_type"]) == {"B cell"}
+    assert z["X_shape"][0] == spec["B1"]["source"]["extracted_cells"] and len(set(z["obs_donor_id"])) == 25
+    _fake_census(monkeypatch, orgs, raw_ok=False)
+    spec, lines = SB.select_census(tmp_path)
+    assert spec == {} and sum("fails the raw-counts criterion" in x for x in lines) == 2 + 1
+    assert sum("none of the first" in x for x in lines) == 2
+
+
 def test_the_anchors_run_on_their_backgrounds(tmp_path):
     """R1 on a B2-like file (sex, age, mouse; Xist in females, Y genes in males) and R2 on a
     B3-like file (phases as single batches, ERCC rows): the claims run and are scored against

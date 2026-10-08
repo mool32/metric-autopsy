@@ -1,4 +1,4 @@
-# The panel's environment, frozen with the tag (installed by .github/workflows/panel.yml, Python 3.13).
+# The panel's environment, frozen with the tag (installed by .github/workflows/validation.yml, Python 3.13).
 # The engine itself is installed from the checked-out tag with `pip install --no-deps -e .`.
 numpy==2.5.3
 pandas==2.3.3

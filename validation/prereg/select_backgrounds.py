@@ -23,6 +23,10 @@ Rules (section 3.1):
 * B4 — Mahdessian et al. 2021: U2OS FUCCI, full-length scRNA-seq with raw counts and FUCCI
   intensities for every cell; >= 300 cells; plate IDs.
 
+Raw counts (non-negative integers) are a criterion of B1 and B2 that only the extracted matrix
+shows: it is checked on the extraction, in the order of the choice rule, over at most the first
+MAX_RANKS candidates; the first that has them is chosen.
+
     python select_backgrounds.py --out-dir DATA --spec backgrounds.json --report selection.md
     python select_backgrounds.py --rehearsal      # before the tag: the code path, no identities printed
 """
@@ -46,6 +50,7 @@ DROPLET_3P = ("10x 3' v1", "10x 3' v2", "10x 3' v3", "10x 3' transcription profi
 MIN_CELLS = P.CELLS_PER_DONOR          # cells per donor (mouse)
 B1_MIN_DONORS, B2_MIN_MICE = 24, 12
 MAX_DONORS, MAX_CELLS = 200, 400       # extraction caps (public-seed samples)
+MAX_RANKS = 5                          # candidates tried, in order, for the raw-counts criterion
 MISSING_DONOR = {"", "na", "n/a", "nan", "none", "unknown", "not applicable"}
 SEED = P.PLAN_SEED
 
@@ -121,10 +126,10 @@ def candidates(counts: pd.DataFrame, keys: list[str], min_donors: int, both_sexe
                            kind="mergesort").reset_index(drop=True)
 
 
-def sample_cells(obs: pd.DataFrame, choice: dict, keys: list[str], max_donors: int, max_cells: int,
+def sample_cells(obs: pd.DataFrame, choice: dict, keys: list[str], max_donors: int | None, max_cells: int,
                  seed: int = SEED) -> np.ndarray:
     """The soma_joinids to extract: the chosen group's qualifying donors (at most `max_donors`, a
-    public-seed sample of the sorted IDs) and at most `max_cells` of each one's cells (a
+    public-seed sample of the sorted IDs; None: all) and at most `max_cells` of each one's cells (a
     public-seed sample of its sorted joinids)."""
     rng = np.random.default_rng(seed)
     mask = np.logical_and.reduce([_equals(obs[k], choice[k]) for k in keys]) & _known(obs["donor_id"])
@@ -132,7 +137,7 @@ def sample_cells(obs: pd.DataFrame, choice: dict, keys: list[str], max_donors: i
                         "donor_id": obs["donor_id"][mask].astype(str).to_numpy()})
     ids_of = {d: np.sort(v.to_numpy()) for d, v in sel.groupby("donor_id")["soma_joinid"]}
     donors = sorted(d for d, ids in ids_of.items() if len(ids) >= MIN_CELLS)
-    if len(donors) > max_donors:
+    if max_donors is not None and len(donors) > max_donors:
         donors = sorted(rng.choice(donors, size=max_donors, replace=False).tolist())
     out = []
     for d in donors:
@@ -165,17 +170,28 @@ def _census_group(census, organism: str, choice: dict, keys: list[str]) -> pd.Da
             .concat().to_pandas())
 
 
+def raw_counts(X) -> bool:
+    """The "raw counts" criterion on an extracted matrix: non-negative integers."""
+    v = X.data if hasattr(X, "data") and not isinstance(X, np.ndarray) else np.asarray(X)
+    return bool(np.all(v >= 0) and np.all(v == np.round(v)))
+
+
 def extract(census, organism: str, joinids: np.ndarray, path: Path, obs_columns: list[str]) -> dict:
     """The cells' raw counts (all genes, sparse) with gene symbols and their obs, written by
-    ``panel.save_npz``; returns the file's sha256 and shape."""
+    ``panel.save_npz`` when they are raw counts; returns the file's sha256 and shape, and whether
+    the counts are raw (non-negative integers: else nothing is written)."""
     import cellxgene_census
     ad = cellxgene_census.get_anndata(census, organism, X_name="raw", obs_coords=joinids,
-                                      obs_column_names=obs_columns, var_column_names=["feature_id", "feature_name"])
+                                      obs_column_names=["soma_joinid", *obs_columns],
+                                      var_column_names=["feature_id", "feature_name"])
     order = np.argsort(ad.obs["soma_joinid"].to_numpy(), kind="mergesort")
     ad = ad[order]
+    X = ad.X.tocsr()
+    if not raw_counts(X):
+        return dict(raw=False, cells=int(ad.n_obs), genes=int(ad.n_vars))
     obs = ad.obs[obs_columns].astype(str).reset_index(drop=True)
-    P.save_npz(path, ad.X.tocsr(), obs, list(ad.var["feature_name"].astype(str)))
-    return dict(sha256=P.sha256(path), cells=int(ad.n_obs), genes=int(ad.n_vars))
+    P.save_npz(path, X, obs, list(ad.var["feature_name"].astype(str)))
+    return dict(raw=True, sha256=P.sha256(path), cells=int(ad.n_obs), genes=int(ad.n_vars))
 
 
 def _datasets(census) -> pd.DataFrame:
@@ -193,7 +209,7 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
     with cellxgene_census.open_soma(census_version=release) as census:
         titles = _datasets(census).set_index("dataset_id")["dataset_title"].to_dict()
         rules = (("B1", "Homo sapiens", ["dataset_id", "cell_type"], B1_MIN_DONORS, False, MAX_DONORS),
-                 ("B2", "Mus musculus", ["dataset_id", "tissue", "cell_type"], B2_MIN_MICE, True, MAX_DONORS))
+                 ("B2", "Mus musculus", ["dataset_id", "tissue", "cell_type"], B2_MIN_MICE, True, None))
         for name, organism, keys, k_min, sexes, max_donors in rules:
             t0 = time.time()
             counted = keys + ["donor_id"] + (["sex"] if sexes else [])
@@ -201,34 +217,50 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
             if cand.empty:
                 lines.append(f"{name}: no candidate meets the criteria: dropped with the cases that need it")
                 continue
-            choice = cand.iloc[0].to_dict()
-            digest = hashlib.sha256(json.dumps({k: str(choice[k]) for k in keys}).encode()).hexdigest()
             cols = sorted(set(keys + ["donor_id", "sex", "development_stage", "tissue", "cell_type", "dataset_id"]))
-            group = _census_group(census, organism, choice, keys)
-            if rehearsal:
-                ids = sample_cells(group, choice, keys, max_donors=2, max_cells=50)
-                rec = extract(census, organism, ids, out_dir / f"{name}-rehearsal.npz", cols)
-                (out_dir / f"{name}-rehearsal.npz").unlink()
-                lines.append(f"{name}: {len(cand)} candidates; choice sha256 {digest[:16]}; rank 1 has "
-                             f"{int(choice['donors'])} qualifying donors; a {rec['cells']}-cell test extraction of "
-                             f"{rec['genes']} genes; {time.time() - t0:.0f} s")
+            if not rehearsal:
+                lines += ["", f"## {name} ({organism})", "", "| rank | " + " | ".join(keys) + " | title | donors >= "
+                          f"{MIN_CELLS} cells | cells per donor |" + (" sexes |" if sexes else ""),
+                          "|---" * (len(keys) + 4 + int(sexes)) + "|"]
+                for i, row in cand.head(15).iterrows():
+                    lines.append(f"| {i + 1} | " + " | ".join(str(row[k]) for k in keys)
+                                 + f" | {titles.get(row['dataset_id'], '?')} | {row['donors']} | {row['cells_per_donor']:.0f} |"
+                                 + (f" {row['sexes']} |" if sexes else ""))
+            # the raw-counts criterion is checked on the extraction, in the order of the choice rule
+            for rank in range(1, min(len(cand), MAX_RANKS) + 1):
+                choice = cand.iloc[rank - 1].to_dict()
+                group = _census_group(census, organism, choice, keys)
+                if rehearsal:
+                    ids = sample_cells(group, choice, keys, max_donors=2, max_cells=50)
+                    target = out_dir / f"{name}-rehearsal.npz"
+                else:
+                    ids = sample_cells(group, choice, keys, max_donors, MAX_CELLS)
+                    target = out_dir / f"{name}.npz"
+                rec = extract(census, organism, ids, target, cols)
+                if rec["raw"]:
+                    break
+                lines.append(f"{name}: rank {rank} fails the raw-counts criterion (values that are not "
+                             "non-negative integers)" + ("" if rehearsal else f": {choice['dataset_id']}"))
+            else:
+                lines.append(f"{name}: none of the first {MAX_RANKS} candidates has raw counts: dropped with the "
+                             "cases that need it")
                 continue
-            lines += ["", f"## {name} ({organism})", "", "| rank | " + " | ".join(keys) + " | title | donors >= "
-                      f"{MIN_CELLS} cells | cells per donor |" + (" sexes |" if sexes else ""),
-                      "|---" * (len(keys) + 4 + int(sexes)) + "|"]
-            for i, row in cand.head(15).iterrows():
-                lines.append(f"| {i + 1} | " + " | ".join(str(row[k]) for k in keys)
-                             + f" | {titles.get(row['dataset_id'], '?')} | {row['donors']} | {row['cells_per_donor']:.0f} |"
-                             + (f" {row['sexes']} |" if sexes else ""))
-            ids = sample_cells(group, choice, keys, max_donors, MAX_CELLS)
-            rec = extract(census, organism, ids, out_dir / f"{name}.npz", cols)
+            if rehearsal:
+                target.unlink()
+                digest = hashlib.sha256(json.dumps({k: str(choice[k]) for k in keys}).encode()).hexdigest()
+                lines.append(f"{name}: {len(cand)} candidates; chosen rank {rank}, sha256 {digest[:16]}, with "
+                             f"{int(choice['donors'])} qualifying donors; a {rec['cells']}-cell test extraction of "
+                             f"{rec['genes']} genes with raw counts; {time.time() - t0:.0f} s")
+                continue
             spec[name] = dict(file=f"{name}.npz", sha256=rec["sha256"], donor="donor_id", counts="X",
-                              source=dict(census_release=release, organism=organism,
+                              source=dict(census_release=release, organism=organism, rank=rank,
                                           **{k: str(choice[k]) for k in keys},
                                           title=titles.get(choice["dataset_id"]), qualifying_donors=int(choice["donors"]),
                                           extracted_cells=rec["cells"], genes=rec["genes"],
-                                          rule=f"max {max_donors} donors, {MAX_CELLS} cells each, seed {SEED}"))
-            lines.append(f"\nChosen: rank 1; extracted {rec['cells']} cells x {rec['genes']} genes, sha256 {rec['sha256']}")
+                                          rule=f"{'all' if max_donors is None else f'max {max_donors}'} donors, "
+                                               f"{MAX_CELLS} cells each, seed {SEED}"))
+            lines.append(f"\nChosen: rank {rank}; extracted {rec['cells']} cells x {rec['genes']} genes, "
+                         f"sha256 {rec['sha256']}")
     return spec, lines
 
 
