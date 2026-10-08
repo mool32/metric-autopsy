@@ -312,7 +312,7 @@ def describe_table(text: str, name: str, sep: str = "\t") -> list[str]:
                f"{int((v < 0).sum())}, non-integer {int((np.abs(v - np.round(v)) > 1e-9).sum())}")
     for c in list(df.columns[:6]) + ([df.columns[-1]] if df.shape[1] > 6 else []):
         col = df[c]
-        if np.issubdtype(col.dtype, np.number):
+        if pd.api.types.is_numeric_dtype(col):
             x = col.to_numpy(dtype=float)
             out.append(f"    column {c!r}: {col.dtype}, missing {int(np.isnan(x).sum())}, non-integer "
                        f"{int((np.abs(x - np.round(x)) > 1e-9).sum())}, range {np.nanmin(x):g}..{np.nanmax(x):g}")
