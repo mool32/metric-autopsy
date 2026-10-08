@@ -96,7 +96,10 @@ judgment pending; their error rates count the other verdicts.)
   Without a SESOI a bias cannot be sized against the claim: it is reported as unsized, the
   effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE). The last rule is the
   agent's reading of "otherwise, a message without blocking"; it keeps a detected bias from
-  passing silently when no SESOI was declared.
+  passing silently when no SESOI was declared. Approved by the project owner later on
+  2026-10-08, together with the default tolerance of 0.5 SESOI, with one change: the messages
+  (GATE 0's note and the verdict) say what to do, "declare a SESOI", and that the bias is then
+  judged against `bias_tolerance` x SESOI.
 
 **p13 joins the dev set as a regression.** `test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked`:
 at 800 cells per donor the depth response of `norm_pearson` is still classified as bias, and

@@ -116,7 +116,9 @@ def decide(a: "Autopsy") -> str:
     if "BIAS_UNSIZED" in mv.flags:
         return ("INCONCLUSIVE — effect detected, but a nuisance bias of the metric "
                 f"({', '.join(mv.detail.get('unsized_bias', []))}) cannot be sized against the claim "
-                "without a pre-registered SESOI" + tail)
+                "without a pre-registered SESOI: declare a SESOI (the smallest effect that matters, on "
+                "the metric's scale) in the pre-registration, and the bias is judged against "
+                "bias_tolerance x SESOI" + tail)
     groups = [str(g) for g in (a.params or {}).get("groups") or ("groups[0]", "groups[1]")]
     direction = (a.prereg or {}).get("direction")
     if direction is None:

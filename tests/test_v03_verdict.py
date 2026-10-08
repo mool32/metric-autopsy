@@ -523,6 +523,7 @@ def test_gate0_blocks_a_bias_only_beyond_the_sesoi_tolerance_and_not_when_correc
     unsized = gate0_independence(_depth_biased, d)
     assert unsized.status == GateStatus.WARN
     assert unsized.detail["bias_handling"] == {"depth_downsample": "unsized"}
+    assert "declare a SESOI" in unsized.message  # decided 2026-10-08: say what to do
 
 
 def test_unsized_and_tolerated_biases_reach_the_verdict(monkeypatch):
@@ -544,6 +545,7 @@ def test_unsized_and_tolerated_biases_reach_the_verdict(monkeypatch):
     assert "BIAS_UNSIZED" in unsized.metric_validity.flags
     assert unsized.effect.status == "DETECTED"
     assert unsized.verdict.startswith("INCONCLUSIVE") and "cannot be sized" in unsized.verdict
+    assert "declare a SESOI" in unsized.verdict
     tolerated = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0}, **kw)
     assert "BIAS_BELOW_TOLERANCE" in tolerated.metric_validity.flags
     assert tolerated.verdict.startswith("SUPPORTED"), tolerated.verdict
@@ -663,6 +665,32 @@ def test_supported_needs_the_pre_registered_direction():
     assert missing.startswith("INCONCLUSIVE") and "no direction was pre-registered" in missing
     two_sided = with_direction("two-sided", effect=-0.2)
     assert two_sided.startswith("SUPPORTED") and "non-directional claim" in two_sided
+
+
+def test_a_directional_claim_is_tested_two_sided_at_alpha():
+    """Checked 2026-10-08 at the owner's request: the effect test is two-sided at alpha and the
+    direction is compared afterwards, so a null's false SUPPORTED rate is alpha/2, not alpha.
+    With 4 vs 4 replicates the exact permutation has 70 splits. The second most extreme split in
+    the declared direction has a one-sided p of 2/70 = 0.029, which a one-sided test at alpha would
+    call detected, and a two-sided p of 4/70 = 0.057, which is not detected."""
+    from metric_autopsy.effect import estimate_effect
+    rng = np.random.default_rng(0)
+
+    def data(a_vals, b_vals, cells=20):
+        obs = pd.DataFrame({"mouse": np.repeat([f"m{i}" for i in range(8)], cells),
+                            "age": np.repeat(["young"] * 4 + ["old"] * 4, cells),
+                            "v": np.repeat(list(a_vals) + list(b_vals), cells).astype(float)})
+        return SimpleData(rng.poisson(5, size=(8 * cells, 6)).astype(float), obs, [f"g{j}" for j in range(6)])
+
+    def metric(d):  # a replicate's value is its mouse's v, untouched by the thinning
+        return float(np.mean(np.asarray(d.obs["v"], float)))
+
+    kw = dict(group_col="age", groups=("young", "old"), replicate_col="mouse", estimand="composition")
+    second, _ = estimate_effect(metric, data([8, 7, 6, 4], [5, 3, 2, 1]), **kw)
+    assert second.detail["perm_method"] == "exact" and second.detail["p_perm"] == pytest.approx(4 / 70)
+    assert second.status != "DETECTED"
+    first, _ = estimate_effect(metric, data([8, 7, 6, 5], [4, 3, 2, 1]), **kw)
+    assert first.detail["p_perm"] == pytest.approx(2 / 70) and first.status == "DETECTED"
 
 
 def test_direction_is_validated_and_plumbed_through_the_cli():

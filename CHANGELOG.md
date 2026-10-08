@@ -32,14 +32,15 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   - a bias blocks only where it matters for the claim: a depth bias that the declared
     correction removes between groups is reported, not failed; any other bias FAILs only if it
     and the lower bound of its 95% interval exceed `bias_tolerance` × SESOI (pre-registered,
-    default 0.5); without a SESOI it is reported as unsized and SUPPORTED is withheld. At 800
-    cells per donor the earlier rule failed log-normalized Pearson on a truly coupled pair in
-    4 of 4 datasets (probe p13).
+    default 0.5); without a SESOI it is reported as unsized, SUPPORTED is withheld and the
+    message says to declare a SESOI. At 800 cells per donor the earlier rule failed
+    log-normalized Pearson on a truly coupled pair in 4 of 4 datasets (probe p13).
 - **Directional claims (decided 2026-10-08).** The pre-registration states the claimed
   `direction` of the change from `groups[0]` to `groups[1]` (`increase`, `decrease`, or
   `two-sided`). SUPPORTED needs the effect in that direction (two-sided test at alpha, so a null
-  gives a false SUPPORTED at alpha/2); a detected effect the other way is NOT SUPPORTED;
-  without a direction the verdict stays INCONCLUSIVE; a non-directional claim is marked.
+  gives a false SUPPORTED at alpha/2; `test_a_directional_claim_is_tested_two_sided_at_alpha`
+  pins it); a detected effect the other way is NOT SUPPORTED; without a direction the verdict
+  stays INCONCLUSIVE; a non-directional claim is marked.
 - **GATE 1 is a diagnostic.** Bootstrap intervals, Bonferroni across assessable strata and
   `min_cells`; a confident imbalance is WARN (handled by the correction), STOP only when no
   stratum contains both groups. (v0.1 flagged 82% of null datasets at 64 × 20 cells.)

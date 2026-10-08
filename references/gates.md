@@ -131,7 +131,8 @@ classified:
     its size exceeds `bias_tolerance` × SESOI (pre-registered, default 0.5) **and** so does the
     lower bound of its 95% interval; otherwise it is reported;
   - without a SESOI a bias cannot be sized against the claim: it is reported as unsized, the
-    effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE).
+    effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE); the message says to
+    declare a SESOI, against which the bias is then judged.
   At a realistic scale (probe p13, 800 cells per donor) log-normalized Pearson on a truly
   coupled pair has a resolved depth bias — the CP10k ratio correlation of its null grows as
   depth falls — that the earlier rule failed in 4 of 4 datasets although the composition

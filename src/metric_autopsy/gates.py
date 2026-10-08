@@ -391,7 +391,9 @@ def gate0_independence(
                          f"bound {r['bias_ci_low']:.4g}) within the tolerance {r['bias_tolerance']:.4g}")
         else:
             notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); without a "
-                         "SESOI it cannot be sized against the claim")
+                         "SESOI it cannot be sized against the claim: declare a SESOI (the smallest "
+                         "effect that matters, on the metric's scale) in the pre-registration, and the "
+                         "bias is judged against bias_tolerance x SESOI")
     parts = []
     if attenuation:
         parts.append("attenuation " + ", ".join(f"{k} −{v:.0%}" for k, v in attenuation.items())
