@@ -213,7 +213,10 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
         for name, organism, keys, k_min, sexes, max_donors in rules:
             t0 = time.time()
             counted = keys + ["donor_id"] + (["sex"] if sexes else [])
-            cand = candidates(_census_counts(census, organism, counted), keys, k_min, both_sexes=sexes)
+            counts = _census_counts(census, organism, counted)
+            lines.append(f"{name}: {int(counts['cells'].sum()):,} primary droplet-3' cells of {organism} counted "
+                         f"in {time.time() - t0:.0f} s")
+            cand = candidates(counts, keys, k_min, both_sexes=sexes)
             if cand.empty:
                 lines.append(f"{name}: no candidate meets the criteria: dropped with the cases that need it")
                 continue
@@ -291,20 +294,51 @@ def _download(urls: list[str], timeout: float = 120.0) -> tuple[bytes, str]:
     raise RuntimeError(last)
 
 
+def describe_table(text: str, name: str, sep: str = "\t") -> list[str]:
+    """What a downloaded table looks like (for the rehearsal: the format of a named source is
+    checked before the tag): its first lines, its shape, and per column the dtype and, for numeric
+    columns, the missing, negative and non-integer values."""
+    head = [ln[:400] for ln in text.splitlines()[:3]]
+    out = [f"{name}: first lines:"] + [f"    {ln}" for ln in head]
+    try:
+        df = pd.read_csv(io.StringIO(text), sep=sep)
+    except Exception as exc:
+        return out + [f"{name}: not parsed ({exc!r})"]
+    out.append(f"{name}: {df.shape[0]} rows x {df.shape[1]} columns")
+    num = df.select_dtypes("number")
+    v = num.to_numpy(dtype=float) if num.shape[1] else np.zeros((0, 0))
+    out.append(f"{name}: {num.shape[1]} numeric columns; missing {int(np.isnan(v).sum())}, negative "
+               f"{int((v < 0).sum())}, non-integer {int((np.abs(v - np.round(v)) > 1e-9).sum())}")
+    for c in list(df.columns[:6]) + ([df.columns[-1]] if df.shape[1] > 6 else []):
+        col = df[c]
+        if np.issubdtype(col.dtype, np.number):
+            x = col.to_numpy(dtype=float)
+            out.append(f"    column {c!r}: {col.dtype}, missing {int(np.isnan(x).sum())}, non-integer "
+                       f"{int((np.abs(x - np.round(x)) > 1e-9).sum())}, range {np.nanmin(x):g}..{np.nanmax(x):g}")
+        else:
+            out.append(f"    column {c!r}: {col.dtype}, e.g. {list(map(str, col.dropna().unique()[:3]))}")
+    return out
+
+
 def parse_buettner(tables: dict) -> tuple[np.ndarray, list, pd.DataFrame]:
     """Genes x cells tables (first columns: gene ID, symbol and optionally length; the rest cells)
     into cells x genes counts with each cell's phase."""
     blocks, obs, genes = [], [], None
     for phase, text in tables.items():
         df = pd.read_csv(io.StringIO(text), sep="\t")
-        meta = [c for c in df.columns[:3] if not np.issubdtype(df[c].dtype, np.number) or "length" in c.lower()]
+        # the cells are the columns named as cells; the leading others describe the genes (IDs,
+        # symbol, length)
+        cells = [c for c in df.columns if "cell" in str(c).lower()]
+        meta = [c for c in df.columns if c not in cells]
+        if not cells or not meta:
+            raise ValueError(f"{phase}: no cell or no gene columns among {list(df.columns[:6])}")
         sym = next((c for c in meta if "name" in c.lower() or "symbol" in c.lower()), meta[0])
         g = [str(s) if isinstance(s, str) and s else str(i) for s, i in zip(df[sym], df[meta[0]])]
         if genes is None:
             genes = g
         elif g != genes:
             raise ValueError("the phase tables list different genes")
-        counts = df.drop(columns=meta).to_numpy(dtype=float).T
+        counts = df[cells].to_numpy(dtype=float).T
         blocks.append(counts)
         obs += [dict(phase=phase, batch=phase) for _ in range(counts.shape[0])]
     return np.vstack(blocks), genes, pd.DataFrame(obs)
@@ -319,14 +353,16 @@ def fetch_b3(out_dir: Path) -> tuple[dict | None, list[str]]:
             used.append(url)
         X, genes, obs = parse_buettner(texts)
     except Exception as exc:
-        return None, [f"B3: not obtained ({exc}); dropped with R2"]
+        diag = [ln for ph, t in texts.items() for ln in describe_table(t, f"B3 {ph}")] if texts else []
+        return None, [f"B3: not obtained ({exc}); dropped with R2"] + diag
     ercc = sum(g.upper().startswith("ERCC") for g in genes)
     per_phase = obs["phase"].value_counts().to_dict()
     raw = bool(np.all(X >= 0) and np.allclose(X, np.round(X)))
     fails = ([] if ercc else ["no ERCC rows"]) + ([] if min(per_phase.values()) >= 50 else [f"cells per phase {per_phase}"]) \
         + ([] if raw else ["not raw counts"])
     if fails:
-        return None, [f"B3: fails the criteria ({'; '.join(fails)}); dropped with R2"]
+        return None, ([f"B3: fails the criteria ({'; '.join(fails)}); dropped with R2"]
+                      + [ln for ph, t in texts.items() for ln in describe_table(t, f"B3 {ph}")])
     P.save_npz(out_dir / "B3.npz", np.round(X).astype(np.int64), obs, genes)
     spec = dict(file="B3.npz", sha256=P.sha256(out_dir / "B3.npz"), donor="batch", counts="X",
                 source=dict(study="E-MTAB-2805", urls=used, cells_per_phase=per_phase, ercc_genes=ercc))
@@ -343,6 +379,24 @@ def fetch_b4(out_dir: Path) -> tuple[dict | None, list[str]]:
         return None, ["B4: no source with raw counts and per-cell FUCCI intensities is fixed for the named "
                       "candidate (Mahdessian et al. 2021); dropped with R3"]
     return None, ["B4: dropped with R3"]
+
+
+B4_FILES = ("GSE146773_fucci_coords.csv.gz", "GSE146773_Counts.csv.gz")
+
+
+def inspect_b4() -> list[str]:
+    """The format of the named B4 candidate's per-cell FUCCI file and counts table (printed by the
+    rehearsal, so that a source can be fixed before the tag)."""
+    out = []
+    for f in B4_FILES:
+        url = B4_LISTINGS[0] + f
+        try:
+            text = _download([url], timeout=300)[0].decode(errors="replace")
+        except Exception as exc:
+            out.append(f"B4 {f}: {exc}")
+            continue
+        out += describe_table(text, f"B4 {f}", sep=",")
+    return out
 
 
 def list_b4_sources() -> list[str]:
@@ -378,7 +432,7 @@ def main(argv=None):
         if s is not None and not args.rehearsal:
             spec[more[0].split(":")[0]] = s
     if args.rehearsal:
-        print("\n".join(lines + list_b4_sources()))
+        print("\n".join(lines + list_b4_sources() + inspect_b4()))
         return
     args.spec.write_text(json.dumps(spec, indent=1, sort_keys=True))
     args.report.write_text("# Background selection (validation/prereg/v1.md, section 3.1)\n\n" + "\n".join(lines) + "\n")

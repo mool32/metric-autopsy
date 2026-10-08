@@ -1035,6 +1035,22 @@ def test_the_selection_rule_lists_the_candidates_and_picks_by_the_rule():
     assert list(cand2["dataset_id"]) == ["m1"] and cand2["donors"].iloc[0] == 14
 
 
+def test_the_b3_tables_are_read_by_their_cell_columns():
+    """E-MTAB-2805's tables: gene ID, transcript ID, symbol and gene length (missing on the ERCC rows)
+    before the cells; only the columns named as cells are counts, so a missing gene length does not
+    make the counts look non-raw."""
+    import select_backgrounds as SB
+    hdr = "\t".join(["EnsemblGeneID", "EnsemblTranscriptID", "AssociatedGeneName", "GeneLength"]
+                    + [f"G1_cell{i}_count" for i in range(1, 4)])
+    rows = ["ENSMUSG01\tENSMUST01\tActb\t1800\t5\t0\t3", "ERCC-00002\t\t\t\t10\t12\t9",
+            "ENSMUSG02\tENSMUST02\tGapdh\t1300\t7\t1\t0"]
+    text = "\n".join([hdr] + rows) + "\n"
+    X, genes, obs = SB.parse_buettner({"G1": text, "G2M": text.replace("G1_", "G2M_")})
+    assert X.shape == (6, 3) and genes == ["Actb", "ERCC-00002", "Gapdh"] and SB.raw_counts(X)
+    assert list(obs["phase"]) == ["G1"] * 3 + ["G2M"] * 3
+    assert any("missing 1" in ln for ln in SB.describe_table(text, "B3 G1"))
+
+
 def test_the_census_is_counted_in_chunks_on_its_category_codes():
     """The Census obs arrives as Arrow chunks with dictionary columns (75 million human cells): counting
     chunk by chunk on the codes gives the counts of the whole table; missing donor IDs are not donors;
