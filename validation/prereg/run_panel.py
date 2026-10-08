@@ -11,7 +11,8 @@ The run is a deterministic function of the key, the backgrounds and the pilot: t
 comes from the card (``_seed``), one BLAS thread per worker, and a report holds only what the
 engine computed, so the same card gives byte-identical reports on any machine, with any number
 of workers (``test_the_same_cards_give_byte_identical_reports``). What varies from run to run -
-the time, the machine, the engine's run log - goes to ``runtime.json`` and ``runlog.jsonl``.
+the time, the machine, the worker's peak memory after each card, the engine's run log - goes to
+``runtime.json`` and ``runlog.jsonl``.
 """
 from __future__ import annotations
 
@@ -23,12 +24,13 @@ import time
 from functools import partial
 from pathlib import Path
 
-# One BLAS thread per worker process. OpenBLAS and MKL size their thread pools when numpy loads
-# them, so the variables are set before numpy is imported (timing.py and blind.py do the same);
-# a value already set wins. machine() records the thread count numpy's BLAS actually uses.
-BLAS_VARS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
-for _var in BLAS_VARS:
-    os.environ.setdefault(_var, "1")
+# One BLAS thread per worker process and one numerical path (frozen.NUMERIC_ENV). OpenBLAS and
+# MKL size their thread pools and pick their kernels when numpy loads them, so the variables are
+# set before numpy is imported (timing.py and blind.py do the same); a value already set wins.
+# machine() records them and the thread count numpy's BLAS actually uses.
+import frozen  # noqa: E402  (standard library only)
+
+frozen.pin_numerics()
 
 import numpy as np  # noqa: E402
 
@@ -89,18 +91,28 @@ def make_run_args(card: dict):
 
 
 def machine() -> dict:
-    """Cores and BLAS threads of the run, for the record (v1.md, section 4). The threads in use
-    are read with threadpoolctl when it is installed (None otherwise)."""
+    """Cores, BLAS threads and the numerical environment of the run, for the record (v1.md,
+    section 4). The threads in use are read with threadpoolctl when it is installed (None
+    otherwise)."""
     try:
         from threadpoolctl import threadpool_info
         used = sorted({i["num_threads"] for i in threadpool_info() if i.get("user_api") == "blas"})
     except ImportError:
         used = None
     return dict(cpus=os.cpu_count(), blas_threads_in_use=used,
-                blas_env={v: os.environ.get(v) for v in BLAS_VARS})
+                numeric_env={v: os.environ.get(v) for v in frozen.NUMERIC_ENV})
 
 
 _STATE: dict = {}  # backgrounds, pilot and output directory, inherited by forked workers
+
+
+def peak_rss_mb() -> float | None:
+    """The process's peak resident memory so far, in MB (None where the platform has no getrusage)."""
+    try:
+        import resource
+    except ImportError:
+        return None
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024  # KB on Linux
 
 
 def run_entry(entry: dict) -> tuple[dict, list[dict]]:
@@ -134,7 +146,8 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
         out.write_text(text)
         rec.update(report_sha256=hashlib.sha256(text.encode()).hexdigest(), error="error" in rep)
         row["cards"].append(rec)
-        runtime.append(dict(id=card["id"], seconds=time.time() - t0, pid=os.getpid(), **run_rec))
+        runtime.append(dict(id=card["id"], seconds=time.time() - t0, pid=os.getpid(),
+                            peak_rss_mb=peak_rss_mb(), **run_rec))
     return row, runtime
 
 
@@ -172,7 +185,9 @@ def run(entries: list[dict], bgs: dict, pilot: dict, out_dir: Path, workers: int
                    errors=sum(c.get("error", False) for r in rows for c in r["cards"]), workers=workers,
                    machine=machine(), wall_seconds=wall,
                    mean_seconds=float(np.mean(secs)) if secs else None,
-                   median_seconds=float(np.median(secs)) if secs else None, logged_twice=twice)
+                   median_seconds=float(np.median(secs)) if secs else None,
+                   peak_rss_mb=max((c.get("peak_rss_mb") or 0 for c in runtime), default=None),
+                   logged_twice=twice)
     (out_dir / "runtime.json").write_text(json.dumps(dict(summary=summary, cards=runtime), indent=1, default=str))
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
     return summary

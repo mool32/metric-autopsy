@@ -10,7 +10,9 @@ outcomes (``panel.allowed``: by the truth about the metric on the pair and about
 rule for every condition). The primary outcomes and the criteria S1-S5 follow, every rate with
 its two-sided 95% Clopper-Pearson interval, and for every criterion the design effect of
 datasets that share donors (``overlap_interval``); a design effect above 1.5 is reported as the
-pre-registered limitation. A missing report or an engine error counts as an error.
+pre-registered limitation. A missing report or an engine error counts as an error. A criterion
+without cards: S2 and S5 hold (no card on which their error can occur); S1, S4 and S3 without a
+judged stratum fail (what they show is not shown).
 """
 from __future__ import annotations
 
@@ -86,9 +88,9 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
         level = P.pool_level(c, pair, pilot)
         ok = P.allowed(c, e["variant"], pair, pilot)
         good = P.definite(c, e["variant"], pair, pilot)
-        truth = P.metric_truth(c, pair, pilot)
+        truth = P.metric_truth(c, e["variant"], pair, pilot)
         establishable = c.oracle and bool(est.get(f"{c.name}:{e['variant']}:{pair}", {}).get("establishable"))
-        nominal = oc.nominal_error(ok)
+        model = oc.sound_model(c, e["variant"], pair, pilot)
         for cid in P.card_ids(e):
             rec = reports.get(cid) or (None, None)
             verdict, cause = rec[0], rec[1]
@@ -101,7 +103,10 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
                              invalid_error_possible=P.NS_INVALID not in ok, nde_error_possible=P.NDE not in ok,
                              valid=truth == "valid", false_invalid=truth == "valid" and o == P.NS_INVALID,
                              error=o not in ok, establishable=establishable, correct_definite=o in good,
-                             definite=o in P.DEFINITE, nominal=nominal, gates=gates))
+                             definite=o in P.DEFINITE, stratum=oc.stratum(c, truth),
+                             p_sup=model["p_sup"], p_inv=model["p_inv"], p_err=model["p_err"],
+                             decisive=model["decisive"], nominal=model["p_err"], measured=model["measured"],
+                             gates=gates))
     return rows
 
 
@@ -174,6 +179,7 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
         out[where][key] = summary(rs)
     crit = out["criteria"]
     members = {}
+    rules = oc.criteria_rules(rows)
     # S1: false SUPPORTED at every key null condition's key variant; passes only if all pass
     s1 = {}
     for c in P.CONDITIONS:
@@ -181,38 +187,47 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
             continue
         rs = [r for r in rows if r["condition"] == c.name and r["variant"] == c.key_variant]
         k = sum(r["sup_error"] for r in rs)
-        kmax = oc.error_rule(len(rs), oc.E_SUPPORTED)[0] if rs else -1
+        kmax = rules["S1"][c.name]["max_allowed"]
         s1[c.name] = dict(rate(k, len(rs)), max_allowed=kmax, passed=bool(rs) and k <= kmax)
         members[f"S1:{c.name}"] = (rs, "sup_error")
     crit["S1"] = dict(conditions=s1, passed=bool(s1) and all(v["passed"] for v in s1.values()))
-    # S2: false SUPPORTED on every card where SUPPORTED is an error
+    # S2: false SUPPORTED on every card where SUPPORTED is an error, at their mean measured rate
     rs = [r for r in rows if r["sup_error_possible"]]
     k = sum(r["sup_error"] for r in rs)
-    kmax = oc.error_rule(len(rs), oc.E_SUPPORTED)[0] if rs else -1
-    crit["S2"] = dict(rate(k, len(rs)), nominal=oc.E_SUPPORTED, max_allowed=kmax, passed=bool(rs) and k <= kmax)
+    crit["S2"] = dict(rate(k, len(rs)), nominal=rules["S2"]["nominal"], max_allowed=rules["S2"]["max_allowed"],
+                      passed=(not rs) or k <= rules["S2"]["max_allowed"], applies=bool(rs))
     members["S2"] = (rs, "sup_error")
-    # S3: correct definite outcomes on establishable cards
-    rs = [r for r in rows if r["establishable"]]
-    k = sum(r["correct_definite"] for r in rs)
-    kmin = oc.decisiveness_rule(len(rs), oc.D_NOMINAL)[0] if rs else 1
-    crit["S3"] = dict(rate(k, len(rs)), nominal=oc.D_NOMINAL, min_required=kmin, passed=bool(rs) and k >= kmin,
+    # S3: correct definite outcomes on establishable cards, per stratum (real effects, nulls, blind
+    # or useless metrics), each at its mean measured decisiveness; judged where the principle is
+    # attainable and P(S1-S5 together | sound) stays >= 0.90 (oc.criteria_rules), else reported
+    # only. S3 holds if every judged stratum holds and at least one is judged: with none,
+    # decisiveness is not shown.
+    s3 = {}
+    for st in oc.STRATA:
+        rs = [r for r in rows if r["establishable"] and r["stratum"] == st]
+        k = sum(r["correct_definite"] for r in rs)
+        rule = rules["S3"][st]
+        s3[st] = dict(rate(k, len(rs)), nominal=rule["nominal"], applies=rule["applies"], judged=rule["judged"],
+                      min_required=rule["min_required"],
+                      passed=(not rule["judged"]) or k >= rule["min_required"],
                       definite_any=rate(sum(r["definite"] for r in rs), len(rs)))
-    members["S3"] = (rs, "correct_definite")
-    # S4: outside the allowed outcomes, all cards, against the mean of the cards' nominal rates
+        members[f"S3:{st}"] = (rs, "correct_definite")
+    judged = [st for st in oc.STRATA if s3[st]["judged"]]
+    crit["S3"] = dict(strata=s3, judged=judged, passed=bool(judged) and all(s3[st]["passed"] for st in judged))
+    # S4: outside the allowed outcomes, all cards, against the mean of the cards' measured nominals
     k = sum(r["error"] for r in rows)
-    e_bar = float(np.mean([r["nominal"] for r in rows])) if rows else 0.0
-    kmax = oc.error_rule(len(rows), e_bar)[0] if rows else -1
-    crit["S4"] = dict(rate(k, len(rows)), nominal=e_bar, max_allowed=kmax, passed=bool(rows) and k <= kmax)
+    crit["S4"] = dict(rate(k, len(rows)), nominal=rules["S4"]["nominal"], max_allowed=rules["S4"]["max_allowed"],
+                      passed=bool(rows) and k <= rules["S4"]["max_allowed"])
     members["S4"] = (rows, "error")
     # S5: false "metric invalid" (GATE 4/5) on cards whose metric is valid by the truth
     rs = [r for r in rows if r["valid"]]
     k = sum(r["false_invalid"] for r in rs)
-    kmax = oc.error_rule(len(rs), oc.E_INVALID)[0] if rs else -1
-    crit["S5"] = dict(rate(k, len(rs)), nominal=oc.E_INVALID, max_allowed=kmax, passed=bool(rs) and k <= kmax)
+    crit["S5"] = dict(rate(k, len(rs)), nominal=rules["S5"]["nominal"], max_allowed=rules["S5"]["max_allowed"],
+                      passed=(not rs) or k <= rules["S5"]["max_allowed"], applies=bool(rs))
     members["S5"] = (rs, "false_invalid")
     out["passed"] = all(crit[s]["passed"] for s in ("S1", "S2", "S3", "S4", "S5"))
     out["n_cards"] = len(rows)
-    out["joint_pass_probability_sound"] = oc.joint_pass_probability(rows)
+    out["joint_pass_probability_sound"] = rules["joint"]
     out["per_gate"] = per_gate(rows)
     # the design effect of datasets sharing donors, for every primary criterion
     limitations = []
@@ -223,6 +238,16 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
             if de[name]["deff"] > DEFF_LIMIT:
                 limitations.append(f"{name}: design effect {de[name]['deff']:.2f} > {DEFF_LIMIT} (shared donors)")
         out["secondary"]["shared_donors"] = de
+        # S1's operating characteristics at the realized design effects (v1.md section 4): the
+        # principle holds for independent datasets; with shared donors the results state them
+        per = {}
+        for c, v in s1.items():
+            d = de.get(f"S1:{c}", {}).get("deff", 1.0)
+            d = 1.0 if not np.isfinite(d) else d
+            _, ps, pd = oc.error_rule_deff(v["n"], oc.E_SUPPORTED, d) if v["n"] else (-1, float("nan"), float("nan"))
+            per[c] = dict(deff=d, p_pass_sound=ps, p_pass_doubled=pd)
+        out["secondary"]["s1_at_realized_deff"] = dict(
+            conditions=per, p_all_pass_sound=float(np.prod([v["p_pass_sound"] for v in per.values()])) if per else float("nan"))
     out["limitations"] = limitations
     return out
 
@@ -256,6 +281,9 @@ def main(argv=None):
     Path(args.out).write_text(json.dumps(res, indent=1))
     for s in ("S1", "S2", "S3", "S4", "S5"):
         print(s, "PASS" if res["criteria"][s]["passed"] else "FAIL")
+    for st, v in res["criteria"]["S3"]["strata"].items():
+        print(f"  S3 {st}: {v['k']}/{v['n']} correct definite"
+              + (f", at least {v['min_required']} required" if v["judged"] else " (reported only)"))
     for lim in res["limitations"]:
         print("limitation:", lim)
     print("validation", "PASSES" if res["passed"] else "FAILS")

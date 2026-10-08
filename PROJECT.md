@@ -93,7 +93,16 @@ turns that checklist into runnable behavior.
   the tag to the scores in GitHub Actions (`.github/workflows/validation.yml`), the backgrounds
   selected from the CELLxGENE Census by the rule of v1.md 3.1, the results and scores committed to
   `results/panel-v1`; the flagship audit on v0.1.1 runs in `audit.yml` on the same tag.
-  Third-round final draft awaiting the independent review and the owner's «утверждаю». No tag yet.
+- **Step 2f (after the first independent review):** the review found two critical defects — the
+  anchors' B3 stopped the pilot, and a validator that never says SUPPORTED passed S3 — and
+  important ones (the engine's equivalence bounds narrower than the oracle's, the truth measured on
+  the null applied to every condition, error routes without nominals, the pilot never run through
+  its command lines, the run tied to the work branch). Fixed: the panel reads only B1/B2; S3 by
+  stratum within the joint requirement; `sesoi_scale` and a TOST-backed "explained by depth" in
+  the engine (journal D7); the truth per case; a sound validator's nominals measured by the pilot;
+  the pool rule per candidate; the scripts pin the numerical environment; the dry run rehearses
+  the whole pilot; the run's own branches. v1.md section 10 lists every change. A second review
+  checks them; then the owner's «утверждаю». No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

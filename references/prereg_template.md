@@ -37,10 +37,13 @@ Direction:           increase | decrease | two-sided   ← required for SUPPORTE
   the other way is NOT SUPPORTED. "two-sided" is a non-directional claim, marked in the verdict.
 Replicate unit (obs column):  ___  (mouse, donor, plate — the unit of inference, never the cell)
 Minimum replicates per group: ___  (default 3; the graded rule below applies on top)
-SESOI:               ___  smallest effect size of interest, on the construct scale
-                          (needed for "no detectable effect", for the power check, and to size
-                          GATE 0's nuisance biases: without it a bias cannot block, and
-                          SUPPORTED is withheld while one is unsized)
+SESOI:               ___  smallest effect size of interest (needed for "no detectable effect",
+                          for the power check, for "explained by depth", and to size GATE 0's
+                          nuisance biases: without it a bias cannot block, and SUPPORTED is
+                          withheld while one is unsized)
+SESOI scale:         construct | observed  (default construct: the SESOI is about the construct
+                          and is attenuated by GATE 0's lambda before the equivalence test and
+                          the power check; observed: it is on the metric's observed scale)
 Bias tolerance:      ___  (default 0.5 SESOI: a dropout or library-size bias blocks only if
                           it and the lower bound of its 95% interval exceed this; a depth bias
                           the declared correction removes between groups never blocks)
@@ -66,7 +69,7 @@ Graded replicate rule (fixed in the engine, not chosen per analysis):
   (`design_adequacy = INSUFFICIENT_REPLICATION`).
 
 ```json
-{"estimand": "composition", "direction": "decrease", "min_replicates": 3, "sesoi": 0.1,
+{"estimand": "composition", "direction": "decrease", "min_replicates": 3, "sesoi": 0.1, "sesoi_scale": "construct",
  "bias_tolerance": 0.5, "alpha": 0.05, "power": 0.8, "signal_direction": "increase",
  "delta_min": 0.05, "positive_control_dose": 2.0,
  "hypothesis": "Smad3-Col1a1 coupling declines with age in fibroblasts",

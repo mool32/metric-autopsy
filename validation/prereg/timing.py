@@ -1,10 +1,12 @@
 """Timing pilot for the compute plan (validation/prereg/v1.md, section 4).
 
 Runs the frozen engine through run_panel.py on a sample of the panel's datasets, built on the
-fly by panel.py, with the condition mix of the panel, at 1 worker and at W workers, and
-extrapolates to the whole panel. Default: simulated backgrounds of the planned sizes
-(simulate.py). In the pilot (section 8, step 3) it is re-run on the real backgrounds with the
-pilot's SESOI and key dose, at the workers the run will use.
+fly by panel.py, stratified by condition (one dataset of every condition, the rest in proportion
+to the conditions' cards), at 1 worker and at W workers, and extrapolates to the whole panel
+condition by condition: every card at its condition's mean time. Default: simulated backgrounds
+of the planned sizes (simulate.py). In the pilot (section 8, step 3) it is re-run on the real
+backgrounds with the pilot's SESOI and key dose, at the workers the run will use, and decides
+the drops of section 4.
 
     python validation/prereg/timing.py --workers 4 --cards 24 > validation/prereg/timing.log
     python validation/prereg/timing.py --workers W --backgrounds backgrounds.json --pilot pilot.json
@@ -21,8 +23,10 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 
-for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
-    os.environ.setdefault(_var, "1")  # as run_panel.py: one BLAS thread per worker, set before numpy
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import frozen  # noqa: E402  (standard library only)
+
+frozen.pin_numerics()  # as run_panel.py: one BLAS thread per worker and one numerical path, before numpy
 
 import numpy as np  # noqa: E402
 
@@ -34,26 +38,46 @@ import simulate  # noqa: E402
 
 TIMING_KEY = "7" * 64  # public: the timing sample is not the panel
 SHARDS, WORKERS = 20, 4  # the blind run: 20 shard jobs of 4 workers (validation.yml)
-BUDGET_HOURS = 3.0       # the slowest shard's projected time may not exceed this (a job may run 6 h)
+BUDGET_HOURS = 3.0       # a shard's expected time may not exceed this (a job may run 6 h)
 
 
-def decide_drops(per_card_wall_seconds: float, budget_hours: float = BUDGET_HOURS) -> list:
-    """Drops in the pre-registered order (panel.DROP_ORDER) until a shard's projected time,
-    cards / SHARDS x the wall time per card at WORKERS workers, fits the budget (v1.md, section 4)."""
+def shard_hours(seconds_per_card: dict, dropped=()) -> float:
+    """A shard's expected wall time: every card of the design (after the drops) at its condition's
+    mean time per card measured at WORKERS workers, spread over SHARDS shards of WORKERS workers
+    (the key's order mixes the conditions over the shards). A condition without a measurement
+    takes the mean over the measured ones."""
+    fallback = float(np.mean(list(seconds_per_card.values())))
+    total = sum(n * c.cards * seconds_per_card.get(c.name, fallback) for c in P.CONDITIONS
+                for v, n in c.variants if not P._dropped(c.name, v, dropped))
+    return total / WORKERS / SHARDS / 3600
+
+
+def decide_drops(seconds_per_card: dict, budget_hours: float = BUDGET_HOURS) -> list:
+    """Drops in the pre-registered order (panel.DROP_ORDER) until a shard's expected time
+    (`shard_hours`) fits the budget (v1.md, section 4)."""
     dropped = []
     for name, variant in P.DROP_ORDER:
-        if P.n_cards(dropped) / SHARDS * per_card_wall_seconds / 3600 <= budget_hours:
+        if shard_hours(seconds_per_card, dropped) <= budget_hours:
             break
         dropped.append(f"{name}:{variant}")
-    if P.n_cards(dropped) / SHARDS * per_card_wall_seconds / 3600 > budget_hours:
+    if shard_hours(seconds_per_card, dropped) > budget_hours:
         raise SystemExit("the key conditions and the real effects at the key dose do not fit the budget")
     return dropped
 
 
 def sample(entries, k: int, rng) -> list:
-    """k entries with the panel's mix of conditions (probability proportional to cards)."""
-    w = np.array([P.conditions()[e["condition"]].cards for e in entries], float)
-    pick = rng.choice(len(entries), size=k, replace=False, p=w / w.sum())
+    """k entries stratified by condition: one of every condition among the entries, the rest drawn
+    with probability proportional to the condition's cards, so that every condition is timed."""
+    conds = P.conditions()
+    by = {}
+    for i, e in enumerate(entries):
+        by.setdefault(e["condition"], []).append(i)
+    if k < len(by):
+        raise SystemExit(f"--cards {k}: the sample takes one dataset of each of the {len(by)} conditions")
+    pick = [int(rng.choice(by[c])) for c in sorted(by)]
+    rest = [i for i in range(len(entries)) if i not in set(pick)]
+    w = np.array([conds[entries[i]["condition"]].cards for i in rest], float)
+    pick += [int(i) for i in rng.choice(rest, size=k - len(pick), replace=False, p=w / w.sum())]
     return [entries[i] for i in sorted(pick)]
 
 
@@ -85,7 +109,7 @@ def main(argv=None):
     print(f"# sample of {len(entries)} datasets: {dict(Counter(e['condition'] for e in entries))}; levels "
           f"{dict(Counter(level[(P.conditions()[e['condition']].background, e['pair'])] for e in entries))}")
     print(f"# dataset shape (cells x genes): {P.build(entries[0], bgs, pilot)[0].shape}")
-    rows = {}
+    rows, sec = {}, {}
     with tempfile.TemporaryDirectory() as tmp:
         for w in sorted({1, args.workers}):
             s = R.run(entries, bgs, pilot, Path(tmp) / f"out{w}", workers=w)
@@ -97,20 +121,24 @@ def main(argv=None):
             for row in manifest["datasets"]:
                 for c in row["cards"]:
                     by.setdefault(cond_of[row["id"]], []).append(runtime[c["id"]]["seconds"])
+            sec[w] = {c: float(np.mean(v)) for c, v in by.items()}
+            peak = max(c.get("peak_rss_mb") or 0 for c in runtime.values())
             print(f"workers={w}: {s['run']} cards in {s['wall_seconds']:.0f} s wall; per card mean "
-                  f"{s['mean_seconds']:.1f} s, median {s['median_seconds']:.1f} s; errors {s['errors']}")
-            print("  per condition (mean s): " + ", ".join(f"{c} {np.mean(v):.1f}" for c, v in sorted(by.items())))
-    n_cards = P.n_cards(pilot.get("dropped", ()))
+                  f"{s['mean_seconds']:.1f} s, median {s['median_seconds']:.1f} s; errors {s['errors']}; "
+                  f"peak memory of a worker {peak:.0f} MB")
+            print("  per condition (mean s): " + ", ".join(f"{c} {v:.1f}" for c, v in sorted(sec[w].items())))
+    dropped = pilot.get("dropped", ())
+    n_cards = P.n_cards(dropped)
     w = args.workers
-    per_card_wall = rows[w]["wall_seconds"] / rows[w]["run"]
-    print(f"# whole panel: {n_cards} cards; at {w} workers {n_cards * per_card_wall / 3600:.1f} h wall "
-          f"({per_card_wall:.1f} s per card); single-core {n_cards * rows[1]['mean_seconds'] / 3600:.1f} CPU-h")
-    print(f"# blind run: {SHARDS} shards of {WORKERS} workers, the slowest about "
-          f"{n_cards / SHARDS * per_card_wall / 3600:.2f} h (budget {BUDGET_HOURS} h per shard)")
+    cpu = shard_hours(sec[w], dropped) * WORKERS * SHARDS
+    print(f"# whole panel: {n_cards} cards, each at its condition's mean time: {cpu:.1f} CPU-h at {w} workers "
+          f"(single-core {shard_hours(sec[1], dropped) * WORKERS * SHARDS:.1f} CPU-h)")
+    print(f"# blind run: {SHARDS} shards of {WORKERS} workers, a shard's expected time "
+          f"{shard_hours(sec[w], dropped):.2f} h (budget {BUDGET_HOURS} h per shard; a job may run 6 h)")
     if args.write_drops:
         if w != WORKERS:
             raise SystemExit(f"the drops are decided at the run's {WORKERS} workers")
-        dropped = decide_drops(per_card_wall)
+        dropped = decide_drops(sec[w])
         pilot["dropped"] = P.check_dropped(dropped)
         Path(args.pilot).write_text(json.dumps(pilot, indent=1))
         print(f"# drops written to {args.pilot}: {dropped or 'none'}")

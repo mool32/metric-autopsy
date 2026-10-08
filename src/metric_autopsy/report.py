@@ -11,7 +11,8 @@ fields that answer different questions:
 * ``design_adequacy`` — is the comparison identifiable, and can it detect the SESOI? It
   covers QC balance (GATE 1 is a diagnostic), the estimand-dependent correction,
   replication and power. GATE 0's attenuation enters here, as the power check against the
-  attenuated SESOI. Statuses: ADEQUATE, CORRECTED, INSUFFICIENT_REPLICATION,
+  attenuated SESOI (a SESOI pre-registered on the observed scale is not attenuated). Statuses:
+  ADEQUATE, CORRECTED, INSUFFICIENT_REPLICATION,
   UNIDENTIFIABLE; flags: UNDERPOWERED, PARAMETRIC_ONLY, ATTENUATION, POWER_NOT_ASSESSED.
 * ``effect`` — the corrected difference at the replicate level: DETECTED,
   NO_DETECTABLE_EFFECT (TOST against the pre-registered SESOI), INCONCLUSIVE, NOT_ESTIMABLE.
@@ -71,6 +72,9 @@ def normalize_prereg(prereg: dict | None) -> dict:
     if p.get("direction") is not None and p["direction"] not in DIRECTIONS:
         raise ValueError(f"direction must be one of {DIRECTIONS} (the change from groups[0] to "
                          f"groups[1]), not {p['direction']!r}")
+    from .effect import SESOI_SCALES
+    if p.get("sesoi_scale", "construct") not in SESOI_SCALES:
+        raise ValueError(f"sesoi_scale must be one of {SESOI_SCALES}, not {p['sesoi_scale']!r}")
     return p
 
 
@@ -380,13 +384,16 @@ def _design_adequacy(g1: GateResult, design: dict, prereg: dict, attenuation: di
         return Assessment("INSUFFICIENT_REPLICATION", design.get("tier_reason", "insufficient replication"),
                           flags, detail)
     power = design.get("power") or {}
+    observed = prereg.get("sesoi_scale") == "observed"
     att = ""
     if attenuation:
         att = ("; attenuation (GATE 0) " + ", ".join(f"{k} −{v:.0%}" for k, v in attenuation.items())
-               + (f" -> λ={power['lambda_']:.2f} at the analysed depth" if power.get("lambda_") is not None else ""))
+               + ("; the SESOI is on the observed scale, not attenuated" if observed else
+                  f" -> λ={power['lambda_']:.2f} at the analysed depth" if power.get("lambda_") is not None else ""))
     pw = ""
     if power.get("effective_sesoi") is not None and np.isfinite(power.get("mde", np.nan)):
-        pw = (f"; MDE {power['mde']:.4g} vs attenuated SESOI {power['effective_sesoi']:.4g} "
+        pw = (f"; MDE {power['mde']:.4g} vs SESOI {power['sesoi']:g} (observed scale)" if observed else
+              f"; MDE {power['mde']:.4g} vs attenuated SESOI {power['effective_sesoi']:.4g} "
               f"(SESOI {power['sesoi']:g} x λ {power['lambda_']:.2f})")
     rep = design.get("replication") or {}
     rep_txt = f"{rep.get('kind')} replicates {rep.get('counts')}" if rep else ""
@@ -450,7 +457,8 @@ def run_autopsy(
     controls would test another metric). `replicate_col` names the
     biological replicate (mouse, donor, plate): without it there is no effect verdict.
     `signal_test` is an ``injected_signal`` constructor result. `prereg` carries
-    ``estimand`` ('composition' | 'content'), ``sesoi`` (construct scale), ``min_replicates``,
+    ``estimand`` ('composition' | 'content'), ``sesoi`` (on the construct scale, or on the observed
+    scale with ``sesoi_scale="observed"``), ``min_replicates``,
     ``alpha``, ``judgment_pending`` and free-text commitments. Its hash is recorded, and a run
     with a pre-registration is appended to the run log (`log_path`, else
     ``$METRIC_AUTOPSY_LOG``, else ``metric_autopsy_runs.jsonl``; ``"off"`` disables).
@@ -536,7 +544,8 @@ def run_autopsy(
             replicate_col=replicate_col, estimand=prereg.get("estimand"), sesoi=sesoi, alpha=alpha,
             power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]),
             n_perm=n_perm, spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
-            qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half, seed=seed)
+            qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half,
+            sesoi_scale=prereg.get("sesoi_scale", "construct"), seed=seed)
         results.append(_gate2_result(eff, design))
     da = _design_adequacy(g1, design, prereg, g0.detail.get("attenuation"))
 
@@ -550,7 +559,7 @@ def run_autopsy(
             estimand=prereg.get("estimand"), sesoi=sesoi,
             primary_effect=eff.detail.get("effect"), alpha=alpha,
             min_replicates=int(prereg["min_replicates"]), n_perm=n_perm,
-            attenuation_half=att_half, seed=seed)
+            attenuation_half=att_half, seed=seed, sesoi_scale=prereg.get("sesoi_scale", "construct"))
         results.append(g6)
     rp = _replication(g6)
 

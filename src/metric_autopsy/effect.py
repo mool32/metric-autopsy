@@ -22,7 +22,8 @@ Steps (``estimate_effect``):
 4. **Decision.** DETECTED, or NO_DETECTABLE_EFFECT (TOST: the (1-2 alpha) interval lies
    inside ±SESOI), or INCONCLUSIVE. ``explained_by_depth`` marks a raw difference that is
    detected at the replicate level and disappears after the correction (corrected effect
-   not detected, less than half retained). ``reversed_by_correction`` marks a detected raw
+   not detected, less than half retained, and - with a SESOI - shown smaller than the SESOI
+   by the TOST, journal D7). ``reversed_by_correction`` marks a detected raw
    difference whose sign the correction reverses, also detected: INCONCLUSIVE, because the
    direction then depends on how exactly a technical difference larger than the effect was
    removed. A raw difference that is not itself detected
@@ -33,6 +34,8 @@ Steps (``estimate_effect``):
    depth halving gives a reliability-model estimate of how much of a construct-scale
    difference survives at the analysed depth (lambda). The design is UNDERPOWERED when the
    minimum detectable effect exceeds lambda x SESOI. The same attenuated SESOI is used for TOST.
+   A SESOI pre-registered on the metric's observed scale (``sesoi_scale="observed"``) is used as
+   it is (lambda = 1).
 """
 from __future__ import annotations
 
@@ -63,14 +66,22 @@ def equalizing_correction(data, estimand: str | None, spikein_prefix: str = "ERC
     return None
 
 
-def attenuation_lambda(a_half: float | None, depth_ratio: float = 1.0) -> tuple[float, dict]:
+SESOI_SCALES = ("construct", "observed")
+
+
+def attenuation_lambda(a_half: float | None, depth_ratio: float = 1.0,
+                       sesoi_scale: str = "construct") -> tuple[float, dict]:
     """Fraction of a construct-scale difference retained at the analysed depth.
 
     Reliability model: measurement noise variance ∝ 1/depth, so reliability at depth d is
     1 / (1 + k/d). If halving depth removes a fraction ``a`` of the signal, then
     k/d = a / (1 - 2a). Equalization further scales the thinned group's depth by
-    ``depth_ratio``. Returns 1 when no attenuation was measured (nothing to correct).
+    ``depth_ratio``. Returns 1 when no attenuation was measured (nothing to correct), and when
+    the SESOI is pre-registered on the observed scale (``sesoi_scale="observed"``: it already
+    is a difference of the metric as measured at this depth).
     """
+    if sesoi_scale == "observed":
+        return 1.0, dict(model="observed scale (pre-registered sesoi_scale): no attenuation applied")
     if a_half is None or not np.isfinite(a_half) or a_half <= 0:
         return 1.0, dict(model="none (no attenuation measured)")
     if a_half >= 0.5:
@@ -309,10 +320,15 @@ def estimate_effect(
     spikein_prefix: str = "ERCC-",
     qc_imbalanced: bool = False,
     attenuation_half: float | None = None,
+    sesoi_scale: str = "construct",
     seed: int = 0,
     max_exact: int = 20000,
 ) -> tuple[Assessment, dict]:
-    """Estimate the between-group effect; return (effect assessment, design info)."""
+    """Estimate the between-group effect; return (effect assessment, design info). The SESOI is
+    on the construct scale by default (equivalence is tested within ±λ x SESOI, λ the measured
+    attenuation); ``sesoi_scale="observed"`` declares it on the scale of the metric as measured."""
+    if sesoi_scale not in SESOI_SCALES:
+        raise ValueError(f"sesoi_scale must be one of {SESOI_SCALES}, not {sesoi_scale!r}")
     rng = np.random.default_rng(seed)
     within = list(within)
     sd = _restrict(data, group_col, groups)
@@ -384,7 +400,7 @@ def estimate_effect(
     detail["retained"] = float(retained) if np.isfinite(retained) else float("nan")
 
     # ---- 4. power against the (attenuated) SESOI ----------------------------------------
-    lam, lam_info = attenuation_lambda(attenuation_half, depth_ratio)
+    lam, lam_info = attenuation_lambda(attenuation_half, depth_ratio, sesoi_scale)
     eff_sesoi = lam * sesoi if sesoi is not None else None
     mde_v = mde(inf["se"], inf["df"], alpha, power) if tier != "insufficient" else float("nan")
     design["power"] = dict(mde=mde_v, power=power, sesoi=sesoi, lambda_=lam,
@@ -401,8 +417,12 @@ def estimate_effect(
     equivalent = (eff_sesoi is not None and eff_sesoi > 0 and np.isfinite(lo2) and np.isfinite(hi2)
                   and lo2 > -eff_sesoi and hi2 < eff_sesoi)
     detail["tost_equivalent"] = bool(equivalent) if eff_sesoi is not None else None
-    explained = bool(design["correction"] in THINNING and inf_raw["detected"] and not inf["detected"]
-                     and np.isfinite(retained) and abs(retained) < 0.5)
+    # "explained by depth" says the raw difference is technical: with a SESOI that also needs the
+    # corrected effect shown smaller than the SESOI (TOST), else a real effect the test missed would
+    # be called depth (decided 2026-10-08, journal D7); without a SESOI only the retained share speaks
+    depth_like = bool(design["correction"] in THINNING and inf_raw["detected"] and not inf["detected"]
+                      and np.isfinite(retained) and abs(retained) < 0.5)
+    explained = depth_like and (eff_sesoi is None or bool(equivalent))
     detail["explained_by_depth"] = explained
     # a detected raw difference whose sign the correction reverses: the estimate then hinges on
     # how exactly the correction removed a technical difference larger than the effect
@@ -439,6 +459,11 @@ def estimate_effect(
            else f"neither detected nor equivalent within ±{eff_sesoi:.4g}")
     if design["correction"] in THINNING and np.isfinite(retained) and abs(retained) < 0.5:
         what = "depth" if design["correction"] == "depth_thinning" else "capture"
-        why += (f"; the raw difference {raw_est:+.4g} (not detected at the replicate level, "
-                f"p={detail['p_raw']:.3g}) shrinks to {retained:.0%} at equal {what}")
+        if inf_raw["detected"]:
+            why += (f"; the raw difference {raw_est:+.4g} (detected, p={detail['p_raw']:.3g}) shrinks "
+                    f"to {retained:.0%} at equal {what}, but the corrected effect is not shown smaller "
+                    f"than the SESOI, so {what} does not explain it")
+        else:
+            why += (f"; the raw difference {raw_est:+.4g} (not detected at the replicate level, "
+                    f"p={detail['p_raw']:.3g}) shrinks to {retained:.0%} at equal {what}")
     return Assessment("INCONCLUSIVE", f"effect {est_txt}, {p_txt}; {why}", flags, detail), public_design(design)

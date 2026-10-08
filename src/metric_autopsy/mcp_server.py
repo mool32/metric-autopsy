@@ -65,6 +65,7 @@ def autopsy_report(
     estimand: str | None = None,
     direction: str | None = None,
     sesoi: float | None = None,
+    sesoi_scale: str | None = None,
     bias_tolerance: float | None = None,
     delta_min: float | None = None,
     min_replicates: int | None = None,
@@ -86,6 +87,8 @@ def autopsy_report(
     'decrease' or 'two-sided' (non-directional); required for SUPPORTED.
     sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
     GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
+    sesoi_scale: 'construct' (default: equivalence within ±attenuation x SESOI) or 'observed'
+    (the SESOI is a difference of the metric as measured at this depth).
     delta_min: the smallest response to an injected signal that matters (GATE 4/5; default
     0.5 x SESOI): the metric is invalid only if its response is shown below it.
     pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
@@ -107,6 +110,7 @@ def autopsy_report(
         with open(prereg_path) as fh:
             prereg = json.load(fh)
     for key, val in (("estimand", estimand), ("direction", direction), ("sesoi", sesoi),
+                     ("sesoi_scale", sesoi_scale),
                      ("bias_tolerance", bias_tolerance), ("delta_min", delta_min),
                      ("min_replicates", min_replicates)):
         if val is not None:

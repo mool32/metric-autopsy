@@ -225,3 +225,12 @@ to gene b. The power rule of 2026-10-07 (a frozen copy in the probe) failed the 
 weak control in 17, 8 and 0 of 20 datasets; the response rule (the metric's own response to an injected coupling of the
 control's genes, FAIL only if its upper 95% bound is below delta_min) in none, and both failed
 the blind metric 20/20. By the owner's condition GATE 5 now uses the response rule (JOURNAL.md, D6).
+
+### Found by the first independent review: the SESOI's scale and "explained by depth" (journal D7)
+
+The review of the pre-registration found that the engine's equivalence test used ±λ·SESOI (λ:
+GATE 0's attenuation) while the panel's oracle uses ±SESOI, and that "explained by depth" did not
+check that the corrected effect is negligible. A pre-registration may now state its SESOI on the
+observed scale (`sesoi_scale: "observed"`), and with a SESOI "explained by depth" needs the
+corrected effect shown smaller than it (TOST). No dev-set expectation changed; p11a and p11b, which
+declare no SESOI, keep their behaviour (JOURNAL.md, D7).

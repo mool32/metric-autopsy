@@ -71,7 +71,7 @@ DEFINITE = frozenset({SUPPORTED, NDE, NS_INVALID, NS_DEPTH, NS_OPPOSITE, DEGENER
 LABELS = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE", "UNIDENTIFIABLE",
           "DEGENERATE METRIC")
 
-# The engine's cause codes (metric_autopsy.report.CAUSES; test_every_engine_cause_has_an_outcome)
+# The engine's cause codes (metric_autopsy.report.CAUSES; test_the_panels_copies_of_the_engines_rules_agree_with_it)
 # and the outcome each one is scored as. GATE 0's block for a nuisance bias is a refusal: allowed
 # everywhere, never definite (decided 2026-10-08).
 _INCONCLUSIVE_CAUSES = ("effect_not_evaluated", "insufficient_replication", "absence_untested_metric",
@@ -142,6 +142,10 @@ CONDITIONS = (
     Condition("E3", "B1", (("with", 200),), "effect", artifact=True),
 )
 BACKGROUNDS = ("B1", "B2")
+# Conditions whose data change the pair's counts (capture loss, dropout, variable capture, an
+# injected coupling): the truth about the metric is measured on their own datasets (pilot.json
+# "truth_case"); the others share their background's null (N1 on B1, N7 on B2).
+TRUTH_CASE_CONDITIONS = ("N2", "N3", "N8", "E1", "E2", "E3")
 
 # The drop order of v1.md section 4 (compute budget): whole variants, never replicates of the
 # rest, and never a key null condition or E1-E3 at the key dose.
@@ -222,7 +226,7 @@ def assign(key: str, dropped=(), pool_sizes: dict | None = None) -> list[dict]:
         pair_draw = int(draw.integers(2 ** 62))
         e.update(id=f"D{rank + 1:0{width}d}", side=side, pair_draw=pair_draw,
                  pair=pair_draw % int(sizes[conds[e["condition"]].background]),
-                 seed=int(data_seqs[k].generate_state(1)[0]))
+                 seed=int(data_seqs[k].generate_state(1, np.uint64)[0]))
         out.append(e)
     return out
 
@@ -270,14 +274,25 @@ def classify_response(response: float, delta_min: float, band: float = TRUTH_BAN
     return "ambiguous"
 
 
-def metric_truth(cond: Condition, pair_index: int, pilot: dict) -> str:
-    """'valid', 'blind' or 'ambiguous' for log-normalized Pearson on the pair (the oracle's
-    population response, pilot.json); a useless metric (N6) is 'useless', the constant 'constant'."""
+def truth_record(cond: Condition, variant: str, pair_index: int, pilot: dict) -> dict:
+    """The oracle's record of the metric's population response on this case: the condition's own
+    datasets where its data change the pair's counts (pilot.json "truth_case"), else the
+    background's null (pilot.json "truth")."""
+    case = (pilot.get("truth_case") or {}).get(cond.background, {}).get(f"{cond.name}:{variant}")
+    if cond.name in TRUTH_CASE_CONDITIONS and case is not None:
+        return case[str(int(pair_index))]
+    return pilot["truth"][cond.background][str(int(pair_index))]
+
+
+def metric_truth(cond: Condition, variant: str, pair_index: int, pilot: dict) -> str:
+    """'valid', 'blind' or 'ambiguous' for log-normalized Pearson on the pair, on the data of this
+    condition and variant (the oracle's population response, pilot.json); a useless metric (N6)
+    is 'useless', the constant 'constant'."""
     if cond.metric == "constant":
         return "constant"
     if cond.metric != "norm_pearson":
         return "useless"
-    return pilot["truth"][cond.background][str(int(pair_index))]["class"]
+    return truth_record(cond, variant, pair_index, pilot)["class"]
 
 
 INVALID_ALLOWED = frozenset({NS_INVALID, INCONCLUSIVE, REFUSAL})
@@ -292,7 +307,11 @@ def data_allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) ->
         ok = {NDE, INCONCLUSIVE, NS_OPPOSITE, REFUSAL} | ({NS_DEPTH} if cond.artifact else set())
     else:
         d = float(delta_of(cond.name, variant, pair_index, pilot)["value"])
-        ok = {SUPPORTED, INCONCLUSIVE, REFUSAL} | ({NDE} if abs(d) < sesoi_of(cond, pair_index, pilot) else set())
+        small = abs(d) < sesoi_of(cond, pair_index, pilot)
+        # below the SESOI, "explained by depth" where an artifact is planted says what NDE says: with
+        # a SESOI the engine calls depth only when the corrected effect is shown smaller (journal D7)
+        ok = ({SUPPORTED, INCONCLUSIVE, REFUSAL} | ({NDE} if small else set())
+              | ({NS_DEPTH} if small and cond.artifact else set()))
     return frozenset(ok)
 
 
@@ -301,7 +320,7 @@ def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> froz
     2026-10-08): a blind or useless metric allows NOT SUPPORTED (metric invalid), INCONCLUSIVE
     and a refusal, and the constant also DEGENERATE METRIC; a valid metric allows
     `data_allowed`; an ambiguous one the union of both sets."""
-    truth = metric_truth(cond, pair_index, pilot)
+    truth = metric_truth(cond, variant, pair_index, pilot)
     if truth == "useless":
         return INVALID_ALLOWED
     if truth == "constant":
@@ -417,12 +436,16 @@ def resolve_background(spec_path: Path, name: str, spec: dict, data_dir=None) ->
 
 
 def load_backgrounds(spec_path, data_dir=None) -> dict:
-    """Every background of a backgrounds JSON (written by the rule of v1.md section 3.1: per
-    background the url, file, sha256, cell filter, donor column, counts source and gene-symbol
-    column), loaded from `data_dir`, checked against its sha256 and planned (`plan_background`)."""
+    """The panel's backgrounds (B1, B2) of a backgrounds JSON (written by the rule of v1.md section
+    3.1: per background the url, file, sha256, cell filter, donor column, counts source and
+    gene-symbol column), loaded from `data_dir`, checked against its sha256 and planned
+    (`plan_background`). The anchors' backgrounds (B3, B4) in the same file are not the panel's:
+    anchors.py loads them itself."""
     spec = json.loads(Path(spec_path).read_text())
     bgs = {}
     for k, v in spec.items():
+        if k not in BACKGROUNDS:
+            continue
         bgs[k] = load_background(k, resolve_background(spec_path, k, v, data_dir))
         plan_background(bgs[k])
     return bgs
@@ -695,8 +718,10 @@ def _draw_cells(bg: Background, donors, rng):
     return np.asarray(bg.X[rows], dtype=np.float64), np.asarray(donor_of)
 
 
-def _two_groups(bg: Background, rng, per_group: int):
-    donors = rng.choice(bg.donors, size=2 * per_group, replace=False)
+def _two_groups(bg: Background, rng, per_group: int, total: int | None = None):
+    """`total` donors (default 2 x per_group) drawn without replacement, the first `per_group` of a
+    permutation in A and the rest in B."""
+    donors = rng.choice(bg.donors, size=total or 2 * per_group, replace=False)
     X, donor = _draw_cells(bg, donors, rng)
     group_of = {d: ("A" if k < per_group else "B") for k, d in enumerate(rng.permutation(donors))}
     return X, donor, np.array([group_of[d] for d in donor])
@@ -734,8 +759,8 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
         group = rng.choice(np.array(["A", "B"]), size=len(donor))
     elif cond.name == "N4":
         X, donor, group = _two_groups(bg, rng, 3)
-    elif cond.name == "N7":
-        X, donor, group = _two_groups(bg, rng, len(bg.donors) // 2)
+    elif cond.name == "N7":  # every qualifying mouse; with an odd number B has one more
+        X, donor, group = _two_groups(bg, rng, len(bg.donors) // 2, total=len(bg.donors))
     else:
         X, donor, group = _two_groups(bg, rng, DONORS_PER_GROUP)
     in_side = group == side
@@ -774,7 +799,7 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
                 group_col="group", groups=["A", "B"], replicate_col="donor",
                 signal_test=(dict(kind="module", genes=bg.plan["g2m"]) if cond.metric == "score"
                              else dict(kind="coupling", genes=pe["pair"], strength=strength)),
-                prereg=dict(estimand="composition", direction=direction, sesoi=sesoi,
+                prereg=dict(estimand="composition", direction=direction, sesoi=sesoi, sesoi_scale="observed",
                             delta_min=DELTA_MIN_FRACTION * sesoi, judgment_pending=False))
     cards = [base]
     if cond.cards == 2:  # N4: the same cells analysed without and with the replicate unit

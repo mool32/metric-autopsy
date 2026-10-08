@@ -101,7 +101,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--direction", choices=["increase", "decrease", "two-sided"],
                    help="the claimed change of the metric from the first group to the second "
                         "(required for SUPPORTED; 'two-sided' marks a non-directional claim)")
-    p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale)")
+    p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale, "
+                   "unless --sesoi-scale observed)")
+    p.add_argument("--sesoi-scale", choices=["construct", "observed"],
+                   help="the scale of the SESOI: 'construct' (default; equivalence within ±attenuation x "
+                        "SESOI) or 'observed' (a difference of the metric as measured at this depth)")
     p.add_argument("--bias-tolerance", type=float,
                    help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
     p.add_argument("--delta-min", type=float,
@@ -133,6 +137,7 @@ def build_prereg(args) -> dict:
         with open(args.prereg) as fh:
             prereg = json.load(fh)
     for key, val in (("estimand", args.estimand), ("direction", args.direction), ("sesoi", args.sesoi),
+                     ("sesoi_scale", args.sesoi_scale),
                      ("bias_tolerance", args.bias_tolerance), ("delta_min", args.delta_min),
                      ("min_replicates", args.min_replicates)):
         if val is not None:

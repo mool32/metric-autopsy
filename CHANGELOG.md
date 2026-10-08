@@ -70,11 +70,14 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   INSUFFICIENT_REPLICATION, no effect verdict. Nested and paired designs; partially crossed
   replicates are UNIDENTIFIABLE. NO DETECTABLE EFFECT needs a pre-registered SESOI (TOST) and a
   valid metric. A raw difference detected across replicates that vanishes after the correction
-  is NOT SUPPORTED — explained by depth (or capture); one whose sign the correction reverses
-  (both detected) is INCONCLUSIVE.
+  is NOT SUPPORTED — explained by depth (or capture) — and, with a SESOI, only where the TOST
+  shows the corrected effect smaller than the SESOI (else INCONCLUSIVE; journal D7); one whose
+  sign the correction reverses (both detected) is INCONCLUSIVE.
 - **Power.** GATE 0's attenuation under depth halving gives λ, the fraction of a construct-scale
   difference that survives at the analysed depth; the design is UNDERPOWERED when the MDE
-  exceeds λ × SESOI.
+  exceeds λ × SESOI. A pre-registration may state its SESOI on the metric's observed scale
+  (`sesoi_scale: "observed"`, CLI `--sesoi-scale`, MCP `sesoi_scale`): λ = 1 for the TOST and the
+  power check (journal D7; the default `construct` is the behaviour so far).
 - **GATE 5** judges controls against empirical nulls: the negative control against
   expression-matched unrelated pairs, the positive control against depth-matched draws of
   itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive

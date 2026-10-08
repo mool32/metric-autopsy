@@ -2,56 +2,74 @@
 # principle: P(pass | sound) >= 0.9, P(pass | doubled nominal error) <= 0.05;
 # S1, a conjunction over the key null conditions, meets it as a whole
 
-## Nominal rates (errors by cause, decided 2026-10-08)
-  false SUPPORTED 0.025 (alpha/2: the effect test is two-sided at alpha, the direction checked
-  afterwards); false NOT SUPPORTED (metric invalid, GATE 4/5) on a valid metric 0.1 (2 alpha:
+## Nominal rates (errors by cause, decided 2026-10-08; a sound validator's model after the first review)
+  Designed sizes: false SUPPORTED 0.025 (alpha/2: the effect test is two-sided at alpha, the
+  direction checked afterwards); false NOT SUPPORTED (metric invalid) on a valid metric 0.1 (2 alpha:
   GATE 4's upper bound below delta_min alpha/2, GATE 5's negative control alpha, a silent positive
-  control shown blind alpha/2); false NO DETECTABLE EFFECT 0.05 (alpha, the TOST's size). A card's nominal
-  error is the sum over the routes open on it (panel.allowed); S4 uses the cards' mean. Decisiveness:
-  0.85 correct definite outcomes on establishable cards (the oracle reaches >= 0.9), doubled shortfall 0.70.
+  control shown blind alpha/2); false NO DETECTABLE EFFECT or explained by depth 0.05 (alpha, the TOST's
+  size); NOT SUPPORTED against a real effect's direction 0.025 (one tail). With pilot.json a card's
+  nominals are a sound validator's on its case (sound_model): GATE 4 at the odds measured on the case,
+  GATE 5 at 0.075, then the effect's outcomes as the oracle found them on the case's datasets; a blind,
+  ambiguous or useless metric as the engine's rules gave on them. Without a measurement (the scenarios
+  below): the designed sizes of the routes open on the card and decisiveness 0.85. S4 uses the cards'
+  mean nominal error; S3 is judged per stratum (real effects, nulls, blind or useless metrics) where the
+  principle is attainable on its n.
 
 ## S1 as a whole: the number of datasets per key condition (5 conditions)
   the rule first holds at n = 763; k* moves in steps, so it fails again at n = 769-785, 802-808 (up to 1000); the plan's 790 meets it
   S1 false SUPPORTED, key null conditions: 5 conditions x n = 790, each passes with at most 29/790 false SUPPORTED (upper 95% CP bound <= 0.0523); P(one passes | 0.025) = 0.9824, P(all 5 pass | 0.025) = 0.9151, P(a condition passes | 0.050 there) = 0.0465 — meets the principle
+  with shared donors the counts are overdispersed; at the same thresholds (beta-binomial, design effect
+  deff; the run reports the realized deff of every primary criterion, above 1.5 a limitation):
+    deff 1.0: P(all 5 pass | 0.025) = 0.915, P(a condition passes | 0.050 there) = 0.046
+    deff 1.1: P(all 5 pass | 0.025) = 0.892, P(a condition passes | 0.050 there) = 0.054
+    deff 1.2: P(all 5 pass | 0.025) = 0.868, P(a condition passes | 0.050 there) = 0.062
+    deff 1.5: P(all 5 pass | 0.025) = 0.800, P(a condition passes | 0.050 there) = 0.085
+    the principle holds up to deff 1.044 (the doubled side up to 1.044, the sound side up to 1.065)
 
 ## Scenario A: the low level blind, half the medium pairs blind, half the cases establishable
-  cards 6000: SUPPORTED an error on 5532, valid metric on 2572, establishable 3410; mean nominal error 0.0975
+  cards 6000: SUPPORTED an error on 5532, valid metric on 2572, establishable 2900; mean nominal error 0.1129; nominals measured by the pilot on 50
   S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
-  S2 false SUPPORTED where it is an error: n = 5532, pass with at most 249 errors (upper 95% CP bound <= 0.0508); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.046 — meets the principle
-  S3 correct definite outcomes, establishable cards: n = 3410, pass with at least 2432 correct definite outcomes (lower 95% CP bound >= 0.6977); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.048 — meets the principle
-  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1119 errors (upper 95% CP bound <= 0.1966); P(pass | 0.0975) = 1.000, P(pass | 0.1950) = 0.049 — meets the principle
-  S5 false metric invalid, valid-metric cards: n = 2572, pass with at most 480 errors (upper 95% CP bound <= 0.2022); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.046 — meets the principle
-  P(S1-S5 all pass | sound), simulated: 0.914
+  S2 false SUPPORTED where it is an error (mean nominal): n = 5532, pass with at most 247 errors (upper 95% CP bound <= 0.0504); P(pass | 0.0248) = 1.000, P(pass | 0.0495) = 0.048 — meets the principle
+  S3 effect: correct definite outcomes, establishable cards (mean nominal): n = 234, pass with at least 168 correct definite outcomes (lower 95% CP bound >= 0.6556); P(pass | 0.83) = 1.000, P(pass | 0.66) = 0.037 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (mean nominal): n = 1000, pass with at least 725 correct definite outcomes (lower 95% CP bound >= 0.6962); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.045 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (mean nominal): n = 1666, pass with at least 1205 correct definite outcomes (lower 95% CP bound >= 0.7011); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.048 — meets the principle
+  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1301 errors (upper 95% CP bound <= 0.2275); P(pass | 0.1129) = 1.000, P(pass | 0.2258) = 0.049 — meets the principle
+  S5 false metric invalid, valid-metric cards (mean nominal): n = 2572, pass with at most 480 errors (upper 95% CP bound <= 0.2022); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.046 — meets the principle
+  P(S1-S5 all pass | sound), simulated, S3 judged on effect, null, invalid: 0.914
 
 ## Scenario B: every pair valid, every case establishable
-  cards 6000: SUPPORTED an error on 5100, valid metric on 5060, establishable 5800; mean nominal error 0.1192
+  cards 6000: SUPPORTED an error on 5100, valid metric on 5060, establishable 5800; mean nominal error 0.1261; nominals measured by the pilot on 50
   S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
-  S2 false SUPPORTED where it is an error: n = 5100, pass with at most 229 errors (upper 95% CP bound <= 0.0509); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.049 — meets the principle
-  S3 correct definite outcomes, establishable cards: n = 5800, pass with at least 4118 correct definite outcomes (lower 95% CP bound >= 0.6981); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.049 — meets the principle
-  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1376 errors (upper 95% CP bound <= 0.2402); P(pass | 0.1192) = 1.000, P(pass | 0.2385) = 0.049 — meets the principle
-  S5 false metric invalid, valid-metric cards: n = 5060, pass with at most 964 errors (upper 95% CP bound <= 0.2016); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.047 — meets the principle
-  P(S1-S5 all pass | sound), simulated: 0.914
+  S2 false SUPPORTED where it is an error (mean nominal): n = 5100, pass with at most 226 errors (upper 95% CP bound <= 0.0503); P(pass | 0.0248) = 1.000, P(pass | 0.0495) = 0.045 — meets the principle
+  S3 effect: correct definite outcomes, establishable cards (mean nominal): n = 900, pass with at least 619 correct definite outcomes (lower 95% CP bound >= 0.6564); P(pass | 0.83) = 1.000, P(pass | 0.66) = 0.048 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (mean nominal): n = 3960, pass with at least 2820 correct definite outcomes (lower 95% CP bound >= 0.6977); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.049 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (mean nominal): n = 940, pass with at least 697 correct definite outcomes (lower 95% CP bound >= 0.7122); P(pass | 0.86) = 1.000, P(pass | 0.72) = 0.044 — meets the principle
+  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1457 errors (upper 95% CP bound <= 0.2539); P(pass | 0.1261) = 1.000, P(pass | 0.2522) = 0.049 — meets the principle
+  S5 false metric invalid, valid-metric cards (mean nominal): n = 5060, pass with at most 964 errors (upper 95% CP bound <= 0.2016); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.047 — meets the principle
+  P(S1-S5 all pass | sound), simulated, S3 judged on effect, null, invalid: 0.914
 
-## Scenario C: the low level blind, every medium pair blind, a fifth of the cases establishable
-  cards 6000: SUPPORTED an error on 5676, valid metric on 1740, establishable 1960; mean nominal error 0.0902
+## Scenario C: the low level blind, every medium pair blind, a quarter of the cases establishable
+  cards 6000: SUPPORTED an error on 5676, valid metric on 1740, establishable 1453; mean nominal error 0.1085; nominals measured by the pilot on 50
   S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
   S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
-  S2 false SUPPORTED where it is an error: n = 5676, pass with at most 256 errors (upper 95% CP bound <= 0.0508); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.047 — meets the principle
-  S3 correct definite outcomes, establishable cards: n = 1960, pass with at least 1406 correct definite outcomes (lower 95% CP bound >= 0.6968); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.049 — meets the principle
-  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1033 errors (upper 95% CP bound <= 0.1820); P(pass | 0.0902) = 1.000, P(pass | 0.1805) = 0.048 — meets the principle
-  S5 false metric invalid, valid-metric cards: n = 1740, pass with at most 320 errors (upper 95% CP bound <= 0.2029); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.049 — meets the principle
-  P(S1-S5 all pass | sound), simulated: 0.914
+  S2 false SUPPORTED where it is an error (mean nominal): n = 5676, pass with at most 254 errors (upper 95% CP bound <= 0.0505); P(pass | 0.0248) = 1.000, P(pass | 0.0496) = 0.049 — meets the principle
+  S3 effect (reported only: judging it would bring P(S1-S5 together | sound) below 0.9): n = 81, pass with at least 61 correct definite outcomes (lower 95% CP bound >= 0.6447); P(pass | 0.83) = 0.973, P(pass | 0.66) = 0.049 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (mean nominal): n = 336, pass with at least 250 correct definite outcomes (lower 95% CP bound >= 0.6939); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.043 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (mean nominal): n = 1036, pass with at least 754 correct definite outcomes (lower 95% CP bound >= 0.6996); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.048 — meets the principle
+  S4 outside the allowed outcomes, all cards (mean nominal): n = 6000, pass with at most 1249 errors (upper 95% CP bound <= 0.2187); P(pass | 0.1085) = 1.000, P(pass | 0.2170) = 0.049 — meets the principle
+  S5 false metric invalid, valid-metric cards (mean nominal): n = 1740, pass with at most 320 errors (upper 95% CP bound <= 0.2029); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.049 — meets the principle
+  P(S1-S5 all pass | sound), simulated, S3 judged on null, invalid: 0.914
 
 ## Precision of a rate from n cards (half-width of the 95% CP interval)
   n= 100: p=0.025: ±0.034, p=0.100: ±0.064, p=0.500: ±0.102

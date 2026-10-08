@@ -692,6 +692,58 @@ def test_level_metric_driven_by_depth_is_caught_by_the_effect_field():
     assert explained >= 8
 
 
+def test_with_a_sesoi_explained_by_depth_needs_the_corrected_effect_shown_smaller():
+    """Decided 2026-10-08 (journal D7): with a pre-registered SESOI, "explained by depth" also needs
+    the depth-corrected effect equivalent to zero within the SESOI (TOST), else a real effect that
+    the test missed under a larger artifact would be called depth; the claim is then INCONCLUSIVE.
+    Without a SESOI the retained share alone decides, as before."""
+    base = dict(group_col="age", groups=("young", "old"), replicate_col="mouse",
+                signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3))
+    explained = {"none": 0, "tiny": 0, "large": 0}
+    for s in range(6):
+        data = capture_confound_mice(seed=s)
+        # delta_min stays small: GATE 4's verdict on the metric is not what this test is about
+        runs = {"none": {}, "tiny": {"sesoi": 1e-6, "delta_min": 0.01}, "large": {"sesoi": 5.0, "delta_min": 0.01}}
+        out = {k: run_autopsy(mean_lognorm_gene5, data, prereg={**COMPOSITION, **ANY_DIRECTION, **extra}, **base)
+               for k, extra in runs.items()}
+        for k, a in out.items():
+            explained[k] += bool(a.effect.detail["explained_by_depth"])
+        # a SESOI no interval can meet: the depth-like pattern is reported, never called depth
+        tiny = out["tiny"]
+        assert not tiny.effect.detail["explained_by_depth"] and tiny.cause != "explained_by_depth"
+        if out["none"].effect.detail["explained_by_depth"]:
+            assert tiny.verdict.startswith("INCONCLUSIVE") and "does not explain it" in tiny.effect.reason
+            assert out["large"].effect.detail["explained_by_depth"] and out["large"].cause == "explained_by_depth"
+    assert explained["none"] >= 4 and explained["tiny"] == 0 and explained["large"] == explained["none"]
+
+
+def test_a_sesoi_on_the_observed_scale_is_not_attenuated():
+    """``sesoi_scale="observed"`` declares the SESOI as a difference of the metric as measured, so
+    the equivalence margin and the power check use the SESOI itself; the default (construct scale)
+    shrinks it by the measured attenuation λ. An unknown scale is refused."""
+    from metric_autopsy.effect import attenuation_lambda, estimate_effect
+    lam, info = attenuation_lambda(0.2, 1.0)
+    assert lam == pytest.approx(0.75) and info["model"].startswith("reliability")
+    assert attenuation_lambda(0.2, 1.0, "observed")[0] == 1.0
+    data = capture_confound_mice(seed=0)
+    kw = dict(group_col="age", groups=("young", "old"), replicate_col="mouse", estimand="composition",
+              sesoi=0.4, attenuation_half=0.2)
+    con = estimate_effect(mean_lognorm_gene5, data, **kw)
+    obs = estimate_effect(mean_lognorm_gene5, data, sesoi_scale="observed", **kw)
+    lam_con = con[1]["power"]["lambda_"]  # the reliability at the analysed (equalized) depth
+    assert lam_con < 0.75 and con[0].detail["effective_sesoi"] == pytest.approx(0.4 * lam_con)
+    assert obs[0].detail["effective_sesoi"] == pytest.approx(0.4) and obs[1]["power"]["lambda_"] == 1.0
+    assert obs[1]["power"]["attenuation"]["model"].startswith("observed scale")
+    with pytest.raises(ValueError, match="sesoi_scale"):
+        estimate_effect(mean_lognorm_gene5, data, sesoi_scale="biological", **kw)
+    with pytest.raises(ValueError, match="sesoi_scale"):
+        run_autopsy(mean_lognorm_gene5, data, group_col="age", groups=("young", "old"), replicate_col="mouse",
+                    prereg={**COMPOSITION, "sesoi": 0.4, "sesoi_scale": "biological"})
+    a = run_autopsy(mean_lognorm_gene5, data, group_col="age", groups=("young", "old"), replicate_col="mouse",
+                    prereg={**COMPOSITION, "sesoi": 0.4, "sesoi_scale": "observed"}, log_path="off")
+    assert "vs SESOI 0.4 (observed scale)" in a.design_adequacy.reason and "attenuated SESOI" not in a.design_adequacy.reason
+
+
 def test_effect_reversed_by_the_correction_is_inconclusive():
     """Seed 3 of the capture confound: raw +0.64 (detected) becomes -0.33 (detected) at equal
     depth. Before the rule this was a false SUPPORTED."""

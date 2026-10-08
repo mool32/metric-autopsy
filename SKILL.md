@@ -49,9 +49,10 @@ and what would disprove the claim. Then the commitments the engine enforces:
   SUPPORTED needs the effect in this direction; a detected effect the other way is NOT SUPPORTED;
 - **replicate unit** and **minimum replicates** per group;
 - **SESOI** — the smallest effect size of interest (needed to claim "no detectable effect",
-  for the power check, and to size nuisance biases: a dropout or library-size bias blocks only
-  above `bias_tolerance` × SESOI, default 0.5; without a SESOI SUPPORTED is withheld while a
-  bias is unsized);
+  for the power check, for "explained by depth", and to size nuisance biases: a dropout or
+  library-size bias blocks only above `bias_tolerance` × SESOI, default 0.5; without a SESOI
+  SUPPORTED is withheld while a bias is unsized), and its scale (`sesoi_scale`: `construct`, the
+  default, attenuated by GATE 0's λ, or `observed`, the metric's own scale);
 - **delta_min** — the smallest response to an injected signal that matters (default 0.5 ×
   SESOI): GATE 4 and GATE 5 call the metric invalid only when its response is shown below it;
 - alpha, power, controls (or an injected signal and its direction).

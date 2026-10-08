@@ -6,9 +6,10 @@ is public, run with the frozen engine after the panel, reported one by one (not 
   increase; within age (development stage), mouse as replicate, composition estimand, SESOI 0.5 on
   the log1p-CP10k scale (delta_min 0.25), the genes raised 2-fold in every cell as GATE 4's module
   signal (a weaker injection, 2-fold in 30% of cells, moves such a level metric by only 0.1-0.2,
-  below delta_min). Allowed: SUPPORTED where every age stratum has >= 4 mice per sex, else
-  INCONCLUSIVE. The sham: female mice split in two by the public seed (Xist, two-sided): NO
-  DETECTABLE EFFECT or INCONCLUSIVE.
+  below delta_min). Allowed: SUPPORTED where the engine's replicate rule gives an effect verdict
+  (at least 3 mice of each sex: effect._tier counts the replicates per group over the strata;
+  3 is the parametric tier, 4 or more the permutation tier), else INCONCLUSIVE. The sham: female
+  mice split in two by the public seed (Xist, two-sided): NO DETECTABLE EFFECT or INCONCLUSIVE.
 * R2 (B3, mESC sorted by DNA content): R2a the G2M score (mean log1p CP10k of the G2M genes,
   matched to the mouse symbols case-insensitively) from G2M to G1, a decrease, composition; R2b the
   log total endogenous counts, content estimand with the ERCC spike-ins, a decrease; R2c R2b with
@@ -31,10 +32,14 @@ import json
 from functools import partial
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
+import frozen  # standard library only
 
-import panel as P
+frozen.pin_numerics()  # one numerical path, as run_panel.py: set before numpy loads
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+
+import panel as P  # noqa: E402
 
 Y_GENES = ("Ddx3y", "Eif2s3y", "Kdm5d", "Uty")
 SESOI = 0.5  # on the log1p-CP10k scale
@@ -90,6 +95,14 @@ def _record(name, a, allowed, note=""):
                 fields={k: (v.status if v else None) for k, v in a.fields().items()})
 
 
+def r1_allowed(obs) -> tuple:
+    """R1's allowed outcome by the engine's replicate rule (effect._tier counts the replicates of
+    each group over all strata): SUPPORTED with at least 3 mice of each sex, else INCONCLUSIVE."""
+    per_sex = obs.groupby("sex")["mouse"].nunique()
+    enough = min(int(per_sex.get("female", 0)), int(per_sex.get("male", 0))) >= 3
+    return ("SUPPORTED",) if enough else ("INCONCLUSIVE",)
+
+
 def r1(spec, data_dir) -> list[dict]:
     from metric_autopsy import SimpleData
     got = _load(spec, "B2", data_dir)
@@ -99,8 +112,7 @@ def r1(spec, data_dir) -> list[dict]:
     obs = obs.rename(columns={"donor_id": "mouse", "development_stage": "age"})
     data = SimpleData(X, obs[["sex", "age", "mouse"]].astype(str), genes)
     sexes = obs.assign(n=1).groupby(["age", "sex"])["mouse"].nunique()
-    enough = all(sexes.get((age, s), 0) >= 4 for age in obs["age"].unique() for s in ("female", "male"))
-    allowed = ("SUPPORTED",) if enough else ("INCONCLUSIVE",)
+    allowed = r1_allowed(obs)
     out = []
     xist = _cols(genes, ["Xist"])
     ygenes = _cols(genes, Y_GENES)

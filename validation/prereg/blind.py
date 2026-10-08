@@ -32,11 +32,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
-    os.environ.setdefault(_var, "1")  # as run_panel.py: one BLAS thread per worker, set before numpy
-
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import frozen  # noqa: E402  (standard library only)
+
+frozen.pin_numerics()  # one BLAS thread per worker and one numerical path, set before numpy
 import panel as P  # noqa: E402
 import run_panel as R  # noqa: E402
 from frozen import guard  # noqa: E402  (frozen.py, which a job also runs on its own)

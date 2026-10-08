@@ -183,3 +183,31 @@ cannot FAIL the metric.
 test now passes a delta_min (and expects WARN in a 10-cell stratum where the interval is too wide
 for delta_min 0.05), and an uncoupled positive control offered to a responsive metric is WARN,
 not FAIL (the metric stays untested and the claim is not certified).
+
+## D7 — the SESOI's scale, and "explained by depth" with a SESOI (2026-10-08; after the first independent review, for the owner's approval)
+
+**The finding** (review 1, V2 and V4). The engine judged equivalence within ±λ·SESOI, λ the
+attenuation GATE 0 measures, while the panel's oracle and its SESOI rule use ±SESOI: on simulated
+N1 cards (high level, SESOI 0.12, λ 0.50–0.89, median 0.72) the engine reached a correct definite
+outcome on 10 of 16 cards and the oracle on 83 of 100, and 3 of the 5 INCONCLUSIVE would have been
+equivalent at the card's SESOI. And "explained by depth" needed only that the corrected effect
+keep less than half of the raw one, so a real effect smaller than the raw artifact (E3) could be
+called depth although the corrected effect was not shown to be negligible.
+
+**What changed.**
+- A pre-registration may say on which scale its SESOI is stated: `sesoi_scale` = `construct`
+  (the default and the behaviour so far: the SESOI is about the construct, so it is attenuated
+  by GATE 0's λ before the TOST and the power check) or `observed` (the SESOI is on the metric's
+  observed scale, λ = 1). The CLI (`--sesoi-scale`), the MCP tools and `run_autopsy` take it; an
+  unknown value is refused. The panel's cards declare `observed`, the scale on which the pilot
+  fixes the SESOI.
+- With a SESOI, NOT SUPPORTED "explained by depth" also needs the corrected effect shown smaller
+  than the SESOI (TOST, at the same α); otherwise the verdict is INCONCLUSIVE: "the corrected
+  effect is not shown smaller than the SESOI, so depth does not explain it". Without a SESOI the
+  rule is unchanged (less than half retained), so p11a/p11b keep their behaviour.
+
+**Frozen expectations.** None edited; every dev-set test passes. New tests in `tests/`:
+`test_with_a_sesoi_explained_by_depth_needs_the_corrected_effect_shown_smaller`,
+`test_a_sesoi_on_the_observed_scale_is_not_attenuated`. The panel's allowed outcomes follow
+(validation/prereg/v1.md 3.2): below the SESOI, "explained by depth" is allowed on a real effect
+with a planted artifact (E2, E3), as NO DETECTABLE EFFECT is.

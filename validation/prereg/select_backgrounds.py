@@ -51,7 +51,7 @@ DROPLET_3P = ("10x 3' v1", "10x 3' v2", "10x 3' v3", "10x 3' transcription profi
 MIN_CELLS = P.CELLS_PER_DONOR          # cells per donor (mouse)
 B1_MIN_DONORS, B2_MIN_MICE = 24, 12
 MAX_DONORS, MAX_CELLS = 200, 400       # extraction caps (public-seed samples)
-MAX_RANKS = 5                          # candidates tried, in order, for the raw-counts criterion
+MAX_RANKS = 5                          # candidates tried, in order, for the raw-counts and pool criteria
 MISSING_DONOR = {"", "na", "n/a", "nan", "none", "unknown", "not applicable"}
 SEED = P.PLAN_SEED
 
@@ -196,6 +196,17 @@ def extract(census, organism: str, joinids: np.ndarray, path: Path, obs_columns:
     return dict(raw=True, sha256=P.sha256(path), cells=int(ad.n_obs), genes=int(ad.n_vars))
 
 
+def pool_rule(path: Path, name: str) -> str | None:
+    """None when an extracted background has the pair pool of section 3.1 (at least 4 disjoint
+    pairs per level, each with its negative control, and a positive control: `panel.plan_background`),
+    else why not: such a candidate is not suitable, and the next one in the choice order is taken."""
+    try:
+        P.plan_background(P.load_background(name, dict(path=str(path), donor="donor_id", counts="X")))
+    except ValueError as exc:
+        return str(exc)
+    return None
+
+
 def _datasets(census) -> pd.DataFrame:
     return census["census_info"]["datasets"].read().concat().to_pandas()
 
@@ -231,7 +242,8 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
                     lines.append(f"| {i + 1} | " + " | ".join(str(row[k]) for k in keys)
                                  + f" | {titles.get(row['dataset_id'], '?')} | {row['donors']} | {row['cells_per_donor']:.0f} |"
                                  + (f" {row['sexes']} |" if sexes else ""))
-            # the raw-counts criterion is checked on the extraction, in the order of the choice rule
+            # the raw-counts and pool criteria are checked on the extraction, in the order of the choice
+            # rule (a rehearsal's test extraction is too small for the pool: it checks the counts only)
             for rank in range(1, min(len(cand), MAX_RANKS) + 1):
                 choice = cand.iloc[rank - 1].to_dict()
                 group = _census_group(census, organism, choice, keys)
@@ -242,13 +254,19 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
                     ids = sample_cells(group, choice, keys, max_donors, MAX_CELLS)
                     target = out_dir / f"{name}.npz"
                 rec = extract(census, organism, ids, target, cols)
+                if rec["raw"] and not rehearsal:
+                    why = pool_rule(target, name)
+                    if why is not None:
+                        target.unlink()
+                        lines.append(f"{name}: rank {rank} fails the pool rule ({why}): {choice['dataset_id']}")
+                        continue
                 if rec["raw"]:
                     break
                 lines.append(f"{name}: rank {rank} fails the raw-counts criterion (values that are not "
                              "non-negative integers)" + ("" if rehearsal else f": {choice['dataset_id']}"))
             else:
-                lines.append(f"{name}: none of the first {MAX_RANKS} candidates has raw counts: dropped with the "
-                             "cases that need it")
+                lines.append(f"{name}: none of the first {MAX_RANKS} candidates has raw counts and the pair pool: "
+                             "dropped with the cases that need it")
                 continue
             if rehearsal:
                 target.unlink()

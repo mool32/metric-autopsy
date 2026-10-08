@@ -235,19 +235,23 @@ noise as an effect; probe p07). Graded rule, by replicates per group (or pairs):
 - **NO_DETECTABLE_EFFECT** — the (1 − 2α) interval lies inside ±(attenuated) SESOI (TOST).
   Needs a pre-registered SESOI; without one the result is INCONCLUSIVE.
 - **explained by depth / capture** — the raw difference is detected across replicates and,
-  after the correction, is not, with less than half retained → **NOT SUPPORTED**. A raw
-  difference that is not itself detected across replicates cannot be "explained"; the effect
-  is INCONCLUSIVE and the reason states how much of it the correction left.
+  after the correction, is not, with less than half retained, and — where a SESOI is declared —
+  the corrected effect is shown smaller than the SESOI by the same TOST → **NOT SUPPORTED**; with
+  a SESOI but no such equivalence it is INCONCLUSIVE (the correction leaves an effect that may
+  matter; journal D7). A raw difference that is not itself detected across replicates cannot be
+  "explained"; the effect is INCONCLUSIVE and the reason states how much of it the correction left.
 - **reversed by the correction** — a detected raw difference becomes a detected difference of
   the *opposite* sign at equal depth → INCONCLUSIVE: the technical difference is larger than
   the effect, so the direction depends on how exactly the correction removed it. (In the dev
   data this turned three false SUPPORTED verdicts on a pure depth artifact into INCONCLUSIVE.)
 
-**Power.** The SESOI is declared on the construct scale. GATE 0's attenuation under depth
-halving gives a reliability-model estimate λ of how much of a construct-scale difference
-survives at the analysed depth (noise ∝ 1/depth; the equalization's depth ratio is included).
-The design is **UNDERPOWERED** when the minimum detectable effect exceeds λ × SESOI; the same
-attenuated SESOI is used for the equivalence test.
+**Power.** By default the SESOI is declared on the construct scale (`sesoi_scale`:
+`construct`). GATE 0's attenuation under depth halving gives a reliability-model estimate λ of
+how much of a construct-scale difference survives at the analysed depth (noise ∝ 1/depth; the
+equalization's depth ratio is included). The design is **UNDERPOWERED** when the minimum
+detectable effect exceeds λ × SESOI; the same attenuated SESOI is used for the equivalence test.
+A SESOI stated on the metric's observed scale (`sesoi_scale`: `observed`) is used as it is
+(λ = 1).
 
 ---
 

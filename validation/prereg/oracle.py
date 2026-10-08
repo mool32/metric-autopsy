@@ -1,19 +1,24 @@
 """The oracle and the pilot of the confirmatory validation (validation/prereg/v1.md, 3.2 and 8).
 
 The pilot (before the key) fixes, per background and expression level: the SESOI (the smallest
-grid value at which the oracle's TOST establishes the background's null, N1 on B1 and N7 on B2,
-with power >= 0.9: one rule, computed on each background); the response of the metric to the
-GATE 4 injection over the dose grid (injected minus sham on whole datasets, as GATE 4 measures
-it) and the saturation dose, the largest grid dose without saturation (the smallest dose whose
-response reaches 95% of the grid maximum); and per pool pair the truth about the metric: its
-population response at that dose against delta_min = 0.5 x SESOI, valid at >= 1.2 delta_min,
-blind at <= 0.8 delta_min, ambiguous between. On B1 it also fixes, per level, the key dose (the
-smallest grid dose at which the oracle detects E1 with power >= 0.9 and the level's Δ* >= 1.25
-x SESOI; where there is none, the real effects use the saturation dose), Δ* per pair (the
-population difference of the metric under the injected coupling, signal side minus sham, from
-a large paired simulation; value and standard error), and the oracle's power to detect N2's raw
-difference at c = 0.5. Finally the establishable (condition, variant, pair) cases: those where
-the oracle reaches a correct definite outcome with power >= 0.9.
+grid value at which the oracle reaches a correct definite outcome on the background's null, N1
+on B1 and N7 on B2, in at least 95% of the datasets, counted exactly: one rule, computed on each
+background); the response of the metric to the GATE 4 injection over the dose grid (injected
+minus sham on whole datasets, as GATE 4 measures it) and the saturation dose, the largest grid
+dose without saturation (the smallest dose whose response reaches 95% of the grid maximum); and
+per pool pair the truth about the metric: its population response at that dose against
+delta_min = 0.5 x SESOI, valid at >= 1.2 delta_min, blind at <= 0.8 delta_min, ambiguous
+between - on the background's null, and for the conditions whose data change the pair's counts
+(N2, N3, N8, E1-E3: panel.TRUTH_CASE_CONDITIONS) on the condition's own datasets ("truth_case").
+On B1 it also fixes, per level, the key dose (the smallest grid dose at which the oracle detects
+E1 with power >= 0.9 and the level's Δ* >= 1.25 x SESOI; where there is none, the real effects
+use the saturation dose), Δ* per pair (the population difference of the metric under the
+injected coupling, signal side minus sham, from a large paired simulation; value and standard
+error), and the oracle's power to detect N2's raw difference at c = 0.5. Finally the
+establishable (condition, variant, pair) cases - those where the oracle reaches a correct
+definite outcome with power >= 0.9 - with what a sound validator's model needs (oc.sound_model):
+the oracle's outcomes, the effect's outcomes with the metric's validity known, the outcomes of
+the engine's rules where GATE 4 decides, and the odds of GATE 4 on the case's response.
 
 The oracle is told what the engine has to find out. For a valid (or ambiguous) metric it takes
 the metric's validity as known, removes a planted nuisance by applying it to the other side as
@@ -21,8 +26,9 @@ well (capture loss with the true factor, dropout with the true fraction, N8's pe
 with fresh Beta(2, 2) draws), and tests the per-replicate metric values with the test the graded
 replicate rule prescribes: an exact (or Monte Carlo) permutation over replicates at >= 4 per
 group, Welch's t at 3; paired designs by sign flips; equivalence by TOST, the (1 - 2 alpha)
-interval inside ±SESOI. Its outcome follows the engine's order (explained by depth, reversed
-sign, detected in or against the declared direction, equivalent, else INCONCLUSIVE). For a blind
+interval inside ±SESOI. Its outcome follows the engine's order (explained by depth - with a
+SESOI only where the corrected effect is shown smaller than it, as the engine since journal D7 -,
+reversed sign, detected in or against the declared direction, equivalent, else INCONCLUSIVE). For a blind
 or useless metric the correct definite outcome is "metric invalid", which a validator can only
 reach by showing blindness: the oracle runs GATE 4's rule on the dataset (GATE4_REPS injections
 against shams, the upper 95% bound below delta_min). The oracle's power is the most a validator
@@ -42,12 +48,17 @@ import json
 import math
 from pathlib import Path
 
-import numpy as np
+import frozen  # standard library only
 
-import panel as P
+frozen.pin_numerics()  # one numerical path, as run_panel.py: set before numpy loads
+
+import numpy as np  # noqa: E402
+
+import panel as P  # noqa: E402
 
 ALPHA = 0.05
 POWER = 0.90          # establishable: oracle power >= 0.90
+SESOI_TARGET = 0.95   # the SESOI: the oracle reaches a correct definite outcome on the null this often
 PILOT_SEED = 20261008
 PILOT_DATASETS = 100  # per establishability case (condition, variant, pair) and per level for the SESOI
 DELTA_DRAWS = 2000    # paired donor draws per pair and dose for Δ*
@@ -60,7 +71,14 @@ DOSE_GRID = tuple(round(0.25 * k, 2) for k in range(1, 17))
 SATURATION_SHARE = 0.95  # the saturation dose: the smallest grid dose reaching 95% of the maximum
 CURVE_DATASETS, CURVE_REPS = 8, 4    # per pair and dose: the level's response curve
 TRUTH_DATASETS, TRUTH_REPS = 60, 20  # per pair at the saturation dose: its population response
+CASE_DATASETS, CASE_REPS = 40, 10    # per pair on each condition and variant that changes its counts
 GATE4_REPS = 200      # injections per dataset in GATE 4's rule (the engine's gates.GATE4_N_REP)
+# The sizes of the pilot's simulations; the dry run's smoke test shrinks them (--smoke), the real
+# pilot uses these.
+SIZES = dict(curve=(CURVE_DATASETS, CURVE_REPS), truth=(TRUTH_DATASETS, TRUTH_REPS),
+             case=(CASE_DATASETS, CASE_REPS), gate4=GATE4_REPS, sesoi=PILOT_DATASETS)
+SMOKE_SIZES = dict(curve=(2, 2), truth=(4, 4), case=(3, 3), gate4=20, sesoi=8)
+SMOKE_DATASETS, SMOKE_DRAWS = 3, 40  # the dry run's smoke test (--smoke): the same code, tiny sizes
 E1_FACTORS = (0.25, 0.5, 1.0, 1.5)
 MODULE_FOLD, MODULE_FRAC = 2.0, 0.3  # the engine's GATE 4 module injection in the claim cards
 
@@ -149,9 +167,37 @@ def random_deltas(rng, reps: int) -> np.ndarray:
 def shows_blind(deltas: np.ndarray, delta_min: float, alpha: float = ALPHA) -> bool:
     """GATE 4's FAIL: the upper bound of the two-sided (1 - alpha) t interval of the mean
     response, in the declared direction (an increase), is below delta_min."""
+    return gate4_outcome(deltas, delta_min, alpha) == "FAIL"
+
+
+def gate4_outcome(deltas: np.ndarray, delta_min: float, alpha: float = ALPHA) -> str:
+    """GATE 4's rule on the responses: FAIL if the upper bound of the two-sided (1 - alpha) t
+    interval is below delta_min (checked first), PASS if its lower bound is above 0, else UNTESTED."""
     d = np.asarray(deltas, float)
-    se = d.std(ddof=1) / math.sqrt(len(d))
-    return float(d.mean() + t_ppf(1 - alpha / 2, len(d) - 1) * se) < delta_min
+    half = t_ppf(1 - alpha / 2, len(d) - 1) * d.std(ddof=1) / math.sqrt(len(d))
+    m = float(d.mean())
+    if m + half < delta_min:
+        return "FAIL"
+    return "PASS" if m - half > 0 else "UNTESTED"
+
+
+def gate4_odds(mean: float, between_sd: float, within_sd: float, delta_min: float,
+               reps: int = GATE4_REPS, alpha: float = ALPHA) -> dict:
+    """The probabilities of GATE 4's outcomes on a dataset of this case, from the case's response
+    statistics: a dataset's mean response varies around `mean` with `between_sd`, and GATE 4's
+    mean of `reps` injections around it with within_sd / sqrt(reps); its interval has the
+    half-width t x within_sd / sqrt(reps) (a normal approximation of the rule)."""
+    from scipy import stats
+    se = within_sd / math.sqrt(reps)
+    half = t_ppf(1 - alpha / 2, reps - 1) * se
+    sd = math.sqrt(max(between_sd, 0.0) ** 2 + se ** 2)
+    if not sd > 0:
+        fail = float(mean + half < delta_min)
+        passed = float(not fail and mean - half > 0)
+    else:
+        fail = float(stats.norm.cdf((delta_min - half - mean) / sd))
+        passed = float(stats.norm.sf((max(half, delta_min - half) - mean) / sd))
+    return dict(p_pass=passed, p_fail=fail, p_untested=max(0.0, 1.0 - passed - fail))
 
 
 # --------------------------------------------------------------------------- #
@@ -288,15 +334,18 @@ def true_correction(X, obs, entry: dict, rng):
 def outcome_from_values(raw, corr, corrected: bool, sesoi: float, direction: str) -> str:
     """The engine's decision order on replicate values, for an oracle that knows the metric is
     valid: a detected raw difference that the true correction removes (< half retained) is
-    explained by depth; one whose sign the correction reverses is INCONCLUSIVE; a detected
-    effect is SUPPORTED in the declared direction and NOT SUPPORTED (opposite direction) against
-    it; otherwise NO DETECTABLE EFFECT if the TOST establishes equivalence, else INCONCLUSIVE.
-    `raw` and `corr` are (A values, B values); the effect is A - B, so > 0 is a decrease."""
+    explained by depth if the corrected effect is equivalent to zero within the SESOI (TOST; the
+    engine's rule with a SESOI, journal D7); one whose sign the correction reverses is
+    INCONCLUSIVE; a detected effect is SUPPORTED in the declared direction and NOT SUPPORTED
+    (opposite direction) against it; otherwise NO DETECTABLE EFFECT if the TOST establishes
+    equivalence, else INCONCLUSIVE. `raw` and `corr` are (A values, B values); the effect is
+    A - B, so > 0 is a decrease."""
     hit, est = detects(*corr)
     if corrected:
         raw_hit, raw_est = detects(*raw)
         retained = est / raw_est if raw_est else float("nan")
-        if raw_hit and not hit and np.isfinite(retained) and abs(retained) < 0.5:
+        if (raw_hit and not hit and np.isfinite(retained) and abs(retained) < 0.5
+                and tost_width(*corr) < sesoi):
             return P.NS_DEPTH
         if raw_hit and hit and np.sign(est) != np.sign(raw_est):
             return P.INCONCLUSIVE
@@ -324,38 +373,55 @@ def effect_outcome(entry: dict, X, obs, card: dict, ia: int, ib: int, rng) -> st
     return outcome_from_values(raw, corr, fixed is not None, sesoi, direction)
 
 
-def oracle_outcome(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> str:
-    """The outcome the oracle reaches on this dataset (it knows the truth)."""
+def _values_outcome(raw, card: dict) -> str:
+    """The engine's order on replicate values of null data without a planted nuisance."""
+    return outcome_from_values(raw, raw, False, float(card["prereg"]["sesoi"]), card["prereg"]["direction"])
+
+
+def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> dict:
+    """On one dataset of known truth: ``best``, the outcome the oracle reaches (it knows the
+    truth: for a valid metric its validity, for a blind or useless one only GATE 4's rule can show
+    it, for an ambiguous one either); ``effect``, the outcome of the effect's analysis taken as
+    valid (None where there is none); ``gate4``, GATE 4's outcome on the dataset where the oracle
+    ran its rule (blind, ambiguous and useless metrics; None for a valid one, whose odds come from
+    the case's response statistics). A sound validator that follows the engine's rules reaches
+    "metric invalid" where GATE 4 FAILs, the effect's outcome where it PASSes and INCONCLUSIVE
+    where it is UNTESTED (oc.sound_model)."""
     cond = P.conditions()[entry["condition"]]
     bg = bgs[cond.background]
-    truth = P.metric_truth(cond, entry["pair"], pilot)
+    truth = P.metric_truth(cond, entry["variant"], entry["pair"], pilot)
     dmin = float(card["prereg"]["delta_min"])
+    reps = int(_sizes()["gate4"])
     if truth == "constant":
-        return P.DEGENERATE
+        return dict(best=P.DEGENERATE, effect=None, gate4=None)
     if truth == "useless":
         if cond.metric == "random":
-            deltas = random_deltas(rng, GATE4_REPS)
+            g4 = gate4_outcome(random_deltas(rng, reps), dmin)
+            values = (rng.standard_normal(P.DONORS_PER_GROUP), rng.standard_normal(P.DONORS_PER_GROUP))
         else:
             genes = list(bg.genes)
-            deltas = module_deltas(X, [genes.index(g) for g in card["score_genes"]],
-                                   [genes.index(g) for g in bg.plan["g2m"]], rng, GATE4_REPS)
-        return P.NS_INVALID if shows_blind(deltas, dmin) else P.INCONCLUSIVE
+            cols = [genes.index(g) for g in card["score_genes"]]
+            g4 = gate4_outcome(module_deltas(X, cols, [genes.index(g) for g in bg.plan["g2m"]], rng, reps), dmin)
+            values = per_donor(X, obs, lambda x: module_score(x, cols))
+        return dict(best=P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE, effect=_values_outcome(values, card),
+                    gate4=g4)
     pe = P.pool_entry(bg, entry)
     genes = list(bg.genes)
     ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
+    effect = effect_outcome(entry, X, obs, card, ia, ib, rng) if cond.oracle else None
+    if truth == "valid":
+        return dict(best=effect if effect is not None else P.INCONCLUSIVE, effect=effect, gate4=None)
+    g4 = gate4_outcome(coupling_deltas(X, ia, ib, float(card["signal_test"]["strength"]), rng, reps), dmin)
+    if truth == "blind" or effect is None:
+        best = P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE
+    else:  # ambiguous: either verdict is correct
+        best = effect if effect != P.INCONCLUSIVE else (P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE)
+    return dict(best=best, effect=effect, gate4=g4)
 
-    def blind_shown():
-        return shows_blind(coupling_deltas(X, ia, ib, float(card["signal_test"]["strength"]), rng,
-                                           GATE4_REPS), dmin)
 
-    if truth == "blind":
-        return P.NS_INVALID if blind_shown() else P.INCONCLUSIVE
-    if not cond.oracle:
-        return P.INCONCLUSIVE
-    out = effect_outcome(entry, X, obs, card, ia, ib, rng)
-    if truth == "valid" or out != P.INCONCLUSIVE:
-        return out
-    return P.NS_INVALID if blind_shown() else P.INCONCLUSIVE  # ambiguous: either verdict is correct
+def oracle_outcome(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> str:
+    """The outcome the oracle reaches on this dataset (it knows the truth)."""
+    return oracle_outcomes(entry, X, obs, card, bgs, pilot, rng)["best"]
 
 
 # --------------------------------------------------------------------------- #
@@ -387,7 +453,8 @@ def delta_level(bg: P.Background, level: str, dose: float, draws: int = DELTA_DR
     idx = [k for k, pe in enumerate(bg.plan["pool"]) if pe["level"] == level]
     per = [delta_star(bg, k, dose, max(2, draws // len(idx))) for k in idx]
     return dict(value=float(np.mean([p["value"] for p in per])),
-                se=float(math.sqrt(sum(p["se"] ** 2 for p in per)) / len(per)), pairs=idx, dose=float(dose))
+                se=float(math.sqrt(sum(p["se"] ** 2 for p in per)) / len(per)), pairs=idx, dose=float(dose),
+                per_pair={str(k): p["value"] for k, p in zip(idx, per)})
 
 
 # --------------------------------------------------------------------------- #
@@ -402,7 +469,7 @@ def pilot_entries(cond: P.Condition, variant: str, pair: int, n: int, salt: int 
         rng = np.random.default_rng(child)
         out.append(dict(id=f"P{i}", condition=cond.name, variant=variant, index=i,
                         side=("A", "B")[int(rng.integers(2))], pair=int(pair),
-                        seed=int(child.generate_state(1)[0])))
+                        seed=int(child.generate_state(1, np.uint64)[0])))
     return out
 
 
@@ -411,6 +478,10 @@ def level_pairs(bg: P.Background, level: str) -> list[int]:
 
 
 _STATE: dict = {}  # backgrounds, inherited by forked workers
+
+
+def _sizes() -> dict:
+    return _STATE.get("sizes") or SIZES
 
 
 def _map(fn, jobs: list, workers: int) -> list:
@@ -438,28 +509,31 @@ def _stand_in(pilot: dict, background: str, level: str, **over) -> dict:
 
 
 def _response_job(job):
-    """Mean injected-minus-sham response of one pair on one public-seed null dataset."""
-    background, pair, dose, i, reps, salt = job
+    """Injected-minus-sham responses of one pair on one public-seed dataset of a condition and
+    variant (default: the background's null): their mean and variance."""
+    background, pair, dose, i, reps, salt, name, variant = job
     bgs, pilot = _STATE["bgs"], _STATE["pilot"]
     bg = bgs[background]
-    e = pilot_entries(_base_condition(background), _base_condition(background).variants[0][0], pair, i + 1,
-                      salt)[i]
+    cond = P.conditions()[name] if name else _base_condition(background)
+    variant = variant or cond.variants[0][0]
+    e = pilot_entries(cond, variant, pair, i + 1, salt)[i]
     X, _, genes, _ = P.build(e, bgs, _stand_in(pilot, background, bg.plan["pool"][pair]["level"]))
     pe = bg.plan["pool"][pair]
     rng = np.random.default_rng([PILOT_SEED, salt, pair, i, int(round(dose * 100))])
-    return float(coupling_deltas(X, genes.index(pe["pair"][0]), genes.index(pe["pair"][1]), dose, rng,
-                                 reps).mean())
+    d = coupling_deltas(X, genes.index(pe["pair"][0]), genes.index(pe["pair"][1]), dose, rng, reps)
+    return float(d.mean()), float(d.var(ddof=1)) if len(d) > 1 else 0.0
 
 
 def response_curve(bgs: dict, background: str, level: str, pilot: dict, workers: int = 1) -> dict:
     """The level's response over the dose grid: per dose the mean over its pairs of the
     injected-minus-sham response on CURVE_DATASETS null datasets x CURVE_REPS injections."""
     _STATE.update(bgs=bgs, pilot=pilot)
+    n_ds, reps = _sizes()["curve"]
     pairs = level_pairs(bgs[background], level)
-    jobs = [(background, k, d, i, CURVE_REPS, 1) for d in DOSE_GRID for k in pairs for i in range(CURVE_DATASETS)]
+    jobs = [(background, k, d, i, reps, 1, None, None) for d in DOSE_GRID for k in pairs for i in range(n_ds)]
     vals = _map(_response_job, jobs, workers)
     by = {}
-    for (_, _, d, *_), v in zip(jobs, vals):
+    for (_, _, d, *_), (v, _) in zip(jobs, vals):
         by.setdefault(d, []).append(v)
     return {f"{d:g}": dict(response=float(np.mean(v)), se=float(np.std(v, ddof=1) / math.sqrt(len(v))))
             for d, v in by.items()}
@@ -475,64 +549,117 @@ def saturation_dose(curve: dict) -> float:
     return min(d for d, r in resp.items() if r >= SATURATION_SHARE * top)
 
 
+def response_record(means: list, variances: list, reps: int, dose: float, delta_min: float) -> dict:
+    """A pair's response on a case's datasets: the population mean response and its standard
+    error, the between-dataset SD (the dataset means' variance less the injections' share), the
+    within-dataset SD of one injection, the class against delta_min, and GATE 4's odds."""
+    m, v = np.asarray(means, float), np.asarray(variances, float)
+    within = float(math.sqrt(max(v.mean(), 0.0)))
+    between = float(math.sqrt(max(m.var(ddof=1) - within ** 2 / reps, 0.0))) if len(m) > 1 else 0.0
+    r = float(m.mean())
+    return {"response": r, "se": float(m.std(ddof=1) / math.sqrt(len(m))) if len(m) > 1 else float("nan"),
+            "between_dataset_sd": between, "within_sd": within, "datasets": len(m), "reps": reps,
+            "dose": float(dose), "delta_min": float(delta_min), "class": P.classify_response(r, delta_min),
+            "gate4": gate4_odds(r, between, within, delta_min, int(_sizes()["gate4"]))}
+
+
 def pair_truth(bgs: dict, background: str, pilot: dict, workers: int = 1) -> dict:
-    """Per pool pair: its population response at its level's saturation dose (TRUTH_DATASETS
-    null datasets x TRUTH_REPS injections), and the class it gives against delta_min."""
+    """Per pool pair: its population response at its level's saturation dose on the background's
+    null (TRUTH_DATASETS datasets x TRUTH_REPS injections), and the class it gives against
+    delta_min (`response_record`)."""
     _STATE.update(bgs=bgs, pilot=pilot)
+    n_ds, reps = _sizes()["truth"]
     bg = bgs[background]
-    jobs = [(background, k, float(pilot["saturation_dose"][background][pe["level"]]), i, TRUTH_REPS, 2)
-            for k, pe in enumerate(bg.plan["pool"]) for i in range(TRUTH_DATASETS)]
+    jobs = [(background, k, float(pilot["saturation_dose"][background][pe["level"]]), i, reps, 2, None, None)
+            for k, pe in enumerate(bg.plan["pool"]) for i in range(n_ds)]
     vals = _map(_response_job, jobs, workers)
     out = {}
     for k, pe in enumerate(bg.plan["pool"]):
-        v = np.asarray([x for job, x in zip(jobs, vals) if job[1] == k])
+        got = [x for job, x in zip(jobs, vals) if job[1] == k]
         dmin = P.DELTA_MIN_FRACTION * float(pilot["sesoi"][background][pe["level"]])
-        r = float(v.mean())
-        out[str(k)] = {"response": r, "se": float(v.std(ddof=1) / math.sqrt(len(v))),
-                       "between_dataset_sd": float(v.std(ddof=1)), "dose": jobs[k * TRUTH_DATASETS][2],
-                       "delta_min": dmin, "class": P.classify_response(r, dmin)}
+        out[str(k)] = response_record([g[0] for g in got], [g[1] for g in got], reps, jobs[k * n_ds][2], dmin)
     return out
 
 
-def _tost_job(job):
+def case_truth(bgs: dict, pilot: dict, workers: int = 1) -> dict:
+    """The truth about the metric on the data of every condition and variant that changes the
+    pair's counts (panel.TRUTH_CASE_CONDITIONS: capture loss, dropout, variable capture, the real
+    effects' coupling): per pool pair its population response to GATE 4's injection on
+    CASE_DATASETS datasets of the case x CASE_REPS injections, at the card's dose (decided after
+    the first review: the truth measured on N1 alone does not hold where the data thin the pair)."""
+    _STATE.update(bgs=bgs, pilot=pilot)
+    n_ds, reps = _sizes()["case"]
+    out, jobs = {}, []
+    for cond in P.CONDITIONS:
+        if cond.name not in P.TRUTH_CASE_CONDITIONS:
+            continue
+        bg = bgs[cond.background]
+        for variant, _ in cond.variants:
+            for k, pe in enumerate(bg.plan["pool"]):
+                dose = float(pilot["saturation_dose"][cond.background][pe["level"]])
+                jobs += [(cond.background, k, dose, i, reps, 7, cond.name, variant) for i in range(n_ds)]
+    vals = _map(_response_job, jobs, workers)
+    by = {}
+    for job, v in zip(jobs, vals):
+        by.setdefault((job[0], job[6], job[7], job[1]), []).append((job[2], v))
+    for (background, name, variant, k), got in by.items():
+        level = bgs[background].plan["pool"][k]["level"]
+        dmin = P.DELTA_MIN_FRACTION * float(pilot["sesoi"][background][level])
+        out.setdefault(background, {}).setdefault(f"{name}:{variant}", {})[str(k)] = response_record(
+            [g[1][0] for g in got], [g[1][1] for g in got], reps, got[0][0], dmin)
+    return out
+
+
+def _null_job(job):
+    """On one public-seed null dataset of the background (N1 / N7), for the SESOI: whether the
+    effect test detects a difference, whether against the card's declared direction, and the
+    TOST's width."""
     background, pair, i = job
     bgs, pilot = _STATE["bgs"], _STATE["pilot"]
     bg = bgs[background]
     cond = _base_condition(background)
     e = pilot_entries(cond, cond.variants[0][0], pair, i + 1, 3)[i]
-    X, obs, genes, _ = P.build(e, bgs, _stand_in(pilot, background, bg.plan["pool"][pair]["level"]))
+    X, obs, genes, cards = P.build(e, bgs, _stand_in(pilot, background, bg.plan["pool"][pair]["level"]))
     pe = bg.plan["pool"][pair]
     ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
-    return tost_width(*per_donor(X, obs, lambda x: norm_pearson(x, ia, ib)))
+    a, b = per_donor(X, obs, lambda x: norm_pearson(x, ia, ib))
+    hit, est = detects(a, b)
+    against = hit and ("decrease" if est > 0 else "increase") != cards[-1]["prereg"]["direction"]
+    return bool(hit), bool(against), float(tost_width(a, b))
 
 
 def choose_sesoi(bgs: dict, background: str, level: str, pilot: dict, n: int = PILOT_DATASETS,
                  workers: int = 1) -> float:
-    """The smallest SESOI on the grid at which the oracle's TOST establishes the background's null
-    (N1 on B1: 2 x 8 donors; N7 on B2: all mice split in two; pairs of this level, drawn in turn)
-    with power >= 0.90."""
+    """The smallest SESOI on the grid at which the oracle reaches a correct definite outcome on the
+    background's null (N1 on B1: 2 x 8 donors; N7 on B2: all mice split in two; pairs of this
+    level, drawn in turn) in at least SESOI_TARGET of n datasets: NO DETECTABLE EFFECT (not
+    detected, TOST within ±SESOI) or NOT SUPPORTED against the declared direction. Counted
+    exactly on the grid (decided after the first review: the null must be establishable)."""
     _STATE.update(bgs=bgs, pilot=pilot)
     pairs = level_pairs(bgs[background], level)
-    widths = _map(_tost_job, [(background, pairs[i % len(pairs)], i) for i in range(n)], workers)
-    q = float(np.quantile(widths, POWER))
-    return next((s for s in SESOI_GRID if s > q), SESOI_GRID[-1])
+    got = _map(_null_job, [(background, pairs[i % len(pairs)], i) for i in range(n)], workers)
+    need = math.ceil(SESOI_TARGET * len(got))
+    for sesoi in SESOI_GRID:
+        if sum(against or (not hit and width < sesoi) for hit, against, width in got) >= need:
+            return sesoi
+    return SESOI_GRID[-1]
 
 
 def _outcome_job(job):
-    """The oracle's outcome on one public-seed dataset of a case."""
+    """The oracle's outcomes on one public-seed dataset of a case (`oracle_outcomes`)."""
     name, variant, pair, i, salt = job
     bgs, pilot = _STATE["bgs"], _STATE["pilot"]
     cond = P.conditions()[name]
     e = pilot_entries(cond, variant, pair, i + 1, salt)[i]
     X, obs, _, cards = P.build(e, bgs, pilot)
-    return oracle_outcome(e, X, obs, cards[-1], bgs, pilot, np.random.default_rng([e["seed"], 1]))
+    return oracle_outcomes(e, X, obs, cards[-1], bgs, pilot, np.random.default_rng([e["seed"], 1]))
 
 
 def choose_dose(bgs: dict, level: str, pilot: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS,
                 workers: int = 1) -> tuple[float | None, list]:
     """On B1: the smallest grid dose at which the oracle (the metric's validity taken as known)
-    detects E1's injected coupling, in the direction of Δ*, with power >= 0.90, and the level's
-    Δ* >= 1.25 x SESOI; None if no dose meets both."""
+    detects E1's injected coupling, in the direction of each pair's Δ* at that dose, with power
+    >= 0.90, and the level's Δ* >= 1.25 x SESOI; None if no dose meets both."""
     sesoi = float(pilot["sesoi"]["B1"][level])
     pairs = level_pairs(bgs["B1"], level)
     scan = []
@@ -540,9 +667,11 @@ def choose_dose(bgs: dict, level: str, pilot: dict, n: int = PILOT_DATASETS, dra
         dl = delta_level(bgs["B1"], level, dose, draws)
         trial = _stand_in(pilot, "B1", level, e_dose={**pilot.get("e_dose", {}), level: dose})
         trial["truth"] = {"B1": {str(k): {"class": "valid"} for k in pairs}}
+        trial["truth_case"] = {}
+        trial["delta"] = {k: {"1": dict(value=v)} for k, v in dl["per_pair"].items()}  # the cards' direction
         _STATE.update(bgs=bgs, pilot=trial)
         jobs = [("E1", "dose=key", pairs[i % len(pairs)], i, 4) for i in range(n)]
-        outs = _map(_outcome_job, jobs, workers)
+        outs = [o["best"] for o in _map(_outcome_job, jobs, workers)]
         power = sum(o == P.SUPPORTED for o in outs) / n
         scan.append(dict(dose=dose, power=power, delta=dl["value"], delta_se=dl["se"]))
         if power >= POWER and dl["value"] >= DELTA_MARGIN * sesoi:
@@ -570,9 +699,11 @@ def raw_difference_power(bgs: dict, level: str, pilot: dict, n: int = PILOT_DATA
 
 def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: int = 1) -> dict:
     """Per condition, variant and pool pair: the share of pilot datasets on which the oracle's
-    outcome is a correct definite one; establishable where it is >= 0.90. N4 is never
-    establishable (no oracle); the useless metrics of N6 do not depend on the pair, only on its
-    level's delta_min, and are computed once per level."""
+    outcome is a correct definite one (establishable where it is >= 0.90), and the measurements
+    the sound-validator model needs (oc.sound_model): the outcomes of the effect's analysis taken
+    as valid and, where the oracle ran GATE 4's rule, GATE 4's outcomes. N4 is never establishable
+    (no oracle); the useless metrics of N6 do not depend on the pair, only on its level's
+    delta_min, and are computed once per level."""
     _STATE.update(bgs=bgs, pilot=pilot)
     out, jobs, cases = {}, [], []
     for cond in P.CONDITIONS:
@@ -596,22 +727,47 @@ def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: i
     by = {}
     for (name, variant, k, _, _), o in zip(jobs, outs):
         by.setdefault((name, variant, k), []).append(o)
+
+    def counts(xs):
+        xs = [x for x in xs if x is not None]
+        return {x: xs.count(x) for x in sorted(set(xs))}
     for key, cond, variant, k in cases:
         got = by[(cond.name, variant, k)]
         good = P.definite(cond, variant, int(key.split(":")[-1]), pilot)
-        hits = sum(o in good for o in got)
-        out[key] = dict(power=hits / len(got), establishable=hits >= POWER * len(got),
-                        outcomes={o: got.count(o) for o in sorted(set(got))}, computed_on_pair=k)
+        hits = sum(o["best"] in good for o in got)
+        # a sound validator that follows the engine's rules, on the datasets where GATE 4's rule ran:
+        # "metric invalid" where it FAILs, the effect's outcome where it PASSes, else INCONCLUSIVE
+        engine = [P.NS_INVALID if o["gate4"] == "FAIL" else
+                  (o["effect"] or P.INCONCLUSIVE) if o["gate4"] == "PASS" else P.INCONCLUSIVE
+                  for o in got if o["gate4"] is not None]
+        out[key] = dict(power=hits / len(got), establishable=hits >= POWER * len(got), n=len(got),
+                        outcomes=counts([o["best"] for o in got]),
+                        effect_outcomes=counts([o["effect"] for o in got]),
+                        gate4_outcomes=counts([o["gate4"] for o in got]),
+                        engine_outcomes=counts(engine), computed_on_pair=k)
     return out
 
 
 # --------------------------------------------------------------------------- #
 # the pilot
 # --------------------------------------------------------------------------- #
-def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, workers: int = 1) -> dict:
+def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, workers: int = 1,
+              sizes: dict | None = None) -> dict:
+    """The pilot.json of the backgrounds `bgs` (module docstring); `sizes` overrides SIZES (the
+    smoke test's), for this call only."""
+    sizes = dict(SIZES, **(sizes or {}))
+    _STATE["sizes"] = sizes
+    try:
+        return _run_pilot(bgs, n, draws, workers, sizes)
+    finally:
+        _STATE.pop("sizes", None)  # a later call in the same process gets the default sizes
+
+
+def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict:
     pilot = dict(pilot_seed=PILOT_SEED, datasets_per_case=n, delta_draws=draws, alpha=ALPHA,
-                 power_threshold=POWER, delta_margin=DELTA_MARGIN, delta_min_fraction=P.DELTA_MIN_FRACTION,
-                 truth_band=P.TRUTH_BAND, saturation_share=SATURATION_SHARE, gate4_reps=GATE4_REPS,
+                 power_threshold=POWER, sesoi_target=SESOI_TARGET, delta_margin=DELTA_MARGIN,
+                 delta_min_fraction=P.DELTA_MIN_FRACTION, truth_band=P.TRUTH_BAND,
+                 saturation_share=SATURATION_SHARE, gate4_reps=sizes["gate4"], sizes=sizes,
                  dose_grid=list(DOSE_GRID), dropped=[],
                  pool={b: [dict(index=pe["index"], level=pe["level"], pair=pe["pair"]) for pe in bg.plan["pool"]]
                        for b, bg in bgs.items()},
@@ -620,7 +776,7 @@ def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, work
                  saturation_dose={b: {} for b in bgs}, truth={})
     for b in bgs:
         for level in P.LEVELS:
-            pilot["sesoi"][b][level] = choose_sesoi(bgs, b, level, pilot, n, workers)
+            pilot["sesoi"][b][level] = choose_sesoi(bgs, b, level, pilot, int(sizes["sesoi"]), workers)
     for b in bgs:
         for level in P.LEVELS:
             curve = response_curve(bgs, b, level, pilot, workers)
@@ -647,6 +803,7 @@ def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, work
         pilot["n2_raw_power"][level] = raw_difference_power(bgs, level, pilot, n, workers)
     pilot["informative_levels"] = [lv for lv in P.LEVELS if pilot["n2_raw_power"][lv] >= POWER]
     pilot["n2n3_informative"] = bool(pilot["informative_levels"])
+    pilot["truth_case"] = case_truth(bgs, pilot, workers)
     pilot["establishable"] = establishability(bgs, pilot, n, workers)
     pilot["backgrounds"] = {k: P.background_sha256(b) for k, b in bgs.items()}
     return pilot
@@ -656,12 +813,20 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--backgrounds", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--datasets", type=int, default=PILOT_DATASETS)
-    p.add_argument("--draws", type=int, default=DELTA_DRAWS)
+    p.add_argument("--datasets", type=int,
+                   help=f"per establishability case (default {PILOT_DATASETS}; {SMOKE_DATASETS} with --smoke)")
+    p.add_argument("--draws", type=int, help=f"donor draws for Δ* (default {DELTA_DRAWS}; {SMOKE_DRAWS} with --smoke)")
     p.add_argument("--workers", type=int, default=1)
     p.add_argument("--data-dir", help="the downloaded files of backgrounds.json (default: next to it)")
+    p.add_argument("--smoke", action="store_true",
+                   help="the dry run's smoke test: the same code with tiny simulations (not a pilot)")
     args = p.parse_args(argv)
-    pilot = run_pilot(P.load_backgrounds(args.backgrounds, args.data_dir), args.datasets, args.draws, args.workers)
+    n = args.datasets or (SMOKE_DATASETS if args.smoke else PILOT_DATASETS)
+    draws = args.draws or (SMOKE_DRAWS if args.smoke else DELTA_DRAWS)
+    pilot = run_pilot(P.load_backgrounds(args.backgrounds, args.data_dir), n, draws, args.workers,
+                      SMOKE_SIZES if args.smoke else None)
+    if args.smoke:
+        pilot["smoke"] = True
     Path(args.out).write_text(json.dumps(pilot, indent=1))
     print(json.dumps({k: v for k, v in pilot.items() if k not in ("establishable", "response_curve", "pool")},
                      indent=1))

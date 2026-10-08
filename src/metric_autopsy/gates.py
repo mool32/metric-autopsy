@@ -1258,9 +1258,10 @@ def gate6_replication(
     n_perm: int = 1000,
     attenuation_half: float | None = None,
     seed: int = 0,
+    sesoi_scale: str = "construct",
 ) -> GateResult:
     """Re-estimate the effect on an independent dataset with the same estimand, correction,
-    replicate rule and strata. REPLICATED (PASS) = effect detected with the primary sign;
+    replicate rule, strata and SESOI scale. REPLICATED (PASS) = effect detected with the primary sign;
     NOT_REPLICATED (FAIL) = equivalent to zero within the SESOI, or detected with the opposite
     sign; anything else is INCONCLUSIVE (WARN). QC parity on the replication set is reported.
     """
@@ -1277,7 +1278,8 @@ def gate6_replication(
         metric, data2, group_col=group_col, groups=groups, within=within,
         replicate_col=replicate_col, estimand=estimand, sesoi=sesoi, alpha=alpha,
         min_replicates=min_replicates, n_perm=n_perm,
-        qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=attenuation_half, seed=seed,
+        qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=attenuation_half,
+        sesoi_scale=sesoi_scale, seed=seed,
     )
     est = eff.detail.get("effect")
     same_sign = (primary_effect is None or est is None or not np.isfinite(est)
