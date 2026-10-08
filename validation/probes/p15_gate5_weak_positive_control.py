@@ -84,7 +84,7 @@ def one(job):
     pool = bgs["B1"].plan["pool"]
     level_pool = [pe for pe in pool if pe["level"] == lvl]
     e = dict(id=f"G{i}", condition="N1", variant="null", index=i, side="A",
-             pair=PANEL.LEVELS.index("low") * PANEL.PAIRS_PER_LEVEL, seed=2000 + i)
+             pair=next(pe["index"] for pe in pool if pe["level"] == "low"), seed=2000 + i)
     X, obs, genes, _ = PANEL.build(e, bgs, pilot)
     pe = level_pool[i % len(level_pool)]
     neg = tuple(pe["neg_pair"])
