@@ -39,31 +39,13 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import panel as P  # noqa: E402
 import run_panel as R  # noqa: E402
+from frozen import guard  # noqa: E402  (frozen.py, which a job also runs on its own)
 
-FROZEN_PATHS = ("src", "pyproject.toml", "validation/prereg/*.py", "validation/prereg/requirements-*.txt",
-                ".github/workflows/validation.yml")
 ROUND_LINE = re.compile(r"drand (\w+) round:\s*(\d+)")
 
 
 def _git(*args: str) -> str:
     return subprocess.run(["git", *args], cwd=HERE, capture_output=True, text=True, check=True).stdout
-
-
-# --------------------------------------------------------------------------- #
-# guard: the run's code is the frozen tag's
-# --------------------------------------------------------------------------- #
-def guard(frozen_tag: str) -> dict:
-    """The checked-out commit descends from the frozen tag and its engine, panel code, pinned
-    requirements and workflow are byte-identical to the tag's; only data and documents
-    (backgrounds.json, pilot.json, logs) may differ."""
-    head = _git("rev-parse", "HEAD").strip()
-    tag_commit = _git("rev-list", "-n", "1", frozen_tag).strip()
-    if subprocess.run(["git", "merge-base", "--is-ancestor", tag_commit, head], cwd=HERE).returncode != 0:
-        raise SystemExit(f"guard: HEAD {head[:12]} does not descend from {frozen_tag}")
-    changed = [f for f in _git("diff", "--name-only", tag_commit, head, "--", *FROZEN_PATHS).split() if f]
-    if changed:
-        raise SystemExit(f"guard: frozen files differ from {frozen_tag}: {changed}")
-    return dict(head=head, frozen_tag=frozen_tag, frozen_commit=tag_commit)
 
 
 # --------------------------------------------------------------------------- #

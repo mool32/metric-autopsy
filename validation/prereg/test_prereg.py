@@ -328,7 +328,7 @@ def test_dataset_and_card_hashes_are_canonical(bgs):
 
 
 def test_the_panel_the_oracle_the_scoring_and_the_beacon_never_import_the_engine():
-    for name in ("panel.py", "oracle.py", "score.py", "oc.py", "simulate.py", "beacon.py"):
+    for name in ("panel.py", "oracle.py", "score.py", "oc.py", "simulate.py", "beacon.py", "frozen.py"):
         tree = ast.parse((HERE / name).read_text())
         mods = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
         mods |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
@@ -903,10 +903,13 @@ def test_the_guard_and_the_key_follow_the_frozen_tag_and_the_run_tag(tmp_path, m
     git("init", "-q")
     (repo / "src" / "engine.py").write_text("x = 1\n")
     (repo / "validation" / "prereg" / "panel.py").write_text("y = 1\n")
+    (repo / "validation" / "prereg" / "v1.md").write_text("the protocol\n")
     git("add", "-A")
     git("commit", "-qm", "frozen")
     git("tag", "-a", "v0.3.0-prereg", "-m", "frozen")
+    import frozen as F
     monkeypatch.setattr(B, "HERE", repo)
+    monkeypatch.setattr(F, "HERE", repo)
     (repo / "validation" / "prereg" / "pilot.json").write_text("{}")
     git("add", "-A")
     git("commit", "-qm", "data only")
@@ -930,6 +933,12 @@ def test_the_guard_and_the_key_follow_the_frozen_tag_and_the_run_tag(tmp_path, m
     (repo / "src" / "engine.py").write_text("x = 2\n")
     git("add", "-A")
     git("commit", "-qm", "engine change")
+    with pytest.raises(SystemExit, match="frozen files differ"):
+        B.guard("v0.3.0-prereg")
+    git("reset", "-q", "--hard", "HEAD~1")  # back to the data-only commit: the protocol is frozen too
+    (repo / "validation" / "prereg" / "v1.md").write_text("the protocol, edited after the tag\n")
+    git("add", "-A")
+    git("commit", "-qm", "protocol change")
     with pytest.raises(SystemExit, match="frozen files differ"):
         B.guard("v0.3.0-prereg")
 
