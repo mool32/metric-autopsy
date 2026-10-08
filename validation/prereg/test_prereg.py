@@ -846,6 +846,19 @@ def test_collect_merges_shards_and_refuses_inconsistent_ones(tmp_path):
         B.collect(tmp_path / "twice", tmp_path / "res5")
 
 
+def test_the_manifest_keeps_the_round_not_when_or_where_it_was_fetched(tmp_path):
+    """The manifest is a function of the code, the backgrounds, the pilot and the round: the key
+    record's fetch time and relay answers stay in key.json."""
+    import blind as B
+    rec = dict(chain="quicknet", round=7, signature="ab" * 48, fetched_utc="2026-10-08T17:35:10+00:00",
+               answers=[dict(relay="https://api.drand.sh", verified=True)])
+    rec["randomness"] = rec["key"] = hashlib.sha256(bytes.fromhex(rec["signature"])).hexdigest()
+    (tmp_path / "key.json").write_text(json.dumps(rec))
+    key, beacon = B.read_key(True, tmp_path / "key.json", None)
+    assert key == rec["key"] and beacon["round"] == 7 and beacon["randomness"] == key
+    assert "fetched_utc" not in beacon and "answers" not in beacon
+
+
 def test_verify_re_runs_a_finished_run_and_compares_its_reports(tmp_path):
     """`blind.py verify`, the check anyone can run: the first datasets of a finished run, re-run from
     its key, give the published reports' sha256; a manifest whose hash was altered, or another pilot,
@@ -1049,6 +1062,27 @@ def test_the_b3_tables_are_read_by_their_cell_columns():
     assert X.shape == (6, 3) and genes == ["Actb", "ERCC-00002", "Gapdh"] and SB.raw_counts(X)
     assert list(obs["phase"]) == ["G1"] * 3 + ["G2M"] * 3
     assert any("missing 1" in ln for ln in SB.describe_table(text, "B3 G1"))
+
+
+def test_b4_is_checked_against_its_criteria_on_the_deposits_tables():
+    """GSE146773's tables: cells x Ensembl genes, the cells named <well>_<plate>, and one FUCCI row per
+    cell. RSEM expected counts fail the raw-counts criterion; a cell without FUCCI intensities fails
+    "for every cell"; integer counts with FUCCI for every cell and plate IDs pass."""
+    import select_backgrounds as SB
+    rng = np.random.default_rng(2)
+    cells = [f"{w}{i}_{p}" for p in (355, 356) for w in "ABCDEFGH" for i in range(1, 25)]  # 384 cells
+    counts = pd.DataFrame(rng.poisson(3.0, size=(len(cells), 5)).astype(float), index=cells,
+                          columns=[f"ENSG0000000000{j}" for j in range(5)])
+    fucci = pd.DataFrame({"cell": cells, "raw_green530": 10.0, "raw_red585": 20.0})
+    fails, facts = SB.check_b4(counts, fucci)
+    assert fails == [] and facts["cells"] == 384 and facts["plates"] == ["355", "356"]
+    rsem = counts.copy()
+    rsem.iloc[0, 0] = 25.53
+    fails, facts = SB.check_b4(rsem, fucci.iloc[1:])
+    assert facts["non_integer"] == 1 and len(fails) == 2
+    assert fails[0].startswith("not raw counts") and fails[1] == "FUCCI intensities for 383 of 384 cells"
+    fails, _ = SB.check_b4(counts.iloc[:100], fucci)
+    assert fails == ["100 cells"]
 
 
 def test_the_census_is_counted_in_chunks_on_its_category_codes():

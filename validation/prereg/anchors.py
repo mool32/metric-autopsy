@@ -14,7 +14,7 @@ is public, run with the frozen engine after the panel, reported one by one (not 
   log total endogenous counts, content estimand with the ERCC spike-ins, a decrease; R2c R2b with
   the ERCC rows removed. Each phase is one capture batch (the replicate): R2a and R2b INCONCLUSIVE
   (insufficient replication), R2c UNIDENTIFIABLE.
-* R3 (B4): dropped with B4 (section 3.1) unless a source is fixed.
+* R3 (B4): dropped with B4, whose deposit's counts are not raw (section 3.1).
 
 As in the panel, GATE 0's block for a nuisance bias is a refusal: allowed for every anchor, never
 definite.
@@ -153,9 +153,8 @@ def r2(spec, data_dir) -> list[dict]:
 
 
 def r3(spec, data_dir) -> list[dict]:
-    if _load(spec, "B4", data_dir) is None:
-        return [dict(claim="R3", skipped="B4 was dropped (section 3.1)")]
-    return [dict(claim="R3", skipped="no R3 runner: B4 has no fixed source")]
+    """B4 is never selected (its deposit's counts are not raw; select_backgrounds.fetch_b4)."""
+    return [dict(claim="R3", skipped="B4 was dropped (section 3.1)")]
 
 
 def main(argv=None):

@@ -20,8 +20,9 @@ Rules (section 3.1):
   then the IDs in order. All qualifying mice, at most 400 cells each.
 * B3 — Buettner et al. 2015 (E-MTAB-2805): plate-based, ERCC spike-ins, phase from a DNA-content
   sort; >= 50 cells per phase; raw counts including ERCC.
-* B4 — Mahdessian et al. 2021: U2OS FUCCI, full-length scRNA-seq with raw counts and FUCCI
-  intensities for every cell; >= 300 cells; plate IDs.
+* B4 — Mahdessian et al. 2021 (GEO GSE146773): U2OS FUCCI, full-length scRNA-seq with raw counts
+  and FUCCI intensities for every cell; >= 300 cells; plate IDs. The deposit's counts are RSEM
+  expected counts (not integers), so B4 fails the raw-counts criterion unless the deposit changes.
 
 Raw counts (non-negative integers) are a criterion of B1 and B2 that only the extracted matrix
 shows: it is checked on the extraction, in the order of the choice rule, over at most the first
@@ -369,51 +370,49 @@ def fetch_b3(out_dir: Path) -> tuple[dict | None, list[str]]:
     return spec, [f"B3: E-MTAB-2805, cells per phase {per_phase}, {ercc} ERCC genes; sha256 {spec['sha256']}"]
 
 
-B4_SOURCES: dict = {}  # Mahdessian et al. 2021: no machine-readable source with FUCCI intensities per cell is fixed
-B4_LISTINGS = ("https://ftp.ncbi.nlm.nih.gov/geo/series/GSE146nnn/GSE146773/suppl/",
-               "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE146773&targ=self&form=text&view=brief")
+B4_DEPOSIT = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE146nnn/GSE146773/suppl/"  # Mahdessian et al. 2021
+B4_FILES = dict(fucci="GSE146773_fucci_coords.csv.gz", counts="GSE146773_Counts.csv.gz")
+B4_MIN_CELLS = 300
+
+
+def check_b4(counts: pd.DataFrame, fucci: pd.DataFrame) -> tuple[list[str], dict]:
+    """The B4 criteria on the deposit's tables (cells x genes counts; one FUCCI row per cell, named
+    ``<well>_<plate>``): raw counts, FUCCI intensities for every cell, >= 300 cells, plate IDs."""
+    cells = pd.Index(counts.index.astype(str))
+    X = counts.to_numpy(dtype=float)
+    nonint, neg = int((np.abs(X - np.round(X)) > 1e-9).sum()), int((X < 0).sum())
+    f = fucci.assign(cell=fucci["cell"].astype(str)).set_index("cell")
+    measured = f[["raw_green530", "raw_red585"]].notna().all(axis=1)
+    with_fucci = int(cells.isin(f.index[measured]).sum())
+    plates = cells.str.extract(r"_(\d+)$")[0]
+    fails = []
+    if nonint or neg:
+        fails.append(f"not raw counts ({nonint:,} non-integer and {neg:,} negative values)")
+    if with_fucci < len(cells):
+        fails.append(f"FUCCI intensities for {with_fucci} of {len(cells)} cells")
+    if len(cells) < B4_MIN_CELLS:
+        fails.append(f"{len(cells)} cells")
+    if plates.isna().any():
+        fails.append(f"no plate ID for {int(plates.isna().sum())} cells")
+    facts = dict(cells=len(cells), genes=int(X.shape[1]), non_integer=nonint, with_fucci=with_fucci,
+                 plates=sorted(set(plates.dropna())))
+    return fails, facts
 
 
 def fetch_b4(out_dir: Path) -> tuple[dict | None, list[str]]:
-    if not B4_SOURCES:
-        return None, ["B4: no source with raw counts and per-cell FUCCI intensities is fixed for the named "
-                      "candidate (Mahdessian et al. 2021); dropped with R3"]
-    return None, ["B4: dropped with R3"]
-
-
-B4_FILES = ("GSE146773_fucci_coords.csv.gz", "GSE146773_Counts.csv.gz")
-
-
-def inspect_b4() -> list[str]:
-    """The format of the named B4 candidate's per-cell FUCCI file and counts table (printed by the
-    rehearsal, so that a source can be fixed before the tag)."""
-    out = []
-    for f in B4_FILES:
-        url = B4_LISTINGS[0] + f
-        try:
-            text = _download([url], timeout=300)[0].decode(errors="replace")
-        except Exception as exc:
-            out.append(f"B4 {f}: {exc}")
-            continue
-        out += describe_table(text, f"B4 {f}", sep=",")
-    return out
-
-
-def list_b4_sources() -> list[str]:
-    """The public listings of the named B4 candidate's deposit (printed by the rehearsal, so that
-    a source can be fixed before the tag)."""
-    import re
-    out = []
-    for url in B4_LISTINGS:
-        try:
-            text = _download([url], timeout=60)[0].decode(errors="replace")
-        except Exception as exc:
-            out.append(f"B4 listing {url}: {exc}")
-            continue
-        names = sorted(set(re.findall(r'href="([^"?/][^"]*)"', text))) or text.splitlines()[:40]
-        out.append(f"B4 listing {url}:")
-        out += [f"  {n}" for n in names[:60]]
-    return out
+    """The named B4 candidate's deposit, checked against the criteria. Its counts are RSEM expected
+    counts in the rehearsal, so B4 and R3 are dropped unless the deposit changes; R3 has no runner."""
+    try:
+        tables = {k: pd.read_csv(io.StringIO(_download([B4_DEPOSIT + f], timeout=300)[0].decode()))
+                  for k, f in B4_FILES.items()}
+        fails, facts = check_b4(tables["counts"].set_index(tables["counts"].columns[0]), tables["fucci"])
+    except Exception as exc:
+        return None, [f"B4: not obtained ({exc!r}); dropped with R3"]
+    where = f"GEO GSE146773 ({', '.join(B4_FILES.values())}: {facts['cells']} cells, {len(facts['plates'])} plates)"
+    if fails:
+        return None, [f"B4: {where} fails the criteria ({'; '.join(fails)}); dropped with R3"]
+    return None, [f"B4: {where} meets the criteria, but no R3 runner was pre-registered (its counts were not "
+                  "raw in the rehearsal); dropped with R3"]
 
 
 def main(argv=None):
@@ -432,7 +431,7 @@ def main(argv=None):
         if s is not None and not args.rehearsal:
             spec[more[0].split(":")[0]] = s
     if args.rehearsal:
-        print("\n".join(lines + list_b4_sources() + inspect_b4()))
+        print("\n".join(lines))
         return
     args.spec.write_text(json.dumps(spec, indent=1, sort_keys=True))
     args.report.write_text("# Background selection (validation/prereg/v1.md, section 3.1)\n\n" + "\n".join(lines) + "\n")

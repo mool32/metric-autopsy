@@ -100,7 +100,9 @@ def read_key(dry_run: bool, key_record: Path | None, run_tag: str | None) -> tup
     expect = round_from_tag(run_tag) if run_tag else None
     if expect is None and not dry_run:
         raise SystemExit("the blind run checks the key record against the run tag's round (--run-tag)")
-    return check_key_record(rec, expect), {k: v for k, v in rec.items() if k != "answers"}
+    # the manifest keeps the round and its value, not when or from where it was fetched (key.json has
+    # those): the manifest is a function of the code, the backgrounds, the pilot and the round
+    return check_key_record(rec, expect), {k: v for k, v in rec.items() if k not in ("answers", "fetched_utc")}
 
 
 # --------------------------------------------------------------------------- #
