@@ -2,14 +2,15 @@
 
     python validation/prereg/score.py --key KEY --results RESULTS --pilot pilot.json --out scores.json
 
-Run only after the blind run's results (reports, run log, manifest) are committed with their
-sha256 (section 8). The key re-derives the condition, variant and gene pair of every dataset
-ID (``panel.assign``); each claim card's verdict is reduced to its label and compared with the
-design's allowed set (``panel.allowed``: for the real effects NO DETECTABLE EFFECT is allowed
-only where |Δ*| < SESOI); the primary outcomes P1-P3 and the criteria S1-S4 follow, every rate
-with its two-sided 95% Clopper-Pearson interval. A missing report or an engine error counts as a
-verdict outside the allowed set. Secondary: every rate per expression level, and intervals that
-allow for datasets sharing donors (``overlap_interval``).
+Run by the workflow right after the blind run's results are committed. The key (the drand
+round's randomness in the results' key record) re-derives the condition, variant and gene pair
+of every dataset ID (``panel.assign``). Each claim card's report is reduced to its outcome, the
+label and cause of the verdict (``panel.outcome``), and compared with the card's allowed
+outcomes (``panel.allowed``: by the truth about the metric on the pair and about the data, one
+rule for every condition). The primary outcomes and the criteria S1-S5 follow, every rate with
+its two-sided 95% Clopper-Pearson interval, and for every criterion the design effect of
+datasets that share donors (``overlap_interval``); a design effect above 1.5 is reported as the
+pre-registered limitation. A missing report or an engine error counts as an error.
 """
 from __future__ import annotations
 
@@ -23,18 +24,7 @@ from scipy import stats
 import oc
 import panel as P
 
-LABELS = P.LABELS
-NOMINAL_ERROR = 0.025       # false SUPPORTED with directional claims (alpha / 2); outside the set
-NOMINAL_DECISIVENESS = 0.85  # correct definite verdicts on establishable cards
-
-
-def label(verdict: str | None) -> str:
-    """The verdict's label: the text before ' — ', without bracketed qualifiers.
-    'SUPPORTED (provisional until replicated)' and 'SUPPORTED — replicated' are SUPPORTED."""
-    if not verdict:
-        return "ERROR"
-    head = verdict.split(" — ")[0].split(" [")[0].split(" (")[0].strip()
-    return head if head in LABELS else "ERROR"
+DEFF_LIMIT = 1.5  # a criterion's design effect above this is a pre-registered limitation
 
 
 def cp(k: float, n: float, alpha: float = 0.05) -> tuple[float, float]:
@@ -83,108 +73,191 @@ def overlap_interval(y, donor_sets: list, alpha: float = 0.05) -> dict:
     return dict(rate=p, n=n, deff=deff, n_eff=n_eff, beta=beta, ci95=[lo, hi])
 
 
-def score(entries: list[dict], verdicts: dict, pilot: dict, donors: dict | None = None) -> dict:
-    """entries: panel.assign(key) (or a subset); verdicts: {card id: verdict text or None};
-    donors: {dataset id: [donor ids]} from the manifest (for the overlap intervals)."""
+def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
+    """One row per claim card: its condition, variant, level and truth, its outcome and how it is
+    scored. `reports`: {card id: (verdict text, cause[, gate record])} (None for a missing report
+    or an engine error)."""
     conds = P.conditions()
     est = pilot.get("establishable", {})
     rows = []
     for e in entries:
         c = conds[e["condition"]]
-        level = P.level_of_pair(e["pair"])
-        allowed = P.allowed(c, e["variant"], e["pair"], pilot)
-        good = P.definite(c, e["variant"], e["pair"], pilot)
-        establishable = c.oracle and bool(est.get(f"{c.name}:{e['variant']}:{level}", {}).get("establishable"))
+        pair = int(e["pair"])
+        level = P.pool_level(c, pair, pilot)
+        ok = P.allowed(c, e["variant"], pair, pilot)
+        good = P.definite(c, e["variant"], pair, pilot)
+        truth = P.metric_truth(c, pair, pilot)
+        establishable = c.oracle and bool(est.get(f"{c.name}:{e['variant']}:{pair}", {}).get("establishable"))
+        nominal = oc.nominal_error(ok)
         for cid in P.card_ids(e):
-            lab = label(verdicts.get(cid))
+            rec = reports.get(cid) or (None, None)
+            verdict, cause = rec[0], rec[1]
+            gates = rec[2] if len(rec) > 2 else {}
+            o = P.outcome(verdict, cause)
             rows.append(dict(id=cid, dataset=e["id"], condition=c.name, variant=e["variant"], level=level,
-                             label=lab, null=c.null, key=c.key and e["variant"] == c.key_variant,
-                             outside=lab not in allowed, establishable=establishable,
-                             correct_definite=lab in good, supported=lab == "SUPPORTED"))
-    out = dict(per_condition={}, per_level={}, criteria={}, secondary={})
+                             pair=pair, truth=truth, outcome=o,
+                             key=c.key and e["variant"] == c.key_variant,
+                             sup_error_possible=P.SUPPORTED not in ok, sup_error=o == P.SUPPORTED and P.SUPPORTED not in ok,
+                             invalid_error_possible=P.NS_INVALID not in ok, nde_error_possible=P.NDE not in ok,
+                             valid=truth == "valid", false_invalid=truth == "valid" and o == P.NS_INVALID,
+                             error=o not in ok, establishable=establishable, correct_definite=o in good,
+                             definite=o in P.DEFINITE, nominal=nominal, gates=gates))
+    return rows
+
+
+def gate_record(rep: dict) -> dict:
+    """What P5 reads from a report: GATE 0's refusal, GATE 1's flag, GATE 4's outcome, GATE 5's
+    status and negative control, and the effect's diagnosis and retained share."""
+    g = {r.get("gate"): r for r in rep.get("gates", [])}
+    ef = (rep.get("fields") or {}).get("effect") or {}
+    rows5 = (g.get(5, {}).get("detail") or {}).get("rows") or []
+    return dict(gate0=g.get(0, {}).get("status"), gate1=g.get(1, {}).get("status"),
+                gate4=(g.get(4, {}).get("detail") or {}).get("outcome") or g.get(4, {}).get("status"),
+                gate5=g.get(5, {}).get("status"), gate5_negative_fails=any(not r.get("neg_ok", True) for r in rows5),
+                explained_by_depth=bool((ef.get("detail") or {}).get("explained_by_depth")),
+                retained=(ef.get("detail") or {}).get("retained"))
+
+
+def per_gate(rows: list[dict]) -> dict:
+    """P5: per-gate sensitivity and specificity (v1.md, section 5)."""
+    def share(rs, fn):
+        return rate(sum(bool(fn(r)) for r in rs), len(rs))
+
+    def by(keyf, rs):
+        out = {}
+        for r in rs:
+            out.setdefault(keyf(r), []).append(r)
+        return out
+    known = [r for r in rows if r["gates"]]
+    out = dict(
+        gate1_flags={k: share(rs, lambda r: r["gates"].get("gate1") in ("WARN", "STOP"))
+                     for k, rs in by(lambda r: f"{r['condition']}:{r['variant']}",
+                                     [r for r in known if r["condition"] in ("N1", "N2", "N3")]).items()},
+        explained_by_depth={k: share(rs, lambda r: r["gates"].get("explained_by_depth"))
+                            for k, rs in by(lambda r: f"{r['variant']}:{r['level']}",
+                                            [r for r in known if r["condition"] == "N2"]).items()},
+        gate4={k: {o: sum(r["gates"].get("gate4") == o for r in rs) for o in ("PASS", "FAIL", "UNTESTED", "SKIP")}
+               for k, rs in by(lambda r: f"{r['truth']}:{r['level']}", known).items()},
+        gate5_negative_control_fails=share([r for r in known if r["condition"] == "N1"],
+                                           lambda r: r["gates"].get("gate5_negative_fails")),
+        gate0_refusals={k: share(rs, lambda r: r["outcome"] == P.REFUSAL)
+                        for k, rs in by(lambda r: r["truth"], rows).items()},
+        retained={k: dict(n=len(v), median=float(np.median(v)), q25=float(np.quantile(v, 0.25)),
+                          q75=float(np.quantile(v, 0.75)))
+                  for k, rs in by(lambda r: f"{r['condition']}:{r['variant']}",
+                                  [r for r in known if r["condition"] in ("E1", "E2", "E3")]).items()
+                  for v in [[float(r["gates"]["retained"]) for r in rs
+                             if r["gates"].get("retained") is not None and np.isfinite(r["gates"]["retained"])]] if v})
+    return out
+
+
+def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None = None) -> dict:
+    """entries: panel.assign(key, dropped, pool sizes) (or a subset); reports: {card id: (verdict,
+    cause)}; donors: {dataset id: [donor ids]} from the manifest (for the design effects)."""
+    rows = card_rows(entries, reports, pilot)
+    out = dict(per_condition={}, per_level={}, per_truth={}, criteria={}, secondary={})
 
     def summary(rs):
-        return dict(n=len(rs), outside=rate(sum(r["outside"] for r in rs), len(rs)),
-                    false_supported=(rate(sum(r["supported"] for r in rs), len(rs)) if rs and rs[0]["null"] else None),
-                    correct_definite=(rate(sum(r["correct_definite"] for r in rs), len(rs))
-                                      if rs and rs[0]["establishable"] else None),
-                    labels={lab: sum(r["label"] == lab for r in rs) for lab in (*LABELS, "ERROR")})
+        return dict(n=len(rs), errors=rate(sum(r["error"] for r in rs), len(rs)),
+                    false_supported=rate(sum(r["sup_error"] for r in rs), sum(r["sup_error_possible"] for r in rs)),
+                    false_invalid=rate(sum(r["false_invalid"] for r in rs), sum(r["valid"] for r in rs)),
+                    correct_definite=rate(sum(r["correct_definite"] for r in rs if r["establishable"]),
+                                          sum(r["establishable"] for r in rs)),
+                    outcomes={o: rate(sum(r["outcome"] == o for r in rs), len(rs)) for o in P.OUTCOMES})
 
     groups = {}
     for r in rows:
-        groups.setdefault(f"{r['condition']}:{r['variant']}", []).append(r)
-        groups.setdefault(f"{r['condition']}:{r['variant']}:{r['level']}", []).append(r)
-    for key, rs in groups.items():
-        (out["per_level"] if key.count(":") == 2 else out["per_condition"])[key] = summary(rs)
-    nulls = [r for r in rows if r["null"]]
-    estab = [r for r in rows if r["establishable"]]
+        groups.setdefault(("per_condition", f"{r['condition']}:{r['variant']}"), []).append(r)
+        groups.setdefault(("per_level", f"{r['condition']}:{r['variant']}:{r['level']}"), []).append(r)
+        groups.setdefault(("per_truth", r["truth"]), []).append(r)
+    for (where, key), rs in groups.items():
+        out[where][key] = summary(rs)
     crit = out["criteria"]
+    members = {}
     # S1: false SUPPORTED at every key null condition's key variant; passes only if all pass
     s1 = {}
     for c in P.CONDITIONS:
         if not c.key:
             continue
         rs = [r for r in rows if r["condition"] == c.name and r["variant"] == c.key_variant]
-        k = sum(r["supported"] for r in rs)
-        kmax = oc.error_rule(len(rs), NOMINAL_ERROR)[0] if rs else -1
+        k = sum(r["sup_error"] for r in rs)
+        kmax = oc.error_rule(len(rs), oc.E_SUPPORTED)[0] if rs else -1
         s1[c.name] = dict(rate(k, len(rs)), max_allowed=kmax, passed=bool(rs) and k <= kmax)
+        members[f"S1:{c.name}"] = (rs, "sup_error")
     crit["S1"] = dict(conditions=s1, passed=bool(s1) and all(v["passed"] for v in s1.values()))
-    k = sum(r["supported"] for r in nulls)
-    kmax = oc.error_rule(len(nulls), NOMINAL_ERROR)[0] if nulls else -1
-    crit["S2"] = dict(rate(k, len(nulls)), max_allowed=kmax, passed=bool(nulls) and k <= kmax)
-    k = sum(r["correct_definite"] for r in estab)
-    kmin = oc.decisiveness_rule(len(estab), NOMINAL_DECISIVENESS)[0] if estab else 1
-    crit["S3"] = dict(rate(k, len(estab)), min_required=kmin, passed=bool(estab) and k >= kmin,
-                      definite_any=rate(sum(r["label"] not in ("INCONCLUSIVE", "ERROR") for r in estab), len(estab)))
-    k = sum(r["outside"] for r in rows)
-    kmax = oc.error_rule(len(rows), NOMINAL_ERROR)[0]
-    crit["S4"] = dict(rate(k, len(rows)), max_allowed=kmax, passed=k <= kmax)
-    out["passed"] = all(crit[s]["passed"] for s in ("S1", "S2", "S3", "S4"))
+    # S2: false SUPPORTED on every card where SUPPORTED is an error
+    rs = [r for r in rows if r["sup_error_possible"]]
+    k = sum(r["sup_error"] for r in rs)
+    kmax = oc.error_rule(len(rs), oc.E_SUPPORTED)[0] if rs else -1
+    crit["S2"] = dict(rate(k, len(rs)), nominal=oc.E_SUPPORTED, max_allowed=kmax, passed=bool(rs) and k <= kmax)
+    members["S2"] = (rs, "sup_error")
+    # S3: correct definite outcomes on establishable cards
+    rs = [r for r in rows if r["establishable"]]
+    k = sum(r["correct_definite"] for r in rs)
+    kmin = oc.decisiveness_rule(len(rs), oc.D_NOMINAL)[0] if rs else 1
+    crit["S3"] = dict(rate(k, len(rs)), nominal=oc.D_NOMINAL, min_required=kmin, passed=bool(rs) and k >= kmin,
+                      definite_any=rate(sum(r["definite"] for r in rs), len(rs)))
+    members["S3"] = (rs, "correct_definite")
+    # S4: outside the allowed outcomes, all cards, against the mean of the cards' nominal rates
+    k = sum(r["error"] for r in rows)
+    e_bar = float(np.mean([r["nominal"] for r in rows])) if rows else 0.0
+    kmax = oc.error_rule(len(rows), e_bar)[0] if rows else -1
+    crit["S4"] = dict(rate(k, len(rows)), nominal=e_bar, max_allowed=kmax, passed=bool(rows) and k <= kmax)
+    members["S4"] = (rows, "error")
+    # S5: false "metric invalid" (GATE 4/5) on cards whose metric is valid by the truth
+    rs = [r for r in rows if r["valid"]]
+    k = sum(r["false_invalid"] for r in rs)
+    kmax = oc.error_rule(len(rs), oc.E_INVALID)[0] if rs else -1
+    crit["S5"] = dict(rate(k, len(rs)), nominal=oc.E_INVALID, max_allowed=kmax, passed=bool(rs) and k <= kmax)
+    members["S5"] = (rs, "false_invalid")
+    out["passed"] = all(crit[s]["passed"] for s in ("S1", "S2", "S3", "S4", "S5"))
     out["n_cards"] = len(rows)
-    # secondary: the primary rates per level, and with intervals that allow for shared donors
-    for level in P.LEVELS:
-        rl = [r for r in rows if r["level"] == level]
-        out["secondary"][level] = dict(
-            false_supported=rate(sum(r["supported"] for r in rl if r["null"]), sum(r["null"] for r in rl)),
-            outside=rate(sum(r["outside"] for r in rl), len(rl)),
-            correct_definite=rate(sum(r["correct_definite"] for r in rl if r["establishable"]),
-                                  sum(r["establishable"] for r in rl)))
+    out["joint_pass_probability_sound"] = oc.joint_pass_probability(rows)
+    out["per_gate"] = per_gate(rows)
+    # the design effect of datasets sharing donors, for every primary criterion
+    limitations = []
     if donors:
-        def ov(rs, field):
-            return overlap_interval([r[field] for r in rs], [donors.get(r["dataset"], []) for r in rs])
-        out["secondary"]["shared_donors"] = dict(
-            S1={c: ov([r for r in rows if r["condition"] == c and r["key"]], "supported") for c in s1},
-            S2=ov(nulls, "supported"), S3=ov(estab, "correct_definite"), S4=ov(rows, "outside"))
+        de = {}
+        for name, (rs, field) in members.items():
+            de[name] = overlap_interval([r[field] for r in rs], [donors.get(r["dataset"], []) for r in rs])
+            if de[name]["deff"] > DEFF_LIMIT:
+                limitations.append(f"{name}: design effect {de[name]['deff']:.2f} > {DEFF_LIMIT} (shared donors)")
+        out["secondary"]["shared_donors"] = de
+    out["limitations"] = limitations
     return out
 
 
 def read_results(results: Path) -> tuple[dict, dict]:
-    """Verdicts by card id and donors by dataset id, from the blind run's merged results."""
+    """(verdict, cause) by card id and donors by dataset id, from the blind run's merged results."""
     manifest = json.loads((results / "manifest.json").read_text())
-    verdicts, donors = {}, {}
+    reports, donors = {}, {}
     for d in manifest["datasets"]:
         donors[d["id"]] = d.get("donors", [])
         for c in d["cards"]:
             rep_path = results / "reports" / f"{c['id']}.json"
             rep = json.loads(rep_path.read_text()) if rep_path.exists() else {}
-            verdicts[c["id"]] = rep.get("verdict") if "error" not in rep else None
-    return verdicts, donors
+            reports[c["id"]] = (None if "error" in rep or not rep else
+                                (rep.get("verdict"), rep.get("cause"), gate_record(rep)))
+    return reports, donors
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    p.add_argument("--key", required=True, help="the revealed key (32 hex characters)")
+    p.add_argument("--key", required=True, help="the key: the drand round's randomness (64 hex characters)")
     p.add_argument("--results", required=True)
     p.add_argument("--pilot", required=True)
     p.add_argument("--out", default="scores.json")
     args = p.parse_args(argv)
     pilot = json.loads(Path(args.pilot).read_text())
-    verdicts, donors = read_results(Path(args.results))
-    res = score(P.assign(args.key, pilot.get("dropped", ())), verdicts, pilot, donors)
-    res["key_sha256"] = P.key_commitment(args.key)
+    reports, donors = read_results(Path(args.results))
+    entries = P.assign(args.key, pilot.get("dropped", ()), pilot.get("pool_size"))
+    res = score(entries, reports, pilot, donors)
+    res["key"] = args.key
     Path(args.out).write_text(json.dumps(res, indent=1))
-    for s in ("S1", "S2", "S3", "S4"):
+    for s in ("S1", "S2", "S3", "S4", "S5"):
         print(s, "PASS" if res["criteria"][s]["passed"] else "FAIL")
+    for lim in res["limitations"]:
+        print("limitation:", lim)
     print("validation", "PASSES" if res["passed"] else "FAILS")
 
 

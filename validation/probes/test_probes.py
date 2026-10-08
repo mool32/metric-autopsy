@@ -510,3 +510,55 @@ def test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked():
     assert r["classification"] == "bias" and r["handling"] == "corrected"
     assert a.metric_validity.status != "FAIL"
     assert "DEPTH_BIAS_CORRECTED" in a.metric_validity.flags
+
+
+# --------------------------------------------------------------------------- #
+# p14 — GATE 4 by the expression level of the pair (found after the rework)
+# --------------------------------------------------------------------------- #
+# decided 2026-10-08 (JOURNAL.md, D5): GATE 4 PASSes on the lower 95% bound of the response above
+# 0, FAILs only on the upper bound below delta_min, and is untested otherwise
+P14_DOSE = {"high": 2.25, "medium": 2.5, "low": 2.25}  # the saturation doses of p14_gate4_by_expression_level.log
+P14_DATASETS = 8
+
+
+@pytest.fixture(scope="module")
+def p14_backgrounds():
+    sys.path.insert(0, str(REPO / "validation" / "prereg"))
+    import simulate
+    bgs = simulate.dry_backgrounds()
+    return bgs, simulate.dry_pilot(bgs)
+
+
+def _p14_outcomes(bgs, pilot, level):
+    import panel as PANEL
+    pool = [pe for pe in bgs["B1"].plan["pool"] if pe["level"] == level]
+    out = []
+    for i in range(P14_DATASETS):
+        pe = pool[i % len(pool)]
+        e = dict(id=f"G{i}", condition="N1", variant="null", index=i, side="A", pair=pe["index"], seed=9000 + i)
+        X, obs, genes, _ = PANEL.build(e, bgs, pilot)
+        ga, gb = pe["pair"]
+        r = _gates.gate4_signal_response(partial(metrics.norm_pearson, gene_a=ga, gene_b=gb), SimpleData(X, obs, genes),
+                                         _injected_coupling(ga, gb, P14_DOSE[level]), delta_min=0.05, seed=i)
+        out.append(r.detail["outcome"])
+    return out
+
+
+def _injected_coupling(ga, gb, strength):
+    from metric_autopsy import injected_signal
+    return injected_signal.coupling(ga, gb, strength=strength)
+
+
+def test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind(p14_backgrounds):
+    """Truth (p14_gate4_by_expression_level.log, population responses at the saturation doses):
+    log-normalized Pearson responds to an injected coupling at the high level (+0.20 to +0.28)
+    and the medium level (+0.07 to +0.09), both above 1.2 x delta_min = 0.06, and not at the low
+    level (-0.023 to +0.019, below 0.8 x delta_min). Required by the owner: the high level PASSes;
+    at the medium level FAIL is no more frequent than alpha; at the low level FAIL has probability
+    >= 0.8 (the log: 40/40 PASS, 0/40 FAIL, 39/40 FAIL). Under the former rule (z >= 3 over 10
+    injections) the medium level failed 8/12 at strength 1.0."""
+    bgs, pilot = p14_backgrounds
+    high, medium, low = (_p14_outcomes(bgs, pilot, lv) for lv in ("high", "medium", "low"))
+    assert high == ["PASS"] * P14_DATASETS
+    assert medium.count("FAIL") <= 1 and medium.count("PASS") >= P14_DATASETS - 1
+    assert low.count("FAIL") >= 7

@@ -6,6 +6,7 @@ replicate unless stated), so the assertion is the verdict a correct validator mu
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from functools import partial
 
@@ -291,14 +292,60 @@ def test_level_metric_is_not_failed_for_an_immaterial_null_signal():
 # GATE 4: response to an injected signal
 # --------------------------------------------------------------------------- #
 def test_injected_signal_separates_a_responsive_metric_from_useless_ones():
+    """Decided 2026-10-08 (JOURNAL.md, D5): PASS when the lower 95% bound of the response is
+    above 0 in the declared direction; FAIL only when blindness is shown, the upper bound below
+    delta_min; otherwise untested (WARN). A random number is never shown blind: its noise keeps
+    the interval wide, so it stays untested, not valid."""
     d = make_clean()
     inject = injected_signal.coupling("Smad3", "Col1a1")
     rng = np.random.default_rng(0)
-    assert gate4_signal_response(NPR, d, inject).status == GateStatus.PASS
-    assert gate4_signal_response(lambda data: float(rng.normal()), d, inject).status == GateStatus.FAIL
-    assert gate4_signal_response(lambda data: 1.0, d, inject).status == GateStatus.FAIL
+    valid = gate4_signal_response(NPR, d, inject, delta_min=0.05)
+    assert valid.status == GateStatus.PASS and valid.detail["signed_lower"] > 0
+    for dm in (None, 0.05):
+        random = gate4_signal_response(lambda data: float(rng.normal()), d, inject, delta_min=dm)
+        assert random.status == GateStatus.WARN and "untested, not invalid" in random.message
+    constant = gate4_signal_response(lambda data: 1.0, d, inject, delta_min=0.05)
+    assert constant.status == GateStatus.FAIL and constant.detail["ci"] == (0.0, 0.0)
     wrong_genes = injected_signal.coupling("Gene0", "Gene1")
-    assert gate4_signal_response(NPR, d, wrong_genes).status == GateStatus.FAIL
+    blind = gate4_signal_response(NPR, d, wrong_genes, delta_min=0.05)
+    assert blind.status == GateStatus.FAIL and blind.detail["signed_upper"] < 0.05
+
+
+def test_without_delta_min_gate4_cannot_show_blindness():
+    d = make_clean()
+    res = gate4_signal_response(lambda data: 1.0, d, injected_signal.coupling("Smad3", "Col1a1"))
+    assert res.status == GateStatus.WARN and "without a delta_min" in res.message
+    with pytest.raises(ValueError):
+        gate4_signal_response(NPR, d, injected_signal.coupling("Smad3", "Col1a1"), delta_min=0.0)
+
+
+def test_a_response_shown_below_delta_min_is_blindness():
+    """When the whole interval lies in (0, delta_min) the metric responds, but less than the
+    smallest response that matters: blind by the definition of delta_min, so FAIL, not PASS."""
+    iv = _gates.response_interval([0.010, 0.012, 0.011, 0.013, 0.009, 0.011])
+    assert iv["signed_lower"] > 0
+    assert _gates.judge_response(iv, delta_min=0.05) == "FAIL"
+    assert _gates.judge_response(iv, delta_min=None) == "PASS"
+    assert _gates.judge_response(iv, delta_min=0.005) == "PASS"
+    down = _gates.response_interval([-0.2, -0.25, -0.22, -0.21], direction="decrease")
+    assert down["signed_lower"] > 0 and _gates.judge_response(down, 0.05) == "PASS"
+    wide = _gates.response_interval([0.3, -0.3, 0.25, -0.2])
+    assert _gates.judge_response(wide, 0.05) == "UNTESTED"
+
+
+def test_delta_min_defaults_to_half_the_sesoi_and_can_be_preregistered():
+    from metric_autopsy.report import delta_min_of
+    assert delta_min_of({"sesoi": 0.2}) == pytest.approx(0.1)
+    assert delta_min_of({"sesoi": 0.2, "delta_min": 0.03}) == pytest.approx(0.03)
+    assert delta_min_of({}) is None
+    a = _run(add_mice(make_clean()), within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
+             signal_test=injected_signal.coupling("Gene0", "Gene1"),
+             prereg={**COMPOSITION, "direction": "decrease", "sesoi": 0.1})
+    g4 = next(r for r in a.results if r.gate == 4)
+    assert g4.detail["delta_min"] == pytest.approx(0.05) and g4.status == GateStatus.FAIL
+    assert a.metric_validity.status == "FAIL" and a.metric_validity.detail["failed_gate"] == 4
+    assert a.verdict.startswith("NOT SUPPORTED — metric invalid") and a.cause == "metric_invalid_gate4"
+    assert a.to_dict()["cause"] == "metric_invalid_gate4"
 
 
 def test_injected_signal_can_establish_metric_validity_without_controls():
@@ -342,7 +389,7 @@ def test_gate5_skewed_metric_is_calibrated_with_many_strata():
     200 draws; a normal tail there failed 17-33% of null datasets, and re-drawing the same few
     unrelated pairs gave a false resolution (10-23%). Both are gone."""
     results = [gate5_controls(metrics.mi_3bin, null_control_strata(16, 30, s), *CTRL,
-                              within=["stratum"], n_power=10) for s in range(10)]
+                              within=["stratum"], n_rep=20) for s in range(10)]
     assert sum(not row["neg_ok"] for r in results for row in r.detail["rows"]) <= 1
 
 
@@ -374,6 +421,18 @@ def blind_pair_metric(data, *, gene_a, gene_b):
     return float(np.mean(gene_column(data, gene_a)))
 
 
+def noisy_pair_metric(data, *, gene_a, gene_b):
+    """norm_pearson, plus on the analysed pair Smad3-Col1a1 only a pseudo-random offset (SD 1)
+    fixed by that pair's counts: deterministic in the data, so the controls tie to it, but its
+    response to an injected coupling drowns in the offset (GATE 4 untested)."""
+    v = metrics.norm_pearson(data, gene_a=gene_a, gene_b=gene_b)
+    if (gene_a, gene_b) != ("Smad3", "Col1a1"):
+        return v
+    cols = np.column_stack([gene_column(data, gene_a), gene_column(data, gene_b)]).astype(float)
+    u = int(hashlib.sha256(np.ascontiguousarray(cols).tobytes()).hexdigest()[:12], 16) / 16 ** 12
+    return float(v + (u - 0.5) * np.sqrt(12.0))
+
+
 def test_controls_count_only_for_the_metric_they_test():
     """GATE 5 runs pair_metric on the control pairs. The API took on trust that pair_metric bound
     to gene_pair is the judged metric: at 677d1b8 a metric blind to gene b given norm_pearson's
@@ -398,40 +457,70 @@ def test_controls_count_only_for_the_metric_they_test():
     assert next(r for r in no_pair.results if r.gate == 5).status == GateStatus.SKIP
 
 
-def test_blind_metric_fails_where_the_design_has_power_and_is_untested_where_not():
-    """Decided 2026-10-07: a silent positive control is UNTESTED only when the stratum lacked the
-    power to show it; with power >= 0.8 for an injected coupling of the pre-registered dose it is
-    evidence that the metric is insensitive (FAIL). Otherwise UNTESTED would shelter blind
-    metrics forever. The power is the design's (a reference detector), not the metric's."""
+def test_a_silent_positive_control_fails_only_a_metric_shown_blind():
+    """Decided 2026-10-08 (JOURNAL.md, D6; probe p15): a silent positive control is judged as GATE 4
+    judges a response. A coupling of the pre-registered dose is injected into the control's genes,
+    with their own coupling removed, and the metric's own response gets its 95% interval: FAIL
+    only when its upper bound is below delta_min (the metric is shown blind), else WARN. The rule
+    of 2026-10-07 (FAIL wherever a reference detector had power >= 0.8) failed a valid metric
+    whose control was coupled, but weakly, in 16 of 20 datasets (p15); a metric blind to gene b
+    still fails, and without a delta_min blindness cannot be shown."""
     for s in range(3):
-        powered = gate5_controls(blind_pair_metric, null_control_strata(1, 600, s), *CTRL)
-        row = powered.detail["rows"][0]
-        assert powered.status == GateStatus.FAIL and row["pos_insensitive"] and row["pos_power"] >= 0.8
-        assert "insensitive" in powered.message
-    tiny = gate5_controls(blind_pair_metric, null_control_strata(1, 10, 0), *CTRL)
-    assert tiny.status == GateStatus.WARN and tiny.detail["pos_demonstrated"] is False
-    assert tiny.detail["rows"][0]["pos_power"] < 0.8
+        blind = gate5_controls(blind_pair_metric, null_control_strata(1, 600, s), *CTRL, delta_min=0.5)
+        row = blind.detail["rows"][0]
+        assert blind.status == GateStatus.FAIL and row["pos_blind"] and row["pos_response_ci"][1] < 0.5
+        assert "blind to a coupling of dose 2" in blind.message
+    for dm in (None, 0.05):  # 10 cells: the interval is too wide to show blindness at 0.05
+        tiny = gate5_controls(blind_pair_metric, null_control_strata(1, 10, 0), *CTRL, delta_min=dm)
+        assert tiny.status == GateStatus.WARN and tiny.detail["pos_demonstrated"] is False
+        assert tiny.detail["rows"][0]["pos_response_outcome"] == "UNTESTED"
+    assert "without a delta_min" in gate5_controls(blind_pair_metric, null_control_strata(1, 10, 0), *CTRL).message
 
 
-def test_uncoupled_positive_control_in_a_powered_design_invalidates_the_metric_check():
-    """Two independent genes offered as the positive control: in a stratum that could detect the
-    dose, its silence FAILs GATE 5 (insensitive metric or a control that is not coupled), and
-    the metric is not certified."""
+def test_an_uncoupled_positive_control_does_not_invalidate_a_responsive_metric():
+    """Two independent genes offered as the positive control: silent, but the metric responds to a
+    coupling injected into them, so the control is not coupled here and the metric is not invalid
+    (before D6 this was a FAIL). Without another demonstration the metric stays untested and the
+    claim is not certified."""
     d = add_mice(make_clean())
-    res = gate5_controls(metrics.norm_pearson, d, ("Gene2", "Gene3"), ("Gene0", "Gene1"), within=["sex"])
-    assert res.status == GateStatus.FAIL and res.detail["pos_demonstrated"] is False
+    res = gate5_controls(metrics.norm_pearson, d, ("Gene2", "Gene3"), ("Gene0", "Gene1"), within=["sex"],
+                         delta_min=0.02)
+    assert res.status == GateStatus.WARN and res.detail["pos_demonstrated"] is False
+    assert all(r["pos_response_outcome"] == "PASS" for r in res.detail["rows"])
+    assert "the control is not coupled here" in res.message
     a = _run(d, within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
-             pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"))
-    assert a.metric_validity.status == "FAIL" and not a.verdict.startswith("SUPPORTED")
+             pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"),
+             prereg={**COMPOSITION, "sesoi": 0.04})
+    assert a.metric_validity.status == "UNTESTED" and not a.verdict.startswith("SUPPORTED")
 
 
-def test_positive_control_power_settings_come_from_the_preregistration():
+def test_positive_control_dose_and_delta_min_come_from_the_preregistration():
     a = _run(add_mice(make_clean()), within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
              pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"),
-             prereg={**COMPOSITION, "positive_control_dose": 0.5, "positive_control_power": 0.95})
+             prereg={**COMPOSITION, "positive_control_dose": 0.5, "sesoi": 0.1})
     g5 = next(r for r in a.results if r.gate == 5)
-    assert g5.detail["pos_dose"] == 0.5 and g5.detail["pos_power_min"] == 0.95
-    assert g5.status == GateStatus.WARN  # a weak dose cannot be established here: untested, not invalid
+    assert g5.detail["pos_dose"] == 0.5 and g5.detail["delta_min"] == pytest.approx(0.05)
+    a = _run(add_mice(make_clean()), within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
+             pair_metric=metrics.norm_pearson, pos_pair=("Gene2", "Gene3"), neg_pair=("Gene0", "Gene1"),
+             prereg={**COMPOSITION, "sesoi": 0.1, "delta_min": 0.02})
+    assert next(r for r in a.results if r.gate == 5).detail["delta_min"] == pytest.approx(0.02)
+
+
+def test_an_untested_construct_is_not_rescued_by_a_control_on_another_pair():
+    """Decided 2026-10-08 (JOURNAL.md, D5): where GATE 4 ran on the analysed construct and could
+    show neither a response nor blindness, a positive control that fires on another pair does not
+    make the metric valid for this claim: metric validity stays UNTESTED, so neither NO
+    DETECTABLE EFFECT nor SUPPORTED can follow."""
+    d = add_mice(make_clean())
+    a = _run(d, metric=partial(noisy_pair_metric, gene_a="Smad3", gene_b="Col1a1"), within=["sex"],
+             replicate_col="mouse", gene_pair=("Smad3", "Col1a1"), pair_metric=noisy_pair_metric,
+             pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
+             signal_test=injected_signal.coupling("Smad3", "Col1a1"),
+             prereg={**COMPOSITION, "direction": "decrease", "sesoi": 0.1, "judgment_pending": False})
+    g4 = next(r for r in a.results if r.gate == 4)
+    assert g4.status == GateStatus.WARN
+    assert a.metric_validity.status == "UNTESTED" and "GATE 4" in a.metric_validity.reason
+    assert not a.verdict.startswith(("SUPPORTED", "NO DETECTABLE EFFECT"))
 
 
 def depth_only_pair(n=600, n_genes=300, seed=0):
@@ -546,7 +635,9 @@ def test_unsized_and_tolerated_biases_reach_the_verdict(monkeypatch):
     assert unsized.effect.status == "DETECTED"
     assert unsized.verdict.startswith("INCONCLUSIVE") and "cannot be sized" in unsized.verdict
     assert "declare a SESOI" in unsized.verdict
-    tolerated = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0}, **kw)
+    # a SESOI of 1.0 would also set delta_min to 0.5, more than this injection moves the metric:
+    # delta_min is pre-registered on its own here, so that only the bias tolerance changes
+    tolerated = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0, "delta_min": 0.02}, **kw)
     assert "BIAS_BELOW_TOLERANCE" in tolerated.metric_validity.flags
     assert tolerated.verdict.startswith("SUPPORTED"), tolerated.verdict
     blocking = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 0.1}, **kw)
@@ -697,9 +788,11 @@ def test_direction_is_validated_and_plumbed_through_the_cli():
     from metric_autopsy.report import normalize_prereg
     with pytest.raises(ValueError):
         normalize_prereg({"direction": "up"})
-    args = cli.build_parser().parse_args(["--demo", "--direction", "increase", "--bias-tolerance", "0.25"])
+    args = cli.build_parser().parse_args(["--demo", "--direction", "increase", "--bias-tolerance", "0.25",
+                                          "--delta-min", "0.04"])
     prereg = cli.build_prereg(args)
     assert prereg["direction"] == "increase" and prereg["bias_tolerance"] == 0.25
+    assert prereg["delta_min"] == 0.04
 
 
 def test_decide_names_the_assumption_the_verdict_rests_on():

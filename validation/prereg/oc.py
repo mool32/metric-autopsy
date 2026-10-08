@@ -2,19 +2,26 @@
 
 One principle for every criterion (decided by the project owner, 2026-10-08): a sound validator
 passes the criterion with probability >= 0.90, and a validator whose error is double the
-nominal passes with probability <= 0.05. A criterion is a bound on binomial rates from n
-datasets: "at most k* errors of n" (equivalently: the two-sided 95% Clopper-Pearson upper bound
-of the rate is <= T), or for decisiveness "at least k* correct definite verdicts". k* is the
-most lenient threshold at which the doubled-error validator still passes with probability
-<= 0.05. S1 is a conjunction over the key null conditions, so the principle applies to S1 as a
-whole: P(every condition passes | sound) >= 0.90, while a doubled error in any one condition
-passes that condition with probability <= 0.05.
+nominal passes with probability <= 0.05. A criterion is a bound on binomial rates: "at most k*
+errors of n" (equivalently: the two-sided 95% Clopper-Pearson upper bound of the rate is <= T),
+or for decisiveness "at least k* correct definite outcomes". k* is the most lenient threshold at
+which the doubled-error validator still passes with probability <= 0.05. S1 is a conjunction over
+the key null conditions, so the principle applies to S1 as a whole.
+
+Errors are judged by the cause of a verdict, not its label (decided 2026-10-08): every card has
+its allowed outcomes (``panel.allowed``) and its nominal error, the sum of the designed sizes of
+the routes to a wrong outcome that are open on it (``nominal_error``). The n of S2-S5 depend on
+the truth about the metric on each pair (pilot.json) and on the key's assignment, so ``score.py``
+computes every threshold with the rules here from the realized cards; this file shows them on
+the design and on scenarios for the truth, and, given pilot.json, on its expected cards.
 
     python validation/prereg/oc.py > validation/prereg/oc.log
+    python validation/prereg/oc.py --pilot pilot.json > oc_pilot.log
 """
 from __future__ import annotations
 
-import math
+import argparse
+import json
 
 import numpy as np
 
@@ -22,8 +29,19 @@ import panel as P
 
 P_PASS_SOUND = 0.90
 P_PASS_DOUBLED = 0.05
-NOMINAL_ERROR = 0.025         # false SUPPORTED with directional claims: alpha / 2
-NOMINAL_DECISIVENESS = 0.85   # correct definite verdicts on establishable cards
+ALPHA = 0.05
+E_SUPPORTED = ALPHA / 2       # false SUPPORTED: the two-sided effect test at alpha, one direction
+E_INVALID = 2 * ALPHA         # false "metric invalid": GATE 4 (alpha / 2) + GATE 5's negative control
+                              # (alpha) + a silent positive control shown blind (alpha / 2)
+E_NDE = ALPHA                 # false NO DETECTABLE EFFECT: the TOST's size at the SESOI
+D_NOMINAL = 0.85              # correct definite outcomes on establishable cards
+
+
+def nominal_error(ok: frozenset) -> float:
+    """A card's nominal error: the designed sizes of the routes to an outcome outside its allowed
+    set `ok`: SUPPORTED alpha/2, NOT SUPPORTED (metric invalid) 2 alpha, NO DETECTABLE EFFECT alpha."""
+    return ((E_SUPPORTED if P.SUPPORTED not in ok else 0.0) + (E_INVALID if P.NS_INVALID not in ok else 0.0)
+            + (E_NDE if P.NDE not in ok else 0.0))
 
 
 def clopper_pearson(k: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
@@ -40,18 +58,27 @@ def binom_cdf(k: int, n: int, p: float) -> float:
         return 0.0
     if k >= n:
         return 1.0
-    total = 0.0
-    for i in range(k + 1):
-        total += math.exp(math.lgamma(n + 1) - math.lgamma(i + 1) - math.lgamma(n - i + 1)
-                          + (i * math.log(p) if i else 0.0) + (n - i) * math.log1p(-p))
-    return min(total, 1.0)
+    if p <= 0:
+        return 1.0
+    if p >= 1:
+        return 0.0
+    from scipy import stats
+    return float(stats.binom.cdf(k, n, p))
 
 
 def error_rule(n: int, p0: float):
     """For an error-rate criterion: the largest k* with P(X <= k* | 2 p0) <= 0.05, and
-    P(pass | p0), P(pass | 2 p0) for the rule 'at most k* errors'."""
-    p1 = 2 * p0
-    k = -1
+    P(pass | p0), P(pass | 2 p0) for the rule 'at most k* errors'. For a mixture of cards with
+    different nominal rates, p0 is their mean; the count is then Poisson-binomial, more
+    concentrated than the binomial (Hoeffding 1956), so the binomial rule is conservative on
+    both sides."""
+    p1 = min(1.0, 2 * p0)
+    if n <= 0:
+        return -1, 1.0, 1.0
+    from scipy import stats
+    k = int(stats.binom.ppf(P_PASS_DOUBLED, n, p1))
+    while k >= 0 and binom_cdf(k, n, p1) > P_PASS_DOUBLED:
+        k -= 1
     while binom_cdf(k + 1, n, p1) <= P_PASS_DOUBLED:
         k += 1
     return k, binom_cdf(k, n, p0), binom_cdf(k, n, p1)
@@ -67,63 +94,66 @@ def joint_error_rule(n: int, p0: float, m: int):
 def decisiveness_rule(n: int, d0: float):
     """For decisiveness (a share that should be high): nominal non-decisiveness 1 - d0, doubled
     1 - d1 with d1 = 1 - 2 (1 - d0). The smallest k* with P(X >= k* | d1) <= 0.05, and
-    P(pass | d0), P(pass | d1) for the rule 'at least k* correct definite verdicts'."""
+    P(pass | d0), P(pass | d1) for the rule 'at least k* correct definite outcomes'."""
     d1 = 1 - 2 * (1 - d0)
-    k = n + 1
+    if n <= 0:
+        return 1, 0.0, 0.0
+    from scipy import stats
+    k = int(stats.binom.isf(P_PASS_DOUBLED, n, d1))
     while k - 1 >= 0 and 1 - binom_cdf(k - 2, n, d1) <= P_PASS_DOUBLED:
         k -= 1
-    p_sound = 1 - binom_cdf(k - 1, n, d0)
-    p_doubled = 1 - binom_cdf(k - 1, n, d1)
-    return k, p_sound, p_doubled
+    while 1 - binom_cdf(k - 1, n, d1) > P_PASS_DOUBLED:
+        k += 1
+    return k, 1 - binom_cdf(k - 1, n, d0), 1 - binom_cdf(k - 1, n, d1)
 
 
-def smallest_n(fn, start: int, nominal: float, step: int = 10) -> int:
-    n = start
-    while fn(n, nominal)[1] < P_PASS_SOUND:
-        n += step
-    lo = max(1, n - step)
-    for m in range(lo, n + 1):
-        if fn(m, nominal)[1] >= P_PASS_SOUND:
-            return m
-    return n
-
-
-def design_counts(dropped=()) -> dict:
-    """Cards per class in the panel's design (panel.CONDITIONS)."""
-    key = [c for c in P.CONDITIONS if c.key]
-    n_key = {c.name: dict(c.variants)[c.key_variant] for c in key}
-    return dict(key=n_key, null=P.n_cards(dropped, null=True), effect=P.n_cards(dropped, null=False),
-                all=P.n_cards(dropped), datasets=P.n_datasets(dropped),
-                oracle=sum(n * c.cards for c in P.CONDITIONS for v, n in c.variants
-                           if c.oracle and not P._dropped(c.name, v, dropped)))
-
-
-def joint_pass_probability(counts: dict, n_est: int, sims: int = 200_000, seed: int = 0) -> float:
-    """P(S1-S4 all pass) for a sound validator, by simulation: every null card is a false
-    SUPPORTED with probability 0.025 (and then outside the allowed set), every real-effect card
-    outside with 0.025, and an establishable card correct and definite with 0.85 (a share of
-    n_est spread over null and effect cards in proportion). The criteria share cards, so they
-    are simulated together."""
+def joint_pass_probability(rows: list[dict], sims: int = 20_000, seed: int = 0) -> float:
+    """P(S1-S5 all pass) for a sound validator, by simulation on the cards `rows` (as
+    ``score.card_rows`` gives them: key, sup_error_possible, valid, establishable, condition and
+    the allowed routes): on every card a false SUPPORTED with E_SUPPORTED where SUPPORTED is not
+    allowed, a false "metric invalid" with E_INVALID where it is not, a false NO DETECTABLE
+    EFFECT with E_NDE where it is not (mutually exclusive), and an establishable card without an
+    error correct and definite with D_NOMINAL / (1 - its nominal error). The criteria share cards,
+    so they are simulated together."""
+    if not rows:
+        return float("nan")
     rng = np.random.default_rng(seed)
-    key = list(counts["key"].values())
-    k1 = [error_rule(n, NOMINAL_ERROR)[0] for n in key]
-    n_null, n_eff, n_all = counts["null"], counts["effect"], counts["all"]
-    k2 = error_rule(n_null, NOMINAL_ERROR)[0]
-    k4 = error_rule(n_all, NOMINAL_ERROR)[0]
-    k3 = decisiveness_rule(n_est, NOMINAL_DECISIVENESS)[0]
-    key_sup = np.stack([rng.binomial(n, NOMINAL_ERROR, sims) for n in key])
-    s1 = np.all(key_sup <= np.asarray(k1)[:, None], axis=0)
-    rest_null = rng.binomial(n_null - sum(key), NOMINAL_ERROR, sims)
-    null_sup = key_sup.sum(axis=0) + rest_null
-    s2 = null_sup <= k2
-    eff_out = rng.binomial(n_eff, NOMINAL_ERROR, sims)
-    s4 = (null_sup + eff_out) <= k4
-    # among establishable cards, outside ones are not correct; conditional on not outside, a
-    # card is correct and definite with 0.85 / 0.975
-    est_out = rng.binomial(n_est, NOMINAL_ERROR, sims)
-    correct = rng.binomial(n_est - est_out, NOMINAL_DECISIVENESS / (1 - NOMINAL_ERROR))
-    s3 = correct >= k3
-    return float(np.mean(s1 & s2 & s3 & s4))
+    n = len(rows)
+    p_sup = np.array([E_SUPPORTED if r["sup_error_possible"] else 0.0 for r in rows])
+    p_inv = np.array([E_INVALID if r["invalid_error_possible"] else 0.0 for r in rows])
+    p_nde = np.array([E_NDE if r["nde_error_possible"] else 0.0 for r in rows])
+    nominal = p_sup + p_inv + p_nde
+    est = np.array([r["establishable"] for r in rows])
+    valid = np.array([r["valid"] for r in rows])
+    key_groups = {}
+    for i, r in enumerate(rows):
+        if r["key"]:
+            key_groups.setdefault(r["condition"], []).append(i)
+    k1 = {c: error_rule(len(ix), E_SUPPORTED)[0] for c, ix in key_groups.items()}
+    k2 = error_rule(int((p_sup > 0).sum()), E_SUPPORTED)[0]
+    k3 = decisiveness_rule(int(est.sum()), D_NOMINAL)[0]
+    k4 = error_rule(n, float(nominal.mean()))[0]
+    k5 = error_rule(int(valid.sum()), E_INVALID)[0]
+    passed = 0
+    chunk = 500
+    p_ok = np.clip(D_NOMINAL / np.maximum(1e-12, 1 - nominal), 0, 1)
+    for start in range(0, sims, chunk):
+        m = min(chunk, sims - start)
+        u = rng.random((m, n))
+        sup = u < p_sup
+        inv = (u >= p_sup) & (u < p_sup + p_inv)
+        nde = (u >= p_sup + p_inv) & (u < nominal)
+        err = sup | inv | nde
+        good = (~err) & est & (rng.random((m, n)) < p_ok)
+        s1 = np.ones(m, bool)
+        for c, ix in key_groups.items():
+            s1 &= sup[:, ix].sum(axis=1) <= k1[c]
+        s2 = sup.sum(axis=1) <= k2
+        s3 = good.sum(axis=1) >= k3
+        s4 = err.sum(axis=1) <= k4
+        s5 = (inv & valid).sum(axis=1) <= k5
+        passed += int((s1 & s2 & s3 & s4 & s5).sum())
+    return passed / sims
 
 
 def _ranges(xs: list) -> str:
@@ -139,14 +169,39 @@ def _ranges(xs: list) -> str:
     return ", ".join(out)
 
 
+def expected_rows(pilot: dict, dropped=()) -> list[dict]:
+    """The cards of the design with every pool pair equally often (the key draws pairs
+    uniformly): per condition and variant, n_datasets cards spread evenly over the pool, with the
+    truth, allowed outcomes and establishability of pilot.json. A stand-in for the realized cards
+    before the key."""
+    rows = []
+    est = pilot.get("establishable", {})
+    for c in P.CONDITIONS:
+        size = int(pilot["pool_size"][c.background])
+        for variant, n in c.variants:
+            if P._dropped(c.name, variant, dropped):
+                continue
+            for i in range(n):
+                pair = i % size
+                ok = P.allowed(c, variant, pair, pilot)
+                truth = P.metric_truth(c, pair, pilot)
+                for _ in range(c.cards):
+                    rows.append(dict(condition=c.name, key=c.key and variant == c.key_variant,
+                                     sup_error_possible=P.SUPPORTED not in ok,
+                                     invalid_error_possible=P.NS_INVALID not in ok,
+                                     nde_error_possible=P.NDE not in ok, valid=truth == "valid",
+                                     establishable=c.oracle and bool(est.get(f"{c.name}:{variant}:{pair}", {})
+                                                                      .get("establishable")),
+                                     nominal=nominal_error(ok)))
+    return rows
+
+
 def show_error(name: str, n: int, p0: float):
     k, ps, pd = error_rule(n, p0)
-    hi = clopper_pearson(k, n)[1]
-    hi_next = clopper_pearson(k + 1, n)[1]
+    hi = clopper_pearson(k, n)[1] if n else float("nan")
     ok = "meets" if ps >= P_PASS_SOUND and pd <= P_PASS_DOUBLED else "FAILS"
-    print(f"  {name}: n = {n}, pass with at most {k}/{n} errors (upper 95% CP bound <= {hi:.4f}; any "
-          f"T in [{hi:.4f}, {hi_next:.4f}) is the same rule); P(pass | {p0:.3f}) = {ps:.3f}, "
-          f"P(pass | {2 * p0:.3f}) = {pd:.3f} — {ok} the principle")
+    print(f"  {name}: n = {n}, pass with at most {k} errors (upper 95% CP bound <= {hi:.4f}); "
+          f"P(pass | {p0:.4f}) = {ps:.3f}, P(pass | {min(1, 2 * p0):.4f}) = {pd:.3f} — {ok} the principle")
 
 
 def show_joint(name: str, n: int, p0: float, m: int):
@@ -160,62 +215,98 @@ def show_joint(name: str, n: int, p0: float, m: int):
 
 def show_decisive(name: str, n: int, d0: float):
     k, ps, pd = decisiveness_rule(n, d0)
-    lo = clopper_pearson(k, n)[0]
-    lo_prev = clopper_pearson(k - 1, n)[0]
+    lo = clopper_pearson(k, n)[0] if n else float("nan")
     ok = "meets" if ps >= P_PASS_SOUND and pd <= P_PASS_DOUBLED else "FAILS"
     d1 = 1 - 2 * (1 - d0)
-    print(f"  {name}: n = {n}, pass with at least {k}/{n} correct definite verdicts (lower 95% CP "
-          f"bound >= {lo:.4f}; any T in ({lo_prev:.4f}, {lo:.4f}] is the same rule); P(pass | {d0:.2f}) = "
-          f"{ps:.3f}, P(pass | {d1:.2f}) = {pd:.3f} — {ok} the principle")
+    print(f"  {name}: n = {n}, pass with at least {k} correct definite outcomes (lower 95% CP bound "
+          f">= {lo:.4f}); P(pass | {d0:.2f}) = {ps:.3f}, P(pass | {d1:.2f}) = {pd:.3f} — {ok} the principle")
 
 
-def main():
-    counts = design_counts()
-    m = len(counts["key"])
+def show_design(title: str, rows: list[dict]):
+    """The thresholds and operating characteristics of S1-S5 on a set of cards."""
+    print(f"## {title}")
+    n = len(rows)
+    key = {}
+    for r in rows:
+        if r["key"]:
+            key[r["condition"]] = key.get(r["condition"], 0) + 1
+    n_sup = sum(r["sup_error_possible"] for r in rows)
+    n_valid = sum(r["valid"] for r in rows)
+    n_est = sum(r["establishable"] for r in rows)
+    e_bar = float(np.mean([r["nominal"] for r in rows]))
+    print(f"  cards {n}: SUPPORTED an error on {n_sup}, valid metric on {n_valid}, establishable {n_est}; "
+          f"mean nominal error {e_bar:.4f}")
+    for c, m in key.items():
+        show_error(f"S1 {c}", m, E_SUPPORTED)
+    show_error("S2 false SUPPORTED where it is an error", n_sup, E_SUPPORTED)
+    show_decisive("S3 correct definite outcomes, establishable cards", n_est, D_NOMINAL)
+    show_error("S4 outside the allowed outcomes, all cards (mean nominal)", n, e_bar)
+    show_error("S5 false metric invalid, valid-metric cards", n_valid, E_INVALID)
+    print(f"  P(S1-S5 all pass | sound), simulated: {joint_pass_probability(rows):.3f}")
+    print()
+
+
+def scenario_pilot(blind_low: bool, blind_medium_share: float, establishable_share: float) -> dict:
+    """A stand-in pilot for the operating characteristics before the pilot: 8 pairs per level
+    on both backgrounds, every high pair valid, the low pairs blind (or valid), a share of the
+    medium pairs blind; Δ* above the SESOI at the key dose; a share of every case establishable."""
+    k = P.MAX_PAIRS_PER_LEVEL
+    pool = [dict(index=i, level=P.LEVELS[i // k], pair=["a", "b"]) for i in range(3 * k)]
+    truth = {}
+    for i, pe in enumerate(pool):
+        blind = ((pe["level"] == "low" and blind_low)
+                 or (pe["level"] == "medium" and (i % k) < round(blind_medium_share * k)))
+        truth[str(i)] = {"class": "blind" if blind else "valid"}
+    pilot = dict(pool={b: pool for b in P.BACKGROUNDS}, pool_size={b: len(pool) for b in P.BACKGROUNDS},
+                 truth={b: truth for b in P.BACKGROUNDS}, sesoi={b: {lv: 0.1 for lv in P.LEVELS} for b in P.BACKGROUNDS},
+                 delta={str(i): {f"{f:g}": dict(value=0.125 * f) for f in (0.25, 0.5, 1.0, 1.5)}
+                        for i in range(len(pool))}, establishable={})
+    for c in P.CONDITIONS:
+        for v, _ in c.variants:
+            for i in range(len(pool)):
+                pilot["establishable"][f"{c.name}:{v}:{i}"] = dict(establishable=(i % 20) < 20 * establishable_share)
+    return pilot
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p.add_argument("--pilot", help="pilot.json: the operating characteristics on its expected cards")
+    args = p.parse_args(argv)
     print("# operating characteristics of the v1 success criteria (two-sided 95% Clopper-Pearson)")
     print(f"# principle: P(pass | sound) >= {P_PASS_SOUND}, P(pass | doubled nominal error) <= {P_PASS_DOUBLED};")
     print("# S1, a conjunction over the key null conditions, meets it as a whole")
     print()
-    print("## Nominal rates")
-    print("  false SUPPORTED, directional claims: the engine tests at alpha = 0.05 two-sided and checks")
-    print("  the direction afterwards (test_a_directional_claim_is_tested_two_sided_at_alpha), so a null")
-    print("  with a valid metric gives alpha/2 = 0.025 (less where the metric is invalid); doubled: 0.05.")
-    print("  The same nominal 0.025 is used for the share of verdicts outside the allowed set. Decisiveness")
-    print("  counts correct definite verdicts (definite and in the allowed set): nominal 0.85 (establishable")
-    print("  cases have oracle power >= 0.9; a validator must also demonstrate the metric's response, which")
-    print("  the oracle is told); doubled shortfall 0.30, i.e. 0.70.")
-    print()
-    print("## The design (panel.py)")
-    print(f"  key null conditions (S1): {', '.join(f'{k} {v}' for k, v in counts['key'].items())}")
-    print(f"  null cards {counts['null']}, real-effect cards {counts['effect']}, all cards {counts['all']} "
-          f"({counts['datasets']} datasets); cards the oracle can establish (not N4): {counts['oracle']}")
+    if args.pilot:
+        pilot = json.loads(open(args.pilot).read())
+        show_design("The expected cards of pilot.json (every pool pair equally often)",
+                    expected_rows(pilot, pilot.get("dropped", ())))
+        return
+    m = sum(c.key for c in P.CONDITIONS)
+    print("## Nominal rates (errors by cause, decided 2026-10-08)")
+    print(f"  false SUPPORTED {E_SUPPORTED} (alpha/2: the effect test is two-sided at alpha, the direction checked")
+    print(f"  afterwards); false NOT SUPPORTED (metric invalid, GATE 4/5) on a valid metric {E_INVALID} (2 alpha:")
+    print("  GATE 4's upper bound below delta_min alpha/2, GATE 5's negative control alpha, a silent positive")
+    print(f"  control shown blind alpha/2); false NO DETECTABLE EFFECT {E_NDE} (alpha, the TOST's size). A card's nominal")
+    print("  error is the sum over the routes open on it (panel.allowed); S4 uses the cards' mean. Decisiveness:")
+    print(f"  {D_NOMINAL} correct definite outcomes on establishable cards (the oracle reaches >= 0.9), doubled shortfall 0.70.")
     print()
     print(f"## S1 as a whole: the number of datasets per key condition ({m} conditions)")
-    first = next(n for n in range(400, 2001) if joint_error_rule(n, NOMINAL_ERROR, m)[1] >= P_PASS_SOUND)
-    fails = [n for n in range(first, 1001) if joint_error_rule(n, NOMINAL_ERROR, m)[1] < P_PASS_SOUND]
+    first = next(n for n in range(400, 2001) if joint_error_rule(n, E_SUPPORTED, m)[1] >= P_PASS_SOUND)
+    fails = [n for n in range(first, 1001) if joint_error_rule(n, E_SUPPORTED, m)[1] < P_PASS_SOUND]
     print(f"  the rule first holds at n = {first}; k* moves in steps, so it fails again at n = "
           f"{_ranges(fails)} (up to 1000); the plan's {P.KEY_N} meets it")
-    for n in (600, 700, 763, 770, 785, 790, 800, 850):
-        k, pall, pd, pone = joint_error_rule(n, NOMINAL_ERROR, m)
-        mark = "meets" if pall >= P_PASS_SOUND and pd <= P_PASS_DOUBLED else "fails"
-        print(f"    n = {n}: k* = {k}, P(one | sound) = {pone:.4f}, P(all {m} | sound) = {pall:.4f}, "
-              f"P(one | doubled) = {pd:.4f} — {mark}")
+    show_joint("S1 false SUPPORTED, key null conditions", P.KEY_N, E_SUPPORTED, m)
     print()
-    print("## The criteria at the planned numbers of datasets")
-    show_joint("S1 false SUPPORTED, key null conditions", P.KEY_N, NOMINAL_ERROR, m)
-    show_error("S2 false SUPPORTED, all null cards", counts["null"], NOMINAL_ERROR)
-    for n in (200, 1000, 3000, counts["oracle"]):
-        show_decisive("S3 correct definite verdicts, establishable cards", n, NOMINAL_DECISIVENESS)
-    show_error("S4 outside the allowed set, all cards", counts["all"], NOMINAL_ERROR)
-    print()
-    print("## S1-S4 together, for a sound validator (simulated; the criteria share cards)")
-    for n_est in (200, 1000, 3000, counts["oracle"]):
-        print(f"  n_est = {n_est}: P(S1, S2, S3 and S4 all pass) = {joint_pass_probability(counts, n_est):.3f}")
-    print()
-    print("## Precision of a rate from n datasets (half-width of the 95% CP interval)")
-    for n in (100, 200, 400, 790, 1000):
-        row = ", ".join(f"p={p:.3f}: ±{(clopper_pearson(round(p * n), n)[1] - clopper_pearson(round(p * n), n)[0]) / 2:.3f}"
-                        for p in (0.025, 0.05, 0.5))
+    for title, args_ in (("Scenario A: the low level blind, half the medium pairs blind, half the cases establishable",
+                          (True, 0.5, 0.5)),
+                         ("Scenario B: every pair valid, every case establishable", (False, 0.0, 1.0)),
+                         ("Scenario C: the low level blind, every medium pair blind, a fifth of the cases establishable",
+                          (True, 1.0, 0.2))):
+        show_design(title, expected_rows(scenario_pilot(*args_)))
+    print("## Precision of a rate from n cards (half-width of the 95% CP interval)")
+    for n in (100, 200, 400, 790, 1000, 4000):
+        row = ", ".join(f"p={q:.3f}: ±{(clopper_pearson(round(q * n), n)[1] - clopper_pearson(round(q * n), n)[0]) / 2:.3f}"
+                        for q in (0.025, 0.1, 0.5))
         print(f"  n={n:4d}: {row}")
 
 

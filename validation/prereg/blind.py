@@ -1,22 +1,22 @@
-"""The blind run of the confirmatory panel (validation/prereg/v1.md, section 8).
+"""The blind run of the confirmatory panel (validation/prereg/v1.md, section 3.3 and 8).
 
-Run by .github/workflows/panel.yml when the project owner pushes the tag ``panel-v1-run``, or,
-as the fallback, by the owner on one machine (``all``). The key is read from the environment
-variable KEY_SEED (a repository secret in Actions) and checked against the commitment in the
-frozen tag's message; it is never written anywhere. No dataset is stored: each is built on the
-fly, and the manifest records its canonical sha256, so anyone can rebuild and check it once the
-key is revealed.
+Run by .github/workflows/validation.yml after the pilot: the workflow pushes the run tag
+``panel-v1-run``, whose message names a drand round at least an hour later; when the round is
+out, ``beacon.py`` fetches and verifies it, and its randomness is the key. Everything here is a
+deterministic function of the frozen code, the backgrounds, pilot.json and the key: no dataset
+is stored, each is built on the fly, and the manifest records its canonical sha256, so anyone
+can rebuild and check every dataset and report from the public key.
 
     python blind.py guard   --frozen-tag v0.3.0-prereg            # the code is the frozen tag's
-    python blind.py prepare --backgrounds backgrounds.json --out compact   # download, verify, plan
-    KEY_SEED=... python blind.py run --compact compact --pilot pilot.json \\
-        --commitment-tag v0.3.0-prereg --shard 0 --shards 20 --workers 4 --out out
-    python blind.py collect --shards-dir shards --out results
-    KEY_SEED=... python blind.py all --backgrounds backgrounds.json --pilot pilot.json \\
-        --commitment-tag v0.3.0-prereg --workers 8 --out results       # the one-machine fallback
+    python blind.py prepare --backgrounds backgrounds.json --data-dir DATA --out compact   # verify, plan
+    python blind.py run --compact compact --pilot pilot.json --key-record key.json \\
+        --run-tag panel-v1-run --shard 0 --shards 20 --workers 4 --out out
+    python blind.py collect --shards-dir shards --pilot pilot.json --key-record key.json --out results
+    python blind.py all --backgrounds backgrounds.json --data-dir DATA --pilot pilot.json \\
+        --key-record key.json --workers 8 --out results       # the same steps on one machine
 
-``--dry-run`` replaces the backgrounds by simulated ones and the key by a public test key
-(simulate.py); the workflow runs it on pull requests, which never see the secret.
+``--dry-run`` replaces the backgrounds by simulated ones (simulate.py) and, without a key
+record, the key by a public test key; the workflow runs it on pull requests.
 """
 from __future__ import annotations
 
@@ -28,8 +28,6 @@ import re
 import shutil
 import subprocess
 import sys
-import time
-import urllib.request
 from pathlib import Path
 
 for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
@@ -40,9 +38,9 @@ sys.path.insert(0, str(HERE))
 import panel as P  # noqa: E402
 import run_panel as R  # noqa: E402
 
-FROZEN_PATHS = ("src", "pyproject.toml", "validation/prereg/*.py", "validation/prereg/requirements-panel.txt",
-                ".github/workflows/panel.yml")
-COMMITMENT = re.compile(r"key sha256:\s*([0-9a-f]{64})")
+FROZEN_PATHS = ("src", "pyproject.toml", "validation/prereg/*.py", "validation/prereg/requirements-*.txt",
+                ".github/workflows/validation.yml")
+ROUND_LINE = re.compile(r"drand (\w+) round:\s*(\d+)")
 
 
 def _git(*args: str) -> str:
@@ -66,66 +64,60 @@ def guard(frozen_tag: str) -> dict:
     return dict(head=head, frozen_tag=frozen_tag, frozen_commit=tag_commit)
 
 
-def commitment_from_tag(tag: str) -> str:
-    m = COMMITMENT.search(_git("tag", "-l", "--format=%(contents)", tag))
+# --------------------------------------------------------------------------- #
+# the key: the randomness of the drand round named in the run tag
+# --------------------------------------------------------------------------- #
+def round_from_tag(tag: str) -> tuple[str, int]:
+    """The chain and round the run tag's message names ('drand quicknet round: <R>')."""
+    m = ROUND_LINE.search(_git("tag", "-l", "--format=%(contents)", tag))
     if not m:
-        raise SystemExit(f"no 'key sha256: <64 hex>' line in the message of tag {tag}")
-    return m.group(1)
+        raise SystemExit(f"no 'drand <chain> round: <R>' line in the message of tag {tag}")
+    return m.group(1), int(m.group(2))
 
 
-def read_key(dry_run: bool, commitment_tag: str | None) -> str:
-    if dry_run:
-        import simulate
-        return simulate.DRY_RUN_KEY
-    key = P.check_key(os.environ.get("KEY_SEED", "").strip())
-    if commitment_tag is None:
-        raise SystemExit("the real run checks the key against the frozen tag's commitment (--commitment-tag)")
-    if P.key_commitment(key) != commitment_from_tag(commitment_tag):
-        raise SystemExit("KEY_SEED does not match the commitment in the frozen tag's message")
+def check_key_record(rec: dict, expect_round: tuple[str, int] | None = None) -> str:
+    """The key of a key record written by ``beacon.py wait``: the randomness, which must be the
+    sha256 of the round's signature (beacon.py verified the signature itself) and belong to the
+    round the run tag named."""
+    key = P.check_key(rec["key"])
+    if key != rec["randomness"] or key != hashlib.sha256(bytes.fromhex(rec["signature"])).hexdigest():
+        raise SystemExit("the key record's randomness is not the sha256 of its signature")
+    if expect_round is not None and (rec["chain"], int(rec["round"])) != expect_round:
+        raise SystemExit(f"the key record is {rec['chain']} round {rec['round']}; the run tag names "
+                         f"{expect_round[0]} round {expect_round[1]}")
     return key
 
 
-# --------------------------------------------------------------------------- #
-# prepare: download, verify, plan and compact the backgrounds
-# --------------------------------------------------------------------------- #
-def fetch(spec: dict, data_dir: Path) -> Path:
-    """The background's file, downloaded from spec['url'] if absent, checked against spec['sha256']."""
-    data_dir.mkdir(parents=True, exist_ok=True)
-    path = data_dir / spec["file"]
-    if not path.exists():
-        tmp = path.with_suffix(path.suffix + ".part")
-        for attempt in range(4):
-            try:
-                with urllib.request.urlopen(spec["url"], timeout=120) as r, open(tmp, "wb") as fh:
-                    shutil.copyfileobj(r, fh, length=1 << 22)
-                break
-            except OSError:
-                if attempt == 3:
-                    raise
-                time.sleep(2 ** (attempt + 1))
-        tmp.rename(path)
-    got = P.sha256(path)
-    if got != spec["sha256"]:
-        raise SystemExit(f"{spec['file']}: sha256 {got} differs from backgrounds.json ({spec['sha256']})")
-    return path
+def read_key(dry_run: bool, key_record: Path | None, run_tag: str | None) -> tuple[str, dict]:
+    if key_record is None:
+        if not dry_run:
+            raise SystemExit("the blind run takes its key from the beacon's key record (--key-record)")
+        import simulate
+        return simulate.DRY_RUN_KEY, dict(dry_run=True, key=simulate.DRY_RUN_KEY)
+    rec = json.loads(Path(key_record).read_text())
+    expect = round_from_tag(run_tag) if run_tag else None
+    if expect is None and not dry_run:
+        raise SystemExit("the blind run checks the key record against the run tag's round (--run-tag)")
+    return check_key_record(rec, expect), {k: v for k, v in rec.items() if k != "answers"}
 
 
-def prepare(backgrounds: Path | None, out: Path, data_dir: Path, dry_run: bool = False) -> dict:
+# --------------------------------------------------------------------------- #
+# prepare: verify, plan and compact the backgrounds
+# --------------------------------------------------------------------------- #
+def prepare(backgrounds: Path | None, out: Path, data_dir: Path | None, dry_run: bool = False) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     if dry_run:
         import simulate
         bgs = simulate.dry_backgrounds()
     else:
-        for s in json.loads(backgrounds.read_text()).values():
-            fetch(s, data_dir)
-        bgs = P.load_backgrounds(backgrounds, data_dir)
+        bgs = P.load_backgrounds(backgrounds, data_dir)  # every file is checked against its sha256
     info = {}
     for name, bg in bgs.items():
         P.save_compact(bg, out / f"{name}.npz")
         info[name] = dict(file=f"{name}.npz", sha256=P.sha256(out / f"{name}.npz"),
                           content_sha256=P.background_sha256(bg), cells=int(bg.X.shape[0]),
-                          genes=len(bg.genes), donors=len(bg.donors))
-    (out / "compact.json").write_text(json.dumps(info, indent=1))
+                          genes=len(bg.genes), donors=len(bg.donors), pool=len(bg.plan["pool"]))
+    (out / "compact.json").write_text(json.dumps(info, indent=1, sort_keys=True))
     digest = hashlib.sha256(json.dumps(info, sort_keys=True).encode()).hexdigest()
     (out / "SHA256").write_text(digest)
     return dict(backgrounds=info, sha256=digest)
@@ -156,37 +148,40 @@ def shard_entries(entries: list[dict], shard: int, shards: int) -> list[dict]:
     return entries[shard::shards]
 
 
-def run_shard(compact: Path, pilot: dict, key: str, shard: int, shards: int, out: Path, workers: int,
-              expect: str | None = None, limit: int | None = None, provenance: dict | None = None) -> dict:
+def pilot_sha256(pilot: dict) -> str:
+    return hashlib.sha256(json.dumps(pilot, sort_keys=True).encode()).hexdigest()
+
+
+def run_shard(compact: Path, pilot: dict, key: str, beacon: dict, shard: int, shards: int, out: Path,
+              workers: int, expect: str | None = None, limit: int | None = None) -> dict:
     bgs, info = load_prepared(compact, expect)
     for name, sha in (pilot.get("backgrounds") or {}).items():  # the pilot ran on these backgrounds
         if info.get(name, {}).get("content_sha256") != sha:
             raise SystemExit(f"{name}: the prepared background differs from the one the pilot used")
-    entries = shard_entries(P.assign(key, pilot.get("dropped", ())), shard, shards)[:limit]
-    summary = R.run(entries, bgs, pilot, out, workers)
-    meta = dict(shard=shard, shards=shards, key_sha256=P.key_commitment(key), entries=len(entries),
-                backgrounds=info, pilot_sha256=hashlib.sha256(json.dumps(pilot, sort_keys=True).encode()).hexdigest(),
-                provenance=provenance or {}, summary=summary)
-    (out / "shard.json").write_text(json.dumps(meta, indent=1))
-    return meta
+    entries = P.assign(key, pilot.get("dropped", ()), pilot.get("pool_size"))
+    mine = shard_entries(entries, shard, shards)[:limit]
+    summary = R.run(mine, bgs, pilot, out, workers)
+    meta = dict(shard=shard, shards=shards, key=key, beacon=beacon, entries=len(mine),
+                backgrounds=info, pilot_sha256=pilot_sha256(pilot))
+    (out / "shard.json").write_text(json.dumps(meta, indent=1, sort_keys=True))
+    return dict(meta, summary=summary)
 
 
-def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None) -> dict:
+def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None, reruns: list | None = None) -> dict:
     """Merge the shards: every shard ran with the same key, backgrounds and pilot; no dataset or
-    card twice; the reports, the merged run log, the manifest and SHA256SUMS of every file."""
+    card twice. Writes the reports, the manifest (deterministic), the merged runtime records and
+    run log, the record of re-run shards, and SHA256SUMS of every file."""
     metas = [json.loads(p.read_text()) for p in sorted(shards_dir.glob("*/shard.json"))]
     if not metas:
         raise SystemExit(f"no shards under {shards_dir}")
-    for field in ("key_sha256", "pilot_sha256", "shards"):
+    for field in ("key", "pilot_sha256", "shards", "backgrounds", "beacon"):
         if len({json.dumps(m[field], sort_keys=True) for m in metas}) != 1:
             raise SystemExit(f"shards disagree on {field}")
-    if len({json.dumps(m["backgrounds"], sort_keys=True) for m in metas}) != 1:
-        raise SystemExit("shards disagree on the backgrounds")
     got = sorted(m["shard"] for m in metas)
     if got != list(range(metas[0]["shards"])):
         raise SystemExit(f"shards present {got}, expected 0..{metas[0]['shards'] - 1}")
     (out / "reports").mkdir(parents=True, exist_ok=True)
-    datasets, runlog, seen = [], [], set()
+    datasets, runtime, runlog, seen = [], [], [], set()
     for m in metas:
         d = shards_dir / f"shard-{m['shard']}"
         for row in json.loads((d / "manifest.json").read_text())["datasets"]:
@@ -199,32 +194,31 @@ def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None) -
                 if hashlib.sha256(src.read_bytes()).hexdigest() != c["report_sha256"]:
                     raise SystemExit(f"report {c['id']} differs from its shard manifest")
                 shutil.copyfile(src, out / "reports" / src.name)
+        rt = json.loads((d / "runtime.json").read_text())
+        runtime.append(dict(shard=m["shard"], **rt["summary"]))
         runlog += [json.loads(line) for line in (d / "runlog.jsonl").read_text().splitlines() if line]
     if expected_datasets is not None and len(datasets) != expected_datasets:
         raise SystemExit(f"{len(datasets)} datasets collected, the design has {expected_datasets}")
     datasets.sort(key=lambda r: r["id"])
-    runlog.sort(key=lambda r: r.get("timestamp_utc", ""))
     m0 = metas[0]
-    manifest = dict(key_sha256=m0["key_sha256"], pilot_sha256=m0["pilot_sha256"], backgrounds=m0["backgrounds"],
-                    shards=m0["shards"], provenance=m0["provenance"], datasets=datasets)
-    (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
-    (out / "runlog.jsonl").write_text("".join(json.dumps(r) + "\n" for r in runlog))
+    manifest = dict(key=m0["key"], beacon=m0["beacon"], pilot_sha256=m0["pilot_sha256"],
+                    backgrounds=m0["backgrounds"], shards=m0["shards"], datasets=datasets)
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True))
+    (out / "runtime.json").write_text(json.dumps(dict(shards=runtime, reruns=reruns or []), indent=1, default=str))
+    (out / "runlog.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in runlog))
     cards = [c for r in datasets for c in r["cards"]]
-    secs = [c["seconds"] for c in cards if "seconds" in c]
     summary = dict(datasets=len(datasets), cards=len(cards), errors=sum(c.get("error", False) for c in cards),
-                   run_log_records=len(runlog), key_sha256=m0["key_sha256"],
-                   mean_seconds_per_card=(sum(secs) / len(secs)) if secs else None,
-                   shard_wall_seconds=[m["summary"]["wall_seconds"] for m in metas],
-                   machine=m0["summary"]["machine"], workers=m0["summary"]["workers"])
+                   key=m0["key"], beacon_round=m0["beacon"].get("round"), reruns=len(reruns or []),
+                   slowest_shard_seconds=max(r["wall_seconds"] for r in runtime))
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
     sums = sorted(f"{P.sha256(p)}  {p.relative_to(out).as_posix()}" for p in out.rglob("*")
                   if p.is_file() and p.name != "SHA256SUMS")
     (out / "SHA256SUMS").write_text("\n".join(sums) + "\n")
     (out / "summary.md").write_text(
         f"### Panel v1 blind run\n\n- datasets {summary['datasets']}, claim cards {summary['cards']}, "
-        f"engine errors {summary['errors']}\n- key sha256 `{summary['key_sha256']}`\n"
-        f"- mean {summary['mean_seconds_per_card'] or float('nan'):.1f} s per card, {summary['workers']} workers "
-        f"per shard on {summary['machine']['cpus']} cores; slowest shard {max(summary['shard_wall_seconds']):.0f} s\n"
+        f"engine errors {summary['errors']}\n- key: drand {m0['beacon'].get('chain', '?')} round "
+        f"{summary['beacon_round']}, randomness `{summary['key']}`\n- shards re-run after an "
+        f"infrastructure failure: {summary['reruns']}\n- slowest shard {summary['slowest_shard_seconds']:.0f} s\n"
         f"- sha256 of SHA256SUMS `{P.sha256(out / 'SHA256SUMS')}`\n")
     return summary
 
@@ -236,13 +230,14 @@ def main(argv=None):
     g.add_argument("--frozen-tag", required=True)
     pr = sub.add_parser("prepare")
     pr.add_argument("--backgrounds", type=Path)
-    pr.add_argument("--data-dir", type=Path, default=Path("data"))
+    pr.add_argument("--data-dir", type=Path)
     pr.add_argument("--out", type=Path, required=True)
     pr.add_argument("--dry-run", action="store_true")
     for name in ("run", "all"):
         r = sub.add_parser(name)
         r.add_argument("--pilot", type=Path)
-        r.add_argument("--commitment-tag")
+        r.add_argument("--key-record", type=Path)
+        r.add_argument("--run-tag")
         r.add_argument("--workers", type=int, default=max(1, os.cpu_count() or 1))
         r.add_argument("--out", type=Path, required=True)
         r.add_argument("--dry-run", action="store_true")
@@ -254,49 +249,50 @@ def main(argv=None):
             r.add_argument("--shards", type=int, required=True)
         else:
             r.add_argument("--backgrounds", type=Path)
-            r.add_argument("--data-dir", type=Path, default=Path("data"))
+            r.add_argument("--data-dir", type=Path)
     c = sub.add_parser("collect")
     c.add_argument("--shards-dir", type=Path, required=True)
     c.add_argument("--out", type=Path, required=True)
     c.add_argument("--pilot", type=Path, help="checks the number of datasets against the design")
+    c.add_argument("--reruns", type=Path, help="JSON list of the shards re-run after an infrastructure failure")
     args = p.parse_args(argv)
 
     if args.cmd == "guard":
         print(json.dumps(guard(args.frozen_tag), indent=1))
         return
     if args.cmd == "prepare":
-        res = prepare(args.backgrounds, args.out, args.data_dir, args.dry_run)
-        print(json.dumps(res, indent=1))
+        print(json.dumps(prepare(args.backgrounds, args.out, args.data_dir, args.dry_run), indent=1))
         return
     if args.cmd == "collect":
         pilot = json.loads(args.pilot.read_text()) if args.pilot else None
-        n = P.n_datasets(pilot.get("dropped", ())) if pilot else None
-        print(json.dumps(collect(args.shards_dir, args.out, n), indent=1))
+        n = P.n_datasets(pilot.get("dropped", ())) if pilot and not pilot.get("dry_run") else None
+        reruns = json.loads(args.reruns.read_text()) if args.reruns and args.reruns.exists() else []
+        print(json.dumps(collect(args.shards_dir, args.out, n, reruns), indent=1))
         return
     if args.limit is not None and not args.dry_run:
         raise SystemExit("--limit is for the dry run only: the blind run takes every dataset")
-    key = read_key(args.dry_run, args.commitment_tag)
-    if args.dry_run:
+    key, beacon = read_key(args.dry_run, args.key_record, args.run_tag)
+    if args.pilot is None:
+        if not args.dry_run:
+            raise SystemExit("the blind run needs the oracle's pilot.json (--pilot)")
         import simulate
-        pilot = simulate.dry_pilot(simulate.dry_backgrounds()) if args.pilot is None else json.loads(args.pilot.read_text())
+        pilot = simulate.dry_pilot(simulate.dry_backgrounds())
     else:
         pilot = json.loads(args.pilot.read_text())
-        if pilot.get("dry_run"):
+        if pilot.get("dry_run") and not args.dry_run:
             raise SystemExit("the blind run needs the oracle's pilot.json, not a dry-run stand-in")
-    prov = dict(git_head=_git("rev-parse", "HEAD").strip(), workflow_run=os.environ.get("GITHUB_RUN_ID"),
-                dry_run=bool(args.dry_run))
     if args.cmd == "run":
-        meta = run_shard(args.compact, pilot, key, args.shard, args.shards, args.out, args.workers,
-                         args.expect_compact, args.limit, prov)
+        meta = run_shard(args.compact, pilot, key, beacon, args.shard, args.shards, args.out, args.workers,
+                         args.expect_compact, args.limit)
         print(json.dumps(meta["summary"], indent=1))
         return
-    # all: the one-machine fallback - prepare, one shard with every dataset, collect
+    # all: prepare, one shard with every dataset, collect - the same code on one machine
     work = args.out.parent / (args.out.name + ".work")
     res = prepare(args.backgrounds, work / "compact", args.data_dir, args.dry_run)
-    run_shard(work / "compact", pilot, key, 0, 1, work / "shards" / "shard-0", args.workers, res["sha256"],
-              args.limit, prov)
-    print(json.dumps(collect(work / "shards", args.out, None if args.limit else P.n_datasets(pilot.get("dropped", ()))),
-                     indent=1))
+    run_shard(work / "compact", pilot, key, beacon, 0, 1, work / "shards" / "shard-0", args.workers,
+              res["sha256"], args.limit)
+    n = None if (args.limit or pilot.get("dry_run")) else P.n_datasets(pilot.get("dropped", ()))
+    print(json.dumps(collect(work / "shards", args.out, n), indent=1))
 
 
 if __name__ == "__main__":

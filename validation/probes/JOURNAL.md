@@ -110,3 +110,72 @@ finding.
 **Frozen expectations.** None edited. p01 (GATE 0 invariance to offsets and rescaling), p08
 (attenuation is not bias) and p10 (mi_3bin's dropout sensitivity reported as attenuation) pass
 on the new null unchanged.
+
+## D5 — GATE 4 by the interval of its response; delta_min; verdicts with causes (2026-10-08; decided by the project owner)
+
+**What changed.**
+- GATE 4 injects the signal `GATE4_N_REP` = 200 times, each against its sham, and takes the
+  two-sided 95% t interval of the mean response. PASS: the lower bound in the declared
+  direction is above 0. FAIL: the upper bound is below `delta_min`, the smallest response that
+  matters (pre-registered `delta_min`, default 0.5 x SESOI; `report.delta_min_of`). Otherwise
+  UNTESTED (the gate reports WARN). "Metric invalid" is a proof of blindness, not an absence of
+  response, as NO DETECTABLE EFFECT is to INCONCLUSIVE. Without a delta_min the gate cannot FAIL.
+  The former rule, z >= 3 over 10 injections, failed the valid metric where its response is real
+  but weak (p14).
+- The verdict comes with its cause (`report.decide_cause`, `CAUSES`; `cause` in the JSON report
+  and the Markdown), so that a NOT SUPPORTED says whether the metric was invalid (and by which
+  gate), the effect explained by depth, or opposite to the claim.
+
+**The agent's readings, for the owner's approval.**
+- When the whole interval lies in (0, delta_min), FAIL takes precedence over PASS: the metric
+  responds, but less than the smallest response that matters, which is blindness by the
+  definition of delta_min and by the truth of the confirmatory panel (blind at <= 0.8 x
+  delta_min). (`test_a_response_shown_below_delta_min_is_blindness`.)
+- Where GATE 4 ran on the analysed construct and is UNTESTED, a positive control that fires on
+  another pair does not make the metric valid for the claim: metric validity stays UNTESTED, so
+  neither NO DETECTABLE EFFECT nor SUPPORTED can follow (otherwise a blind construct reaches NO
+  DETECTABLE EFFECT through another pair's control). Where GATE 4 did not run, the positive control
+  counts as before. (`test_an_untested_construct_is_not_rescued_by_a_control_on_another_pair`.)
+- The injection's dose is the caller's (`injected_signal.coupling(strength=...)`); the confirmatory
+  panel uses the largest grid dose without saturation, from its pilot.
+- A column-local injector (`coupling`) rewrites the two genes of one private copy of the data and
+  restores them after every evaluation instead of copying the matrix for every injection
+  (`gates.injected_deltas`): the same random draws, the same values (tested), about 20 times faster.
+
+**p14 joins the dev set as a regression** (`test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind`,
+the owner's requirement): on simulated backgrounds of the panel's size, at each level's saturation
+dose and delta_min = 0.05, the high level PASSes, at the medium level FAIL is no more frequent
+than alpha, and at the low level FAIL has probability >= 0.8. `p14_gate4_by_expression_level.log`
+has the response curves, the population response of every pair and GATE 4 on 40 datasets per
+level; the test repeats the last step on 8.
+
+**Frozen expectations.** None edited; every dev-set test passes. In `tests/`, the useless-metric
+test now expects a random number to stay untested (its noise keeps the interval wide: it is never
+shown blind, and never valid), the constant and the wrong genes to FAIL when a delta_min is given;
+the bias-tolerance test pre-registers its delta_min apart from its large SESOI.
+
+## D6 — GATE 5: a silent positive control judged as GATE 4 judges a response (2026-10-08; decided by the project owner)
+
+**The owner's condition.** "Check GATE 5 by the same measure on p14-type data: if the power rule
+gives a false FAIL on a weak but valid control more often than alpha, move it to the same rule."
+
+**The check** (`p15_gate5_weak_positive_control.py`, log `p15_gate5_weak_positive_control.log`;
+20 null datasets per row, delta_min 0.05). With the rule of 2026-10-07 (a silent control FAILs
+where a reference detector had power >= 0.8 for an injected coupling of dose 2.0) a valid metric
+whose control was coupled, but weakly (a coupling of dose 0.25, 0.35 or 0.5 injected into an
+uncoupled high-level pair), was failed in 16, 10 and 1 of 20 datasets. Judged by the metric's own
+response to a coupling of dose 2.0 injected into the control's genes with their own coupling
+removed (FAIL if the upper 95% bound is below delta_min), it was failed in none. Both rules failed
+a metric blind to gene b (20/20) and the low level, where the metric is blind (16/20 and 18/20).
+
+**What changed.** A silent positive control is judged by that response rule (`gate5_controls`:
+`pos_dose` = pre-registered `positive_control_dose`, default 2.0; `delta_min`; the interval at
+alpha/K over K strata): FAIL only where the metric is shown blind; otherwise WARN, and where the
+metric responds to the injection the message says that the control is not coupled here. The
+reference detector and `positive_control_power` are gone. Without a delta_min a silent control
+cannot FAIL the metric.
+
+**Frozen expectations.** None edited; every dev-set test passes. In `tests/`, the blind-metric
+test now passes a delta_min (and expects WARN in a 10-cell stratum where the interval is too wide
+for delta_min 0.05), and an uncoupled positive control offered to a responsive metric is WARN,
+not FAIL (the metric stays untested and the claim is not certified).

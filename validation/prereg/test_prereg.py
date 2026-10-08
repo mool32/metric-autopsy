@@ -1,15 +1,17 @@
 """Tests of the confirmatory panel's own code: panel.py, oracle.py, score.py, oc.py,
-run_panel.py and blind.py.
+run_panel.py, blind.py and beacon.py.
 
 They run on simulated backgrounds (simulate.py; no network). The panel, the oracle and the
-scoring must not import the engine; scoring and the oracle need scipy (skipped without it, as in
-the core-only CI job).
+scoring must not import the engine; scoring and the oracle need scipy, the beacon py_ecc
+(skipped without them, as in the core-only CI job). This file itself may import the engine, to
+check that the panel's copies of the engine's rules and constants agree with it.
 """
 from __future__ import annotations
 
 import ast
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -24,15 +26,26 @@ sys.path.insert(0, str(HERE))
 import panel as P  # noqa: E402
 from simulate import simulated_background  # noqa: E402
 
-KEY = "00112233445566778899aabbccddeeff"
-OTHER_KEY = "ffeeddccbbaa99887766554433221100"
+KEY = "00112233445566778899aabbccddeeff" * 2
+OTHER_KEY = "ffeeddccbbaa99887766554433221100" * 2
 
 
-def _pilot(bgs, sesoi=0.15, dose=3.0, delta=0.3):
-    pool = bgs["B1"].plan["pool"]
-    return dict(sesoi={lv: sesoi for lv in P.LEVELS}, key_dose={lv: dose for lv in P.LEVELS},
-                delta={str(k): {f"{f:g}": dict(value=delta * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
-                       for k in range(len(pool))}, establishable={}, dropped=[])
+def _pilot(bgs, sesoi=0.15, dose=3.0, delta=0.3, truth=None):
+    """A pilot with every field the panel reads; `truth` maps a level to the metric's truth on
+    its pairs (default: valid everywhere)."""
+    truth = truth or {}
+    out = dict(pool={}, pool_size={}, sesoi={}, saturation_dose={}, truth={}, e_dose={lv: dose for lv in P.LEVELS},
+               establishable={}, dropped=[])
+    for name, bg in bgs.items():
+        pool = bg.plan["pool"]
+        out["pool"][name] = [dict(index=pe["index"], level=pe["level"], pair=pe["pair"]) for pe in pool]
+        out["pool_size"][name] = len(pool)
+        out["sesoi"][name] = {lv: sesoi for lv in P.LEVELS}
+        out["saturation_dose"][name] = {lv: dose for lv in P.LEVELS}
+        out["truth"][name] = {str(k): {"class": truth.get(pe["level"], "valid")} for k, pe in enumerate(pool)}
+    out["delta"] = {str(k): {f"{f:g}": dict(value=delta * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
+                    for k in range(len(bgs["B1"].plan["pool"]))}
+    return out
 
 
 @pytest.fixture(scope="module")
@@ -44,27 +57,44 @@ def _entry(condition, variant, side="A", seed=0, i=0, pair=0):
     return dict(id=f"T{i}", condition=condition, variant=variant, index=i, side=side, seed=seed, pair=pair)
 
 
+def _sizes(bgs):
+    return {k: len(b.plan["pool"]) for k, b in bgs.items()}
+
+
 # --------------------------------------------------------------------------- #
-# the key
+# the key and the assignment
 # --------------------------------------------------------------------------- #
-def test_the_key_is_128_bits_of_hex_and_its_commitment_is_the_sha256_of_that_string():
-    for bad in (1, "0" * 31, "0" * 33, "G" * 32, "AB" * 16, " " + "0" * 32):
+def test_the_key_is_a_drand_randomness_of_64_hex():
+    for bad in (1, "0" * 32, "0" * 63, "0" * 65, "G" * 64, "AB" * 32, " " + "0" * 64):
         with pytest.raises(ValueError):
             P.check_key(bad)
-    assert P.key_commitment(KEY) == hashlib.sha256(KEY.encode("utf-8")).hexdigest()
+    assert P.check_key(KEY) == KEY
+    assert not hasattr(P, "key_commitment")  # no secret key, no commitment (decided 2026-10-08)
 
 
 def test_assign_is_deterministic_complete_and_keyed():
     a, b, c = P.assign(KEY), P.assign(KEY), P.assign(OTHER_KEY)
     assert a == b and a != c
     assert len(a) == P.n_datasets() == 5900
-    assert P.n_cards() == 6000 and P.n_cards(null=True) == 5100  # N4 has two cards
+    assert P.n_cards() == 6000 and P.n_cards(data="null") == 5100  # N4 has two cards
     assert len({e["id"] for e in a}) == len(a) and {e["id"] for e in a} == {e["id"] for e in c}
     counts = Counter((e["condition"], e["variant"]) for e in a)
     assert counts == {(cond.name, v): n for cond in P.CONDITIONS for v, n in cond.variants}
     assert sum(x["condition"] != y["condition"] for x, y in zip(a, c)) > 0.5 * len(a)
     assert {e["side"] for e in a} == {"A", "B"}
-    assert {e["pair"] for e in a} == set(range(len(P.LEVELS) * P.PAIRS_PER_LEVEL))
+    assert {e["pair"] for e in a} == set(range(len(P.LEVELS) * P.MAX_PAIRS_PER_LEVEL))
+
+
+def test_the_pair_is_the_pair_draw_modulo_the_pool_size():
+    a = P.assign(KEY, pool_sizes={"B1": 15, "B2": 12})
+    for e in a:
+        size = 12 if P.conditions()[e["condition"]].background == "B2" else 15
+        assert e["pair"] == e["pair_draw"] % size
+    assert {e["pair"] for e in a if e["condition"] == "N7"} == set(range(12))
+    # the pool size changes the pair, nothing else
+    full = P.assign(KEY)
+    assert [(x["id"], x["condition"], x["variant"], x["side"], x["seed"]) for x in a] == \
+           [(x["id"], x["condition"], x["variant"], x["side"], x["seed"]) for x in full]
 
 
 def test_key_null_conditions_have_790_datasets_and_n8_is_one_of_them():
@@ -76,11 +106,11 @@ def test_key_null_conditions_have_790_datasets_and_n8_is_one_of_them():
 
 
 def test_the_gene_pair_is_drawn_independently_of_the_condition():
-    """The pair (and so its level) does not depend on the condition: the pair counts of N1 and
-    of the real effects are both uniform over the pool."""
+    """The pair (and so its level and its truth) does not depend on the condition: the pair counts
+    of N1 and of the real effects are both uniform over the pool."""
     stats = pytest.importorskip("scipy.stats")
     a = P.assign(KEY)
-    k = len(P.LEVELS) * P.PAIRS_PER_LEVEL
+    k = len(P.LEVELS) * P.MAX_PAIRS_PER_LEVEL
     for group in ({"N1"}, {"E1", "E2", "E3"}, {"N8"}):
         counts = np.bincount([e["pair"] for e in a if e["condition"] in group], minlength=k)
         assert stats.chisquare(counts).pvalue > 1e-3
@@ -103,10 +133,12 @@ def test_drops_follow_the_pre_registered_order_and_never_touch_key_conditions():
 # --------------------------------------------------------------------------- #
 # backgrounds: the pair pool by level and its controls
 # --------------------------------------------------------------------------- #
-def test_the_plan_finds_disjoint_pairs_at_three_levels_with_their_controls(bgs):
+def test_the_plan_finds_eight_disjoint_pairs_per_level_with_their_controls(bgs):
     plan = bgs["B1"].plan
     pool = plan["pool"]
-    assert [pe["level"] for pe in pool] == [lv for lv in P.LEVELS for _ in range(P.PAIRS_PER_LEVEL)]
+    k = plan["pairs_per_level"]
+    assert k == P.MAX_PAIRS_PER_LEVEL == 8 and not plan["fewer_pairs_because"]
+    assert [pe["level"] for pe in pool] == [lv for lv in P.LEVELS for _ in range(k)]
     assert [pe["index"] for pe in pool] == list(range(len(pool)))
     genes = [g for pe in pool for g in (*pe["pair"], *pe["neg_pair"])] + plan["positive_control"]["pair"]
     assert len(genes) == len(set(genes))  # pairs, negative controls and the positive control disjoint
@@ -121,6 +153,18 @@ def test_the_plan_finds_disjoint_pairs_at_three_levels_with_their_controls(bgs):
     assert min(pe["r"] for pe in by_level["high"]) > 0.1  # the planted couplings are found
     assert set(plan["genes"]) >= set(genes) | set(plan["g2m"]) | set(plan["random_genes"])
     assert bgs["B1"].X.dtype == np.int32 and bgs["B1"].X.shape[1] == len(plan["genes"])
+    assert P.level_of_pair(0, len(pool)) == "high" and P.level_of_pair(len(pool) - 1, len(pool)) == "low"
+
+
+def test_the_pool_takes_the_largest_common_number_of_pairs_down_to_four():
+    """Where a level cannot give 8 pairs with their negative controls, every level gets the
+    largest number it can, down to 4; below 4 the background does not qualify."""
+    small = simulated_background("B1", n_genes=96, coupled=6)  # 32 genes per level: room for 6 pairs
+    k = small.plan["pairs_per_level"]
+    assert 4 <= k < 8 and small.plan["fewer_pairs_because"]
+    assert [pe["level"] for pe in small.plan["pool"]] == [lv for lv in P.LEVELS for _ in range(k)]
+    with pytest.raises(ValueError, match="no pool"):
+        simulated_background("B1", n_genes=48, coupled=3)
 
 
 def test_level_rule():
@@ -197,10 +241,11 @@ def test_an_h5ad_background_uses_raw_counts_and_gene_symbols(tmp_path):
 # datasets and claim cards
 # --------------------------------------------------------------------------- #
 def test_claim_cards_do_not_reveal_the_condition(bgs):
-    """For a given pair, cards of the norm_pearson conditions differ only in the id and the
-    claimed direction; the pair, its level's SESOI and its controls come from the pair."""
+    """For a given pair, cards of the norm_pearson conditions on B1 differ only in the id and the
+    claimed direction; the pair, its level's SESOI and delta_min, the injection's strength and the
+    controls come from the pair."""
     pilot = _pilot(bgs)
-    for pair in (0, 5, 10):
+    for pair in (0, 9, 20):
         cards = [P.build(_entry(c, v, seed=3, pair=pair), bgs, pilot)[3][0]
                  for c, v in (("N1", "null"), ("N2", "c=0.5"), ("N3", "f=0.2"), ("N8", "beta(2,2)"),
                               ("E1", "dose=key"), ("E2", "against"), ("E3", "with"))]
@@ -209,6 +254,8 @@ def test_claim_cards_do_not_reveal_the_condition(bgs):
         assert all({k: v for k, v in c["prereg"].items() if k != "direction"} ==
                    {k: v for k, v in cards[0]["prereg"].items() if k != "direction"} for c in cards)
         assert cards[0]["gene_pair"] == bgs["B1"].plan["pool"][pair]["pair"]
+        assert cards[0]["signal_test"]["strength"] == 3.0
+        assert cards[0]["prereg"]["delta_min"] == pytest.approx(P.DELTA_MIN_FRACTION * 0.15)
     dirs = Counter(P.build(_entry("N1", "null", seed=s, i=s), bgs, pilot)[3][0]["prereg"]["direction"]
                    for s in range(30))
     assert set(dirs) == {"increase", "decrease"}
@@ -217,6 +264,12 @@ def test_claim_cards_do_not_reveal_the_condition(bgs):
     # a negative Δ* makes the signal side the lower one
     neg = _pilot(bgs, delta=-0.3)
     assert P.build(_entry("E1", "dose=key", side="A"), bgs, neg)[3][0]["prereg"]["direction"] == "increase"
+    # B2's cards carry B2's own SESOI and saturation dose
+    p2 = _pilot(bgs)
+    p2["sesoi"]["B2"] = {lv: 0.3 for lv in P.LEVELS}
+    p2["saturation_dose"]["B2"] = {lv: 1.5 for lv in P.LEVELS}
+    card = P.build(_entry("N7", "mice", pair=1), bgs, p2)[3][0]
+    assert card["prereg"]["sesoi"] == 0.3 and card["signal_test"]["strength"] == 1.5
 
 
 def test_designs_and_artifacts_are_planted_as_specified(bgs):
@@ -235,7 +288,7 @@ def test_designs_and_artifacts_are_planted_as_specified(bgs):
     # N8: per-cell capture ~ Beta(2, 2): the same mean loss as c = 0.5, a wider spread of depth
     X8, obs8, _, _ = P.build(_entry("N8", "beta(2,2)", side="B", seed=1), bgs, pilot)
     X2, obs2, _, _ = P.build(_entry("N2", "c=0.5", side="B", seed=1), bgs, pilot)
-    t8, t2 = obs8.groupby("group")["total_counts"], obs2.groupby("group")["total_counts"]
+    t8 = obs8.groupby("group")["total_counts"]
     assert t8.mean()["B"] / t8.mean()["A"] == pytest.approx(0.5, abs=0.08)
     cv = lambda s: float(np.std(np.log(s + 1)))  # noqa: E731
     assert cv(obs8.loc[obs8.group == "B", "total_counts"]) > cv(obs2.loc[obs2.group == "B", "total_counts"]) + 0.1
@@ -246,6 +299,8 @@ def test_designs_and_artifacts_are_planted_as_specified(bgs):
     assert (obs.groupby("donor")["group"].nunique() == 2).all()
     X, obs, _, _ = P.build(_entry("N7", "mice", seed=1), bgs, pilot)
     assert obs["donor"].str.startswith("B2").all()
+    with pytest.raises(ValueError, match="outside"):
+        P.build(_entry("N1", "null", pair=99), bgs, pilot)
 
 
 def test_injected_coupling_raises_the_pair_correlation_on_its_side_only(bgs):
@@ -272,29 +327,116 @@ def test_dataset_and_card_hashes_are_canonical(bgs):
     assert P.dataset_sha256(X, obs, genes) != P.dataset_sha256(X2, obs, genes)
 
 
-def test_the_panel_the_oracle_and_the_scoring_never_import_the_engine():
-    for name in ("panel.py", "oracle.py", "score.py", "oc.py", "simulate.py"):
+def test_the_panel_the_oracle_the_scoring_and_the_beacon_never_import_the_engine():
+    for name in ("panel.py", "oracle.py", "score.py", "oc.py", "simulate.py", "beacon.py"):
         tree = ast.parse((HERE / name).read_text())
         mods = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
         mods |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
         assert not any(m.split(".")[0] == "metric_autopsy" for m in mods), (name, mods)
 
 
+def test_the_panels_copies_of_the_engines_rules_agree_with_it():
+    """The panel never imports the engine, so the rules it shares with it are copies: delta_min's
+    default, GATE 4's number of injections, the module injection, every cause the engine can
+    give, and GATE 4's FAIL rule."""
+    pytest.importorskip("scipy")
+    import oracle as O
+    import run_panel as R
+    from metric_autopsy import gates as G
+    from metric_autopsy.report import CAUSES
+    assert P.DELTA_MIN_FRACTION == G.DELTA_MIN_FRACTION and O.GATE4_REPS == G.GATE4_N_REP
+    assert (O.MODULE_FOLD, O.MODULE_FRAC) == (R.MODULE_FOLD, R.MODULE_FRAC)
+    assert set(CAUSES) == set(P.CAUSE_OUTCOME)
+    rng = np.random.default_rng(0)
+    for _ in range(300):
+        d = rng.normal(rng.uniform(-0.05, 0.1), rng.uniform(0.001, 0.2), size=int(rng.integers(5, 60)))
+        dmin = float(rng.uniform(0.01, 0.1))
+        assert O.shows_blind(d, dmin) == (G.judge_response(G.response_interval(d), dmin) == "FAIL")
+
+
+def test_the_oracles_gate4_response_matches_the_engines_injection(bgs):
+    """The oracle re-implements GATE 4's measurement (injected minus sham on the whole dataset)
+    without copying the matrix; on the same dataset its mean response agrees with the engine's."""
+    pytest.importorskip("scipy")
+    from functools import partial
+
+    import oracle as O
+    from metric_autopsy import SimpleData, gates as G, injected_signal, metrics
+    pilot = _pilot(bgs)
+    pe = bgs["B1"].plan["pool"][1]
+    X, obs, genes, _ = P.build(_entry("N1", "null", seed=4, pair=1), bgs, pilot)
+    ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
+    ours = O.coupling_deltas(X, ia, ib, 2.0, np.random.default_rng(1), 200)
+    theirs = np.asarray(G.injected_deltas(partial(metrics.norm_pearson, gene_a=pe["pair"][0], gene_b=pe["pair"][1]),
+                                          SimpleData(X, obs, genes), injected_signal.coupling(*pe["pair"], strength=2.0),
+                                          200, np.random.default_rng(2)))
+    se = np.sqrt(ours.var(ddof=1) / len(ours) + theirs.var(ddof=1) / len(theirs))
+    assert abs(ours.mean() - theirs.mean()) < 4 * se and ours.mean() > 0.05
+
+
 # --------------------------------------------------------------------------- #
-# allowed sets and the oracle
+# outcomes, the truth and the allowed (label, cause) pairs
 # --------------------------------------------------------------------------- #
-def test_no_detectable_effect_is_allowed_for_a_real_effect_only_below_the_sesoi(bgs):
+def test_outcome_reads_the_label_and_the_cause():
+    assert P.outcome("NOT SUPPORTED — metric invalid: injected signal: blind", "metric_invalid_gate4") == P.NS_INVALID
+    assert P.outcome("NOT SUPPORTED — metric invalid: controls: x", "metric_invalid_gate5") == P.NS_INVALID
+    assert P.outcome("NOT SUPPORTED — metric invalid: 'extra_dropout' biases", "metric_invalid_gate0") == P.REFUSAL
+    assert P.outcome("NOT SUPPORTED — the raw difference ...", "explained_by_depth") == P.NS_DEPTH
+    assert P.outcome("NOT SUPPORTED — the effect is in the direction opposite", "opposite_direction") == P.NS_OPPOSITE
+    assert P.outcome("SUPPORTED (provisional until replicated) [non-directional claim]", "provisional") == P.SUPPORTED
+    assert P.outcome("NO DETECTABLE EFFECT — x [underpowered relative to the SESOI]", "no_detectable_effect") == P.NDE
+    assert P.outcome("INCONCLUSIVE — x", "detected_untested_metric") == P.INCONCLUSIVE
+    assert P.outcome("DEGENERATE METRIC — x", "degenerate_metric") == P.DEGENERATE
+    # a label that does not match its cause, an unknown cause, no report
+    assert P.outcome("SUPPORTED — replicated", "no_detectable_effect") == P.ERROR
+    assert P.outcome("INCONCLUSIVE — x", "something_new") == P.ERROR
+    assert P.outcome(None, None) == P.ERROR and P.outcome("garbage", "provisional") == P.ERROR
+    assert P.outcome("NOT SUPPORTED — the effect did not replicate", "not_replicated") == P.OTHER
+
+
+def test_the_truth_about_the_metric_has_a_band_around_delta_min():
+    assert P.classify_response(0.06, 0.05) == "valid" and P.classify_response(0.0599, 0.05) == "ambiguous"
+    assert P.classify_response(0.04, 0.05) == "blind" and P.classify_response(0.0401, 0.05) == "ambiguous"
+    assert P.classify_response(-0.3, 0.05) == "blind"
+
+
+def test_the_allowed_outcomes_follow_the_owners_table_in_every_condition(bgs):
+    """Decided 2026-10-08, the same for N1-N8 and E1-E3: a blind or useless metric allows metric
+    invalid and INCONCLUSIVE (the constant also DEGENERATE METRIC); a valid metric on null data NO
+    DETECTABLE EFFECT, INCONCLUSIVE, NOT SUPPORTED for the opposite direction, and explained by
+    depth only where an artifact is planted; on a real effect SUPPORTED and INCONCLUSIVE, and NO
+    DETECTABLE EFFECT only below the SESOI; an ambiguous metric the union; a refusal by GATE 0
+    everywhere; metric invalid on a valid metric is never allowed."""
     conds = P.conditions()
-    small, large = _pilot(bgs, sesoi=0.15, delta=0.1), _pilot(bgs, sesoi=0.15, delta=0.3)
+    pilot = _pilot(bgs, sesoi=0.15, delta=0.3, truth={"high": "valid", "medium": "ambiguous", "low": "blind"})
+    hi, med, lo = 0, 9, 20
+    blind = {P.NS_INVALID, P.INCONCLUSIVE, P.REFUSAL}
+    null = {P.NDE, P.INCONCLUSIVE, P.NS_OPPOSITE, P.REFUSAL}
+    for c in P.CONDITIONS:
+        for v, _ in c.variants:
+            pair = hi
+            got = P.allowed(c, v, pair, pilot)
+            assert P.REFUSAL in got and P.REFUSAL not in P.definite(c, v, pair, pilot)
+            if c.metric == "constant":
+                assert got == blind | {P.DEGENERATE}
+            elif c.metric != "norm_pearson":
+                assert got == blind
+            elif c.data == "null":
+                assert got == (null | {P.NS_DEPTH} if c.artifact else null)
+                assert P.NS_INVALID not in got and P.SUPPORTED not in got
+            if c.metric == "norm_pearson":
+                assert P.allowed(c, v, lo, pilot) == blind
+                assert P.allowed(c, v, med, pilot) == P.data_allowed(c, v, med, pilot) | blind
+    # real effects: NO DETECTABLE EFFECT only where |Δ*| < SESOI (0.3 x factor against 0.15)
     for name, variant in (("E1", "dose=key"), ("E2", "against"), ("E3", "with")):
-        assert "NO DETECTABLE EFFECT" in P.allowed(conds[name], variant, 0, small)
-        assert "NO DETECTABLE EFFECT" not in P.allowed(conds[name], variant, 0, large)
-        assert "INCONCLUSIVE" not in P.definite(conds[name], variant, 0, large)
-    # E1's dose ladder reads Δ* at its own dose: 0.25 x 0.3 = 0.075 < 0.15
-    assert "NO DETECTABLE EFFECT" in P.allowed(conds["E1"], "dose=0.25", 0, large)
-    assert P.allowed(conds["N8"], "beta(2,2)", 0, large) == P.NULL_ALLOWED
+        assert P.allowed(conds[name], variant, hi, pilot) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL}
+    assert P.allowed(conds["E1"], "dose=0.25", hi, pilot) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL, P.NDE}
+    assert P.NS_DEPTH not in P.allowed(conds["E3"], "with", hi, pilot)  # an artifact with a real effect
 
 
+# --------------------------------------------------------------------------- #
+# the oracle
+# --------------------------------------------------------------------------- #
 def test_oracle_tests_on_replicate_values():
     pytest.importorskip("scipy")
     import oracle as O
@@ -310,16 +452,12 @@ def test_the_oracle_decides_in_the_engine_order():
     import oracle as O
     hi, lo = np.array([1.0, 1.1, 1.2, 1.3, 1.05, 1.15]), np.array([0.0, 0.1, 0.2, 0.05, 0.15, 0.1])
     same = np.array([0.5, 0.52, 0.48, 0.51, 0.49, 0.5])
-    # explained: a detected raw difference that the true correction removes
-    assert O.label_from_values((hi, lo), (same, same + 0.001), True, 0.5, "decrease") == "NOT SUPPORTED"
-    # reversed by the correction: INCONCLUSIVE
-    assert O.label_from_values((hi, lo), (lo, hi), True, 0.5, "decrease") == "INCONCLUSIVE"
-    # detected in and against the declared direction (A - B > 0 is a decrease)
-    assert O.label_from_values((hi, lo), (hi, lo), False, 0.5, "decrease") == "SUPPORTED"
-    assert O.label_from_values((hi, lo), (hi, lo), False, 0.5, "increase") == "NOT SUPPORTED"
-    # equivalent within the SESOI, or not established
-    assert O.label_from_values((same, same), (same, same), False, 0.5, "increase") == "NO DETECTABLE EFFECT"
-    assert O.label_from_values((same, same), (same, same), False, 0.001, "increase") == "INCONCLUSIVE"
+    assert O.outcome_from_values((hi, lo), (same, same + 0.001), True, 0.5, "decrease") == P.NS_DEPTH
+    assert O.outcome_from_values((hi, lo), (lo, hi), True, 0.5, "decrease") == P.INCONCLUSIVE
+    assert O.outcome_from_values((hi, lo), (hi, lo), False, 0.5, "decrease") == P.SUPPORTED
+    assert O.outcome_from_values((hi, lo), (hi, lo), False, 0.5, "increase") == P.NS_OPPOSITE
+    assert O.outcome_from_values((same, same), (same, same), False, 0.5, "increase") == P.NDE
+    assert O.outcome_from_values((same, same), (same, same), False, 0.001, "increase") == P.INCONCLUSIVE
 
 
 def test_the_oracle_applies_the_planted_nuisance_to_the_side_that_lacks_it(bgs):
@@ -338,6 +476,43 @@ def test_the_oracle_applies_the_planted_nuisance_to_the_side_that_lacks_it(bgs):
                              np.random.default_rng(0)) is None
 
 
+def test_the_oracle_shows_blindness_where_the_metric_is_blind_and_useless(bgs):
+    """For a blind pair or a useless metric the correct definite outcome is metric invalid, which
+    takes showing blindness: the low-level pairs of the simulated background (where log-normalized
+    Pearson does not respond, probe p14) and the random-gene score facing the G2M module are shown
+    blind; a random number is not (its noise keeps the interval wide); the constant is DEGENERATE."""
+    pytest.importorskip("scipy")
+    import oracle as O
+    pilot = _pilot(bgs, sesoi=0.1, dose=2.25, truth={"low": "blind"})
+    low = next(pe["index"] for pe in bgs["B1"].plan["pool"] if pe["level"] == "low")
+    outs = []
+    for s in range(4):
+        e = _entry("N1", "null", seed=s, i=s, pair=low)
+        X, obs, _, cards = P.build(e, bgs, pilot)
+        outs.append(O.oracle_outcome(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(s)))
+    assert outs.count(P.NS_INVALID) >= 3
+    e = _entry("N6c", "random-genes", seed=1)
+    X, obs, _, cards = P.build(e, bgs, pilot)
+    assert O.oracle_outcome(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0)) == P.NS_INVALID
+    assert O.module_deltas(X, [bgs["B1"].genes.index(g) for g in cards[0]["score_genes"]],
+                           [bgs["B1"].genes.index(g) for g in bgs["B1"].plan["g2m"]], np.random.default_rng(0),
+                           50).mean() < 0
+    e = _entry("N6a", "random", seed=1)
+    X, obs, _, cards = P.build(e, bgs, pilot)
+    assert O.oracle_outcome(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0)) == P.INCONCLUSIVE
+    e = _entry("N6b", "constant", seed=1)
+    X, obs, _, cards = P.build(e, bgs, pilot)
+    assert O.oracle_outcome(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0)) == P.DEGENERATE
+
+
+def test_the_saturation_dose_is_the_smallest_dose_reaching_95_percent_of_the_maximum():
+    import oracle as O
+    curve = {f"{d:g}": dict(response=r) for d, r in ((0.5, 0.05), (1.0, 0.15), (2.0, 0.24), (2.5, 0.255),
+                                                      (3.0, 0.256), (4.0, 0.25))}
+    assert O.saturation_dose(curve) == 2.5
+    assert O.saturation_dose({f"{d:g}": dict(response=-0.01) for d in (0.5, 1.0, 4.0)}) == 4.0
+
+
 def test_delta_star_is_a_paired_estimate_with_a_small_standard_error(bgs):
     import oracle as O
     d = O.delta_star(bgs["B1"], 0, 3.0, draws=200)
@@ -345,92 +520,137 @@ def test_delta_star_is_a_paired_estimate_with_a_small_standard_error(bgs):
     assert O.delta_star(bgs["B1"], 0, 3.0, draws=200) == d  # public seed: reproducible
 
 
-def test_the_pilot_fixes_sesoi_dose_and_delta_per_level_and_finds_establishable_cases(bgs):
+@pytest.fixture(scope="module")
+def small_bgs():
+    """Backgrounds with 4 pairs per level, for the pilot's run in a test."""
+    old = P.MAX_PAIRS_PER_LEVEL
+    P.MAX_PAIRS_PER_LEVEL = 4
+    try:
+        return {"B1": simulated_background("B1", n_genes=300), "B2": simulated_background("B2", donors=12, n_genes=300, seed=1)}
+    finally:
+        P.MAX_PAIRS_PER_LEVEL = old
+
+
+def test_the_pilot_fixes_sesoi_saturation_truth_doses_and_establishable_cases(small_bgs, monkeypatch):
     pytest.importorskip("scipy")
     import oracle as O
-    pilot = O.run_pilot(bgs, n=6, draws=20)
-    assert set(pilot["sesoi"]) == set(P.LEVELS) and all(s in O.SESOI_GRID for s in pilot["sesoi"].values())
+    for name, val in dict(CURVE_DATASETS=1, CURVE_REPS=2, TRUTH_DATASETS=3, TRUTH_REPS=4, GATE4_REPS=20,
+                          DOSE_GRID=(1.0, 2.0, 3.0)).items():
+        monkeypatch.setattr(O, name, val)
+    pilot = O.run_pilot(small_bgs, n=3, draws=20)
+    for b in ("B1", "B2"):
+        assert pilot["pool_size"][b] == 12 and [pe["level"] for pe in pilot["pool"][b]] == [
+            lv for lv in P.LEVELS for _ in range(4)]
+        for lv in P.LEVELS:
+            assert pilot["sesoi"][b][lv] in O.SESOI_GRID
+            assert pilot["saturation_dose"][b][lv] in O.DOSE_GRID
+        for k, t in pilot["truth"][b].items():
+            assert t["class"] == P.classify_response(t["response"], t["delta_min"])
+            assert t["delta_min"] == pytest.approx(P.DELTA_MIN_FRACTION * pilot["sesoi"][b][pilot["pool"][b][int(k)]["level"]])
     for lv in P.LEVELS:
-        assert pilot["key_dose"][lv] in O.DOSE_GRID
         if pilot["key_dose_found"][lv]:
             last = pilot["dose_scan"][lv][-1]
-            assert last["power"] >= O.POWER and last["delta"] >= O.DELTA_MARGIN * pilot["sesoi"][lv]
+            assert pilot["e_dose"][lv] == pilot["key_dose"][lv] == last["dose"]
+            assert last["power"] >= O.POWER and last["delta"] >= O.DELTA_MARGIN * pilot["sesoi"]["B1"][lv]
+        else:  # no key dose: the real effects use the saturation dose
+            assert pilot["key_dose"][lv] is None and pilot["e_dose"][lv] == pilot["saturation_dose"]["B1"][lv]
         assert 0 <= pilot["n2_raw_power"][lv] <= 1
-    assert set(pilot["delta"]) == {str(k) for k in range(len(bgs["B1"].plan["pool"]))}
-    assert pilot["n2n3_informative"] == bool(pilot["informative_levels"])
-    keys = {f"{c.name}:{v}:{lv}" for c in P.CONDITIONS for v, _ in c.variants for lv in P.LEVELS}
+    assert set(pilot["delta"]) == {str(k) for k in range(12)}
+    keys = {f"{c.name}:{v}:{k}" for c in P.CONDITIONS for v, _ in c.variants for k in range(12)}
     assert set(pilot["establishable"]) == keys
-    assert not pilot["establishable"]["N4:3v3:high"]["establishable"]
-    assert pilot["establishable"]["N6b:constant:low"]["establishable"]  # always DEGENERATE METRIC
+    assert not pilot["establishable"]["N4:3v3:0"]["establishable"]
+    assert pilot["establishable"]["N6b:constant:5"]["establishable"]  # always DEGENERATE METRIC
+    assert pilot["backgrounds"] == {k: P.background_sha256(b) for k, b in small_bgs.items()}
 
 
 # --------------------------------------------------------------------------- #
 # scoring and the criteria
 # --------------------------------------------------------------------------- #
-def test_score_labels():
-    pytest.importorskip("scipy")
-    import score as S
-    assert S.label("SUPPORTED (provisional until replicated) [non-directional claim]") == "SUPPORTED"
-    assert S.label("SUPPORTED — replicated") == "SUPPORTED"
-    assert S.label("NOT SUPPORTED — metric invalid: x") == "NOT SUPPORTED"
-    assert S.label("NO DETECTABLE EFFECT — effect +0.01 [underpowered relative to the SESOI]") == "NO DETECTABLE EFFECT"
-    assert S.label(None) == "ERROR" and S.label("garbage") == "ERROR"
+CAUSE_OF = {P.SUPPORTED: ("SUPPORTED (provisional until replicated)", "provisional"),
+            P.NDE: ("NO DETECTABLE EFFECT — x", "no_detectable_effect"),
+            P.INCONCLUSIVE: ("INCONCLUSIVE — x", "effect_inconclusive"),
+            P.NS_INVALID: ("NOT SUPPORTED — metric invalid: x", "metric_invalid_gate4"),
+            P.NS_DEPTH: ("NOT SUPPORTED — x", "explained_by_depth"),
+            P.NS_OPPOSITE: ("NOT SUPPORTED — x", "opposite_direction"),
+            P.DEGENERATE: ("DEGENERATE METRIC — x", "degenerate_metric"),
+            P.REFUSAL: ("NOT SUPPORTED — metric invalid: bias", "metric_invalid_gate0")}
 
 
-def _est_pilot(bgs, delta=0.3):
-    pilot = _pilot(bgs, delta=delta)
-    pilot["establishable"] = {f"{c.name}:{v}:{lv}": dict(establishable=c.oracle)
-                              for c in P.CONDITIONS for v, _ in c.variants for lv in P.LEVELS}
+def _est_pilot(bgs, delta=0.3, truth=None):
+    pilot = _pilot(bgs, delta=delta, truth=truth)
+    pilot["establishable"] = {f"{c.name}:{v}:{k}": dict(establishable=c.oracle)
+                              for c in P.CONDITIONS for v, _ in c.variants for k in range(24)}
     return pilot
 
 
-def _verdicts(entries, pilot, fn):
+def _reports(entries, fn):
     conds = P.conditions()
-    return {cid: fn(conds[e["condition"]], e) for e in entries for cid in P.card_ids(e)}
+    return {cid: CAUSE_OF[fn(conds[e["condition"]], e)] for e in entries for cid in P.card_ids(e)}
 
 
-def test_score_passes_a_perfect_engine_and_fails_the_failure_modes(bgs):
+def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
+    """A validator that always gives a correct definite outcome passes; one that always rejects
+    the metric, always says INCONCLUSIVE, always refuses, always says SUPPORTED or always NO
+    DETECTABLE EFFECT fails (the reviewer's question: no bad validator passes)."""
     pytest.importorskip("scipy")
     import score as S
-    entries, pilot = P.assign(KEY), _est_pilot(bgs)
+    pilot = _est_pilot(bgs, truth={"low": "blind"})
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    order = (P.NS_INVALID, P.SUPPORTED, P.NS_DEPTH, P.NDE, P.NS_OPPOSITE, P.DEGENERATE)
 
     def perfect(c, e):
         good = P.definite(c, e["variant"], e["pair"], pilot)
-        return f"{good[0] if good else 'INCONCLUSIVE'} — x"
-    res = S.score(entries, _verdicts(entries, pilot, perfect), pilot)
-    assert res["passed"] and all(res["criteria"][s]["passed"] for s in ("S1", "S2", "S3", "S4"))
-    shy = S.score(entries, _verdicts(entries, pilot, lambda c, e: "INCONCLUSIVE — x"), pilot)
-    assert not shy["criteria"]["S3"]["passed"] and shy["criteria"]["S1"]["passed"]
-    credulous = S.score(entries, _verdicts(entries, pilot, lambda c, e: "SUPPORTED (provisional until replicated)"), pilot)
-    assert not credulous["criteria"]["S1"]["passed"] and not credulous["criteria"]["S2"]["passed"]
-    assert not credulous["criteria"]["S4"]["passed"]
-    assert S.score(entries, {}, pilot)["criteria"]["S4"]["rate"] == 1.0
+        return next((o for o in order if o in good), P.INCONCLUSIVE)
+    res = S.score(entries, _reports(entries, perfect), pilot)
+    assert res["passed"] and all(res["criteria"][s]["passed"] for s in ("S1", "S2", "S3", "S4", "S5"))
+    assert res["joint_pass_probability_sound"] >= 0.9
+    for name, fn, fails in (
+            ("always invalid", lambda c, e: P.NS_INVALID, {"S3", "S4", "S5"}),
+            ("always inconclusive", lambda c, e: P.INCONCLUSIVE, {"S3"}),
+            ("always refuses", lambda c, e: P.REFUSAL, {"S3"}),
+            ("always supported", lambda c, e: P.SUPPORTED, {"S1", "S2", "S4"}),
+            ("always no effect", lambda c, e: P.NDE, {"S3", "S4"})):
+        got = S.score(entries, _reports(entries, fn), pilot)["criteria"]
+        failed = {s for s in ("S1", "S2", "S3", "S4", "S5") if not got[s]["passed"]}
+        assert fails <= failed, (name, failed)
+    assert S.score(entries, {}, pilot)["criteria"]["S4"]["rate"] == 1.0  # no reports: every card an error
 
 
-def test_s3_counts_only_correct_definite_verdicts_and_nde_on_a_large_effect_is_an_error(bgs):
+def test_s3_counts_only_correct_definite_outcomes_and_nde_on_a_large_effect_is_an_error(bgs):
     pytest.importorskip("scipy")
     import score as S
-    entries, pilot = P.assign(KEY), _est_pilot(bgs, delta=0.3)  # |Δ*| >= SESOI at the key dose
-
-    def nde_everywhere(c, e):
-        return "NO DETECTABLE EFFECT — x" if not c.name.startswith("N6") else "NOT SUPPORTED — x"
-    res = S.score(entries, _verdicts(entries, pilot, nde_everywhere), pilot)
+    pilot = _est_pilot(bgs, delta=0.3)  # |Δ*| >= SESOI at the key dose
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    res = S.score(entries, _reports(entries, lambda c, e: P.NDE if c.metric == "norm_pearson" else P.NS_INVALID), pilot)
     e1 = res["per_condition"]["E1:dose=key"]
-    assert e1["outside"]["rate"] == 1.0 and e1["correct_definite"]["rate"] == 0.0
-    assert res["per_condition"]["E1:dose=0.25"]["outside"]["rate"] == 0.0  # 0.075 < SESOI 0.15
+    assert e1["errors"]["rate"] == 1.0 and e1["correct_definite"]["rate"] == 0.0
+    assert e1["outcomes"][P.NDE]["rate"] == 1.0  # the dose-verdict curves: every outcome's share
+    assert res["per_condition"]["E1:dose=0.25"]["errors"]["rate"] == 0.0  # 0.075 < SESOI 0.15
     assert res["criteria"]["S3"]["definite_any"]["rate"] > res["criteria"]["S3"]["rate"]
 
 
 def test_s1_fails_when_any_one_key_condition_fails(bgs):
     pytest.importorskip("scipy")
     import score as S
-    entries, pilot = P.assign(KEY), _est_pilot(bgs)
-    n8 = [e for e in entries if e["condition"] == "N8"]
-    bad = {e["id"] for e in n8[:40]}  # 40/790 > 29
-    res = S.score(entries, {cid: ("SUPPORTED (provisional until replicated)" if e["id"] in bad else "INCONCLUSIVE — x")
-                            for e in entries for cid in P.card_ids(e)}, pilot)
+    pilot = _est_pilot(bgs)
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    bad = {e["id"] for e in [e for e in entries if e["condition"] == "N8"][:40]}  # 40/790 > 29
+    res = S.score(entries, _reports(entries, lambda c, e: P.SUPPORTED if e["id"] in bad else P.INCONCLUSIVE), pilot)
     assert not res["criteria"]["S1"]["conditions"]["N8"]["passed"] and not res["criteria"]["S1"]["passed"]
     assert all(v["passed"] for k, v in res["criteria"]["S1"]["conditions"].items() if k != "N8")
+
+
+def test_s5_counts_false_invalid_only_where_the_metric_is_valid(bgs):
+    pytest.importorskip("scipy")
+    import score as S
+    pilot = _est_pilot(bgs, truth={"low": "blind", "medium": "ambiguous"})
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    res = S.score(entries, _reports(entries, lambda c, e: P.NS_INVALID), pilot)
+    s5 = res["criteria"]["S5"]
+    n_valid = sum(P.metric_truth(P.conditions()[e["condition"]], e["pair"], pilot) == "valid"
+                  for e in entries for _ in P.card_ids(e))
+    assert s5["n"] == n_valid and s5["k"] == n_valid and not s5["passed"]
+    assert res["per_truth"]["blind"]["errors"]["rate"] == 0.0 and res["per_truth"]["ambiguous"]["errors"]["rate"] == 0.0
 
 
 def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
@@ -438,16 +658,16 @@ def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
     import oc
     k, p_all, p_doubled, _ = oc.joint_error_rule(790, 0.025, 5)
     assert k == 29 and p_all >= 0.90 and p_doubled <= 0.05
-    assert oc.joint_error_rule(600, 0.025, 5)[1] < 0.90  # the old plan fails S1 as a whole
-    counts = oc.design_counts()
-    assert counts["key"] == {"N1": 790, "N2": 790, "N5": 790, "N6c": 790, "N8": 790}
-    assert counts["all"] == 6000 and counts["null"] == 5100
-    for n in (counts["null"], counts["all"]):
-        _, ps, pd = oc.error_rule(n, 0.025)
+    assert oc.joint_error_rule(600, 0.025, 5)[1] < 0.90  # 600 per condition fails S1 as a whole
+    for n, p0 in ((5100, oc.E_SUPPORTED), (6000, 0.1), (3000, oc.E_INVALID)):
+        _, ps, pd = oc.error_rule(n, p0)
         assert ps >= 0.90 and pd <= 0.05
-    _, ps, pd = oc.decisiveness_rule(1000, 0.85)
+    _, ps, pd = oc.decisiveness_rule(1000, oc.D_NOMINAL)
     assert ps >= 0.90 and pd <= 0.05
-    assert oc.joint_pass_probability(counts, 1000, sims=20000) >= 0.90
+    assert oc.nominal_error(frozenset({P.NDE, P.INCONCLUSIVE, P.NS_OPPOSITE, P.REFUSAL})) == pytest.approx(0.125)
+    assert oc.nominal_error(P.INVALID_ALLOWED) == pytest.approx(0.075)
+    for scenario in ((True, 0.5, 0.5), (False, 0.0, 1.0)):
+        assert oc.joint_pass_probability(oc.expected_rows(oc.scenario_pilot(*scenario)), sims=4000) >= 0.90
 
 
 def test_the_shared_donor_interval_widens_only_when_donors_drive_the_outcome():
@@ -465,7 +685,6 @@ def test_the_shared_donor_interval_widens_only_when_donors_drive_the_outcome():
         lin = np.array([np.mean([u[d] for d in s]) for s in sets])
         truth = 0.1
         y = rng.random(n) < 1 / (1 + np.exp(-(np.log(truth / (1 - truth)) + 1.5 * lin)))
-        # the expected rate over donor draws, by simulation of the same model
         lo, hi = S.cp(int(y.sum()), n)
         ov = S.overlap_interval(y, sets)
         p_true = np.mean(1 / (1 + np.exp(-(np.log(truth / (1 - truth)) + 1.5 * rng.normal(0, 1.2 / np.sqrt(8), 20000)))))
@@ -475,13 +694,27 @@ def test_the_shared_donor_interval_widens_only_when_donors_drive_the_outcome():
     assert cover_adj > cover_naive and cover_adj / reps >= 0.85
 
 
+def test_a_design_effect_above_1_5_is_reported_as_a_limitation(bgs):
+    pytest.importorskip("scipy")
+    import score as S
+    pilot = _est_pilot(bgs)
+    entries = [e for e in P.assign(KEY, pool_sizes=_sizes(bgs)) if e["condition"] in ("N1", "N8")]
+    rng = np.random.default_rng(3)
+    donors = {e["id"]: [f"d{j}" for j in rng.choice(30, 8, replace=False)] for e in entries}
+    bad = {f"d{j}" for j in range(6)}  # the datasets with these donors err: a donor-driven outcome
+    reports = _reports(entries, lambda c, e: P.SUPPORTED if bad & set(donors[e["id"]]) else P.INCONCLUSIVE)
+    res = S.score(entries, reports, pilot, donors)
+    assert res["secondary"]["shared_donors"]["S1:N1"]["deff"] > 1.5
+    assert any(lim.startswith("S1:N1") for lim in res["limitations"])
+
+
 # --------------------------------------------------------------------------- #
 # the runner and the blind run
 # --------------------------------------------------------------------------- #
 def test_runner_runs_the_engine_on_the_fly(bgs, tmp_path):
     import run_panel as R
-    pilot = _pilot(bgs, dose=6.0)
-    entries = P.assign(KEY)
+    pilot = _pilot(bgs, dose=2.0)
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
     pick = [next(e for e in entries if e["condition"] == c) for c in ("N1", "E1", "N6b")]
     summary = R.run(pick, bgs, pilot, tmp_path / "out", workers=1)
     assert summary["run"] == 3 and summary["errors"] == 0 and not summary["logged_twice"]
@@ -492,16 +725,65 @@ def test_runner_runs_the_engine_on_the_fly(bgs, tmp_path):
         assert row["data_sha256"] == P.dataset_sha256(X, obs, genes)  # rebuilt from the key
         assert row["donors"] == sorted(set(obs["donor"]))
         rep = json.loads((tmp_path / "out" / "reports" / f"{e['id']}.json").read_text())
-        assert rep["verdict"] and rep["elapsed_seconds"] > 0
+        assert rep["verdict"] and rep["cause"] and "elapsed_seconds" not in rep
+        assert not set(R.RUNTIME_FIELDS) & set(rep["provenance"])
+    runtime = json.loads((tmp_path / "out" / "runtime.json").read_text())
+    assert all(c["seconds"] > 0 and c["timestamp_utc"] for c in runtime["cards"])
     again = R.run(pick, bgs, pilot, tmp_path / "out", workers=1)
     assert again["skipped"] == 3  # one attempt per card
     assert len((tmp_path / "out" / "runlog.jsonl").read_text().splitlines()) == 3
+    if pytest.importorskip("scipy"):
+        import score as S
+        reports, donors = S.read_results(tmp_path / "out")
+        assert all(len(r) == 3 and r[2]["gate4"] in ("PASS", "FAIL", "UNTESTED", "SKIP", None)
+                   for r in reports.values() if r)
+        res = S.score(pick, reports, pilot, donors)
+        assert res["n_cards"] == 3 and "gate4" in res["per_gate"] and "S5" in res["criteria"]
+
+
+DETERMINISM = r"""
+import json, sys
+from pathlib import Path
+sys.path.insert(0, {here!r})
+import panel as P, run_panel as R, simulate
+bgs = {{"B1": simulate.simulated_background("B1", n_genes=240), "B2": simulate.simulated_background("B2", donors=12, n_genes=240, seed=1)}}
+pilot = simulate.dry_pilot(bgs)
+entries = P.assign({key!r}, pool_sizes={{k: len(b.plan["pool"]) for k, b in bgs.items()}})
+conds = P.conditions()
+pick = [next(e for e in entries if e["condition"] == c.name) for c in P.CONDITIONS]  # every condition
+cards = sum(conds[e["condition"]].cards for e in pick)
+for e in entries:  # then the key's order, up to 20 claim cards
+    if cards >= 20:
+        break
+    if e not in pick and conds[e["condition"]].cards == 1:
+        pick.append(e)
+        cards += 1
+R.run(pick, bgs, pilot, Path({out!r}), workers={workers})
+"""
+
+
+def test_the_same_cards_give_byte_identical_reports(tmp_path):
+    """The run is a deterministic function of the key, the backgrounds and the pilot: the same 20
+    claim cards, run twice in fresh processes with different hash seeds and numbers of workers,
+    give byte-identical reports and manifests (the time and the machine go to runtime.json)."""
+    pytest.importorskip("scipy")
+    outs = []
+    for run, (seed, workers) in enumerate((("1", 1), ("2", 2))):
+        out = tmp_path / f"run{run}"
+        code = DETERMINISM.format(here=str(HERE), key=KEY, out=str(out), workers=workers)
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        subprocess.run([sys.executable, "-c", code], cwd=HERE, env=env, check=True, capture_output=True)
+        outs.append(out)
+    reports = [sorted((p.name, p.read_bytes()) for p in (o / "reports").glob("*.json")) for o in outs]
+    assert len(reports[0]) == 20 and reports[0] == reports[1]
+    assert (outs[0] / "manifest.json").read_bytes() == (outs[1] / "manifest.json").read_bytes()
+    conds = {json.loads(b)["id"] for _, b in reports[0]}
+    assert len(conds) == 20
 
 
 def test_runner_pins_one_blas_thread_per_worker_before_numpy_loads():
     """The thread variables count only if they are set before numpy loads its BLAS; a forked
     worker inherits the pool numpy was loaded with."""
-    import os
     env = {k: v for k, v in os.environ.items() if k not in (
         "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")}
     code = "import json, run_panel; print(json.dumps(run_panel.machine()))"
@@ -524,47 +806,50 @@ def test_shards_partition_the_key_order():
         B.shard_entries(entries, 20, 20)
 
 
-def _fake_shard(root: Path, k: int, shards: int, key_sha: str, ids: list):
+def _fake_shard(root: Path, k: int, shards: int, key: str, ids: list):
     d = root / f"shard-{k}"
     (d / "reports").mkdir(parents=True)
     rows = []
     for i in ids:
-        text = json.dumps(dict(id=i, verdict="INCONCLUSIVE — x"))
+        text = json.dumps(dict(id=i, verdict="INCONCLUSIVE — x", cause="effect_inconclusive"))
         (d / "reports" / f"{i}.json").write_text(text)
         rows.append(dict(id=i, data_sha256="0" * 64, donors=["a"], cards=[
-            dict(id=i, card_sha256="1" * 64, report_sha256=hashlib.sha256(text.encode()).hexdigest(), seconds=1.0)]))
+            dict(id=i, card_sha256="1" * 64, report_sha256=hashlib.sha256(text.encode()).hexdigest())]))
     (d / "manifest.json").write_text(json.dumps(dict(datasets=rows)))
+    (d / "runtime.json").write_text(json.dumps(dict(summary=dict(wall_seconds=1.0, workers=4), cards=[])))
     (d / "runlog.jsonl").write_text("".join(json.dumps(dict(claim_id=i)) + "\n" for i in ids))
-    meta = dict(shard=k, shards=shards, key_sha256=key_sha, pilot_sha256="p", backgrounds={"B1": {}},
-                provenance={}, summary=dict(wall_seconds=1.0, machine=dict(cpus=4), workers=4))
+    meta = dict(shard=k, shards=shards, key=key, beacon=dict(chain="quicknet", round=7), pilot_sha256="p",
+                backgrounds={"B1": {}}, entries=len(ids))
     (d / "shard.json").write_text(json.dumps(meta))
 
 
 def test_collect_merges_shards_and_refuses_inconsistent_ones(tmp_path):
     import blind as B
-    _fake_shard(tmp_path / "ok", 0, 2, "k", ["D1", "D3"])
-    _fake_shard(tmp_path / "ok", 1, 2, "k", ["D2"])
-    s = B.collect(tmp_path / "ok", tmp_path / "res", expected_datasets=3)
-    assert s["datasets"] == 3 and (tmp_path / "res" / "SHA256SUMS").exists()
-    assert [r["id"] for r in json.loads((tmp_path / "res" / "manifest.json").read_text())["datasets"]] == ["D1", "D2", "D3"]
+    _fake_shard(tmp_path / "ok", 0, 2, KEY, ["D1", "D3"])
+    _fake_shard(tmp_path / "ok", 1, 2, KEY, ["D2"])
+    s = B.collect(tmp_path / "ok", tmp_path / "res", expected_datasets=3, reruns=[dict(shard=1, reason="runner lost")])
+    assert s["datasets"] == 3 and s["reruns"] == 1 and (tmp_path / "res" / "SHA256SUMS").exists()
+    manifest = json.loads((tmp_path / "res" / "manifest.json").read_text())
+    assert [r["id"] for r in manifest["datasets"]] == ["D1", "D2", "D3"] and manifest["key"] == KEY
     with pytest.raises(SystemExit):
         B.collect(tmp_path / "ok", tmp_path / "res2", expected_datasets=4)
-    _fake_shard(tmp_path / "keys", 0, 2, "k", ["D1"])
-    _fake_shard(tmp_path / "keys", 1, 2, "other", ["D2"])
-    with pytest.raises(SystemExit, match="key_sha256"):
+    _fake_shard(tmp_path / "keys", 0, 2, KEY, ["D1"])
+    _fake_shard(tmp_path / "keys", 1, 2, OTHER_KEY, ["D2"])
+    with pytest.raises(SystemExit, match="key"):
         B.collect(tmp_path / "keys", tmp_path / "res3")
-    _fake_shard(tmp_path / "missing", 0, 3, "k", ["D1"])
+    _fake_shard(tmp_path / "missing", 0, 3, KEY, ["D1"])
     with pytest.raises(SystemExit, match="shards present"):
         B.collect(tmp_path / "missing", tmp_path / "res4")
-    _fake_shard(tmp_path / "twice", 0, 2, "k", ["D1"])
-    _fake_shard(tmp_path / "twice", 1, 2, "k", ["D1"])
+    _fake_shard(tmp_path / "twice", 0, 2, KEY, ["D1"])
+    _fake_shard(tmp_path / "twice", 1, 2, KEY, ["D1"])
     with pytest.raises(SystemExit, match="twice"):
         B.collect(tmp_path / "twice", tmp_path / "res5")
 
 
-def test_guard_and_key_commitment_follow_the_frozen_tag(tmp_path, monkeypatch):
-    """In a scratch repository: the guard passes when only data files changed after the tag and
-    fails when frozen code changed; the key must match the commitment in the tag's message."""
+def test_the_guard_and_the_key_follow_the_frozen_tag_and_the_run_tag(tmp_path, monkeypatch):
+    """In a scratch repository: the guard passes when only data files changed after the frozen tag
+    and fails when frozen code changed; the key record must be the randomness (sha256 of the
+    signature) of the round the run tag's message names."""
     import blind as B
     repo = tmp_path / "repo"
     (repo / "validation" / "prereg").mkdir(parents=True)
@@ -579,19 +864,169 @@ def test_guard_and_key_commitment_follow_the_frozen_tag(tmp_path, monkeypatch):
     (repo / "validation" / "prereg" / "panel.py").write_text("y = 1\n")
     git("add", "-A")
     git("commit", "-qm", "frozen")
-    git("tag", "-a", "v0.3.0-prereg", "-m", f"frozen\n\nkey sha256: {P.key_commitment(KEY)}\n")
+    git("tag", "-a", "v0.3.0-prereg", "-m", "frozen")
     monkeypatch.setattr(B, "HERE", repo)
     (repo / "validation" / "prereg" / "pilot.json").write_text("{}")
     git("add", "-A")
     git("commit", "-qm", "data only")
+    git("tag", "-a", "panel-v1-run", "-m", "run\n\ndrand quicknet round: 1234567\n")
     assert B.guard("v0.3.0-prereg")["frozen_tag"] == "v0.3.0-prereg"
-    monkeypatch.setenv("KEY_SEED", KEY)
-    assert B.read_key(False, "v0.3.0-prereg") == KEY
-    monkeypatch.setenv("KEY_SEED", OTHER_KEY)
-    with pytest.raises(SystemExit, match="commitment"):
-        B.read_key(False, "v0.3.0-prereg")
+    assert B.round_from_tag("panel-v1-run") == ("quicknet", 1234567)
+    sig = "ab" * 48
+    rec = dict(chain="quicknet", round=1234567, signature=sig, randomness=hashlib.sha256(bytes.fromhex(sig)).hexdigest())
+    rec["key"] = rec["randomness"]
+    (tmp_path / "key.json").write_text(json.dumps(rec))
+    key, beacon = B.read_key(False, tmp_path / "key.json", "panel-v1-run")
+    assert key == rec["randomness"] and beacon["round"] == 1234567
+    (tmp_path / "late.json").write_text(json.dumps(dict(rec, round=1234568)))
+    with pytest.raises(SystemExit, match="names"):
+        B.read_key(False, tmp_path / "late.json", "panel-v1-run")
+    (tmp_path / "forged.json").write_text(json.dumps(dict(rec, key="0" * 64, randomness="0" * 64)))
+    with pytest.raises(SystemExit, match="sha256 of its signature"):
+        B.read_key(False, tmp_path / "forged.json", "panel-v1-run")
+    with pytest.raises(SystemExit, match="key record"):
+        B.read_key(False, None, "panel-v1-run")
     (repo / "src" / "engine.py").write_text("x = 2\n")
     git("add", "-A")
     git("commit", "-qm", "engine change")
     with pytest.raises(SystemExit, match="frozen files differ"):
         B.guard("v0.3.0-prereg")
+
+
+# --------------------------------------------------------------------------- #
+# the beacon
+# --------------------------------------------------------------------------- #
+def _beacon_keys():
+    """A BLS key pair of quicknet's scheme (signatures on G1, public key on G2) and a signer."""
+    pytest.importorskip("py_ecc")
+    from py_ecc.bls.hash_to_curve import hash_to_G1
+    from py_ecc.bls.point_compression import compress_G1, compress_G2
+    from py_ecc.optimized_bls12_381 import G2, multiply
+    import beacon as BC
+    sk = 987654321987654321
+    pk = compress_G2(multiply(G2, sk))
+    pk_hex = pk[0].to_bytes(48, "big").hex() + pk[1].to_bytes(48, "big").hex()
+
+    def sign(rnd):
+        return compress_G1(multiply(hash_to_G1(BC.message(rnd), BC.DST_G1, hashlib.sha256), sk)).to_bytes(48, "big").hex()
+    return pk_hex, sign
+
+
+def test_the_beacon_verifies_a_round_and_derives_its_randomness():
+    import beacon as BC
+    pk, sign = _beacon_keys()
+    sig = sign(4242)
+    assert BC.verify(4242, sig, pk) and not BC.verify(4243, sig, pk)
+    assert not BC.verify(4242, "c0" + "00" * 47, pk) and not BC.verify(4242, sig[:-2], pk)
+    assert BC.randomness_of(sig) == hashlib.sha256(bytes.fromhex(sig)).hexdigest()
+    assert len(BC.randomness_of(sig)) == 64 and P.check_key(BC.randomness_of(sig))
+
+
+def test_the_beacon_round_lies_at_least_an_hour_after_the_tag():
+    import beacon as BC
+    g = BC.CHAIN["genesis_time"]
+    assert BC.round_time(1) == g and BC.first_round_at(g) == 1 and BC.first_round_at(g + 1) == 2
+    for t in (g + 10_000.5, g + 123_456_789.0):
+        r = BC.round_for_tag(t)
+        assert BC.round_time(r) >= t + BC.MIN_DELAY > BC.round_time(r - 1)
+
+
+def test_the_beacon_accepts_only_verified_and_agreeing_answers(monkeypatch):
+    import beacon as BC
+    pk, sign = _beacon_keys()
+    chain = dict(BC.CHAIN, public_key=pk)
+    good = dict(round=77, signature=sign(77), randomness=BC.randomness_of(sign(77)))
+    answers = {"https://a": good, "https://b": dict(good, signature=sign(78)), "https://c": None}
+
+    def fake_get(url, timeout=20.0):
+        relay = url.split("/" + chain["hash"])[0]
+        if answers[relay] is None:
+            raise OSError("down")
+        return answers[relay]
+    monkeypatch.setattr(BC, "_get", fake_get)
+    rec = BC.fetch(77, relays=tuple(answers), chain=chain)
+    assert rec["key"] == good["randomness"] and rec["round"] == 77
+    assert [a.get("verified") for a in rec["answers"]] == [True, False, None]
+    answers["https://a"] = dict(good, signature=sign(79))
+    with pytest.raises(RuntimeError, match="no relay"):
+        BC.fetch(77, relays=tuple(answers), chain=chain)
+
+
+# --------------------------------------------------------------------------- #
+# the selection of the backgrounds and the anchors
+# --------------------------------------------------------------------------- #
+def _census_like(rng, groups):
+    """An obs table as the Census returns it: (dataset, cell type, donor, cells, sex) blocks."""
+    rows = []
+    for ds, ct, donor, n, sex in groups:
+        rows += [dict(dataset_id=ds, cell_type=ct, tissue="lung", donor_id=donor, sex=sex,
+                      development_stage="3-month-old stage") for _ in range(n)]
+    obs = pd.DataFrame(rows)
+    obs["soma_joinid"] = rng.permutation(len(obs))
+    return obs
+
+
+def test_the_selection_rule_lists_the_candidates_and_picks_by_the_rule():
+    import select_backgrounds as SB
+    rng = np.random.default_rng(0)
+    groups = ([("d1", "fibroblast", f"a{i}", 250, "female") for i in range(30)]          # 30 donors
+              + [("d1", "fibroblast", "small", 150, "male")]                            # below 200 cells
+              + [("d2", "T cell", f"b{i}", 300, "male") for i in range(30)]               # 30, more cells each
+              + [("d2", "T cell", "unknown", 900, "male")]                                # no donor ID
+              + [("d3", "B cell", f"c{i}", 400, "male") for i in range(10)])               # too few donors
+    obs = _census_like(rng, groups)
+    cand = SB.candidates(obs, ["dataset_id", "cell_type"], SB.B1_MIN_DONORS)
+    assert list(cand["dataset_id"]) == ["d2", "d1"]  # tie on 30 donors: more cells per donor wins
+    assert list(cand["donors"]) == [30, 30] and cand["cells_per_donor"].iloc[0] == 300
+    ids = SB.sample_cells(obs, cand.iloc[0].to_dict(), ["dataset_id", "cell_type"], max_donors=20, max_cells=100)
+    picked = obs.set_index("soma_joinid").loc[ids]
+    assert picked["donor_id"].nunique() == 20 and (picked.groupby("donor_id").size() == 100).all()
+    assert "unknown" not in set(picked["donor_id"])
+    assert np.array_equal(ids, SB.sample_cells(obs, cand.iloc[0].to_dict(), ["dataset_id", "cell_type"], 20, 100))
+    # B2: both sexes among the qualifying mice
+    mice = ([("m1", "fibroblast", f"f{i}", 250, "female") for i in range(8)]
+            + [("m1", "fibroblast", f"m{i}", 250, "male") for i in range(6)]
+            + [("m2", "fibroblast", f"x{i}", 250, "male") for i in range(20)])  # one sex only
+    cand2 = SB.candidates(_census_like(rng, mice), ["dataset_id", "tissue", "cell_type"], SB.B2_MIN_MICE, both_sexes=True)
+    assert list(cand2["dataset_id"]) == ["m1"] and cand2["donors"].iloc[0] == 14
+
+
+def test_the_anchors_run_on_their_backgrounds(tmp_path):
+    """R1 on a B2-like file (sex, age, mouse; Xist in females, Y genes in males) and R2 on a
+    B3-like file (phases as single batches, ERCC rows): the claims run and are scored against
+    their allowed sets; R3 is dropped with B4."""
+    pytest.importorskip("scipy")
+    import anchors as A
+    rng = np.random.default_rng(1)
+    genes = ["Xist", *A.Y_GENES, *[f"g{i}" for i in range(40)]]
+    rows, obs = [], []
+    for sex in ("female", "male"):
+        for m in range(5):
+            for _ in range(60):
+                base = rng.poisson(3.0, len(genes)).astype(float)
+                base[0] = rng.poisson(20) if sex == "female" else 0
+                base[1:5] = rng.poisson(5, 4) if sex == "male" else 0
+                rows.append(base)
+                obs.append(dict(sex=sex, development_stage="3m", donor_id=f"{sex}{m}"))
+    P.save_npz(tmp_path / "B2.npz", np.asarray(rows), pd.DataFrame(obs), genes)
+    g3 = ["ERCC-00002", "ERCC-00003", "Cdk1", "Top2a", "Mki67", *[f"h{i}" for i in range(30)]]
+    rows3, obs3 = [], []
+    for phase, up in (("G1", 1.0), ("S", 1.3), ("G2M", 2.0)):
+        for _ in range(60):
+            x = rng.poisson(4.0, len(g3)).astype(float)
+            x[2:5] = rng.poisson(4.0 * up, 3)
+            rows3.append(x)
+            obs3.append(dict(phase=phase, batch=phase))
+    P.save_npz(tmp_path / "B3.npz", np.asarray(rows3), pd.DataFrame(obs3), g3)
+    spec = {"B2": {"file": "B2.npz", "donor": "donor_id"}, "B3": {"file": "B3.npz", "donor": "batch"}}
+    (tmp_path / "backgrounds.json").write_text(json.dumps(spec))
+    A.main(["--backgrounds", str(tmp_path / "backgrounds.json"), "--data-dir", str(tmp_path),
+            "--out", str(tmp_path / "anchors.json")])
+    res = {r["claim"]: r for r in json.loads((tmp_path / "anchors.json").read_text())}
+    assert res["R1 Xist"]["allowed"] == ["SUPPORTED"] and res["R1 Xist"]["cause"]
+    assert set(res["R1 sham (female vs female)"]["allowed"]) == {"NO DETECTABLE EFFECT", "INCONCLUSIVE"}
+    assert res["R2c total RNA, ERCC removed"]["label"] == "UNIDENTIFIABLE"
+    assert res["R2b total RNA, ERCC present"]["label"] == "INCONCLUSIVE"  # one capture batch per phase
+    assert res["R1 Xist"]["in_allowed"] and res["R2a G2M score"]["in_allowed"]
+    assert res["R3"]["skipped"].startswith("B4 was dropped")
+    assert (tmp_path / "anchors.md").exists()

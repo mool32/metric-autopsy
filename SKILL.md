@@ -52,6 +52,8 @@ and what would disprove the claim. Then the commitments the engine enforces:
   for the power check, and to size nuisance biases: a dropout or library-size bias blocks only
   above `bias_tolerance` × SESOI, default 0.5; without a SESOI SUPPORTED is withheld while a
   bias is unsized);
+- **delta_min** — the smallest response to an injected signal that matters (default 0.5 ×
+  SESOI): GATE 4 and GATE 5 call the metric invalid only when its response is shown below it;
 - alpha, power, controls (or an injected signal and its direction).
 
 An empty field is not "TBD" — it is the reason the analysis will fail. Save the commitments as

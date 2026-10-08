@@ -23,7 +23,7 @@ import pandas as pd
 
 from .core import GateResult, GateStatus, SimpleData, as_dense, warn_if_dense_too_large
 from . import qc as _qc
-from .stats import extend_null
+from .stats import extend_null, t_ppf
 
 Metric = Callable[[object], float]
 # PairMetric: fn(data, *, gene_a, gene_b) -> float  (used by GATES 3 & 5)
@@ -665,63 +665,187 @@ def gate3_raw_visibility(
 # --------------------------------------------------------------------------- #
 # GATE 4 (automatable part) — does the metric respond to an injected signal?
 # --------------------------------------------------------------------------- #
+GATE4_N_REP = 200    # injections (each against its own sham) per GATE 4 run
+DELTA_MIN_FRACTION = 0.5  # default delta_min = 0.5 x SESOI (decided 2026-10-08)
+
+
+def response_interval(deltas, direction: str = "increase", alpha: float = 0.05) -> dict:
+    """Mean of the paired responses (injected minus sham) with its two-sided (1 - alpha) t
+    interval, and both bounds signed so that the declared direction is positive."""
+    if direction not in ("increase", "decrease"):
+        raise ValueError(f"the signal direction is 'increase' or 'decrease', not {direction!r}")
+    d = np.asarray(deltas, float)
+    n = len(d)
+    mean = float(d.mean())
+    sd_ = float(d.std(ddof=1)) if n > 1 else float("nan")
+    se = sd_ / np.sqrt(n)
+    half = t_ppf(1.0 - alpha / 2.0, n - 1) * se if se > 0 else 0.0
+    lo, hi = mean - half, mean + half
+    sign = 1.0 if direction == "increase" else -1.0
+    s_lo, s_hi = sorted((sign * lo, sign * hi))
+    return dict(mean_response=mean, sd_response=sd_, n_rep=n, ci=(lo, hi), ci_level=1.0 - alpha,
+                signed_lower=s_lo, signed_upper=s_hi, z=float(mean / se) if se > 0 else
+                (float("inf") * np.sign(mean) if mean else 0.0))
+
+
+def judge_response(iv: dict, delta_min: float | None) -> str:
+    """FAIL when blindness is shown: the whole interval lies below delta_min in the declared
+    direction (also when it lies above 0: a response smaller than the smallest response that
+    matters is blindness by the definition of delta_min). PASS when a response is shown: the
+    lower bound in the declared direction is above 0. Otherwise UNTESTED: absence of evidence,
+    as INCONCLUSIVE is to NO DETECTABLE EFFECT."""
+    if delta_min is not None and iv["signed_upper"] < delta_min:
+        return "FAIL"
+    if iv["signed_lower"] > 0:
+        return "PASS"
+    return "UNTESTED"
+
+
+def _check_delta_min(delta_min):
+    if delta_min is None:
+        return None
+    delta_min = float(delta_min)
+    if not (np.isfinite(delta_min) and delta_min > 0):
+        raise ValueError(f"delta_min must be a positive number on the metric's scale, not {delta_min!r}")
+    return delta_min
+
+
+def _column_local(inject) -> bool:
+    sham = getattr(inject, "sham", None)
+    return (getattr(inject, "genes", None) is not None and callable(getattr(inject, "columns", None))
+            and sham is not None and callable(getattr(sham, "columns", None)))
+
+
+def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
+    """`n_rep` paired responses: the metric on injected data minus the metric on the injector's
+    sham (or on the untouched data if the injector has no sham). Raises ValueError if the signal
+    cannot be injected (e.g. non-count input).
+
+    A column-local injector (``injected_signal.coupling``: ``inject.genes`` and
+    ``inject.columns``) rewrites the two genes of one private copy of the data and restores them
+    after every evaluation, with the same random draws as injecting into copies: the metric sees
+    exactly the data a copy would hold, without copying the matrix twice per injection.
+    `decouple` names the gene replaced, before every injection, by a depth-matched draw from
+    neighbouring cells (``_depth_matched_draw``): GATE 5 injects into the positive control's
+    genes with their own coupling removed. It needs a column-local injector.
+    """
+    from .core import unique_col_index
+
+    sham = getattr(inject, "sham", None)
+    if not _column_local(inject):
+        if decouple is not None:
+            raise ValueError("decoupling needs a column-local injector")
+        sd = _as_simple(data)
+        base = None if sham is not None else _safe_call(lambda: metric(sd))
+        out = []
+        for _ in range(n_rep):
+            injected = inject(sd, rng)
+            reference = sham(sd, rng) if sham is not None else None
+            v = _safe_call(lambda: metric(injected))
+            ref = base if reference is None else _safe_call(lambda: metric(reference))
+            if v is not None and ref is not None and np.isfinite(v - ref):
+                out.append(v - ref)
+        return out
+    work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    X, obs = work.X, work.obs
+    cols = [unique_col_index(work.var_names, g) for g in inject.genes]
+    original = X[:, cols].copy()
+    if not _looks_like_counts(original):
+        raise ValueError("the injection needs raw counts (non-negative integers)")
+    tot = np.asarray(obs["total_counts"], dtype=float).copy() if "total_counts" in obs else None
+    if decouple is not None:
+        kb = list(inject.genes).index(decouple)
+        depth = X.sum(axis=1) - original.sum(axis=1)
+    out = []
+    try:
+        for _ in range(n_rep):
+            before = original.copy()
+            if decouple is not None:
+                before[:, kb] = _depth_matched_draw(original[:, kb], depth, rng)
+            vals = []
+            for fn in (inject.columns, sham.columns):
+                after = fn(before, rng)
+                X[:, cols] = after
+                if tot is not None:
+                    obs["total_counts"] = tot - (original - after).sum(axis=1)
+                vals.append(_safe_call(lambda: metric(work)))
+            v, ref = vals
+            if v is not None and ref is not None and np.isfinite(v - ref):
+                out.append(v - ref)
+    finally:
+        X[:, cols] = original
+        if tot is not None:
+            obs["total_counts"] = tot
+    return out
+
+
 def gate4_signal_response(
     metric: Metric,
     data,
     inject: Callable,
     direction: str = "increase",
-    n_rep: int = 10,
-    z_min: float = 3.0,
+    delta_min: float | None = None,
+    n_rep: int = GATE4_N_REP,
+    alpha: float = 0.05,
     seed: int = 0,
 ) -> GateResult:
-    """Inject a known construct change (``injected_signal``) and require the metric to move,
-    reliably and in the declared direction. A metric that ignores its construct (a random
-    number, a constant) cannot pass this.
+    """Inject a known construct change (``injected_signal``) and judge the metric's response.
 
-    The response is measured against the injector's matched *sham* (``inject.sham``: the same
-    thinning without the signal) when it has one, else against the untouched data. Against
-    the untouched data the thinning noise is confounded with the signal: a valid correlation
-    metric on an already strongly coupled pair fell (z = -2.6) and FAILed.
+    The response is the metric on injected data minus the metric on the injector's matched
+    *sham* (``inject.sham``: the same thinning without the signal), over `n_rep` injections,
+    with its two-sided (1 - `alpha`) t interval (``response_interval``). Against the untouched
+    data the thinning noise is confounded with the signal: a valid correlation metric on an
+    already strongly coupled pair fell (z = -2.6) and failed.
+
+    * FAIL — the metric is shown blind: the upper bound in the declared direction is below
+      `delta_min`, the smallest response that matters (pre-registered ``delta_min``, default
+      0.5 x SESOI). This holds also when the interval lies above 0: a response below
+      delta_min is blindness by its definition.
+    * PASS — a response is shown: the lower bound in the declared direction is above 0.
+    * WARN (UNTESTED) — neither: absence of evidence, not invalidity. Without a delta_min
+      blindness cannot be shown, so the gate cannot FAIL.
+
+    Decided 2026-10-08 (validation/probes/JOURNAL.md, D5): the former rule, z >= 3 over 10
+    injections, failed the valid metric where its response is real but weak (probe p14).
     """
     from .injected_signal import describe
 
+    name = "Construct response (injected signal)"
+    delta_min = _check_delta_min(delta_min)
     sd = _as_simple(data)
     rng = np.random.default_rng(seed)
     base = _safe_call(lambda: metric(sd))
     if base is None:
-        return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
-                          "metric could not be evaluated on the data", {})
+        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on the data", {})
     sham = getattr(inject, "sham", None)
-    deltas = []
-    for _ in range(n_rep):
-        try:
-            injected = inject(sd, rng)
-            reference = sham(sd, rng) if sham is not None else None
-        except Exception as e:  # e.g. non-count input
-            return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
-                              f"signal could not be injected: {e}", {})
-        v = _safe_call(lambda: metric(injected))
-        ref = base if reference is None else _safe_call(lambda: metric(reference))
-        if v is not None and ref is not None:
-            deltas.append(v - ref)
+    try:
+        deltas = injected_deltas(metric, sd, inject, n_rep, rng)
+    except Exception as e:  # e.g. non-count input
+        return GateResult(4, name, GateStatus.SKIP, f"signal could not be injected: {e}", {})
     if len(deltas) < 3:
-        return GateResult(4, "Construct response (injected signal)", GateStatus.SKIP,
-                          "metric could not be evaluated on injected data", {})
-    deltas = np.asarray(deltas)
-    mean, sd_ = float(deltas.mean()), float(deltas.std(ddof=1))
-    se = sd_ / np.sqrt(len(deltas))
-    z = mean / se if se > 0 else (float("inf") * np.sign(mean) if mean else 0.0)
-    signed_z = z if direction == "increase" else -z
+        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", {})
+    iv = response_interval(deltas, direction, alpha)
+    outcome = judge_response(iv, delta_min)
     detail = dict(injection=describe(inject), direction=direction, base=base,
-                  reference="sham" if sham is not None else "untouched data",
-                  mean_response=mean, sd_response=sd_, z=float(z), n_rep=len(deltas), z_min=z_min)
-    if signed_z >= z_min:
-        return GateResult(4, "Construct response (injected signal)", GateStatus.PASS,
-                          f"responds to {describe(inject)}: {mean:+.4g} against the "
-                          f"{detail['reference']} (z={z:.1f}, expected {direction})", detail)
-    return GateResult(4, "Construct response (injected signal)", GateStatus.FAIL,
-                      f"does not respond to {describe(inject)} as declared ({direction}): "
-                      f"{mean:+.4g} (z={z:.1f}, need z >= {z_min} in that direction)", detail)
+                  reference="sham" if sham is not None else "untouched data", delta_min=delta_min,
+                  alpha=alpha, outcome=outcome, **iv)
+    lo, hi = iv["ci"]
+    resp = (f"{iv['mean_response']:+.4g} against the {detail['reference']} "
+            f"({100 * (1 - alpha):g}% CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected "
+            f"{direction})")
+    if outcome == "FAIL":
+        shown = ("responds, but less than delta_min" if iv["signed_lower"] > 0 else "blind")
+        return GateResult(4, name, GateStatus.FAIL,
+                          f"{shown} to {describe(inject)}: {resp}; the bound in the declared direction "
+                          f"is below delta_min {delta_min:.4g}, the smallest response that matters", detail)
+    if outcome == "PASS":
+        return GateResult(4, name, GateStatus.PASS, f"responds to {describe(inject)}: {resp}", detail)
+    why = (f"the interval includes 0 and reaches delta_min {delta_min:.4g}" if delta_min is not None else
+           "the interval includes 0, and without a delta_min (declare a SESOI, or delta_min) "
+           "blindness cannot be shown")
+    return GateResult(4, name, GateStatus.WARN,
+                      f"response to {describe(inject)} not established: {resp}; {why} — untested, "
+                      "not invalid", detail)
 
 
 # --------------------------------------------------------------------------- #
@@ -885,7 +1009,6 @@ def _shuffled_null(pair_metric, sub, pair, n_null, rng):
 
 
 POSITIVE_CONTROL_DOSE = 2.0  # induces a Spearman correlation of ~0.34 between genes with ~7 counts per cell
-POSITIVE_CONTROL_POWER = 0.8
 
 
 def _shuffle_within(col: np.ndarray, groups: list, rng) -> np.ndarray:
@@ -896,70 +1019,15 @@ def _shuffle_within(col: np.ndarray, groups: list, rng) -> np.ndarray:
     return out
 
 
-def _ranks(x: np.ndarray) -> np.ndarray:
-    _, inv, counts = np.unique(x, return_inverse=True, return_counts=True)
-    order = np.argsort(x, kind="mergesort")
-    r = np.empty(len(x))
-    r[order] = np.arange(len(x))
-    return (np.bincount(inv, weights=r) / counts)[inv]
-
-
-def _ref_coupling(a: np.ndarray, b: np.ndarray, rest=None) -> float:
-    """Reference coupling detector for the power check: Spearman correlation of raw counts.
-
-    Rank-based and free of normalization artifacts (closure); the depth-matched self-null
-    carries the depth dependence. Among log-CP10k Pearson, raw Pearson, raw Spearman and
-    log1p Pearson it had the highest power for an injected coupling in the dev data, together
-    with log1p Pearson, and it is the least sensitive to outliers.
-    """
-    ra, rb = _ranks(np.asarray(a, float)), _ranks(np.asarray(b, float))
-    ra, rb = ra - ra.mean(), rb - rb.mean()
-    den = float(np.sqrt((ra * ra).sum() * (rb * rb).sum()))
-    return float((ra * rb).sum() / den) if den > 0 else 0.0
-
-
-def _positive_control_power(sub, pair, dose: float, alpha_s: float, rng, n_rep: int = 40,
-                            n_null: int = 200, threshold: float = POSITIVE_CONTROL_POWER) -> float:
-    """Power of this stratum to establish a coupling of known `dose` between the control genes.
-
-    The pair's own coupling is destroyed (gene b replaced by a depth-matched draw), a coupling
-    of `dose` is injected (``injected_signal.coupling``, the same injection as GATE 4), and a
-    *reference* detector is tested against the same depth-matched self-null at the same
-    alpha/K. The power belongs to the design, not to the metric under test: measured with the
-    metric itself, a blind metric would always look underpowered and stay UNTESTED forever.
-    Replicates stop as soon as ``power >= threshold`` is decided, so the returned estimate is
-    exact for that decision but not unbiased.
-    """
+def _control_response(pair_metric, sub, pair, dose: float, n_rep: int, rng) -> list:
+    """The metric's own response to a coupling of `dose` injected into the control pair with its
+    own coupling removed: gene b replaced by a depth-matched draw before every injection
+    (``injected_deltas(decouple=...)``), injected against the sham, as GATE 4 measures it."""
     from .injected_signal import coupling
 
-    X = as_dense(sub.X)
-    names = [str(g) for g in sub.var_names]
-    ia, ib = names.index(str(pair[0])), names.index(str(pair[1]))
-    if not _looks_like_counts(X[:, [ia, ib]]):
-        return float("nan")  # the injection needs counts
-    a0, b0 = X[:, ia].astype(float), X[:, ib].astype(float)
-    rest = _pair_depth(X, ia, ib)
-    obs = pd.DataFrame(index=range(len(a0)))
-    inject = coupling("a", "b", strength=dose)
-    need = int(np.ceil(threshold * n_rep))
-    hits = done = 0
-    for _ in range(n_rep):
-        base = SimpleData(np.column_stack([a0, _depth_matched_draw(b0, rest, rng), rest]), obs,
-                          ["a", "b", "rest"])
-        inj = inject(base, rng).X
-        a, b = inj[:, 0], inj[:, 1]
-        x = _ref_coupling(a, b, rest)
-
-        def draw(k, a=a, b=b):
-            return np.array([_ref_coupling(a, _depth_matched_draw(b, rest, rng), rest)
-                             for _ in range(int(k))])
-        _, p, _ = extend_null(x, draw, n_null, alpha_s)
-        hits += bool(np.isfinite(p) and p < alpha_s)
-        done += 1
-        # stop once the remaining replicates cannot change "power >= threshold"
-        if hits >= need or hits + (n_rep - done) < need:
-            break
-    return hits / done
+    metric = (lambda d: pair_metric(d, gene_a=pair[0], gene_b=pair[1]))
+    return injected_deltas(metric, sub, coupling(str(pair[0]), str(pair[1]), strength=dose), n_rep, rng,
+                           decouple=str(pair[1]))
 
 
 def gate5_controls(
@@ -976,8 +1044,9 @@ def gate5_controls(
     exclude: Sequence[str] = (),
     seed: int = 0,
     pos_dose: float = POSITIVE_CONTROL_DOSE,
-    pos_power_min: float = POSITIVE_CONTROL_POWER,
-    n_power: int = 40,
+    delta_min: float | None = None,
+    direction: str = "increase",
+    n_rep: int = GATE4_N_REP,
 ) -> GateResult:
     """Positive control must fire and negative control must stay null — in every stratum —
     judged against **empirical nulls** instead of a fixed band.
@@ -995,6 +1064,13 @@ def gate5_controls(
     * Positive control: compared with `n_null` self-nulls of the *same* pair, gene b replaced
       by a depth-matched draw from neighbouring cells (thinned to each cell's depth). Coupling
       is destroyed, the dependence on depth kept exactly. It must stand out (p < alpha/K).
+    * A silent positive control is judged as GATE 4 judges a response (decided 2026-10-08,
+      validation/probes/JOURNAL.md D6, probe p15): a coupling of dose `pos_dose` (pre-registered
+      ``positive_control_dose``, default 2.0) is injected `n_rep` times into the control pair
+      with its own coupling removed, and the metric's own response gets its two-sided
+      (1 - alpha/K) interval (``response_interval``). The metric is shown blind to the coupling
+      when the bound in the declared `direction` is below `delta_min` (``judge_response``);
+      otherwise the silence says that the control is not coupled here, or nothing.
 
     p values are rank-based Monte Carlo p values. When a control lies in the extreme tail of
     the first `n_null` draws and alpha/K is below their resolution, the null is extended to
@@ -1003,23 +1079,24 @@ def gate5_controls(
     Status:
 
     * FAIL when the negative control stands out in any stratum (the metric reports
-      association where there is none), or when the positive control does not stand out in a
-      stratum that had the power to show it: the stratum establishes an injected coupling of
-      dose `pos_dose` with power >= `pos_power_min` (``_positive_control_power``; defaults 2.0
-      and 0.8, pre-registered as ``positive_control_dose`` / ``positive_control_power``). The
-      metric is then insensitive to the coupling (or the control is not coupled there).
-    * WARN when the positive control is silent only in strata without that power: absence of
-      evidence. If it fires nowhere, ``detail["pos_demonstrated"]`` is False and the metric's
-      response stays undemonstrated (UNTESTED) unless an injected signal shows it.
+      association where there is none), or when the positive control is silent in a stratum
+      where the metric is shown blind to an injected coupling of its genes.
+    * WARN when the positive control is silent somewhere without that proof: absence of
+      evidence (and without a delta_min blindness cannot be shown). If it fires nowhere,
+      ``detail["pos_demonstrated"]`` is False and the metric's response stays undemonstrated
+      (UNTESTED) unless an injected signal shows it.
     * PASS when both controls behave in every stratum.
 
-    Passing explicit `pos_min` / `neg_max` selects the legacy fixed band (not the default),
-    where a silent positive control FAILs without a power check.
+    The former rule (2026-10-07) failed a silent control wherever a reference detector had
+    power >= 0.8 for the dose: it failed a valid metric whose control was coupled, but weakly
+    (p15). Passing explicit `pos_min` / `neg_max` selects the legacy fixed band (not the
+    default), where a silent positive control FAILs without an injection.
     """
     import itertools
 
     obs = data.obs
     within = list(within)
+    delta_min = _check_delta_min(delta_min)
     if within:
         levels = [sorted(pd.unique(obs[f].dropna())) for f in within]
         combos = list(itertools.product(*levels))
@@ -1073,10 +1150,19 @@ def gate5_controls(
                 neg_ok=bool(not np.isfinite(p_neg) or p_neg >= alpha_s),
             )
         if not legacy and not row["pos_fires"]:
-            power = _positive_control_power(sub, pos_pair, pos_dose, alpha_s, rng, n_rep=n_power,
-                                            n_null=n_null, threshold=pos_power_min)
-            row.update(pos_power=power, pos_power_dose=pos_dose, pos_power_reps=n_power,
-                       pos_insensitive=bool(np.isfinite(power) and power >= pos_power_min))
+            try:
+                deltas = _control_response(pair_metric, _as_simple(sub), pos_pair, pos_dose, n_rep, rng)
+            except ValueError as e:  # the injection needs counts
+                deltas, row["pos_response_note"] = [], str(e)
+            if len(deltas) >= 3:
+                iv = response_interval(deltas, direction, alpha_s)
+                outcome = judge_response(iv, delta_min)
+                row.update(pos_response=iv["mean_response"], pos_response_ci=iv["ci"],
+                           pos_response_reps=iv["n_rep"], pos_response_outcome=outcome)
+            else:
+                outcome = "UNTESTED"
+                row.update(pos_response_outcome=outcome)
+            row["pos_blind"] = outcome == "FAIL"
         row["ok"] = bool(row["pos_fires"] and row["neg_ok"])
         rows.append(row)
         if not row["ok"]:
@@ -1086,7 +1172,7 @@ def gate5_controls(
     detail = dict(rows=rows, alpha=alpha, alpha_per_stratum=alpha_s, n_null=n_null,
                   legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
                   pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
-                  pos_dose=pos_dose, pos_power_min=pos_power_min)
+                  pos_dose=pos_dose, delta_min=delta_min, direction=direction, n_rep=n_rep)
     centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
     centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
                    if centres and not legacy else "")
@@ -1098,22 +1184,23 @@ def gate5_controls(
                         "distinct unrelated pairs)")
     neg_bad = [r for r in rows if not r["neg_ok"]]
     pos_miss = [r for r in rows if not r["pos_fires"]]
-    insensitive = [r for r in pos_miss if r.get("pos_insensitive")]
-    if neg_bad or insensitive or (legacy and pos_miss):
-        f0 = (neg_bad or insensitive or pos_miss)[0]
+    blind = [r for r in pos_miss if r.get("pos_blind")]
+    if neg_bad or blind or (legacy and pos_miss):
+        f0 = (neg_bad or blind or pos_miss)[0]
         why = []
         if not f0["neg_ok"]:
             why.append(f"negative control {f0['neg']:.3g} outside the null"
                        + (f" (p={f0['p_neg']:.3g}, null centre {f0['null_center']:.3g})" if not legacy else ""))
-        if f0.get("pos_insensitive"):
-            why.append(f"positive control {f0['pos']:.3g} inside its null (p={f0['p_pos']:.3g}) although "
-                       f"the stratum establishes an injected coupling of dose {pos_dose:g} with power "
-                       f"{f0['pos_power']:.2f} >= {pos_power_min:g} — the metric is insensitive to the "
-                       "coupling (or the control is not coupled here)")
+        if f0.get("pos_blind"):
+            lo, hi = f0["pos_response_ci"]
+            why.append(f"positive control {f0['pos']:.3g} inside its null (p={f0['p_pos']:.3g}) and the "
+                       f"metric is blind to a coupling of dose {pos_dose:g} injected into its genes: "
+                       f"response {f0['pos_response']:+.4g} ({100 * (1 - alpha_s):g}% CI [{lo:+.4g}, "
+                       f"{hi:+.4g}]), the bound in the declared direction below delta_min {delta_min:.4g}")
         if legacy and not f0["pos_fires"]:
             why.append(f"positive control {f0['pos']:.3g} below the band")
         n_bad = (len(failures) if legacy else
-                 sum(1 for r in rows if not r["neg_ok"] or r.get("pos_insensitive")))
+                 sum(1 for r in rows if not r["neg_ok"] or r.get("pos_blind")))
         return GateResult(
             5, "Controls", GateStatus.FAIL,
             f"{n_bad}/{len(rows)} strata fail controls (e.g. {f0['stratum']}: "
@@ -1121,16 +1208,26 @@ def gate5_controls(
             detail,
         )
     if pos_miss:
-        where = ", ".join(f"{r['stratum']} (n={r['n_cells']}, p={r['p_pos']:.3g}, power "
-                          f"{r.get('pos_power', float('nan')):.2f})" for r in pos_miss[:3])
+        def _where(r):
+            resp = ""
+            if "pos_response" in r:
+                lo, hi = r["pos_response_ci"]
+                what = ("the metric responds to it, so the control is not coupled here"
+                        if r["pos_response_outcome"] == "PASS" else "neither a response nor blindness shown")
+                resp = (f"; a coupling of dose {pos_dose:g} injected into its genes: {r['pos_response']:+.3g} "
+                        f"[{lo:+.3g}, {hi:+.3g}], {what}")
+            return f"{r['stratum']} (n={r['n_cells']}, p={r['p_pos']:.3g}{resp})"
+        where = ", ".join(_where(r) for r in pos_miss[:3])
         lead = (f"positive control beats its null in {n_pos}/{len(rows)} strata; not demonstrated in "
                 if n_pos else "positive control not demonstrated in any stratum — ")
+        tail = ("" if delta_min is not None else
+                "; without a delta_min (declare a SESOI, or delta_min) blindness cannot be shown")
         return GateResult(
             5, "Controls", GateStatus.WARN,
             lead + where + ("…" if len(pos_miss) > 3 else "")
-            + f" (power < {pos_power_min:g} for an injected coupling of dose {pos_dose:g} at alpha "
-            f"{alpha_s:.3g}: absence of evidence, not a failure); negative control inside the null "
-            f"in all strata{centre_note}",
+            + " (the metric is not shown blind to an injected coupling of the control's genes: "
+            f"absence of evidence, not a failure{tail}); negative control inside the null in all "
+            f"strata{centre_note}",
             detail,
         )
     return GateResult(

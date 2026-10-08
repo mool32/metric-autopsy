@@ -4,15 +4,21 @@
 Every dataset is built from the key's entry by ``panel.build`` inside a worker process and never
 written: the manifest records its canonical sha256 (``panel.dataset_sha256``), its donors, and
 per claim card the card's and the report's sha256. A card whose report exists is not run again
-(one attempt per card); an engine exception is written as {"error": ...} and scored as a verdict
-outside the allowed set. Workers write their own run logs (``runlog.<pid>.jsonl``), merged into
-``runlog.jsonl`` at the end; a claim logged twice is reported.
+(one attempt per card); an engine exception is written as {"error": ...} and scored as an
+error.
+
+The run is a deterministic function of the key, the backgrounds and the pilot: the engine's seed
+comes from the card (``_seed``), one BLAS thread per worker, and a report holds only what the
+engine computed, so the same card gives byte-identical reports on any machine, with any number
+of workers (``test_the_same_cards_give_byte_identical_reports``). What varies from run to run -
+the time, the machine, the engine's run log - goes to ``runtime.json`` and ``runlog.jsonl``.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import shutil
 import time
 from functools import partial
 from pathlib import Path
@@ -32,7 +38,20 @@ MODULE_FOLD, MODULE_FRAC = 2.0, 0.3
 
 
 def _seed(card_id: str) -> int:
+    """The engine's seed for a card: the first 32 bits of the sha256 of its ID."""
     return int(hashlib.sha256(card_id.encode()).hexdigest()[:8], 16)
+
+
+# Fields of a report that depend on when and where it ran, not on the card: they go to
+# runtime.json, so that a report is a function of its card alone.
+RUNTIME_FIELDS = ("timestamp_utc", "environment", "log")
+
+
+def deterministic_report(rep: dict) -> dict:
+    """The engine's report without the fields that record when and where it ran."""
+    rep = dict(rep)
+    rep["provenance"] = {k: v for k, v in (rep.get("provenance") or {}).items() if k not in RUNTIME_FIELDS}
+    return rep
 
 
 def make_run_args(card: dict):
@@ -43,7 +62,8 @@ def make_run_args(card: dict):
     kw = dict(group_col=card["group_col"], groups=tuple(card["groups"]), replicate_col=card["replicate_col"],
               prereg=card["prereg"], seed=_seed(card["id"]))
     st = card["signal_test"]
-    kw["signal_test"] = (injected_signal.coupling(*st["genes"]) if st["kind"] == "coupling"
+    kw["signal_test"] = (injected_signal.coupling(*st["genes"], strength=float(st["strength"]))
+                         if st["kind"] == "coupling"
                          else injected_signal.module(st["genes"], fold=MODULE_FOLD, frac=MODULE_FRAC))
     if card["metric"] == "norm_pearson":
         metric = partial(metrics.norm_pearson, gene_a=ga, gene_b=gb)
@@ -83,72 +103,76 @@ def machine() -> dict:
 _STATE: dict = {}  # backgrounds, pilot and output directory, inherited by forked workers
 
 
-def run_entry(entry: dict) -> dict:
-    """Build one dataset, run the engine on each of its claim cards, return its manifest row."""
+def run_entry(entry: dict) -> tuple[dict, list[dict]]:
+    """Build one dataset, run the engine on each of its claim cards; return its manifest row
+    (deterministic) and the cards' runtime records."""
     from metric_autopsy import SimpleData, run_autopsy
     bgs, pilot, out_dir = _STATE["bgs"], _STATE["pilot"], _STATE["out"]
     X, obs, genes, cards = P.build(entry, bgs, pilot)
     row = dict(id=entry["id"], data_sha256=P.dataset_sha256(X, obs, genes),
                donors=sorted(set(map(str, obs["donor"]))), cards=[])
+    runtime = []
     for card in cards:
         out = out_dir / "reports" / f"{card['id']}.json"
         rec = dict(id=card["id"], card_sha256=P.card_sha256(card))
         if out.exists():
-            rec.update(skipped=True, report_sha256=hashlib.sha256(out.read_bytes()).hexdigest())
+            rec.update(report_sha256=hashlib.sha256(out.read_bytes()).hexdigest(), error=b'"error"' in out.read_bytes())
             row["cards"].append(rec)
+            runtime.append(dict(id=card["id"], skipped=True))
             continue
         t0 = time.time()
+        log = out_dir / "runlog" / f"{card['id']}.jsonl"
         try:
             metric, kw = make_run_args(card)
-            a = run_autopsy(metric, SimpleData(X.copy(), obs.copy(), list(genes)),
-                            log_path=str(out_dir / f"runlog.{os.getpid()}.jsonl"), **kw)
-            rep = a.to_dict()
-            rep.update(id=card["id"], elapsed_seconds=time.time() - t0)
-        except Exception as exc:  # scored as outside the allowed set
-            rep = dict(id=card["id"], error=repr(exc), elapsed_seconds=time.time() - t0)
-        text = json.dumps(rep, allow_nan=False, default=str)
+            a = run_autopsy(metric, SimpleData(X.copy(), obs.copy(), list(genes)), log_path=str(log), **kw)
+            full = a.to_dict()
+            rep = dict(deterministic_report(full), id=card["id"])
+            run_rec = {k: full.get("provenance", {}).get(k) for k in RUNTIME_FIELDS}
+        except Exception as exc:  # scored as an error
+            rep, run_rec = dict(id=card["id"], error=repr(exc)), {}
+        text = json.dumps(rep, allow_nan=False, default=str, sort_keys=True)
         out.write_text(text)
-        rec.update(report_sha256=hashlib.sha256(text.encode()).hexdigest(), seconds=rep["elapsed_seconds"],
-                   error="error" in rep)
+        rec.update(report_sha256=hashlib.sha256(text.encode()).hexdigest(), error="error" in rep)
         row["cards"].append(rec)
-    return row
+        runtime.append(dict(id=card["id"], seconds=time.time() - t0, pid=os.getpid(), **run_rec))
+    return row, runtime
 
 
 def run(entries: list[dict], bgs: dict, pilot: dict, out_dir: Path, workers: int = 1) -> dict:
-    """Run every entry (in parallel with `workers` forked processes); write manifest.json,
-    runlog.jsonl and summary.json to out_dir and return the summary."""
+    """Run every entry (in parallel with `workers` forked processes); write manifest.json (the
+    datasets and the sha256 of every card and report, deterministic), runtime.json and
+    runlog.jsonl (when, where and how long; the engine's run log) to out_dir and return the
+    summary."""
     out_dir = Path(out_dir)
     (out_dir / "reports").mkdir(parents=True, exist_ok=True)
+    (out_dir / "runlog").mkdir(parents=True, exist_ok=True)
     _STATE.update(bgs=bgs, pilot=pilot, out=out_dir)
     t0 = time.time()
     if workers <= 1:
-        rows = [run_entry(e) for e in entries]
+        results = [run_entry(e) for e in entries]
     else:
         import multiprocessing as mp
         with mp.get_context("fork").Pool(workers) as pool:
-            rows = list(pool.imap_unordered(run_entry, entries, chunksize=1))
+            results = list(pool.imap_unordered(run_entry, entries, chunksize=1))
     wall = time.time() - t0
-    rows.sort(key=lambda r: r["id"])
-    merged, seen, twice = [], set(), []
-    for f in sorted(out_dir.glob("runlog.*.jsonl")):
-        for line in f.read_text().splitlines():
-            rec = json.loads(line)
-            if rec.get("claim_id") in seen:
-                twice.append(rec.get("claim_id"))
-            seen.add(rec.get("claim_id"))
-            merged.append(rec)
-        f.unlink()
-    merged.sort(key=lambda r: r.get("timestamp_utc", ""))
+    rows = sorted((r for r, _ in results), key=lambda r: r["id"])
+    runtime = sorted((c for _, rt in results for c in rt), key=lambda c: c["id"])
+    merged = []
+    for f in sorted((out_dir / "runlog").glob("*.jsonl")):
+        merged += [json.loads(line) for line in f.read_text().splitlines() if line]
+    twice = sorted({r["claim_id"] for r in merged if r.get("claim_id")
+                    and sum(x.get("claim_id") == r["claim_id"] for x in merged) > 1})
     with open(out_dir / "runlog.jsonl", "a") as fh:
-        fh.write("".join(json.dumps(r) + "\n" for r in merged))
-    (out_dir / "manifest.json").write_text(json.dumps(dict(datasets=rows), indent=1))
-    cards = [c for r in rows for c in r["cards"]]
-    secs = [c["seconds"] for c in cards if "seconds" in c]
-    summary = dict(datasets=len(rows), cards=len(cards), run=len(secs),
-                   skipped=sum(c.get("skipped", False) for c in cards),
-                   errors=sum(c.get("error", False) for c in cards), workers=workers,
+        fh.write("".join(json.dumps(r, sort_keys=True) + "\n" for r in merged))
+    shutil.rmtree(out_dir / "runlog")
+    (out_dir / "manifest.json").write_text(json.dumps(dict(datasets=rows), indent=1, sort_keys=True))
+    secs = [c["seconds"] for c in runtime if "seconds" in c]
+    summary = dict(datasets=len(rows), cards=sum(len(r["cards"]) for r in rows), run=len(secs),
+                   skipped=sum(c.get("skipped", False) for c in runtime),
+                   errors=sum(c.get("error", False) for r in rows for c in r["cards"]), workers=workers,
                    machine=machine(), wall_seconds=wall,
                    mean_seconds=float(np.mean(secs)) if secs else None,
                    median_seconds=float(np.median(secs)) if secs else None, logged_twice=twice)
+    (out_dir / "runtime.json").write_text(json.dumps(dict(summary=summary, cards=runtime), indent=1, default=str))
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
     return summary

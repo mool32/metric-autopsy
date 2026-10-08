@@ -21,7 +21,10 @@ knows single-cell QC, not your metric.
 A metric that changes between conditions is not a finding. The verdict is not "the first
 gate that fails" any more. It is decided by one rule (`report.decide`, shared by the Python
 API, the CLI and the MCP server) from **four independent fields**, each answering a
-different question:
+different question. The verdict comes with its **cause** (`report.decide_cause`; `cause` in the
+JSON report): one code per line of the rule below, e.g. `metric_invalid_gate4` (shown blind to the
+injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`,
+`opposite_direction`.
 
 | Field | Question | Statuses |
 |---|---|---|
@@ -33,7 +36,7 @@ different question:
 `decide` reads them in this order; the first matching line is the verdict:
 
 1. metric DEGENERATE → **DEGENERATE METRIC**
-2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a failed control, no response to an injected signal) → **NOT SUPPORTED — metric invalid**
+2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a failed control, a response to an injected signal shown below `delta_min`) → **NOT SUPPORTED — metric invalid**
 3. design UNIDENTIFIABLE (no estimand, content estimand without spike-ins, partially crossed replicates, groups confounded with a stratifier) → **UNIDENTIFIABLE**
 4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
 5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
@@ -275,16 +278,27 @@ change is not merely dropout — without needing the metric to surface it.
 
 **Automatic part: response to an injected signal.** A metric earns `metric_validity` PASS only
 by *responding* to signal, not merely by resisting nuisance — a metric that returns random
-numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b)` or
-`injected_signal.module(genes)`): a known construct change is planted by binomial thinning
-(seqgendiff-style, so the data stay valid counts with real technical noise), and the metric
-must move reliably (z >= 3) in the declared direction **relative to a matched sham** — the
-same thinning without the signal (independent keep-probabilities for a coupling; all genes
-thinned for a module). Otherwise **FAIL**. Against the untouched data the thinning noise is
-confounded with the signal: injecting coupling into an already strongly coupled pair *lowered*
-a valid correlation (z = −2.6) and failed it. A positive control
-that beats its null (GATE 5) is the other way to demonstrate response. With neither, the
-metric is **UNTESTED** and no positive verdict is reachable.
+numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`
+or `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
+(seqgendiff-style, so the data stay valid counts with real technical noise) 200 times, each
+**relative to a matched sham** — the same thinning without the signal (independent
+keep-probabilities for a coupling; all genes thinned for a module) — and the mean response gets
+its two-sided 95% t interval (decided 2026-10-08):
+
+- **PASS** — the lower bound in the declared direction is above 0: a response is shown.
+- **FAIL** — the upper bound is below `delta_min`, the smallest response that matters
+  (pre-registered `delta_min`; default 0.5 × SESOI): the metric is shown blind. This holds also
+  when the whole interval lies above 0: a response below `delta_min` is blindness by its definition.
+- **UNTESTED** (the gate reports WARN) — neither: absence of evidence, not invalidity, as
+  INCONCLUSIVE is to NO DETECTABLE EFFECT. Without a `delta_min` (no SESOI) the gate cannot FAIL.
+
+The former rule (z ≥ 3 over 10 injections) failed a valid metric whose response is real but
+weak (probe p14). Against the untouched data, instead of a sham, the thinning noise is confounded
+with the signal: injecting coupling into an already strongly coupled pair *lowered* a valid
+correlation and failed it. A positive control that beats its null (GATE 5) is the other way to
+demonstrate response, except where GATE 4 ran on the analysed construct and is UNTESTED: a control
+on another pair does not stand in for it. With neither, the metric is **UNTESTED** and no
+positive verdict is reachable.
 
 **Judgment part.** Enumerate every scenario that could move the metric and decide which your
 result is consistent with:
@@ -347,32 +361,31 @@ of distinct unrelated pairs bounds the resolution; when alpha/K is below it, the
 control cannot fail, and the gate's message says so.
 
 **Was the positive control's silence informative?** In a stratum where the positive control
-does not beat its null, the engine measures the *design's* power to show a coupling: it
-destroys the pair's own coupling, injects a coupling of known dose (`injected_signal.coupling`,
-the same injection as GATE 4; pre-registered `positive_control_dose`, default 2.0, which induces
-a Spearman correlation of about 0.34 between genes with ~7 counts per cell — dose 1.0 gives
-0.13), and tests it with a reference detector (Spearman on raw counts) against the same
-depth-matched self-null at the same alpha/K, 40 times. The power belongs to the design, not to
-the metric: measured with the metric itself, a blind metric would always look underpowered and
-stay UNTESTED forever.
+does not beat its null, the engine asks GATE 4's question of the control's genes (decided
+2026-10-08, probe p15): it removes the pair's own coupling (gene b replaced by the depth-matched
+draw), injects a coupling of known dose (`injected_signal.coupling`; pre-registered
+`positive_control_dose`, default 2.0) 200 times against its sham, and gives the metric's own
+response its two-sided interval at alpha/K. The metric is shown blind when the bound in the
+declared direction is below `delta_min`; otherwise the silence says that the control is not
+coupled here (when the metric responds to the injection), or nothing. The former rule failed a
+silent control wherever a reference detector had power ≥ 0.8 for the dose, and so failed a valid
+metric whose control was coupled, but weakly, in 16 of 20 p15 datasets.
 
 **Read-out.**
 - **FAIL** — the negative control stands out in some stratum (the metric reports association
-  where there is none), **or** the positive control is silent in a stratum with power ≥
-  `positive_control_power` (default 0.8): the metric is insensitive to the coupling, or the
-  control is not coupled there.
-- **WARN** — the negative control is fine everywhere, and the positive control is silent only
-  where the power was below the threshold: absence of evidence. If it fires nowhere, the
-  metric's response stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal
-  shows it).
+  where there is none), **or** the positive control is silent in a stratum where the metric is
+  shown blind to a coupling injected into its genes.
+- **WARN** — the negative control is fine everywhere, and the positive control is silent
+  somewhere without that proof: absence of evidence. If it fires nowhere, the metric's response
+  stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal shows it).
 - **PASS** — positive control beats its null and negative control stays inside its null, in
   all strata.
 
-In the dev data a metric that ignores gene b fails GATE 5 in 9–10 of 10 datasets from 100
-cells per stratum and is UNTESTED at ≤ 30 cells, where the power is ~0.25. A positive control
+In the dev data a metric that ignores gene b fails GATE 5 in 20 of 20 p15 datasets (with a
+`delta_min`), and is UNTESTED in a 10-cell stratum where the interval is too wide. A positive control
 that fires in at least one stratum (Bonferroni across strata) is evidence of response for
 `metric_validity`. Passing `pos_min` / `neg_max` selects the legacy fixed band (not the
-default), where a silent positive control FAILs without a power check. A control that "passes" only after averaging over
+default), where a silent positive control FAILs without an injection. A control that "passes" only after averaging over
 a confound is worthless: our HK control looked stable pooled, but declined in males once
 stratified — confounded the same way as the test.
 

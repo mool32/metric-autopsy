@@ -35,6 +35,18 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
     default 0.5); without a SESOI it is reported as unsized, SUPPORTED is withheld and the
     message says to declare a SESOI. At 800 cells per donor the earlier rule failed
     log-normalized Pearson on a truly coupled pair in 4 of 4 datasets (probe p13).
+- **GATE 4 by the interval of its response (decided 2026-10-08).** 200 injections, each against
+  its sham; PASS when the lower 95% bound of the mean response is above 0 in the declared
+  direction, FAIL only when the upper bound is below `delta_min` (pre-registered; default 0.5 ×
+  SESOI; `--delta-min` in the CLI, `delta_min` in MCP), UNTESTED (WARN) otherwise: "metric invalid"
+  is a proof of blindness. An interval inside (0, `delta_min`) is FAIL. Where GATE 4 is UNTESTED a
+  positive control on another pair no longer makes the metric valid for the claim. The former rule
+  (z ≥ 3 over 10 injections) failed the valid metric where its response is real but weak (probe
+  p14, now a dev-set regression). A coupling injection rewrites the two genes of one private copy
+  in place (the same draws and values, about 20 times faster).
+- **Verdict causes.** `report.decide_cause` returns the verdict and its cause (`report.CAUSES`;
+  `cause` in the JSON report and the Markdown): which gate made the metric invalid, explained by
+  depth, opposite direction, and so on.
 - **Directional claims (decided 2026-10-08).** The pre-registration states the claimed
   `direction` of the change from `groups[0]` to `groups[1]` (`increase`, `decrease`, or
   `two-sided`). SUPPORTED needs the effect in that direction (two-sided test at alpha, so a null
@@ -67,11 +79,12 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   expression-matched unrelated pairs, the positive control against depth-matched draws of
   itself; Bonferroni across strata. Only the negative control can FAIL the gate; a positive
   control that does not beat its null is WARN (absence of evidence), and the metric stays
-  UNTESTED if it fires nowhere — unless the stratum had the power to show it: a silent
-  positive control FAILs where the design establishes an injected coupling of the
-  pre-registered dose (`positive_control_dose`, default 2.0) with power ≥
-  `positive_control_power` (default 0.8), measured with a reference detector so that a blind
-  metric cannot shelter in UNTESTED. The positive control's self-null replaces gene b with a
+  UNTESTED if it fires nowhere — unless the metric is shown blind: a coupling of the
+  pre-registered dose (`positive_control_dose`, default 2.0) is injected into the silent
+  control's genes, with their own coupling removed, and the control FAILs only if the upper
+  bound of the metric's response is below `delta_min` (decided 2026-10-08, probe p15; the rule
+  of 2026-10-07, power ≥ 0.8 of a reference detector, failed a valid metric whose control was
+  coupled, but weakly, in 16 of 20 datasets). The positive control's self-null replaces gene b with a
   depth-matched, thinned draw from neighbouring cells (a shuffle within depth bins let a pair
   coupled only through depth pass). p values are rank-based Monte Carlo p values with a
   two-stage extension to the resolution alpha/K needs (no normal tail; null pairs drawn without
@@ -146,8 +159,10 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 - GATE 0's depth-matched null can sit slightly above the data for leverage-heavy raw metrics
   in small samples, because the deepest cells have few deeper neighbours; for a depth-only pair
   the signal above the null stays below 0.01 (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
-- GATE 4 has no power rule: a metric whose response to the injected signal is real but weak
-  fails as if it ignored its construct (probe p14).
+- GATE 4 judges the response on the dataset at hand: its interval covers the injections, not
+  the sampling of the dataset, so near `delta_min` the verdict varies between datasets (p14
+  reports each pair's spread between datasets). A random-number metric is never shown blind by
+  it: its noise keeps the interval wide, so it stays UNTESTED.
 - "Explained by depth" is a diagnosis the design must be able to establish: in p11b's
   conditions it needs about 20 mice per group; on typical designs the tool protects against a
   false SUPPORTED but does not prove the artifact (`paper/drafts/limitations.md`).

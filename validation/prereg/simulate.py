@@ -11,11 +11,13 @@ import numpy as np
 
 import panel as P
 
-DRY_RUN_KEY = "0123456789abcdef0123456789abcdef"  # public: the dry run's assignment is not the panel's
+# public: the dry run's assignment is not the panel's (the panel's key is a drand round's
+# randomness named in the run tag before it exists; beacon.py)
+DRY_RUN_KEY = "0123456789abcdef" * 4
 
 
 def simulated_background(name: str = "B1", donors: int = 20, cells: int = 220, n_genes: int = 420,
-                         seed: int = 0, coupled: int = 6, plan: bool = True) -> P.Background:
+                         seed: int = 0, coupled: int = 10, plan: bool = True) -> P.Background:
     rng = np.random.default_rng(seed)
     third = n_genes // 3
     mu = np.concatenate([rng.uniform(4, 8, third), rng.uniform(1.0, 1.6, third),
@@ -47,9 +49,24 @@ def dry_backgrounds(n_genes: int = 2500) -> dict:
 
 
 def dry_pilot(bgs: dict, sesoi: float = 0.1, dose: float = 2.0) -> dict:
-    """A stand-in pilot.json with every field the panel reads (not the oracle's pilot)."""
-    pool = bgs["B1"].plan["pool"]
-    return dict(dry_run=True, sesoi={lv: sesoi for lv in P.LEVELS}, key_dose={lv: dose for lv in P.LEVELS},
-                delta={str(k): {f"{f:g}": dict(value=0.2 * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
-                       for k in range(len(pool))},
-                establishable={}, dropped=[])
+    """A stand-in pilot.json with every field the panel and the scoring read (not the oracle's
+    pilot): SESOI `sesoi` and saturation dose `dose` everywhere, the truth 'valid' for the high
+    and medium pairs and 'blind' for the low ones (as probe p14 found on these backgrounds),
+    every case establishable."""
+    out = dict(dry_run=True, dropped=[], pool={}, pool_size={}, sesoi={}, saturation_dose={}, truth={},
+               e_dose={lv: dose for lv in P.LEVELS}, key_dose={lv: dose for lv in P.LEVELS},
+               key_dose_found={lv: True for lv in P.LEVELS}, establishable={})
+    for name, bg in bgs.items():
+        pool = bg.plan["pool"]
+        out["pool"][name] = [dict(index=pe["index"], level=pe["level"], pair=pe["pair"]) for pe in pool]
+        out["pool_size"][name] = len(pool)
+        out["sesoi"][name] = {lv: sesoi for lv in P.LEVELS}
+        out["saturation_dose"][name] = {lv: dose for lv in P.LEVELS}
+        dm = P.DELTA_MIN_FRACTION * sesoi
+        out["truth"][name] = {str(k): dict(response=(0.0 if pe["level"] == "low" else 4 * dm), se=0.001,
+                                           dose=dose, delta_min=dm,
+                                           **{"class": "blind" if pe["level"] == "low" else "valid"})
+                              for k, pe in enumerate(pool)}
+    out["delta"] = {str(k): {f"{f:g}": dict(value=0.2 * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
+                    for k in range(len(bgs["B1"].plan["pool"]))}
+    return out

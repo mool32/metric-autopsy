@@ -39,7 +39,7 @@ from . import provenance as _prov
 
 DEFAULT_PREREG = dict(judgment_pending=True, alpha=0.05, power=0.8, min_replicates=3,
                       signal_direction="increase", spikein_prefix="ERCC-",
-                      positive_control_dose=2.0, positive_control_power=0.8, bias_tolerance=0.5)
+                      positive_control_dose=2.0, bias_tolerance=0.5)
 # The claim's direction: the change of the metric from groups[0] to groups[1]. Mandatory for
 # SUPPORTED; "two-sided" declares a non-directional claim, which the verdict marks as such.
 DIRECTIONS = ("increase", "decrease", "two-sided")
@@ -74,12 +74,36 @@ def normalize_prereg(prereg: dict | None) -> dict:
     return p
 
 
+def delta_min_of(prereg: dict) -> float | None:
+    """delta_min, the smallest response to an injected signal that matters (on the metric's
+    scale): pre-registered as ``delta_min``, by default ``DELTA_MIN_FRACTION`` (0.5) x SESOI.
+    Without either, GATE 4 and GATE 5 cannot show that a metric is blind (decided 2026-10-08)."""
+    if prereg.get("delta_min") is not None:
+        return float(prereg["delta_min"])
+    if prereg.get("sesoi") is not None:
+        return _g.DELTA_MIN_FRACTION * float(prereg["sesoi"])
+    return None
+
+
 def _na(reason: str) -> Assessment:
     return Assessment(NOT_RUN, reason)
 
 
-def decide(a: "Autopsy") -> str:
-    """The single verdict rule (shared by the Python API, the CLI and the MCP server)."""
+# The cause of every verdict, one code per branch of `decide_cause` (in its order). The label
+# (the verdict's text before " — ") and the cause together say why a claim is or is not
+# supported: e.g. NOT SUPPORTED with metric_invalid_gate4 (the metric is shown blind), with
+# explained_by_depth or with opposite_direction.
+CAUSES = ("degenerate_metric", "metric_invalid_gate0", "metric_invalid_gate5", "metric_invalid_gate4",
+          "metric_invalid",
+          "unidentifiable", "effect_not_evaluated", "explained_by_depth", "insufficient_replication",
+          "absence_untested_metric", "no_detectable_effect", "effect_inconclusive",
+          "detected_untested_metric", "bias_unsized", "no_direction", "opposite_direction",
+          "not_replicated", "judgment_pending", "replicated", "provisional")
+
+
+def decide_cause(a: "Autopsy") -> tuple[str, str]:
+    """The single verdict rule (shared by the Python API, the CLI and the MCP server): the
+    verdict and its cause (one of ``CAUSES``)."""
     mv = a.metric_validity or _na("not evaluated")
     da = a.design_adequacy or _na("not evaluated")
     ef = a.effect or _na("not evaluated")
@@ -92,38 +116,42 @@ def decide(a: "Autopsy") -> str:
     tail = f" [{'; '.join(notes)}]" if notes else ""
 
     if mv.status == "DEGENERATE":
-        return f"DEGENERATE METRIC — {mv.reason}"
+        return f"DEGENERATE METRIC — {mv.reason}", "degenerate_metric"
     if mv.status == "FAIL":
-        return f"NOT SUPPORTED — metric invalid: {mv.reason}"
+        gate = mv.detail.get("failed_gate")
+        return (f"NOT SUPPORTED — metric invalid: {mv.reason}",
+                f"metric_invalid_gate{gate}" if gate in (0, 4, 5) else "metric_invalid")
     if da.status == "UNIDENTIFIABLE":
-        return f"UNIDENTIFIABLE — {da.reason}"
+        return f"UNIDENTIFIABLE — {da.reason}", "unidentifiable"
     if ef.status == NOT_RUN:
-        return f"INCONCLUSIVE — effect not evaluated: {ef.reason}"
+        return f"INCONCLUSIVE — effect not evaluated: {ef.reason}", "effect_not_evaluated"
     if ef.detail.get("explained_by_depth"):
-        return f"NOT SUPPORTED — {ef.reason}{tail}"
+        return f"NOT SUPPORTED — {ef.reason}{tail}", "explained_by_depth"
     if da.status == "INSUFFICIENT_REPLICATION":
-        return f"INCONCLUSIVE — insufficient replication: {da.reason}"
+        return f"INCONCLUSIVE — insufficient replication: {da.reason}", "insufficient_replication"
     if ef.status == "NO_DETECTABLE_EFFECT":
         if mv.status != "PASS":
             return ("INCONCLUSIVE — no detectable effect within the SESOI, but the metric's "
-                    "response to signal is untested, so absence cannot be claimed" + tail)
-        return f"NO DETECTABLE EFFECT — {ef.reason}{tail}"
+                    "response to signal is untested, so absence cannot be claimed" + tail,
+                    "absence_untested_metric")
+        return f"NO DETECTABLE EFFECT — {ef.reason}{tail}", "no_detectable_effect"
     if ef.status != "DETECTED":
-        return f"INCONCLUSIVE — {ef.reason}{tail}"
+        return f"INCONCLUSIVE — {ef.reason}{tail}", "effect_inconclusive"
     if mv.status != "PASS":
         return ("INCONCLUSIVE — effect detected, but the metric's response to signal is untested "
-                "(supply a positive control or an injected signal)" + tail)
+                "(supply a positive control or an injected signal)" + tail, "detected_untested_metric")
     if "BIAS_UNSIZED" in mv.flags:
         return ("INCONCLUSIVE — effect detected, but a nuisance bias of the metric "
                 f"({', '.join(mv.detail.get('unsized_bias', []))}) cannot be sized against the claim "
                 "without a pre-registered SESOI: declare a SESOI (the smallest effect that matters, on "
                 "the metric's scale) in the pre-registration, and the bias is judged against "
-                "bias_tolerance x SESOI" + tail)
+                "bias_tolerance x SESOI" + tail, "bias_unsized")
     groups = [str(g) for g in (a.params or {}).get("groups") or ("groups[0]", "groups[1]")]
     direction = (a.prereg or {}).get("direction")
     if direction is None:
         return ("INCONCLUSIVE — effect detected, but no direction was pre-registered (declare "
-                f"'increase' or 'decrease' from {groups[0]} to {groups[1]}, or 'two-sided')" + tail)
+                f"'increase' or 'decrease' from {groups[0]} to {groups[1]}, or 'two-sided')" + tail,
+                "no_direction")
     effect = ef.detail.get("effect")
     if direction != "two-sided" and effect is not None and np.isfinite(effect):
         observed = "decrease" if effect > 0 else "increase"  # the effect is groups[0] - groups[1]
@@ -131,17 +159,24 @@ def decide(a: "Autopsy") -> str:
             article = {"increase": "an", "decrease": "a"}
             return (f"NOT SUPPORTED — the effect is in the direction opposite to the pre-registered "
                     f"one: the metric shows {article[observed]} {observed} from {groups[0]} to "
-                    f"{groups[1]}, the claim was {article[direction]} {direction}" + tail)
+                    f"{groups[1]}, the claim was {article[direction]} {direction}" + tail,
+                    "opposite_direction")
     if direction == "two-sided":
         notes.append("non-directional claim")
         tail = f" [{'; '.join(notes)}]"
     if rp.status == "NOT_REPLICATED":
-        return f"NOT SUPPORTED — the effect did not replicate: {rp.reason}{tail}"
+        return f"NOT SUPPORTED — the effect did not replicate: {rp.reason}{tail}", "not_replicated"
     if a.judgment_pending:
-        return f"INCONCLUSIVE — effect detected; judgment gates 4 and 7 are unresolved{tail}"
+        return (f"INCONCLUSIVE — effect detected; judgment gates 4 and 7 are unresolved{tail}",
+                "judgment_pending")
     if rp.status == "REPLICATED":
-        return f"SUPPORTED — replicated{tail}"
-    return f"SUPPORTED (provisional until replicated){tail}"
+        return f"SUPPORTED — replicated{tail}", "replicated"
+    return f"SUPPORTED (provisional until replicated){tail}", "provisional"
+
+
+def decide(a: "Autopsy") -> str:
+    """The verdict of ``decide_cause`` (the single verdict rule)."""
+    return decide_cause(a)[0]
 
 
 @dataclass
@@ -164,6 +199,11 @@ class Autopsy:
     def verdict(self) -> str:
         return decide(self)
 
+    @property
+    def cause(self) -> str:
+        """The cause code of the verdict (``CAUSES``)."""
+        return decide_cause(self)[1]
+
     # ------------------------------------------------------------------ output
     def fields(self) -> dict:
         return dict(metric_validity=self.metric_validity, design_adequacy=self.design_adequacy,
@@ -177,7 +217,7 @@ class Autopsy:
             for k, v in prereg_items.items():
                 lines.append(f"- **{_cell(k)}:** {_cell(v)}")
             lines.append("")
-        lines += ["## Verdict", "", f"**{self.verdict}**", ""]
+        lines += ["## Verdict", "", f"**{self.verdict}**", "", f"Cause: `{self.cause}`", ""]
         lines += ["## Assessment", "", "| Field | Status | Reason |", "|---|---|---|"]
         for name, asmt in self.fields().items():
             if asmt is None:
@@ -207,7 +247,7 @@ class Autopsy:
             return None if a is None else dict(status=a.status, reason=a.reason, flags=list(a.flags),
                                                detail=_slim(a.detail))
         return _prov.jsonable(dict(
-            schema=_prov.SCHEMA, metric=self.metric_name, verdict=self.verdict,
+            schema=_prov.SCHEMA, metric=self.metric_name, verdict=self.verdict, cause=self.cause,
             fields={k: asm(v) for k, v in self.fields().items()},
             gates=[dict(gate=r.gate, name=r.name, status=r.status.value, message=r.message,
                         detail=_slim(r.detail)) for r in sorted(self.results, key=lambda r: r.gate)],
@@ -267,7 +307,8 @@ def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | Non
     detail = dict(gate0=g0.status.value if g0 else None, level_shifts=lvl,
                   gate5=g5.status.value if g5 else None, gate4=g4.status.value if g4 else None,
                   bias_handling=handling,
-                  unsized_bias=sorted(k for k, h in handling.items() if h == "unsized"))
+                  unsized_bias=sorted(k for k, h in handling.items() if h == "unsized"),
+                  failed_gate=None)
     flags = (["LEVEL_SHIFT"] if lvl else []) + sorted(
         {_BIAS_FLAGS[h] for h in handling.values() if h in _BIAS_FLAGS})
     bias_txt = (g0.message if g0 is not None and g0.status == GateStatus.WARN
@@ -277,29 +318,38 @@ def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | Non
     elif g0.status == GateStatus.DEGENERATE:
         return Assessment("DEGENERATE", g0.message, [], detail)
     elif g0.status == GateStatus.FAIL:
-        return Assessment("FAIL", g0.message, [], detail)
+        return Assessment("FAIL", g0.message, [], {**detail, "failed_gate": 0})
     else:
         base = None
     if g5 is not None and g5.status == GateStatus.FAIL:
-        return Assessment("FAIL", f"controls: {g5.message}", [], detail)
+        return Assessment("FAIL", f"controls: {g5.message}", [], {**detail, "failed_gate": 5})
     if g4 is not None and g4.status == GateStatus.FAIL:
-        return Assessment("FAIL", f"no response to the injected signal: {g4.message}", [], detail)
+        return Assessment("FAIL", f"injected signal: {g4.message}", [], {**detail, "failed_gate": 4})
     if base is not None:
         return base
+    # GATE 4 judges the response on the analysed construct itself. Where it ran and could show
+    # neither a response nor blindness, a positive control on another pair does not stand in
+    # for it (decided 2026-10-08, JOURNAL.md D5).
+    g4_untested = g4 is not None and g4.status == GateStatus.WARN
     evidence = []
-    if g5 is not None and g5.status == GateStatus.PASS:
-        evidence.append("positive control beats the empirical null in every stratum")
-    elif g5 is not None and g5.status == GateStatus.WARN and g5.detail.get("pos_demonstrated"):
-        evidence.append(f"positive control beats the empirical null in {g5.detail['n_pos_fires']}/"
-                        f"{len(g5.detail['rows'])} strata")
     if g4 is not None and g4.status == GateStatus.PASS:
         evidence.append(g4.message)
+    elif not g4_untested:
+        if g5 is not None and g5.status == GateStatus.PASS:
+            evidence.append("positive control beats the empirical null in every stratum")
+        elif g5 is not None and g5.status == GateStatus.WARN and g5.detail.get("pos_demonstrated"):
+            evidence.append(f"positive control beats the empirical null in {g5.detail['n_pos_fires']}/"
+                            f"{len(g5.detail['rows'])} strata")
     lvl_txt = (" Level shift (reported, not failed): "
                + ", ".join(f"{k} {v:+.0%}" for k, v in lvl.items()) + " of the effect scale.") if lvl else ""
     if evidence:
         return Assessment("PASS", bias_txt + "; " + "; ".join(evidence) + "." + lvl_txt,
                           flags, detail)
-    why = ("the positive control did not beat its null in any stratum"
+    pc_fires = g5 is not None and g5.detail.get("pos_demonstrated")
+    why = ((f"GATE 4: {g4.message}" + ("; the positive control responds, but on another pair"
+                                       if pc_fires else ""))
+           if g4_untested else
+           "the positive control did not beat its null in any stratum"
            if g5 is not None and g5.status == GateStatus.WARN else
            f"controls not run: {g5.message}" if g5 is not None and g5.status == GateStatus.SKIP else
            "supply a positive control pair or an injected signal")
@@ -414,6 +464,7 @@ def run_autopsy(
     within = list(within)
     alpha = float(prereg["alpha"])
     sesoi = prereg.get("sesoi")
+    delta_min = delta_min_of(prereg)
     results: list[GateResult] = []
     params = dict(metric=name, group_col=group_col, groups=list(groups), within=within,
                   gene_pair=list(gene_pair) if gene_pair else None,
@@ -447,8 +498,8 @@ def run_autopsy(
         if tied:
             g5 = _g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within, alpha=alpha,
                                    exclude=gene_pair or (), seed=seed,
-                                   pos_dose=float(prereg["positive_control_dose"]),
-                                   pos_power_min=float(prereg["positive_control_power"]))
+                                   pos_dose=float(prereg["positive_control_dose"]), delta_min=delta_min,
+                                   direction=prereg.get("signal_direction", "increase"))
             g5.detail.update(controls_tied=True, **tie)
         else:
             g5 = GateResult(5, "Controls", GateStatus.SKIP, why_not,
@@ -457,7 +508,8 @@ def run_autopsy(
     g4 = None
     if signal_test is not None:
         g4 = _g.gate4_signal_response(metric, data, signal_test,
-                                      direction=prereg.get("signal_direction", "increase"), seed=seed)
+                                      direction=prereg.get("signal_direction", "increase"),
+                                      delta_min=delta_min, alpha=alpha, seed=seed)
         results.append(g4)
     mv = _metric_validity(g0, g5, g4)
 

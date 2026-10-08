@@ -47,9 +47,12 @@ Bias tolerance:      ___  (default 0.5 SESOI: a dropout or library-size bias blo
 Alpha / power:       ___ / ___  (defaults 0.05 / 0.8)
 Signal direction:    increase | decrease   (for an injected-signal test)
 Positive control pair: ___   Negative control pair: ___
-Positive-control dose / power: ___ / ___  (defaults 2.0 / 0.8: a silent positive control
-                          FAILs GATE 5 where the design could show an injected coupling of this
-                          dose with this power, and is UNTESTED where it could not)
+delta_min:           ___  (default 0.5 SESOI: the smallest response to an injected signal
+                          that matters; GATE 4 and GATE 5 call the metric invalid only when its
+                          response is shown below it, by the upper bound of its 95% interval)
+Positive-control dose: ___  (default 2.0: a coupling of this dose is injected into a silent
+                          positive control's genes; the control FAILs GATE 5 only if the metric
+                          is shown blind to it)
 Spike-in prefix:     ___  (default "ERCC-")
 ```
 
@@ -65,7 +68,7 @@ Graded replicate rule (fixed in the engine, not chosen per analysis):
 ```json
 {"estimand": "composition", "direction": "decrease", "min_replicates": 3, "sesoi": 0.1,
  "bias_tolerance": 0.5, "alpha": 0.05, "power": 0.8, "signal_direction": "increase",
- "positive_control_dose": 2.0, "positive_control_power": 0.8,
+ "delta_min": 0.05, "positive_control_dose": 2.0,
  "hypothesis": "Smad3-Col1a1 coupling declines with age in fibroblasts",
  "simplest_non_biological_explanation": "old cells are sequenced shallower"}
 ```

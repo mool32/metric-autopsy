@@ -198,19 +198,30 @@ SESOI with its 95% lower bound. The regression
 the depth response is still classified as bias and no longer blocks. The log records the finding
 under the earlier rule (git ac8f1a8).
 
-### Found while building the confirmatory panel: GATE 4 by expression level (p14, open)
+### Found while building the confirmatory panel: GATE 4 by expression level (p14, decided 2026-10-08)
 
 `p14_gate4_by_expression_level.py` (log: `p14_gate4_by_expression_level.log`; not in `run_all.sh`,
-~5 min) runs GATE 4 on `norm_pearson` for the pair pool of the confirmatory panel
+~15 min on 4 cores) runs GATE 4 on `norm_pearson` for the pair pool of the confirmatory panel
 (`validation/prereg/panel.py`: pairs at three expression levels) on simulated backgrounds of the
-panel's size, null datasets of 2 x 8 donors x 200 cells, with the claim cards' injected coupling
-(strength 1.0) and with strength 2.0. GATE 4 requires the metric to move by z >= 3. It fails the
-valid metric in 0/12, 8/12 and 12/12 datasets at the high, medium and low level at strength 1.0,
-and in 0/12, 2/12 and 12/12 at strength 2.0. At the medium level the response is real but weak
-(median z 2.8 and 4.0): a false FAIL, since GATE 4 has no power rule (GATE 5's silent positive
-control has one). At the low level the metric does not respond at all (median z -0.6 and 0.0):
-it is computed on co-detected cells, whose low counts are mostly 1 and whose log-normalized values
-follow the cells' totals, so a coupling that acts through co-detection is invisible to it; there
-"metric invalid" is right. No expectation is frozen: what GATE 4 should do with a weak response,
-and which verdicts are correct for a real effect the metric cannot see, are put to the project
-owner (validation/prereg/v1.md, section 10).
+panel's size, null datasets of 2 x 8 donors x 200 cells. Its first version (git 317080e) found
+that the former rule, z >= 3 over 10 injections, failed the valid metric in 8/12 datasets at the
+medium level, where the response is real but weak; at the low level the metric does not respond at
+all (it is computed on co-detected cells, whose low counts are mostly 1 and whose log-normalized
+values follow the cells' totals). Decided by the project owner (JOURNAL.md, D5): GATE 4 PASSes on
+the lower 95% bound of the response above 0 and FAILs only on the upper bound below delta_min
+(default 0.5 x SESOI). The probe now measures the level's response curve and saturation dose, every
+pair's population response against delta_min = 0.05, and GATE 4 on 40 datasets per level; the
+regression `test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind` holds the
+owner's requirement (high: PASS; medium: FAIL no more often than alpha; low: FAIL with probability
+>= 0.8).
+
+### Found while building the confirmatory panel: GATE 5 on weak but valid controls (p15, decided 2026-10-08)
+
+`p15_gate5_weak_positive_control.py` (log: `p15_gate5_weak_positive_control.log`; not in
+`run_all.sh`, ~10 min on 4 cores) checks GATE 5's silent-positive-control rule by the same measure
+on the same data: positive controls planted at each level, and weak but valid ones (a coupling of
+dose 0.25-0.5 injected into an uncoupled high-level pair), with `norm_pearson` and a metric blind
+to gene b. The power rule of 2026-10-07 failed the valid metric with a weak control in 16, 10 and
+1 of 20 datasets; the response rule (the metric's own response to an injected coupling of the
+control's genes, FAIL only if its upper 95% bound is below delta_min) in none, and both failed
+the blind metric 20/20. By the owner's condition GATE 5 now uses the response rule (JOURNAL.md, D6).

@@ -1,16 +1,15 @@
 """The blinded panel of the confirmatory validation (validation/prereg/v1.md, section 3).
 
 This module holds the design (conditions, variants, numbers of datasets), the key assignment,
-the backgrounds' fixed genes and pairs, the truth generators and the claim cards. The panel is
-built on the fly by ``blind.py`` (in GitHub Actions or one local run): no dataset is stored,
-every dataset and claim card is identified by a canonical sha256 (``dataset_sha256``,
-``card_sha256``), and the datasets are reproducible from the key after it is revealed.
+the backgrounds' fixed genes and pairs, the truth generators, the claim cards and the allowed
+(label, cause) outcomes. The panel is built on the fly by ``blind.py`` (in GitHub Actions or one
+local run): no dataset is stored, every dataset and claim card is identified by a canonical
+sha256 (``dataset_sha256``, ``card_sha256``), and the datasets are reproducible from the key.
 
-The key (generated and held by the project owner) is 128 bits written as 32 lowercase hex
-characters (``secrets.token_hex(16)``); its public commitment is the sha256 of that string in
-UTF-8 (``key_commitment``). It decides every dataset's condition, variant (dose or step), side,
-gene pair and seed, and the order of the dataset IDs; the pair is drawn independently of the
-condition.
+The key is the randomness of a public drand round named in the run tag before it exists
+(``beacon.py``): 256 bits written as 64 lowercase hex characters. It decides every dataset's
+condition, variant (dose or step), side, gene pair and seed, and the order of the dataset IDs;
+the pair is drawn independently of the condition.
 
 Independence: the truth is generated here, with this module's own binomial thinning (as in
 seqgendiff, Gerard 2020), never with the engine's modules; this file does not import
@@ -33,13 +32,16 @@ CELLS_PER_DONOR = 200  # cells drawn per donor and dataset; donors with fewer ar
 N_GENES = 2000         # genes kept per background: the named genes, then the most expressed
 RANDOM_SCORE_GENES = 50
 LEVELS = ("high", "medium", "low")
-PAIRS_PER_LEVEL = 4    # analysed pairs per level; the pool has len(LEVELS) * PAIRS_PER_LEVEL
+MAX_PAIRS_PER_LEVEL = 8  # the pool takes 8 pairs per level where every level of the background has
+MIN_PAIRS_PER_LEVEL = 4  # them, else the largest common number >= 4 (decided 2026-10-08)
 LEVEL_CANDIDATES = 1000  # the most expressed eligible genes of a level enter its pair search
 PLAN_CELLS_PER_DONOR = 200  # cells per donor (public seed) on which pair correlations are computed
 MIN_DONOR_DETECTION = 0.05  # a pair gene is detected in >= 5% of the cells of every donor
 NEG_MAX_R = 0.02       # a negative control's |partial correlation| is below this
 N8_BETA = (2.0, 2.0)   # N8: per-cell capture ~ Beta(2, 2) in one group (mean 0.5)
 PLAN_SEED = 20261008   # public seed of the plan's cell subsample and N6c's random genes
+DELTA_MIN_FRACTION = 0.5  # delta_min = 0.5 x SESOI: the smallest response to the injection that matters
+TRUTH_BAND = 0.2       # the metric is valid at >= 1.2 delta_min, blind at <= 0.8 delta_min, else ambiguous
 
 # Tirosh et al. 2016 G2/M genes (human symbols); the module the random-gene score claims to
 # measure (N6c). Genes absent from a background are dropped.
@@ -50,21 +52,71 @@ G2M_GENES = (
     "LBR CKAP5 CENPE CTCF NEK2 G2E3 GAS2L3 CBX5 CENPA").split()
 
 # --------------------------------------------------------------------------- #
-# the design: every condition with its variants and number of datasets
+# the outcomes a verdict is scored by: its label and its cause (v1.md, section 3.2)
 # --------------------------------------------------------------------------- #
-NULL_ALLOWED = ("NO DETECTABLE EFFECT", "INCONCLUSIVE", "NOT SUPPORTED")
-EFFECT_ALLOWED = ("SUPPORTED", "INCONCLUSIVE")
+SUPPORTED = "SUPPORTED"
+NDE = "NO DETECTABLE EFFECT"
+INCONCLUSIVE = "INCONCLUSIVE"
+NS_INVALID = "NOT SUPPORTED: metric invalid (GATE 4/5)"
+NS_DEPTH = "NOT SUPPORTED: explained by depth"
+NS_OPPOSITE = "NOT SUPPORTED: opposite direction"
+DEGENERATE = "DEGENERATE METRIC"
+REFUSAL = "REFUSAL: nuisance bias (GATE 0)"
+UNIDENTIFIABLE = "UNIDENTIFIABLE"
+OTHER = "OTHER"  # a label and cause the panel does not expect (e.g. not replicated: no GATE 6 here)
+ERROR = "ERROR"  # no report, an engine error, or a label that does not match its cause
+OUTCOMES = (SUPPORTED, NDE, INCONCLUSIVE, NS_INVALID, NS_DEPTH, NS_OPPOSITE, DEGENERATE, REFUSAL,
+            UNIDENTIFIABLE, OTHER, ERROR)
+DEFINITE = frozenset({SUPPORTED, NDE, NS_INVALID, NS_DEPTH, NS_OPPOSITE, DEGENERATE, UNIDENTIFIABLE})
 LABELS = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE", "UNIDENTIFIABLE",
           "DEGENERATE METRIC")
 
+# The engine's cause codes (metric_autopsy.report.CAUSES; test_every_engine_cause_has_an_outcome)
+# and the outcome each one is scored as. GATE 0's block for a nuisance bias is a refusal: allowed
+# everywhere, never definite (decided 2026-10-08).
+_INCONCLUSIVE_CAUSES = ("effect_not_evaluated", "insufficient_replication", "absence_untested_metric",
+                        "effect_inconclusive", "detected_untested_metric", "bias_unsized", "no_direction",
+                        "judgment_pending")
+CAUSE_OUTCOME = {"replicated": SUPPORTED, "provisional": SUPPORTED, "no_detectable_effect": NDE,
+                 "metric_invalid_gate4": NS_INVALID, "metric_invalid_gate5": NS_INVALID,
+                 "metric_invalid_gate0": REFUSAL, "explained_by_depth": NS_DEPTH,
+                 "opposite_direction": NS_OPPOSITE, "degenerate_metric": DEGENERATE,
+                 "unidentifiable": UNIDENTIFIABLE, "not_replicated": OTHER, "metric_invalid": OTHER,
+                 **{c: INCONCLUSIVE for c in _INCONCLUSIVE_CAUSES}}
+_OUTCOME_LABEL = {SUPPORTED: "SUPPORTED", NDE: "NO DETECTABLE EFFECT", INCONCLUSIVE: "INCONCLUSIVE",
+                  NS_INVALID: "NOT SUPPORTED", NS_DEPTH: "NOT SUPPORTED", NS_OPPOSITE: "NOT SUPPORTED",
+                  REFUSAL: "NOT SUPPORTED", OTHER: "NOT SUPPORTED", DEGENERATE: "DEGENERATE METRIC",
+                  UNIDENTIFIABLE: "UNIDENTIFIABLE"}
 
+
+def label(verdict: str | None) -> str | None:
+    """The verdict's label: the text before ' — ', without bracketed qualifiers.
+    'SUPPORTED (provisional until replicated)' and 'SUPPORTED — replicated' are SUPPORTED."""
+    if not verdict:
+        return None
+    head = verdict.split(" — ")[0].split(" [")[0].split(" (")[0].strip()
+    return head if head in LABELS else None
+
+
+def outcome(verdict: str | None, cause: str | None) -> str:
+    """The outcome a report is scored as: its cause's outcome, if its label is that outcome's."""
+    out = CAUSE_OUTCOME.get(cause or "")
+    if out is None or label(verdict) != _OUTCOME_LABEL[out]:
+        return ERROR
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# the design: every condition with its variants and number of datasets
+# --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Condition:
     name: str
     background: str
     variants: tuple            # ((variant label, number of datasets), ...)
-    allowed: tuple             # for E1-E3 the base set; NO DETECTABLE EFFECT joins where |Δ*| < SESOI
-    null: bool                 # scored for false SUPPORTED
+    data: str                  # the truth about the data: "null" (no biology) or "effect" (a real one)
+    artifact: bool = False     # a technical artifact is planted (N2, N3, N8; E2, E3 with the effect)
+    metric: str = "norm_pearson"  # or a useless metric: "random", "constant", "score" (N6)
     key: bool = False          # key null condition (criterion S1), at its key variant
     key_variant: str | None = None
     cards: int = 1             # claim cards per dataset (N4: without and with a replicate column)
@@ -72,24 +124,24 @@ class Condition:
 
 
 CONDITIONS = (
-    Condition("N1", "B1", (("null", KEY_N),), NULL_ALLOWED, True, True, "null"),
-    Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 100), ("c=0.7", 100), ("c=0.3", 100)),
-              NULL_ALLOWED, True, True, "c=0.5"),
-    Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)), NULL_ALLOWED, True),
-    Condition("N4", "B1", (("3v3", 100),), ("INCONCLUSIVE", "NO DETECTABLE EFFECT", "NOT SUPPORTED"),
-              True, cards=2, oracle=False),
-    Condition("N5", "B1", (("sham", KEY_N),), ("NO DETECTABLE EFFECT", "INCONCLUSIVE"), True, True, "sham"),
-    Condition("N6a", "B1", (("random", 100),), ("NOT SUPPORTED", "INCONCLUSIVE"), True),
-    Condition("N6b", "B1", (("constant", 50),), ("DEGENERATE METRIC",), True),
-    Condition("N6c", "B1", (("random-genes", KEY_N),), ("NOT SUPPORTED", "INCONCLUSIVE"), True, True,
-              "random-genes"),
-    Condition("N7", "B2", (("mice", 200),), NULL_ALLOWED, True),
-    Condition("N8", "B1", (("beta(2,2)", KEY_N),), NULL_ALLOWED, True, True, "beta(2,2)"),
+    Condition("N1", "B1", (("null", KEY_N),), "null", key=True, key_variant="null"),
+    Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 100), ("c=0.7", 100), ("c=0.3", 100)), "null",
+              artifact=True, key=True, key_variant="c=0.5"),
+    Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)), "null", artifact=True),
+    Condition("N4", "B1", (("3v3", 100),), "null", cards=2, oracle=False),
+    Condition("N5", "B1", (("sham", KEY_N),), "null", key=True, key_variant="sham"),
+    Condition("N6a", "B1", (("random", 100),), "null", metric="random"),
+    Condition("N6b", "B1", (("constant", 50),), "null", metric="constant"),
+    Condition("N6c", "B1", (("random-genes", KEY_N),), "null", metric="score", key=True,
+              key_variant="random-genes"),
+    Condition("N7", "B2", (("mice", 200),), "null"),
+    Condition("N8", "B1", (("beta(2,2)", KEY_N),), "null", artifact=True, key=True, key_variant="beta(2,2)"),
     Condition("E1", "B1", (("dose=key", 200), ("dose=0.25", 100), ("dose=0.5", 100), ("dose=1.5", 100)),
-              EFFECT_ALLOWED, False),
-    Condition("E2", "B1", (("against", 200),), EFFECT_ALLOWED, False),
-    Condition("E3", "B1", (("with", 200),), EFFECT_ALLOWED, False),
+              "effect"),
+    Condition("E2", "B1", (("against", 200),), "effect", artifact=True),
+    Condition("E3", "B1", (("with", 200),), "effect", artifact=True),
 )
+BACKGROUNDS = ("B1", "B2")
 
 # The drop order of v1.md section 4 (compute budget): whole variants, never replicates of the
 # rest, and never a key null condition or E1-E3 at the key dose.
@@ -118,34 +170,42 @@ def n_datasets(dropped=()) -> int:
     return sum(n for c in CONDITIONS for v, n in c.variants if not _dropped(c.name, v, dropped))
 
 
-def n_cards(dropped=(), null: bool | None = None) -> int:
+def n_cards(dropped=(), data: str | None = None) -> int:
     return sum(n * c.cards for c in CONDITIONS for v, n in c.variants
-               if not _dropped(c.name, v, dropped) and (null is None or c.null == null))
+               if not _dropped(c.name, v, dropped) and (data is None or c.data == data))
 
 
-def level_of_pair(pair_index: int) -> str:
-    return LEVELS[pair_index // PAIRS_PER_LEVEL]
+def pairs_per_level(pool: list) -> int:
+    """The pool's pairs per level (the same for every level of a background)."""
+    return len(pool) // len(LEVELS)
+
+
+def level_of_pair(pair_index: int, pool_size: int) -> str:
+    """Pool entries are ordered by level: the first pool_size / 3 are high, then medium, then low."""
+    return LEVELS[int(pair_index) // (int(pool_size) // len(LEVELS))]
 
 
 # --------------------------------------------------------------------------- #
 # the key: condition, variant, side, gene pair and seed of every dataset ID
 # --------------------------------------------------------------------------- #
 def check_key(key: str) -> str:
-    if not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{32}", key):
-        raise ValueError("the key is 128 bits as 32 lowercase hex characters (secrets.token_hex(16))")
+    """The key: a drand round's randomness, 256 bits as 64 lowercase hex characters."""
+    if not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{64}", key):
+        raise ValueError("the key is a drand randomness: 64 lowercase hex characters (beacon.py)")
     return key
 
 
-def key_commitment(key: str) -> str:
-    """The public commitment to the key: sha256 of its hex string in UTF-8."""
-    return hashlib.sha256(check_key(key).encode("utf-8")).hexdigest()
+DEFAULT_POOL_SIZES = {b: len(LEVELS) * MAX_PAIRS_PER_LEVEL for b in BACKGROUNDS}
 
 
-def assign(key: str, dropped=()) -> list[dict]:
+def assign(key: str, dropped=(), pool_sizes: dict | None = None) -> list[dict]:
     """Every dataset of the design, in an order and with sides, gene pairs and seeds decided by
-    the key. Deterministic in the key; nothing about an entry is visible in its ID, and the gene
-    pair is drawn independently of the condition."""
+    the key. Deterministic in the key; nothing about an entry is visible in its ID. The gene pair
+    is drawn independently of the condition: a 62-bit integer per dataset, reduced modulo the
+    size of its background's pool (fixed before the key, `pool_sizes`; pilot.json records it),
+    so that every pair of the pool is equally likely."""
     dropped = check_dropped(dropped)
+    sizes = dict(DEFAULT_POOL_SIZES, **(pool_sizes or {}))
     entries = [dict(condition=c.name, variant=v, index=i)
                for c in CONDITIONS for v, n in c.variants if not _dropped(c.name, v, dropped)
                for i in range(n)]
@@ -154,11 +214,14 @@ def assign(key: str, dropped=()) -> list[dict]:
     perm = np.random.default_rng(order_seq).permutation(len(entries))
     width = len(str(len(entries)))
     out = []
+    conds = conditions()
     for rank, k in enumerate(perm):
         e = dict(entries[k])
         draw = np.random.default_rng(data_seqs[k].spawn(1)[0])
-        e.update(id=f"D{rank + 1:0{width}d}", side=("A", "B")[int(draw.integers(2))],
-                 pair=int(draw.integers(len(LEVELS) * PAIRS_PER_LEVEL)),
+        side = ("A", "B")[int(draw.integers(2))]
+        pair_draw = int(draw.integers(2 ** 62))
+        e.update(id=f"D{rank + 1:0{width}d}", side=side, pair_draw=pair_draw,
+                 pair=pair_draw % int(sizes[conds[e["condition"]].background]),
                  seed=int(data_seqs[k].generate_state(1)[0]))
         out.append(e)
     return out
@@ -169,10 +232,24 @@ def card_ids(entry: dict) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
-# allowed sets (the pilot's Δ* decides NO DETECTABLE EFFECT for the real effects)
+# the truth and the allowed outcomes (pilot.json fixes the truth before the key)
 # --------------------------------------------------------------------------- #
 def e1_factor(variant: str) -> float:
     return 1.0 if variant == "dose=key" else float(variant.split("=")[1])
+
+
+def pool_level(cond: Condition, pair_index: int, pilot: dict) -> str:
+    return pilot["pool"][cond.background][int(pair_index)]["level"]
+
+
+def sesoi_of(cond: Condition, pair_index: int, pilot: dict) -> float:
+    """The SESOI of the pair's level on the condition's background (one rule for every
+    background, computed on that background: v1.md 3.2)."""
+    return float(pilot["sesoi"][cond.background][pool_level(cond, pair_index, pilot)])
+
+
+def delta_min_of(cond: Condition, pair_index: int, pilot: dict) -> float:
+    return DELTA_MIN_FRACTION * sesoi_of(cond, pair_index, pilot)
 
 
 def delta_of(cond_name: str, variant: str, pair_index: int, pilot: dict) -> dict:
@@ -183,20 +260,61 @@ def delta_of(cond_name: str, variant: str, pair_index: int, pilot: dict) -> dict
     return pilot["delta"][str(pair_index)][f"{factor:g}"]
 
 
-def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> tuple:
-    """The verdicts correct for this design. For a real effect NO DETECTABLE EFFECT is correct
-    only where |Δ*| < SESOI of the pair's level; where |Δ*| >= SESOI it is an error (E2 and E3
-    included, whose attenuation should make the engine report UNDERPOWERED, i.e. INCONCLUSIVE)."""
-    if not cond.name.startswith("E"):
-        return cond.allowed
-    d = float(delta_of(cond.name, variant, pair_index, pilot)["value"])
-    sesoi = float(pilot["sesoi"][level_of_pair(pair_index)])
-    return cond.allowed + (("NO DETECTABLE EFFECT",) if abs(d) < sesoi else ())
+def classify_response(response: float, delta_min: float, band: float = TRUTH_BAND) -> str:
+    """The truth about the metric on a pair, from its population response to the GATE 4
+    injection: valid at >= (1 + band) delta_min, blind at <= (1 - band) delta_min, else ambiguous."""
+    if response >= (1 + band) * delta_min:
+        return "valid"
+    if response <= (1 - band) * delta_min:
+        return "blind"
+    return "ambiguous"
 
 
-def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> tuple:
-    """The correct definite verdicts: in the allowed set and not INCONCLUSIVE."""
-    return tuple(v for v in allowed(cond, variant, pair_index, pilot) if v != "INCONCLUSIVE")
+def metric_truth(cond: Condition, pair_index: int, pilot: dict) -> str:
+    """'valid', 'blind' or 'ambiguous' for log-normalized Pearson on the pair (the oracle's
+    population response, pilot.json); a useless metric (N6) is 'useless', the constant 'constant'."""
+    if cond.metric == "constant":
+        return "constant"
+    if cond.metric != "norm_pearson":
+        return "useless"
+    return pilot["truth"][cond.background][str(int(pair_index))]["class"]
+
+
+INVALID_ALLOWED = frozenset({NS_INVALID, INCONCLUSIVE, REFUSAL})
+
+
+def data_allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:
+    """The outcomes correct for a valid metric, given the data (v1.md 3.2): on null data NO
+    DETECTABLE EFFECT, INCONCLUSIVE and NOT SUPPORTED for the opposite direction, plus NOT
+    SUPPORTED explained by depth where an artifact is planted; on a real effect SUPPORTED and
+    INCONCLUSIVE, plus NO DETECTABLE EFFECT where |Δ*| < SESOI. A refusal by GATE 0 always."""
+    if cond.data == "null":
+        ok = {NDE, INCONCLUSIVE, NS_OPPOSITE, REFUSAL} | ({NS_DEPTH} if cond.artifact else set())
+    else:
+        d = float(delta_of(cond.name, variant, pair_index, pilot)["value"])
+        ok = {SUPPORTED, INCONCLUSIVE, REFUSAL} | ({NDE} if abs(d) < sesoi_of(cond, pair_index, pilot) else set())
+    return frozenset(ok)
+
+
+def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:
+    """The outcomes correct for this card (the same rule for every condition, decided
+    2026-10-08): a blind or useless metric allows NOT SUPPORTED (metric invalid), INCONCLUSIVE
+    and a refusal, and the constant also DEGENERATE METRIC; a valid metric allows
+    `data_allowed`; an ambiguous one the union of both sets."""
+    truth = metric_truth(cond, pair_index, pilot)
+    if truth == "useless":
+        return INVALID_ALLOWED
+    if truth == "constant":
+        return INVALID_ALLOWED | {DEGENERATE}
+    if truth == "blind":
+        return INVALID_ALLOWED
+    ok = data_allowed(cond, variant, pair_index, pilot)
+    return ok if truth == "valid" else ok | INVALID_ALLOWED
+
+
+def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:
+    """The correct definite outcomes: allowed, and neither INCONCLUSIVE nor a refusal."""
+    return allowed(cond, variant, pair_index, pilot) & DEFINITE
 
 
 # --------------------------------------------------------------------------- #
@@ -355,6 +473,63 @@ def _partial_corr(blocks, libs) -> np.ndarray:
     return np.divide(S, den, out=np.full_like(S, np.nan), where=den > 0)
 
 
+def _level_search(X, names, mean, level, order, tot, plan_rows):
+    """Per level: the candidate genes, their partial-correlation matrix and the pairs ranked by it."""
+    out = {}
+    for lvl in LEVELS:
+        cand = [int(j) for j in order if level[j] == lvl][:LEVEL_CANDIDATES]
+        lib = [np.where(tot[r] > 0, tot[r], 1.0) for r in plan_rows]
+        blocks = [np.log1p(_dense(X[r][:, cand]) / t[:, None] * 1e4) for r, t in zip(plan_rows, lib)]
+        # rounded so that the summation order of the matrix products cannot reorder near-ties
+        C = (np.round(_partial_corr(blocks, [np.log(t) for t in lib]), 10) if len(cand) > 1
+             else np.full((len(cand), len(cand)), np.nan))
+        iu = np.triu_indices(len(cand), 1)
+        r = C[iu]
+        top = [t for t in np.argsort(-np.nan_to_num(r, nan=-np.inf), kind="mergesort") if np.isfinite(r[t])]
+        out[lvl] = dict(cand=cand, C=C, iu=iu, r=r, top=top)
+    return out
+
+
+def _choose_pairs(search: dict, mean, names, k: int):
+    """The pool with k pairs per level (and the positive control) by the rule of
+    `plan_background`; ValueError if some level cannot provide them."""
+    used: set = set()
+    pool, positive, levels = [], None, {}
+    for li, lvl in enumerate(LEVELS):
+        cand, C, iu, r, top = (search[lvl][x] for x in ("cand", "C", "iu", "r", "top"))
+        need = k + (1 if lvl == "high" else 0)
+        if len(cand) < 4 * need:
+            raise ValueError(f"level {lvl!r} has {len(cand)} eligible genes, too few for {k} pairs and "
+                             "their negative controls")
+        chosen = []
+        for t in top:
+            a, b = cand[iu[0][t]], cand[iu[1][t]]
+            if a in used or b in used:
+                continue
+            chosen.append((a, b, float(r[t])))
+            used.update((a, b))
+            if len(chosen) == need:
+                break
+        if len(chosen) < need:
+            raise ValueError(f"level {lvl!r}: fewer than {need} disjoint pairs")
+        if lvl == "high":
+            positive = chosen.pop()
+        avg = (mean[cand][:, None] + mean[cand][None, :]) / 2
+        for j, (a, b, rab) in enumerate(chosen):
+            free = np.array([g not in used for g in cand])
+            ok = np.triu((np.abs(np.nan_to_num(C, nan=np.inf)) < NEG_MAX_R) & np.outer(free, free), 1)
+            gap = np.where(ok, np.abs(avg - (mean[a] + mean[b]) / 2), np.inf)
+            if not np.isfinite(gap).any():
+                raise ValueError(f"no negative control with |r| < {NEG_MAX_R} for {names[a]}-{names[b]}")
+            i, jj = np.unravel_index(int(np.argmin(gap)), gap.shape)
+            c, d = cand[i], cand[jj]
+            used.update((c, d))
+            pool.append(dict(level=lvl, index=li * k + j, pair=[names[a], names[b]], r=rab,
+                             neg_pair=[names[c], names[d]], neg_r=float(C[i, jj]), _genes=(a, b, c, d)))
+        levels[lvl] = dict(candidates=len(cand), median_r=float(np.nanmedian(r)) if len(r) else float("nan"))
+    return pool, positive, used, levels
+
+
 def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
     """Fixed before the key: the pair pool, its controls, the kept genes and N6c's random genes.
 
@@ -364,10 +539,11 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
     expressed enter the search. A pair's correlation is the pooled within-donor correlation of
     log-normalized expression over all cells with the log library size partialled out
     (`_partial_corr`), on 200 cells per donor (public seed): what the two genes share beyond
-    depth. Per level the PAIRS_PER_LEVEL most correlated disjoint pairs form the pool; the next
-    disjoint pair of the high level is the background's positive control (GATE 5), as a
-    housekeeping pair would be; each pool pair's negative control is the unused pair of its level
-    closest to it in mean expression whose |partial correlation| is below 0.02."""
+    depth. Per level the k most correlated disjoint pairs form the pool, k = 8 where every level
+    has them (each with its negative control) and otherwise the largest k >= 4 that every level
+    has; the next disjoint pair of the high level is the background's positive control (GATE 5),
+    as a housekeeping pair would be; each pool pair's negative control is the unused pair of its
+    level closest to it in mean expression whose |partial correlation| is below 0.02."""
     rng = np.random.default_rng(seed)
     donor_all = np.asarray(bg.donor).astype(str)
     vals, counts = np.unique(donor_all, return_counts=True)
@@ -389,50 +565,22 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
            else np.asarray(X).sum(axis=1).astype(np.int64)).astype(float)
     plan_rows = [np.sort(rng.choice(np.where(donor == d)[0], size=min(PLAN_CELLS_PER_DONOR, int((donor == d).sum())),
                                     replace=False)) for d in donors]
-    used: set = set()
-    levels, pool, positive = {}, [], None
-    for li, lvl in enumerate(LEVELS):
-        cand = [int(j) for j in order if level[j] == lvl][:LEVEL_CANDIDATES]
-        need = PAIRS_PER_LEVEL + (1 if lvl == "high" else 0)
-        if len(cand) < 4 * need:
-            raise ValueError(f"{bg.name}: level {lvl!r} has {len(cand)} eligible genes, too few for its "
-                             f"pairs and their negative controls")
-        lib = [np.where(tot[r] > 0, tot[r], 1.0) for r in plan_rows]
-        blocks = [np.log1p(_dense(X[r][:, cand]) / t[:, None] * 1e4) for r, t in zip(plan_rows, lib)]
-        # rounded so that the summation order of the matrix products cannot reorder near-ties
-        C = np.round(_partial_corr(blocks, [np.log(t) for t in lib]), 10)
-        iu = np.triu_indices(len(cand), 1)
-        r = C[iu]
-        top = [t for t in np.argsort(-np.nan_to_num(r, nan=-np.inf), kind="mergesort") if np.isfinite(r[t])]
-        chosen = []
-        for t in top:
-            a, b = cand[iu[0][t]], cand[iu[1][t]]
-            if a in used or b in used:
-                continue
-            chosen.append((a, b, float(r[t])))
-            used.update((a, b))
-            if len(chosen) == need:
-                break
-        if len(chosen) < need:
-            raise ValueError(f"{bg.name}: level {lvl!r}: fewer than {need} disjoint pairs")
-        if lvl == "high":
-            positive = chosen.pop()
-        avg = (mean[cand][:, None] + mean[cand][None, :]) / 2
-        for k, (a, b, rab) in enumerate(chosen):
-            free = np.array([g not in used for g in cand])
-            ok = np.triu((np.abs(np.nan_to_num(C, nan=np.inf)) < NEG_MAX_R) & np.outer(free, free), 1)
-            gap = np.where(ok, np.abs(avg - (mean[a] + mean[b]) / 2), np.inf)
-            if not np.isfinite(gap).any():
-                raise ValueError(f"{bg.name}: no negative control with |r| < {NEG_MAX_R} for {names[a]}-{names[b]}")
-            i, j = np.unravel_index(int(np.argmin(gap)), gap.shape)
-            c, d = cand[i], cand[j]
-            used.update((c, d))
-            pool.append(dict(level=lvl, index=li * PAIRS_PER_LEVEL + k, pair=[names[a], names[b]], r=rab,
-                             mean=[float(mean[a]), float(mean[b])], detection=[float(det[a]), float(det[b])],
-                             neg_pair=[names[c], names[d]], neg_r=float(C[i, j]),
-                             neg_mean=[float(mean[c]), float(mean[d])]))
-        levels[lvl] = dict(eligible_genes=int(sum(level == lvl)), candidates=len(cand),
-                           median_r=float(np.nanmedian(r)))
+    search = _level_search(X, names, mean, level, order, tot, plan_rows)
+    tried = []
+    for k in range(MAX_PAIRS_PER_LEVEL, MIN_PAIRS_PER_LEVEL - 1, -1):
+        try:
+            pool, positive, used, levels = _choose_pairs(search, mean, names, k)
+            break
+        except ValueError as exc:
+            tried.append(f"{k}: {exc}")
+    else:
+        raise ValueError(f"{bg.name}: no pool of >= {MIN_PAIRS_PER_LEVEL} pairs per level ({'; '.join(tried)})")
+    for pe in pool:
+        a, b, c, d = pe.pop("_genes")
+        pe.update(mean=[float(mean[a]), float(mean[b])], detection=[float(det[a]), float(det[b])],
+                  neg_mean=[float(mean[c]), float(mean[d])])
+    for lvl in LEVELS:
+        levels[lvl]["eligible_genes"] = int(sum(level == lvl))
     pos_pair = [names[positive[0]], names[positive[1]]]
     for pe in pool:
         pe["pos_pair"] = pos_pair
@@ -445,8 +593,9 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
     plan = dict(rule=dict(cells_per_donor=CELLS_PER_DONOR, min_donor_detection=MIN_DONOR_DETECTION,
                           level_rule="low: detected in [10%, 50%); medium: >= 50%, mean < 2; high: >= 50%, mean >= 2",
                           level_candidates=LEVEL_CANDIDATES, plan_cells_per_donor=PLAN_CELLS_PER_DONOR,
-                          neg_max_r=NEG_MAX_R, pairs_per_level=PAIRS_PER_LEVEL,
-                          seed=seed),
+                          neg_max_r=NEG_MAX_R, max_pairs_per_level=MAX_PAIRS_PER_LEVEL,
+                          min_pairs_per_level=MIN_PAIRS_PER_LEVEL, seed=seed),
+                pairs_per_level=len(pool) // len(LEVELS), fewer_pairs_because=tried,
                 donors=[str(d) for d in donors], cells=int(len(rows)), genes=[names[j] for j in keep],
                 levels=levels, pool=pool,
                 positive_control=dict(pair=pos_pair, r=positive[2],
@@ -554,12 +703,22 @@ def _two_groups(bg: Background, rng, per_group: int):
 
 
 def pool_entry(bg: Background, entry: dict) -> dict:
-    return bg.plan["pool"][entry["pair"]]
+    pool = bg.plan["pool"]
+    if not 0 <= int(entry["pair"]) < len(pool):
+        raise ValueError(f"{entry.get('id')}: pair {entry['pair']} outside {bg.name}'s pool of {len(pool)}")
+    return pool[int(entry["pair"])]
+
+
+def e_dose(level: str, pilot: dict) -> float:
+    """The base dose of the real effects at a level of B1: the key dose where the pilot found one,
+    else the level's saturation dose on B1 (decided 2026-10-08)."""
+    return float(pilot["e_dose"][level])
 
 
 def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame, list, list[dict]]:
-    """Counts, obs, genes and claim card(s) of one dataset. `pilot` holds the SESOI and the key
-    dose per level and Δ* (whose sign is the true direction of a real effect)."""
+    """Counts, obs, genes and claim card(s) of one dataset. `pilot` holds, per background and
+    level, the SESOI and the saturation dose (the GATE 4 injection of the card), the base dose of
+    the real effects at each level of B1, and Δ* per pair (whose sign is the true direction)."""
     cond = conditions()[entry["condition"]]
     bg = bgs[cond.background]
     rng = np.random.default_rng(entry["seed"])
@@ -586,9 +745,9 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
         X[in_side] = drop_out(X[in_side], float(variant.split("=")[1]), rng)
     elif cond.name == "N8":
         X[in_side] = variable_capture(X[in_side], rng)
-    elif cond.name.startswith("E"):
+    elif cond.data == "effect":
         factor = e1_factor(variant) if cond.name == "E1" else 1.0
-        dose = factor * float(pilot["key_dose"][level])
+        dose = factor * e_dose(level, pilot)
         X[in_side] = inject_coupling(X[in_side], ia, ib, dose, rng)
         X[~in_side] = sham_coupling(X[~in_side], ia, ib, dose, rng)
         if cond.name == "E2":   # artifact against the effect: capture loss where the signal is
@@ -600,22 +759,23 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
     obs["n_genes_by_counts"] = (X > 0).sum(axis=1)
     # the claim's direction: for a real effect the true one (the signal side is higher where
     # Δ* > 0); for a null a coin, so that the card does not reveal the condition
-    if cond.name.startswith("E"):
+    if cond.data == "effect":
         known = str(entry["pair"]) in (pilot.get("delta") or {})
         positive = (not known) or float(delta_of(cond.name, variant, entry["pair"], pilot)["value"]) >= 0
         higher = side if positive else other
     else:
         higher = ("A", "B")[int(rng.integers(2))]
     direction = "decrease" if higher == "A" else "increase"  # change from A to B
-    metric = {"N6a": "random", "N6b": "constant", "N6c": "score"}.get(cond.name, "norm_pearson")
-    base = dict(id=entry["id"], background=cond.background, metric=metric, gene_pair=pe["pair"],
+    sesoi = float(pilot["sesoi"][cond.background][level])
+    strength = float(pilot["saturation_dose"][cond.background][level])
+    base = dict(id=entry["id"], background=cond.background, metric=cond.metric, gene_pair=pe["pair"],
                 pos_pair=pe["pos_pair"], neg_pair=pe["neg_pair"],
-                score_genes=bg.plan["random_genes"] if metric == "score" else None,
+                score_genes=bg.plan["random_genes"] if cond.metric == "score" else None,
                 group_col="group", groups=["A", "B"], replicate_col="donor",
-                signal_test=(dict(kind="module", genes=bg.plan["g2m"]) if metric == "score"
-                             else dict(kind="coupling", genes=pe["pair"])),
-                prereg=dict(estimand="composition", direction=direction,
-                            sesoi=float(pilot["sesoi"][level]), judgment_pending=False))
+                signal_test=(dict(kind="module", genes=bg.plan["g2m"]) if cond.metric == "score"
+                             else dict(kind="coupling", genes=pe["pair"], strength=strength)),
+                prereg=dict(estimand="composition", direction=direction, sesoi=sesoi,
+                            delta_min=DELTA_MIN_FRACTION * sesoi, judgment_pending=False))
     cards = [base]
     if cond.cards == 2:  # N4: the same cells analysed without and with the replicate unit
         cards = [dict(base, id=f"{entry['id']}a", replicate_col=None), dict(base, id=f"{entry['id']}b")]

@@ -1,0 +1,65 @@
+# The audit of the flagship data behind preprint section 4 (Tabula Muris Senis FACS), pinned to the
+# v0.1.1 engine (validation/flagship_audit/README.md; validation-plan step 1).
+#
+# Real run: the push of the tag v0.3.0-prereg, so that the real data are read only after the
+# engine is frozen. The audit's small outputs (out/audit_report.md, out/audit_results.json) are
+# committed to the working branch by the workflow itself.
+# Dry run: pull requests that touch the audit run it on fabricated TMS-shaped data (offline).
+name: Flagship audit v0.1.1
+
+on:
+  push:
+    tags: ["v0.3.0-prereg"]
+  pull_request:
+    paths:
+      - "validation/flagship_audit/**"
+      - ".github/workflows/audit.yml"
+
+permissions:
+  contents: read
+
+env:
+  WORK_BRANCH: claude/confident-cori-sjeisb
+  REAL: ${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.3.0-prereg' }}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.REAL == 'true' && env.WORK_BRANCH || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: The v0.1.1 engine from its tag, and the Census client
+        run: |
+          python -m pip install --upgrade pip
+          git worktree add ../metric-autopsy-v0.1.1 v0.1.1
+          pip install -e ../metric-autopsy-v0.1.1 cellxgene-census==1.18.0 scipy anndata
+          python -c "import metric_autopsy; print(metric_autopsy.__version__)"
+      - name: Audit (dry run on fabricated data)
+        if: env.REAL != 'true'
+        run: python validation/flagship_audit/audit_tms.py --dry-run-synthetic --out audit_dry
+      - name: Audit (real run)
+        if: env.REAL == 'true'
+        run: python validation/flagship_audit/audit_tms.py --out validation/flagship_audit/out --cache audit_cache
+      - name: ERCC in the source files (real run; several GB, may fail on disk space)
+        if: env.REAL == 'true'
+        continue-on-error: true
+        run: |
+          python validation/flagship_audit/audit_tms.py --source-h5ad --out audit_source --cache audit_cache
+          cp audit_source/audit_report.md validation/flagship_audit/out/audit_report_source_h5ad.md
+          cp audit_source/audit_results.json validation/flagship_audit/out/audit_results_source_h5ad.json
+      - name: Commit the audit (real run)
+        if: env.REAL == 'true'
+        run: |
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -f validation/flagship_audit/out/
+          git commit -m "Flagship audit on v0.1.1 (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git pull --rebase origin "$WORK_BRANCH" && git push origin "HEAD:$WORK_BRANCH" && break; sleep $((i * 10)); done

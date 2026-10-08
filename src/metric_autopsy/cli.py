@@ -104,6 +104,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale)")
     p.add_argument("--bias-tolerance", type=float,
                    help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
+    p.add_argument("--delta-min", type=float,
+                   help="GATE 4/5: the smallest response to an injected signal that matters, on the "
+                        "metric's scale (default 0.5 x SESOI); a metric is invalid only if shown below it")
     p.add_argument("--min-replicates", type=int, help="minimum replicates per group (>= 3)")
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
     p.add_argument("--inject-signal", choices=["coupling"],
@@ -130,7 +133,8 @@ def build_prereg(args) -> dict:
         with open(args.prereg) as fh:
             prereg = json.load(fh)
     for key, val in (("estimand", args.estimand), ("direction", args.direction), ("sesoi", args.sesoi),
-                     ("bias_tolerance", args.bias_tolerance), ("min_replicates", args.min_replicates)):
+                     ("bias_tolerance", args.bias_tolerance), ("delta_min", args.delta_min),
+                     ("min_replicates", args.min_replicates)):
         if val is not None:
             prereg[key] = val
     if args.resolve_judgment:

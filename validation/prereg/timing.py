@@ -32,7 +32,22 @@ import panel as P  # noqa: E402
 import run_panel as R  # noqa: E402
 import simulate  # noqa: E402
 
-TIMING_KEY = "7" * 32  # public: the timing sample is not the panel
+TIMING_KEY = "7" * 64  # public: the timing sample is not the panel
+SHARDS, WORKERS = 20, 4  # the blind run: 20 shard jobs of 4 workers (validation.yml)
+BUDGET_HOURS = 3.0       # the slowest shard's projected time may not exceed this (a job may run 6 h)
+
+
+def decide_drops(per_card_wall_seconds: float, budget_hours: float = BUDGET_HOURS) -> list:
+    """Drops in the pre-registered order (panel.DROP_ORDER) until a shard's projected time,
+    cards / SHARDS x the wall time per card at WORKERS workers, fits the budget (v1.md, section 4)."""
+    dropped = []
+    for name, variant in P.DROP_ORDER:
+        if P.n_cards(dropped) / SHARDS * per_card_wall_seconds / 3600 <= budget_hours:
+            break
+        dropped.append(f"{name}:{variant}")
+    if P.n_cards(dropped) / SHARDS * per_card_wall_seconds / 3600 > budget_hours:
+        raise SystemExit("the key conditions and the real effects at the key dose do not fit the budget")
+    return dropped
 
 
 def sample(entries, k: int, rng) -> list:
@@ -48,8 +63,10 @@ def main(argv=None):
     p.add_argument("--cards", type=int, default=24)
     p.add_argument("--genes", type=int, default=2500, help="genes of the simulated backgrounds")
     p.add_argument("--backgrounds", help="backgrounds JSON as panel.py takes it (default: simulated)")
-    p.add_argument("--pilot", help="pilot.json from oracle.py (default: a stand-in, SESOI 0.1, dose 2.0)")
+    p.add_argument("--pilot", help="pilot.json from oracle.py (default: a stand-in, SESOI 0.1, saturation dose 2.0)")
     p.add_argument("--data-dir", help="the downloaded files of backgrounds.json (default: next to it)")
+    p.add_argument("--write-drops", action="store_true",
+                   help="write the drops the projection needs into --pilot (the pilot step, before the key)")
     args = p.parse_args(argv)
     rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=HERE, capture_output=True,
                          text=True).stdout.strip() or "?"
@@ -62,9 +79,11 @@ def main(argv=None):
         bgs = simulate.dry_backgrounds(args.genes)
         print("# backgrounds: simulated (validation/prereg/simulate.py, dry_backgrounds)")
     pilot = json.loads(Path(args.pilot).read_text()) if args.pilot else simulate.dry_pilot(bgs)
-    entries = sample(P.assign(TIMING_KEY, pilot.get("dropped", ())), args.cards, np.random.default_rng(0))
-    print(f"# sample of {len(entries)} datasets: {dict(Counter(e['condition'] for e in entries))}; "
-          f"levels {dict(Counter(P.level_of_pair(e['pair']) for e in entries))}")
+    entries = sample(P.assign(TIMING_KEY, pilot.get("dropped", ()), pilot.get("pool_size")), args.cards,
+                     np.random.default_rng(0))
+    level = {(b, pe["index"]): pe["level"] for b, pool in pilot["pool"].items() for pe in pool}
+    print(f"# sample of {len(entries)} datasets: {dict(Counter(e['condition'] for e in entries))}; levels "
+          f"{dict(Counter(level[(P.conditions()[e['condition']].background, e['pair'])] for e in entries))}")
     print(f"# dataset shape (cells x genes): {P.build(entries[0], bgs, pilot)[0].shape}")
     rows = {}
     with tempfile.TemporaryDirectory() as tmp:
@@ -74,9 +93,10 @@ def main(argv=None):
             manifest = json.loads((Path(tmp) / f"out{w}" / "manifest.json").read_text())
             by = {}
             cond_of = {e["id"]: e["condition"] for e in entries}
+            runtime = {c["id"]: c for c in json.loads((Path(tmp) / f"out{w}" / "runtime.json").read_text())["cards"]}
             for row in manifest["datasets"]:
                 for c in row["cards"]:
-                    by.setdefault(cond_of[row["id"]], []).append(c["seconds"])
+                    by.setdefault(cond_of[row["id"]], []).append(runtime[c["id"]]["seconds"])
             print(f"workers={w}: {s['run']} cards in {s['wall_seconds']:.0f} s wall; per card mean "
                   f"{s['mean_seconds']:.1f} s, median {s['median_seconds']:.1f} s; errors {s['errors']}")
             print("  per condition (mean s): " + ", ".join(f"{c} {np.mean(v):.1f}" for c, v in sorted(by.items())))
@@ -85,6 +105,15 @@ def main(argv=None):
     per_card_wall = rows[w]["wall_seconds"] / rows[w]["run"]
     print(f"# whole panel: {n_cards} cards; at {w} workers {n_cards * per_card_wall / 3600:.1f} h wall "
           f"({per_card_wall:.1f} s per card); single-core {n_cards * rows[1]['mean_seconds'] / 3600:.1f} CPU-h")
+    print(f"# blind run: {SHARDS} shards of {WORKERS} workers, the slowest about "
+          f"{n_cards / SHARDS * per_card_wall / 3600:.2f} h (budget {BUDGET_HOURS} h per shard)")
+    if args.write_drops:
+        if w != WORKERS:
+            raise SystemExit(f"the drops are decided at the run's {WORKERS} workers")
+        dropped = decide_drops(per_card_wall)
+        pilot["dropped"] = P.check_dropped(dropped)
+        Path(args.pilot).write_text(json.dumps(pilot, indent=1))
+        print(f"# drops written to {args.pilot}: {dropped or 'none'}")
 
 
 if __name__ == "__main__":
