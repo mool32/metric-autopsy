@@ -81,7 +81,7 @@ these probes, so none of this is confirmatory.
 | p06 | unrelated genes under CP10k closure | negative control fails | PASS; the null centre (+0.09 female, +0.29 male) is reported |
 | p07 | no age effect, 3 vs 3 mice | 22/40 "effect survives" | 0/20 detected (parametric only); no verdict without a replicate unit |
 | p07 | no age effect, 6 vs 6 mice | — | 1/30 detected (exact permutation over mice) |
-| p08 | truly coupled pair, log-normalized Pearson | GATE 0 FAIL | attenuation reported (dropout −50%, depth −20%), PASS |
+| p08 | truly coupled pair, log-normalized Pearson | GATE 0 FAIL | attenuation reported (dropout −53%, depth −23%), PASS |
 | p09 | coupling 1.5 vs 1.2 | 19/40 "groups do not differ" | DETECTED 3/3; on null data NO DETECTABLE EFFECT only with a SESOI; stable over tool seeds |
 | p10 | mi_3bin at 5% extra dropout | FAIL (lock-in) | sensitivity kept, now classified as attenuation |
 | p11a | pure depth artifact, 4 vs 4 mice (allowed: NOT SUPPORTED, INCONCLUSIVE; journal D1) | — (no thinning) | NOT SUPPORTED, explained by depth, in 3/10 mouse splits; INCONCLUSIVE in 7/10; never SUPPORTED |
@@ -135,6 +135,11 @@ Found while checking the robustness of these results, and fixed:
   injecting it into an already strongly coupled pair lowered a valid correlation (z = −2.6) and
   failed the metric; against the same thinning without the signal it rises (+0.15, z = 23.8).
   Random, constant and wrong-gene metrics still fail.
+- **GATE 0's null (decided 2026-10-08, journal D4).** The shuffle within depth bins made a pair
+  coupled only through cell size look coupled above GATE 0's null — the same flaw GATE 5's
+  positive control had. The null now gives every gene, independently, a depth-matched draw from
+  neighbouring cells (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
+  p01, p08 and p10 pass unchanged; p08's and p10's attenuation estimates moved by 1–3 points.
 - **Controls of another metric.** GATE 5 runs `pair_metric` on the control pairs, and the API
   took on trust that it is the judged metric. A metric blind to gene b, given `norm_pearson`'s
   controls, was certified and SUPPORTED (found while building the decisiveness cases, which now
@@ -174,7 +179,7 @@ per group that a rule committed before the run finds sufficient (20; `p11b_desig
 rejected: the untouched group's component is zero by construction, which makes that permutation
 test anti-conservative (complete separation under the null with probability 1/8).
 
-### Found after the rework: GATE 0 and depth at a realistic scale (p13, open)
+### Found after the rework: GATE 0 and depth at a realistic scale (p13, decided 2026-10-08)
 
 `p13_depth_bias_at_scale.py` (log: `p13_depth_bias_at_scale.log`; not in `run_all.sh`, ~20 min)
 runs `norm_pearson` on a truly coupled pair in a negative-binomial simulation with 16 donors,
@@ -186,5 +191,9 @@ with the null moving by 31–50% of the signal at 800. By the current rule the m
 invalid and the analysis stops. Yet with a capture loss of 0.5 in one group and identical
 biology, the effect field alone (thinning to equal depth, permutation over 8 vs 8 donors) never
 detects a difference (0/10) and reaches NO DETECTABLE EFFECT in 8/10, INCONCLUSIVE in 2/10.
-Whether a depth bias that the pre-registered correction removes between groups should block the
-metric is open (`validation/prereg/v1.md`, decision 6). No expected verdict is frozen for p13.
+Decided by the project owner (journal D4): a depth bias that the declared correction removes
+between groups is reported, not blocking; any other bias blocks only beyond `bias_tolerance` x
+SESOI with its 95% lower bound. The regression
+`test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked` checks that at 800 cells per donor
+the depth response is still classified as bias and no longer blocks. The log records the finding
+under the earlier rule (git ac8f1a8).

@@ -86,6 +86,11 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   to a known construct change planted by binomial thinning, measured against a matched sham
   (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
+- `validation/prereg/`: the confirmatory validation's protocol (`v1.md`) and its code —
+  `panel.py` (design, key assignment, truth generators, claim cards; never imports the engine),
+  `oracle.py` (establishability, SESOI and key dose by an oracle told the truth), `run_panel.py`
+  (one engine run per claim card, in parallel, with the run log), `score.py` (decoding and the
+  criteria), `oc.py` (thresholds by one principle), `timing.py` and `test_prereg.py`.
 - `validation/probes/verdicts_v03.py` scores errors (verdict outside the set allowed by the
   design, false SUPPORTED) and decisiveness (definite verdicts where the design makes the truth
   establishable) per case, with Clopper-Pearson intervals. `validation/probes/JOURNAL.md`

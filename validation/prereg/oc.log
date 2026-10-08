@@ -1,41 +1,30 @@
 # operating characteristics of the v1 success criteria (two-sided 95% Clopper-Pearson)
+# principle: P(pass | sound) >= 0.9, P(pass | doubled nominal error) <= 0.05
 
-## False SUPPORTED: criterion 'upper bound <= T'
-A calibrated two-sided test at alpha = 0.05 gives ~5% SUPPORTED on null datasets when the
-metric is valid and judgment is resolved; requiring the effect in the pre-registered
-direction halves that to ~2.5%.
-  n= 200, T=0.07 (passes with at most 6/200): P(pass) — p=0.010: 1.00, p=0.025: 0.76, p=0.050: 0.12, p=0.075: 0.01, p=0.100: 0.00
-  n= 200, T=0.10 (passes with at most 11/200): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 0.70, p=0.075: 0.17, p=0.100: 0.02
-  n=1000, T=0.07 (passes with at most 54/1000): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 0.75, p=0.075: 0.01, p=0.100: 0.00
-  n=1000, T=0.10 (passes with at most 81/1000): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 1.00, p=0.075: 0.78, p=0.100: 0.02
-  n=2000, T=0.07 (passes with at most 117/2000): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 0.96, p=0.075: 0.00, p=0.100: 0.00
-  n=2000, T=0.10 (passes with at most 173/2000): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 1.00, p=0.075: 0.98, p=0.100: 0.02
-  n=2750, T=0.07 (passes with at most 166/2750): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 0.99, p=0.075: 0.00, p=0.100: 0.00
-  n=2750, T=0.10 (passes with at most 244/2750): P(pass) — p=0.010: 1.00, p=0.025: 1.00, p=0.050: 1.00, p=0.075: 1.00, p=0.100: 0.02
+## Nominal rates
+  false SUPPORTED, directional claims: a two-sided test at alpha = 0.05 whose SUPPORTED needs
+  the pre-registered direction gives alpha/2 = 0.025 on a null with a valid metric (less where
+  the metric is invalid); doubled: 0.05. The same nominal 0.025 is used for the share of verdicts
+  outside the allowed set (dominated by the same false SUPPORTED). Decisiveness: nominal 0.85
+  (establishable cases have oracle power >= 0.9; a validator must also demonstrate the metric's
+  response, which the oracle is told); doubled non-decisiveness 0.30, i.e. decisiveness 0.70.
 
-## Criterion 'upper bound <= 2 x nominal' (discriminates nominal from doubled error)
-  nominal 0.025, T=0.050, n= 200 (passes with at most 3/200): P(pass | nominal) = 0.26, P(pass | 1.5 x nominal) = 0.06, P(pass | 2 x nominal) = 0.01
-  nominal 0.025, T=0.050, n= 300 (passes with at most 7/300): P(pass | nominal) = 0.52, P(pass | 1.5 x nominal) = 0.12, P(pass | 2 x nominal) = 0.02
-  nominal 0.025, T=0.050, n= 400 (passes with at most 11/400): P(pass | nominal) = 0.70, P(pass | 1.5 x nominal) = 0.18, P(pass | 2 x nominal) = 0.02
-  nominal 0.025, T=0.050, n= 600 (passes with at most 19/600): P(pass | nominal) = 0.88, P(pass | 1.5 x nominal) = 0.27, P(pass | 2 x nominal) = 0.02
-  nominal 0.025, T=0.050, n=1000 (passes with at most 36/1000): P(pass | nominal) = 0.99, P(pass | 1.5 x nominal) = 0.44, P(pass | 2 x nominal) = 0.02
-  nominal 0.050, T=0.100, n= 200 (passes with at most 11/200): P(pass | nominal) = 0.70, P(pass | 1.5 x nominal) = 0.17, P(pass | 2 x nominal) = 0.02
-  nominal 0.050, T=0.100, n= 300 (passes with at most 19/300): P(pass | nominal) = 0.88, P(pass | 1.5 x nominal) = 0.26, P(pass | 2 x nominal) = 0.02
-  nominal 0.050, T=0.100, n= 400 (passes with at most 28/400): P(pass | nominal) = 0.97, P(pass | 1.5 x nominal) = 0.40, P(pass | 2 x nominal) = 0.02
-  nominal 0.050, T=0.100, n= 600 (passes with at most 45/600): P(pass | nominal) = 1.00, P(pass | 1.5 x nominal) = 0.54, P(pass | 2 x nominal) = 0.02
-  nominal 0.050, T=0.100, n=1000 (passes with at most 81/1000): P(pass | nominal) = 1.00, P(pass | 1.5 x nominal) = 0.78, P(pass | 2 x nominal) = 0.02
+## Smallest number of datasets that can meet the principle
+  error rate, nominal 0.025: n >= 506
+  error rate, nominal 0.050 (non-directional): n >= 239
+  decisiveness, nominal 0.85: n >= 69
 
-## Outside the allowed set, pooled over N and E: criterion 'upper bound <= 0.10'
-  n=3650 (passes with at most 329/3650): P(pass) — p=0.025: 1.00, p=0.050: 1.00, p=0.075: 1.00, p=0.090: 0.53, p=0.100: 0.02
-
-## Decisiveness: criterion 'lower bound >= 0.70'
-  n= 100 (passes with at least 80/100): P(pass) — d=0.70: 0.02, d=0.75: 0.15, d=0.80: 0.56, d=0.85: 0.93, d=0.90: 1.00
-  n= 200 (passes with at least 153/200): P(pass) — d=0.70: 0.02, d=0.75: 0.35, d=0.80: 0.91, d=0.85: 1.00, d=0.90: 1.00
-  n= 400 (passes with at least 299/400): P(pass) — d=0.70: 0.02, d=0.75: 0.57, d=0.80: 1.00, d=0.85: 1.00, d=0.90: 1.00
+## The criteria at the planned numbers of datasets
+  S1 false SUPPORTED, each key null condition: n = 600, pass with at most 20/600 errors (upper 95% CP bound <= 0.0510; any T in [0.0510, 0.0530) is the same rule); P(pass | 0.025) = 0.920, P(pass | 0.050) = 0.032 — meets the principle
+  S1 at the earlier plan of 400 per condition: n = 400, pass with at most 12/400 errors (upper 95% CP bound <= 0.0518; any T in [0.0518, 0.0549) is the same rule); P(pass | 0.025) = 0.794, P(pass | 0.050) = 0.036 — FAILS the principle
+  S2 false SUPPORTED, pooled over N1-N7: n = 3550, pass with at most 155/3550 errors (upper 95% CP bound <= 0.0509; any T in [0.0509, 0.0512) is the same rule); P(pass | 0.025) = 1.000, P(pass | 0.050) = 0.043 — meets the principle
+  S3 decisiveness, pooled establishable cases: n = 200, pass with at least 152/200 definite verdicts (lower 95% CP bound >= 0.6947; any T in (0.6894, 0.6947] is the same rule); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.036 — meets the principle
+  S3 at 1000 establishable datasets: n = 1000, pass with at least 725/1000 definite verdicts (lower 95% CP bound >= 0.6962; any T in (0.6952, 0.6962] is the same rule); P(pass | 0.85) = 1.000, P(pass | 0.70) = 0.045 — meets the principle
+  S4 outside the allowed set, pooled N and E: n = 4450, pass with at most 198/4450 errors (upper 95% CP bound <= 0.0510; any T in [0.0510, 0.0512) is the same rule); P(pass | 0.025) = 1.000, P(pass | 0.050) = 0.047 — meets the principle
 
 ## Precision of a rate from n datasets (half-width of the 95% CP interval)
-  n=  30: p=0.05: ±0.106, p=0.50: ±0.187
-  n= 100: p=0.05: ±0.048, p=0.50: ±0.102
-  n= 200: p=0.05: ±0.033, p=0.50: ±0.071
-  n= 400: p=0.05: ±0.023, p=0.50: ±0.050
-  n=1000: p=0.05: ±0.014, p=0.50: ±0.031
+  n= 100: p=0.025: ±0.034, p=0.050: ±0.048, p=0.500: ±0.102
+  n= 200: p=0.025: ±0.025, p=0.050: ±0.033, p=0.500: ±0.071
+  n= 400: p=0.025: ±0.017, p=0.050: ±0.023, p=0.500: ±0.050
+  n= 600: p=0.025: ±0.013, p=0.050: ±0.018, p=0.500: ±0.041
+  n=1000: p=0.025: ±0.010, p=0.050: ±0.014, p=0.500: ±0.031

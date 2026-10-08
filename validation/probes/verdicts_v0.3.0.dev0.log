@@ -1,4 +1,4 @@
-# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 677d1b8, python 3.13.16, numpy 2.5.3
+# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 739799a, python 3.13.16, numpy 2.5.3
 === p01 useless, constant and offset metrics
   random-number metric (make_clean)
     metric_validity=UNTESTED | design_adequacy=UNIDENTIFIABLE | effect=NOT_ESTIMABLE | replication=NOT_RUN
@@ -34,13 +34,13 @@
   3 vs 3 mice: DETECTED 0/20 (parametric only); without replicate_col: ['INSUFFICIENT_REPLICATION'] (v0.1.1: 22/40 'effect survives')
   6 vs 6 mice: DETECTED 1/30 (exact permutation over mice)
 === p08 attenuation of a truly coupled pair
-  GATE 0: PASS; extra_dropout attenuation −50%, depth_downsample attenuation −20%, library_scale none
+  GATE 0: PASS; extra_dropout attenuation −53%, depth_downsample attenuation −23%, library_scale none
 === p09 equivalence needs a SESOI; stability across tool seeds
   coupling 1.5 vs 1.2, 3 datasets: ['DETECTED', 'DETECTED', 'DETECTED']
   null data: no SESOI -> INCONCLUSIVE; SESOI 0.15 -> NO_DETECTABLE_EFFECT
   one dataset, tool seeds 0-3: ['DETECTED']
 === p10 mi_3bin sensitivity is reported as attenuation (demo data, default perturbations)
-  GATE 0: PASS; attenuation extra_dropout −61%, depth_downsample −24%
+  GATE 0: PASS; attenuation extra_dropout −64%, depth_downsample −25%
 === p11 pure depth artifact (demo male stratum, 4 vs 4 mice): robustness over mouse splits
   split 0: raw +0.0830 (p=0.029) -> at equal depth +0.0084 (+10% retained): NOT SUPPORTED
   split 1: raw +0.0704 (p=0.086) -> at equal depth +0.0060 (+9% retained): INCONCLUSIVE

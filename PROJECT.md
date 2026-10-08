@@ -68,8 +68,15 @@ turns that checklist into runnable behavior.
   common ratio; a sign reversed by the correction is INCONCLUSIVE; GATE 4 is contrasted with a
   sham; every pre-registered run is logged. On the dev cases (`verdicts_v0.3.0.dev0.log`):
   false SUPPORTED 1/150 (the effect test's alpha), outside the allowed set 1/190, decisiveness
-  147/150. Development results only. Pre-registration of step 3: `validation/prereg/v1.md`
-  (draft, awaiting approval).
+  147/150. Development results only.
+- **Step 2c (decisions of 2026-10-08):** directional claims (SUPPORTED only in the
+  pre-registered direction); GATE 0's null is depth-matched; a depth bias the declared
+  correction removes no longer blocks, other biases block only beyond `bias_tolerance` x SESOI
+  (probe p13 is the regression); the limitation of "explained by depth" is drafted in
+  `paper/drafts/limitations.md`. Pre-registration of step 3: `validation/prereg/v1.md`, final
+  draft awaiting approval, with its panel code (`panel.py`, `oracle.py`, `run_panel.py`,
+  `score.py`, tests) and the criteria recomputed by one principle (600 datasets per key null
+  condition). No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
