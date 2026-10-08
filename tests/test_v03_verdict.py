@@ -365,6 +365,31 @@ def test_injected_module_raises_relative_expression_and_keeps_counts():
     assert frac(out.X) > 1.5 * frac(d.X)
 
 
+def test_injected_module_updates_total_counts_under_copy_on_write():
+    """With pandas' copy-on-write (the default from pandas 3) an array taken from an obs column is
+    read-only: the module injection and its sham wrote the library sizes into one and failed (CI,
+    the panel's N6c cards would have been engine errors). They now write into a copy."""
+    import pandas as pd
+    d = make_clean()
+    d.obs["total_counts"] = d.X.sum(axis=1).astype(float)
+    inject = injected_signal.module(["Smad3", "Col1a1"], fold=2.0, frac=0.5)
+    old = None
+    try:
+        old = pd.get_option("mode.copy_on_write")
+        pd.set_option("mode.copy_on_write", True)
+    except Exception:  # pandas >= 3: copy-on-write is always on
+        pass
+    try:
+        for fn in (inject, inject.sham):
+            out = fn(d, np.random.default_rng(0))
+            tot = np.asarray(out.obs["total_counts"], dtype=float)
+            assert np.all(tot <= np.asarray(d.obs["total_counts"]) + 1e-9) and tot.min() >= 0
+            assert np.any(tot < np.asarray(d.obs["total_counts"]))
+    finally:
+        if old is not None:
+            pd.set_option("mode.copy_on_write", old)
+
+
 # --------------------------------------------------------------------------- #
 # GATE 5: calibrated in small strata; a silent positive control is not a failure
 # --------------------------------------------------------------------------- #

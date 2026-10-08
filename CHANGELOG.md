@@ -147,6 +147,10 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   truth it checked.
 
 ### Fixed
+- **The module injection under pandas' copy-on-write.** `injected_signal.module` and its sham
+  wrote the thinned library sizes into the array of the `total_counts` column, which pandas 3
+  (copy-on-write) hands out read-only: GATE 4 with a module signal failed on data that carry
+  `total_counts` (CI, pandas 3; the panel's environment pins pandas 2.3.3). They write into a copy.
 - **GATE 5's controls count only for the metric they test.** `run_autopsy` took on trust that
   `pair_metric` bound to `gene_pair` is the judged metric: a metric blind to gene b given
   `norm_pearson`'s controls was certified and SUPPORTED (3 of 3 dev datasets), and a

@@ -64,8 +64,9 @@ def module(genes: Sequence[str], fold: float = 2.0, frac: float = 0.3):
         X[np.ix_(cells, other)] = after
         obs = sd.obs
         if "total_counts" in obs:
-            # gene-subset objects carry library size in obs: remove the expected loss
-            tot = np.asarray(obs["total_counts"], dtype=float)
+            # gene-subset objects carry library size in obs: remove the expected loss (a copy:
+            # pandas' copy-on-write hands out read-only arrays)
+            tot = np.array(obs["total_counts"], dtype=float)
             mod = X[cells][:, idx].sum(axis=1)
             tot[cells] = mod + (tot[cells] - mod) / fold
             obs["total_counts"] = tot
@@ -82,7 +83,7 @@ def module(genes: Sequence[str], fold: float = 2.0, frac: float = 0.3):
         X[cells] = rng.binomial(np.round(before).astype(np.int64), 1.0 / fold).astype(float)
         obs = sd.obs
         if "total_counts" in obs:
-            tot = np.asarray(obs["total_counts"], dtype=float)
+            tot = np.array(obs["total_counts"], dtype=float)
             tot[cells] = tot[cells] / fold
             obs["total_counts"] = tot
         return SimpleData(X, obs, sd.var_names)
