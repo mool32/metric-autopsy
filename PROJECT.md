@@ -66,9 +66,10 @@ turns that checklist into runnable behavior.
 - **Step 2b (2026-10-07):** a silent positive control FAILs where the design had the power to
   show it; the positive control's null is depth-matched; the depth correction thins by one
   common ratio; a sign reversed by the correction is INCONCLUSIVE; GATE 4 is contrasted with a
-  sham; every pre-registered run is logged. On the dev cases (`verdicts_v0.3.0.dev0.log`):
-  false SUPPORTED 1/150 (the effect test's alpha), outside the allowed set 1/190, decisiveness
-  147/150. Development results only.
+  sham; every pre-registered run is logged. On the dev cases (`verdicts_v0.3.0.dev0.log`, at the
+  current engine): false SUPPORTED 1/150 (the effect test's alpha), outside the allowed set 1/190,
+  decisiveness 130/150 (147/150 before the third round's GATE 4/5 rules, which call a metric
+  invalid only on a proof of blindness). Development results only.
 - **Step 2c (decisions of 2026-10-08):** directional claims (SUPPORTED only in the
   pre-registered direction); GATE 0's null is depth-matched; a depth bias the declared
   correction removes no longer blocks, other biases block only beyond `bias_tolerance` x SESOI

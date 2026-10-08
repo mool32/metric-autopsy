@@ -1,4 +1,4 @@
-# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 739799a, python 3.13.16, numpy 2.5.3
+# metric-autopsy 0.3.0.dev0 — v0.3 verdicts on the probe truths — git 6ec6b04, python 3.13.16, numpy 2.5.3
 === p01 useless, constant and offset metrics
   random-number metric (make_clean)
     metric_validity=UNTESTED | design_adequacy=UNIDENTIFIABLE | effect=NOT_ESTIMABLE | replication=NOT_RUN
@@ -26,7 +26,7 @@
   GATE 5 norm_pearson, 4 x 30 cells: FAIL 0/20, WARN 4/20 (positive control not demonstrated in some stratum)
   GATE 5 norm_pearson, 1 x 10 cells: FAIL 0/20, WARN 5/20 (positive control not demonstrated in some stratum)
   GATE 5 norm_pearson, 16 x 100 cells: FAIL 1/20, WARN 0/20 (positive control not demonstrated in some stratum)
-  GATE 5 mi_3bin, 16 x 100 cells: FAIL 1/20, WARN 1/20 (positive control not demonstrated in some stratum)
+  GATE 5 mi_3bin, 16 x 100 cells: FAIL 0/20, WARN 2/20 (positive control not demonstrated in some stratum)
   GATE 5 mi_3bin, 16 x 400 cells: FAIL 0/20, WARN 0/20 (positive control not demonstrated in some stratum)
 === p06 negative control under CP10k closure (demo data)
   GATE 5: PASS; null centre of unrelated pairs: female +0.091, male +0.292
@@ -62,14 +62,14 @@
     VERDICT: INCONCLUSIVE — effect -0.04575 [-0.1391, +0.04763], p=0.309 (exact permutation); no SESOI pre-registered, so equivalence cannot be tested
 === errors and decisiveness (95% Clopper-Pearson; independent datasets per case)
   p01 random-number metric, full design (mice, estimand, injected signal)
-    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
-    verdicts seen: ['NOT SUPPORTED']
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 1/10 = 10% [0%, 45%]; correct definite: 1/10 = 10% [0%, 45%]
+    verdicts seen: ['INCONCLUSIVE', 'NOT SUPPORTED']
   p01 constant metric
     outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
     verdicts seen: ['DEGENERATE METRIC']
   blind pair metric (ignores gene b), its own controls, 800 cells per stratum
-    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
-    verdicts seen: ['NOT SUPPORTED']
+    outside the allowed set: 0/10 = 0% [0%, 31%]; false SUPPORTED: 0/10 = 0% [0%, 31%]; definite: 2/10 = 20% [3%, 56%]; correct definite: 2/10 = 20% [3%, 56%]
+    verdicts seen: ['INCONCLUSIVE', 'NOT SUPPORTED']
   p02 sorted G2M vs G1, 4 plates each (real, huge)
     outside the allowed set: 0/10 = 0% [0%, 31%]; definite: 10/10 = 100% [69%, 100%]; correct definite: 10/10 = 100% [69%, 100%]
     verdicts seen: ['SUPPORTED (provisional until replicated)']
@@ -106,4 +106,4 @@
   POOLED (dev set):
     outside the allowed set: 1/190 = 1% [0%, 3%]
     false SUPPORTED on nulls, artifacts and useless metrics: 1/150 = 1% [0%, 4%]
-    decisiveness on establishable cases: 147/150 = 98% [94%, 100%]; correct definite: 146/150 = 97% [93%, 99%]
+    decisiveness on establishable cases: 130/150 = 87% [80%, 92%]; correct definite: 129/150 = 86% [79%, 91%]

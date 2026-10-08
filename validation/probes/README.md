@@ -157,12 +157,16 @@ Clopper-Pearson intervals; pooled over the cases:
 |---|---|---|
 | verdict outside the allowed set | 1/190 | 1% [0%, 3%] |
 | false SUPPORTED on nulls, artifacts and useless metrics | 1/150 | 1% [0%, 4%] |
-| definite verdict on establishable cases | 147/150 | 98% [94%, 100%] |
-| correct definite verdict | 146/150 | 97% [93%, 99%] |
+| definite verdict on establishable cases | 130/150 | 87% [80%, 92%] |
+| correct definite verdict | 129/150 | 86% [79%, 91%] |
 
-The one false SUPPORTED is the effect test's own alpha: a null with a valid metric and a SESOI
-(p09, 1/20). The three non-definite verdicts are the level metric on a depth artifact (18/20
-definite) and the content estimand with ERCC (9/10). p07 (3 vs 3 mice) and p11a (4 vs 4) are not
+(At the current engine, after the third round's GATE 4 and GATE 5 rules; at 739799a, before them,
+147/150 and 146/150.) The one false SUPPORTED is the effect test's own alpha: a null with a valid
+metric and a SESOI (p09, 1/20). The twenty non-definite verdicts are the random-number metric
+(1/10 definite: its noise keeps GATE 4's interval wide, so it stays untested; journal D5), the
+metric blind to gene b (2/10: pre-registered without a SESOI, it has no delta_min, so GATE 5 can
+no longer show it blind; D6), the level metric on a depth artifact (18/20) and the content
+estimand with ERCC (9/10); all twenty are INCONCLUSIVE, which their allowed sets include. p07 (3 vs 3 mice) and p11a (4 vs 4) are not
 establishable under their designs and are scored on errors only (0/20 each). These cases were
 built while the fixes were developed. They show that the dev set no longer finds a failure, not
 how often the validator errs: that is the confirmatory panel's job (`validation/prereg/v1.md`).
