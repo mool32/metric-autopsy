@@ -922,6 +922,19 @@ def test_the_beacon_verifies_a_round_and_derives_its_randomness():
     assert len(BC.randomness_of(sig)) == 64 and P.check_key(BC.randomness_of(sig))
 
 
+def test_the_chain_constants_verify_a_real_quicknet_round():
+    """Round 32892512 of drand quicknet (17:35:00 UTC on 2026-10-08), as four relays served it to
+    the dry run of workflow run 37817228721: the constants, the message, the hash to G1 and the
+    pairing check reproduce its verification and its randomness offline."""
+    pytest.importorskip("py_ecc")
+    import beacon as BC
+    sig = ("b6c102fe1446e998a199aea2167cc4351b8d9dfcc14c06b4889ceac55493359d"
+           "86dcc5d7a8b59cbf4147b5da3243a735")
+    assert BC.round_time(32892512) == 1791480900  # 2026-10-08T17:35:00Z
+    assert BC.verify(32892512, sig) and not BC.verify(32892511, sig)
+    assert BC.randomness_of(sig) == "680404b04626fd169ccfa9050543611b4a6308352d9be06ea9278dd521106f03"
+
+
 def test_the_beacon_round_lies_at_least_an_hour_after_the_tag():
     import beacon as BC
     g = BC.CHAIN["genesis_time"]
@@ -975,7 +988,8 @@ def test_the_selection_rule_lists_the_candidates_and_picks_by_the_rule():
               + [("d2", "T cell", "unknown", 900, "male")]                                # no donor ID
               + [("d3", "B cell", f"c{i}", 400, "male") for i in range(10)])               # too few donors
     obs = _census_like(rng, groups)
-    cand = SB.candidates(obs, ["dataset_id", "cell_type"], SB.B1_MIN_DONORS)
+    cand = SB.candidates(SB.count_cells([obs], ["dataset_id", "cell_type", "donor_id"]), ["dataset_id", "cell_type"],
+                         SB.B1_MIN_DONORS)
     assert list(cand["dataset_id"]) == ["d2", "d1"]  # tie on 30 donors: more cells per donor wins
     assert list(cand["donors"]) == [30, 30] and cand["cells_per_donor"].iloc[0] == 300
     ids = SB.sample_cells(obs, cand.iloc[0].to_dict(), ["dataset_id", "cell_type"], max_donors=20, max_cells=100)
@@ -987,8 +1001,40 @@ def test_the_selection_rule_lists_the_candidates_and_picks_by_the_rule():
     mice = ([("m1", "fibroblast", f"f{i}", 250, "female") for i in range(8)]
             + [("m1", "fibroblast", f"m{i}", 250, "male") for i in range(6)]
             + [("m2", "fibroblast", f"x{i}", 250, "male") for i in range(20)])  # one sex only
-    cand2 = SB.candidates(_census_like(rng, mice), ["dataset_id", "tissue", "cell_type"], SB.B2_MIN_MICE, both_sexes=True)
+    keys2 = ["dataset_id", "tissue", "cell_type"]
+    cand2 = SB.candidates(SB.count_cells([_census_like(rng, mice)], keys2 + ["donor_id", "sex"]), keys2, SB.B2_MIN_MICE,
+                          both_sexes=True)
     assert list(cand2["dataset_id"]) == ["m1"] and cand2["donors"].iloc[0] == 14
+
+
+def test_the_census_is_counted_in_chunks_on_its_category_codes():
+    """The Census obs arrives as Arrow chunks with dictionary columns (75 million human cells): counting
+    chunk by chunk on the codes gives the counts of the whole table; missing donor IDs are not donors;
+    a donor's sex is the commonest among its cells; the extraction sample reads categoricals."""
+    pa = pytest.importorskip("pyarrow")
+    import select_backgrounds as SB
+    rng = np.random.default_rng(3)
+    groups = ([("d1", "T cell", f"a{i}", 210 + i, "female" if i % 2 else "male") for i in range(26)]
+              + [("d1", "T cell", "unknown", 500, "male"), ("d1", "B cell", "a1", 300, "female")])
+    obs = _census_like(rng, groups)
+    obs.loc[obs.index[:5], "donor_id"] = None                       # missing donor IDs
+    obs.loc[(obs["donor_id"] == "a3").to_numpy().nonzero()[0][:30], "sex"] = "unknown"  # a minority label
+    cols = ["dataset_id", "cell_type", "donor_id", "sex"]
+    whole = SB.count_cells([obs], cols)
+    chunks = [pa.Table.from_pandas(obs.iloc[i:i + 1000][cols].astype("category"), preserve_index=False)
+              for i in range(0, len(obs), 1000)]
+    assert all(pa.types.is_dictionary(c.type) for c in chunks[0].schema)
+    assert SB.count_cells(chunks, cols).equals(whole)
+    assert whole["cells"].sum() == len(obs) and "nan" in set(whole["donor_id"])
+    keys = ["dataset_id", "cell_type"]
+    cand = SB.candidates(whole, keys, 24, both_sexes=True)
+    assert len(cand) == 1 and cand["donors"].iloc[0] == 26 and cand["sexes"].iloc[0] == "female,male"
+    cat = obs.astype({c: "category" for c in cols})
+    ids = SB.sample_cells(cat, cand.iloc[0].to_dict(), keys, max_donors=10, max_cells=200)
+    assert np.array_equal(ids, SB.sample_cells(obs, cand.iloc[0].to_dict(), keys, max_donors=10, max_cells=200))
+    picked = obs.set_index("soma_joinid").loc[ids]
+    assert set(picked["cell_type"]) == {"T cell"} and picked["donor_id"].notna().all()
+    assert "unknown" not in set(picked["donor_id"]) and len(ids) == 2000
 
 
 def test_the_anchors_run_on_their_backgrounds(tmp_path):

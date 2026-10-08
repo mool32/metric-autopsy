@@ -51,24 +51,64 @@ SEED = P.PLAN_SEED
 
 
 # --------------------------------------------------------------------------- #
-# the rules, on an obs table (pure functions: tested on synthetic tables)
+# the rules, on cell counts (pure functions: tested on synthetic tables)
 # --------------------------------------------------------------------------- #
-def _known(donor: pd.Series) -> pd.Series:
-    return ~donor.astype(str).str.strip().str.lower().isin(MISSING_DONOR)
+def _codes_mask(s: pd.Series, hit_of_categories) -> np.ndarray:
+    """A boolean per row of a categorical column, computed once per category: the 75 million
+    human cells never become strings one by one (a missing value is the string "nan")."""
+    cats = pd.Index(s.cat.categories.astype(str))
+    hit = np.asarray(hit_of_categories(cats), dtype=bool)
+    codes = s.cat.codes.to_numpy()
+    missing = bool(np.asarray(hit_of_categories(pd.Index(["nan"])))[0])
+    return np.where(codes >= 0, hit[np.maximum(codes, 0)], missing)
 
 
-def candidates(obs: pd.DataFrame, keys: list[str], min_donors: int, both_sexes: bool = False) -> pd.DataFrame:
+def _known(donor: pd.Series) -> np.ndarray:
+    """True where the donor ID is present (not empty, missing or a placeholder)."""
+    def ok(v: pd.Index):
+        return ~v.str.strip().str.lower().isin(MISSING_DONOR)
+    if isinstance(donor.dtype, pd.CategoricalDtype):
+        return _codes_mask(donor, ok)
+    return np.asarray(ok(pd.Index(donor.astype(str))))
+
+
+def _equals(s: pd.Series, value) -> np.ndarray:
+    if isinstance(s.dtype, pd.CategoricalDtype):
+        return _codes_mask(s, lambda v: v == str(value))
+    return (s.astype(str) == str(value)).to_numpy()
+
+
+def count_cells(batches, cols: list[str]) -> pd.DataFrame:
+    """Cells per combination of `cols`, summed over `batches` (Arrow tables or pandas frames read one
+    at a time, e.g. the Census obs in chunks), with the values as strings (missing: "nan"). Each
+    batch is grouped on its category codes; only the combinations become strings."""
+    cols = list(cols)
+    parts = []
+    for b in batches:
+        df = b.to_pandas() if hasattr(b, "to_pandas") else b
+        n = df[cols].groupby(cols, observed=True, dropna=False).size()
+        part = n.rename("cells").reset_index()
+        for c in cols:
+            part[c] = part[c].astype(str)
+        parts.append(part)
+    if not parts:
+        return pd.DataFrame({**{c: pd.Series(dtype=str) for c in cols}, "cells": pd.Series(dtype=int)})
+    return pd.concat(parts, ignore_index=True).groupby(cols, sort=True)["cells"].sum().reset_index()
+
+
+def candidates(counts: pd.DataFrame, keys: list[str], min_donors: int, both_sexes: bool = False) -> pd.DataFrame:
     """Every group of `keys` (e.g. dataset and cell type) with >= `min_donors` donors of >= MIN_CELLS
     cells, with the facts that decide the choice: qualifying donors, cells per qualifying donor,
-    (for B2) the sexes among them. Sorted by the choice rule: most donors, then most cells per
-    donor, then the keys in order."""
-    obs = obs[_known(obs["donor_id"])]
-    per = obs.groupby(keys + ["donor_id"], observed=True).size().rename("cells").reset_index()
+    (for B2) the sexes among them. `counts` holds the cells per (keys, donor_id[, sex]) from
+    `count_cells`; a donor's sex is the commonest among its cells (ties: the first in order).
+    Sorted by the choice rule: most donors, then most cells per donor, then the keys in order."""
+    counts = counts[_known(counts["donor_id"])]
+    g = list(keys) + ["donor_id"]
+    per = counts.groupby(g, sort=True)["cells"].sum().reset_index()
     per = per[per["cells"] >= MIN_CELLS]
     if both_sexes:
-        sex = (obs.groupby(keys + ["donor_id"], observed=True)["sex"].agg(lambda s: s.astype(str).mode().iat[0])
-               .rename("sex").reset_index())
-        per = per.merge(sex, on=keys + ["donor_id"])
+        top = counts.sort_values(g + ["cells", "sex"], ascending=[True] * len(g) + [False, True], kind="mergesort")
+        per = per.merge(top.drop_duplicates(g)[g + ["sex"]], on=g)
     agg = dict(donors=("donor_id", "nunique"), cells=("cells", "sum"))
     if both_sexes:
         agg["sexes"] = ("sex", lambda s: ",".join(sorted(set(map(str, s)))))
@@ -76,7 +116,7 @@ def candidates(obs: pd.DataFrame, keys: list[str], min_donors: int, both_sexes: 
     out["cells_per_donor"] = out["cells"] / out["donors"]
     out = out[out["donors"] >= min_donors]
     if both_sexes:
-        out = out[out["sexes"].str.contains("female") & out["sexes"].str.split(",").map(lambda x: "male" in x)]
+        out = out[out["sexes"].str.split(",").map(lambda x: "female" in x and "male" in x)]
     return out.sort_values(["donors", "cells_per_donor", *keys], ascending=[False, False, *([True] * len(keys))],
                            kind="mergesort").reset_index(drop=True)
 
@@ -87,14 +127,16 @@ def sample_cells(obs: pd.DataFrame, choice: dict, keys: list[str], max_donors: i
     public-seed sample of the sorted IDs) and at most `max_cells` of each one's cells (a
     public-seed sample of its sorted joinids)."""
     rng = np.random.default_rng(seed)
-    sel = obs[np.logical_and.reduce([obs[k].astype(str) == str(choice[k]) for k in keys]) & _known(obs["donor_id"])]
-    counts = sel.groupby("donor_id", observed=True).size()
-    donors = sorted(str(d) for d, n in counts.items() if n >= MIN_CELLS)
+    mask = np.logical_and.reduce([_equals(obs[k], choice[k]) for k in keys]) & _known(obs["donor_id"])
+    sel = pd.DataFrame({"soma_joinid": obs["soma_joinid"].to_numpy()[mask],
+                        "donor_id": obs["donor_id"][mask].astype(str).to_numpy()})
+    ids_of = {d: np.sort(v.to_numpy()) for d, v in sel.groupby("donor_id")["soma_joinid"]}
+    donors = sorted(d for d, ids in ids_of.items() if len(ids) >= MIN_CELLS)
     if len(donors) > max_donors:
         donors = sorted(rng.choice(donors, size=max_donors, replace=False).tolist())
     out = []
     for d in donors:
-        ids = np.sort(sel.loc[sel["donor_id"].astype(str) == d, "soma_joinid"].to_numpy())
+        ids = ids_of[d]
         if len(ids) > max_cells:
             ids = np.sort(rng.choice(ids, size=max_cells, replace=False))
         out.append(ids)
@@ -104,10 +146,23 @@ def sample_cells(obs: pd.DataFrame, choice: dict, keys: list[str], max_donors: i
 # --------------------------------------------------------------------------- #
 # the Census: candidates and extraction
 # --------------------------------------------------------------------------- #
-def _census_obs(census, organism: str, columns: list[str]) -> pd.DataFrame:
-    import cellxgene_census
-    flt = "is_primary_data == True and assay in [" + ", ".join(f'"{a}"' for a in DROPLET_3P) + "]"
-    return cellxgene_census.get_obs(census, organism, value_filter=flt, column_names=["soma_joinid", *columns])
+CENSUS_FILTER = "is_primary_data == True and assay in [" + ", ".join(f'"{a}"' for a in DROPLET_3P) + "]"
+
+
+def _obs(census, organism: str):
+    return census["census_data"][organism.lower().replace(" ", "_")].obs
+
+
+def _census_counts(census, organism: str, cols: list[str]) -> pd.DataFrame:
+    """Cells per (cols) over the organism's primary droplet-3' cells, read in chunks."""
+    return count_cells(_obs(census, organism).read(value_filter=CENSUS_FILTER, column_names=list(cols)), cols)
+
+
+def _census_group(census, organism: str, choice: dict, keys: list[str]) -> pd.DataFrame:
+    """The chosen dataset's primary droplet-3' cells (joinid, keys, donor) for the extraction sample."""
+    flt = CENSUS_FILTER + f' and dataset_id == "{choice["dataset_id"]}"'
+    return (_obs(census, organism).read(value_filter=flt, column_names=["soma_joinid", *keys, "donor_id"])
+            .concat().to_pandas())
 
 
 def extract(census, organism: str, joinids: np.ndarray, path: Path, obs_columns: list[str]) -> dict:
@@ -129,27 +184,34 @@ def _datasets(census) -> pd.DataFrame:
 
 def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[str]]:
     """B1 and B2 from the Census stable release. Returns their backgrounds.json entries and the
-    report lines (in a rehearsal: only that each step ran, with a hash of the choice)."""
+    report lines (in a rehearsal: only that each step ran, with a hash of the choice, and a small
+    extraction to exercise the code path; nothing is kept)."""
     import cellxgene_census
     version = cellxgene_census.get_census_version_description("stable")
-    spec, lines = {}, [f"Census release: stable = {version.get('release_build')} "
-                       f"(LTS {version.get('lts', False)})"]
-    with cellxgene_census.open_soma(census_version="stable") as census:
+    release = version.get("release_build") or "stable"
+    spec, lines = {}, [f"Census release: stable = {release} (LTS {version.get('lts', False)})"]
+    with cellxgene_census.open_soma(census_version=release) as census:
         titles = _datasets(census).set_index("dataset_id")["dataset_title"].to_dict()
         rules = (("B1", "Homo sapiens", ["dataset_id", "cell_type"], B1_MIN_DONORS, False, MAX_DONORS),
                  ("B2", "Mus musculus", ["dataset_id", "tissue", "cell_type"], B2_MIN_MICE, True, MAX_DONORS))
         for name, organism, keys, k_min, sexes, max_donors in rules:
             t0 = time.time()
-            cols = sorted(set(keys + ["donor_id", "sex", "development_stage", "tissue", "cell_type", "dataset_id"]))
-            obs = _census_obs(census, organism, cols)
-            cand = candidates(obs, keys, k_min, both_sexes=sexes)
+            counted = keys + ["donor_id"] + (["sex"] if sexes else [])
+            cand = candidates(_census_counts(census, organism, counted), keys, k_min, both_sexes=sexes)
             if cand.empty:
                 lines.append(f"{name}: no candidate meets the criteria: dropped with the cases that need it")
                 continue
             choice = cand.iloc[0].to_dict()
             digest = hashlib.sha256(json.dumps({k: str(choice[k]) for k in keys}).encode()).hexdigest()
+            cols = sorted(set(keys + ["donor_id", "sex", "development_stage", "tissue", "cell_type", "dataset_id"]))
+            group = _census_group(census, organism, choice, keys)
             if rehearsal:
-                lines.append(f"{name}: {len(cand)} candidates; choice sha256 {digest[:16]}; {time.time() - t0:.0f} s")
+                ids = sample_cells(group, choice, keys, max_donors=2, max_cells=50)
+                rec = extract(census, organism, ids, out_dir / f"{name}-rehearsal.npz", cols)
+                (out_dir / f"{name}-rehearsal.npz").unlink()
+                lines.append(f"{name}: {len(cand)} candidates; choice sha256 {digest[:16]}; rank 1 has "
+                             f"{int(choice['donors'])} qualifying donors; a {rec['cells']}-cell test extraction of "
+                             f"{rec['genes']} genes; {time.time() - t0:.0f} s")
                 continue
             lines += ["", f"## {name} ({organism})", "", "| rank | " + " | ".join(keys) + " | title | donors >= "
                       f"{MIN_CELLS} cells | cells per donor |" + (" sexes |" if sexes else ""),
@@ -158,10 +220,10 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
                 lines.append(f"| {i + 1} | " + " | ".join(str(row[k]) for k in keys)
                              + f" | {titles.get(row['dataset_id'], '?')} | {row['donors']} | {row['cells_per_donor']:.0f} |"
                              + (f" {row['sexes']} |" if sexes else ""))
-            ids = sample_cells(obs, choice, keys, max_donors, MAX_CELLS)
+            ids = sample_cells(group, choice, keys, max_donors, MAX_CELLS)
             rec = extract(census, organism, ids, out_dir / f"{name}.npz", cols)
             spec[name] = dict(file=f"{name}.npz", sha256=rec["sha256"], donor="donor_id", counts="X",
-                              source=dict(census_release=version.get("release_build"), organism=organism,
+                              source=dict(census_release=release, organism=organism,
                                           **{k: str(choice[k]) for k in keys},
                                           title=titles.get(choice["dataset_id"]), qualifying_donors=int(choice["donors"]),
                                           extracted_cells=rec["cells"], genes=rec["genes"],
