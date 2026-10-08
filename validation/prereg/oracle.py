@@ -385,8 +385,7 @@ def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng
     valid (None where there is none); ``gate4``, GATE 4's outcome on the dataset where the oracle
     ran its rule (blind, ambiguous and useless metrics; None for a valid one, whose odds come from
     the case's response statistics). A sound validator that follows the engine's rules reaches
-    "metric invalid" where GATE 4 FAILs, the effect's outcome where it PASSes and INCONCLUSIVE
-    where it is UNTESTED (oc.sound_model)."""
+    what `engine_outcome` gives (oc.sound_model)."""
     cond = P.conditions()[entry["condition"]]
     bg = bgs[cond.background]
     truth = P.metric_truth(cond, entry["variant"], entry["pair"], pilot)
@@ -417,6 +416,21 @@ def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng
     else:  # ambiguous: either verdict is correct
         best = effect if effect != P.INCONCLUSIVE else (P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE)
     return dict(best=best, effect=effect, gate4=g4)
+
+
+def engine_outcome(effect: str | None, gate4: str | None) -> str:
+    """What a sound validator gets by the engine's verdict order (report.decide_cause) where GATE 4's
+    rule ran: "metric invalid" where it FAILs; else an effect explained by depth, which the engine
+    checks before the metric's validity (the second review); else the effect's outcome where GATE 4
+    PASSes and INCONCLUSIVE where it is UNTESTED (an untested metric's absence or detection is
+    inconclusive)."""
+    if gate4 == "FAIL":
+        return P.NS_INVALID
+    if effect == P.NS_DEPTH:
+        return P.NS_DEPTH
+    if gate4 == "PASS":
+        return effect or P.INCONCLUSIVE
+    return P.INCONCLUSIVE
 
 
 def oracle_outcome(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> str:
@@ -629,20 +643,22 @@ def _null_job(job):
 
 
 def choose_sesoi(bgs: dict, background: str, level: str, pilot: dict, n: int = PILOT_DATASETS,
-                 workers: int = 1) -> float:
+                 workers: int = 1) -> tuple[float, bool]:
     """The smallest SESOI on the grid at which the oracle reaches a correct definite outcome on the
     background's null (N1 on B1: 2 x 8 donors; N7 on B2: all mice split in two; pairs of this
     level, drawn in turn) in at least SESOI_TARGET of n datasets: NO DETECTABLE EFFECT (not
     detected, TOST within ±SESOI) or NOT SUPPORTED against the declared direction. Counted
-    exactly on the grid (decided after the first review: the null must be establishable)."""
+    exactly on the grid (decided after the first review: the null must be establishable). Returns
+    the SESOI and whether one met the target; where none did, the grid's largest, recorded as not
+    found (pilot.json "sesoi_found")."""
     _STATE.update(bgs=bgs, pilot=pilot)
     pairs = level_pairs(bgs[background], level)
     got = _map(_null_job, [(background, pairs[i % len(pairs)], i) for i in range(n)], workers)
     need = math.ceil(SESOI_TARGET * len(got))
     for sesoi in SESOI_GRID:
         if sum(against or (not hit and width < sesoi) for hit, against, width in got) >= need:
-            return sesoi
-    return SESOI_GRID[-1]
+            return sesoi, True
+    return SESOI_GRID[-1], False
 
 
 def _outcome_job(job):
@@ -707,6 +723,8 @@ def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: i
     _STATE.update(bgs=bgs, pilot=pilot)
     out, jobs, cases = {}, [], []
     for cond in P.CONDITIONS:
+        if cond.background not in bgs:  # dropped with its background (pilot.json "dropped")
+            continue
         pool = bgs[cond.background].plan["pool"]
         for variant, _ in cond.variants:
             if not cond.oracle:
@@ -735,11 +753,9 @@ def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: i
         got = by[(cond.name, variant, k)]
         good = P.definite(cond, variant, int(key.split(":")[-1]), pilot)
         hits = sum(o["best"] in good for o in got)
-        # a sound validator that follows the engine's rules, on the datasets where GATE 4's rule ran:
-        # "metric invalid" where it FAILs, the effect's outcome where it PASSes, else INCONCLUSIVE
-        engine = [P.NS_INVALID if o["gate4"] == "FAIL" else
-                  (o["effect"] or P.INCONCLUSIVE) if o["gate4"] == "PASS" else P.INCONCLUSIVE
-                  for o in got if o["gate4"] is not None]
+        # a sound validator that follows the engine's verdict order, on the datasets where GATE 4's
+        # rule ran (engine_outcome)
+        engine = [engine_outcome(o["effect"], o["gate4"]) for o in got if o["gate4"] is not None]
         out[key] = dict(power=hits / len(got), establishable=hits >= POWER * len(got), n=len(got),
                         outcomes=counts([o["best"] for o in got]),
                         effect_outcomes=counts([o["effect"] for o in got]),
@@ -764,19 +780,21 @@ def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, work
 
 
 def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict:
+    dropped = P.check_dropped(P.background_drops(bgs))  # a background without a candidate, with its cases
     pilot = dict(pilot_seed=PILOT_SEED, datasets_per_case=n, delta_draws=draws, alpha=ALPHA,
                  power_threshold=POWER, sesoi_target=SESOI_TARGET, delta_margin=DELTA_MARGIN,
                  delta_min_fraction=P.DELTA_MIN_FRACTION, truth_band=P.TRUTH_BAND,
                  saturation_share=SATURATION_SHARE, gate4_reps=sizes["gate4"], sizes=sizes,
-                 dose_grid=list(DOSE_GRID), dropped=[],
+                 dose_grid=list(DOSE_GRID), dropped=dropped,
                  pool={b: [dict(index=pe["index"], level=pe["level"], pair=pe["pair"]) for pe in bg.plan["pool"]]
                        for b, bg in bgs.items()},
                  pool_size={b: len(bg.plan["pool"]) for b, bg in bgs.items()},
-                 sesoi={b: {} for b in bgs}, response_curve={b: {} for b in bgs},
+                 sesoi={b: {} for b in bgs}, sesoi_found={b: {} for b in bgs}, response_curve={b: {} for b in bgs},
                  saturation_dose={b: {} for b in bgs}, truth={})
     for b in bgs:
         for level in P.LEVELS:
-            pilot["sesoi"][b][level] = choose_sesoi(bgs, b, level, pilot, int(sizes["sesoi"]), workers)
+            pilot["sesoi"][b][level], pilot["sesoi_found"][b][level] = choose_sesoi(
+                bgs, b, level, pilot, int(sizes["sesoi"]), workers)
     for b in bgs:
         for level in P.LEVELS:
             curve = response_curve(bgs, b, level, pilot, workers)

@@ -352,6 +352,24 @@ def test_the_panels_copies_of_the_engines_rules_agree_with_it():
         d = rng.normal(rng.uniform(-0.05, 0.1), rng.uniform(0.001, 0.2), size=int(rng.integers(5, 60)))
         dmin = float(rng.uniform(0.01, 0.1))
         assert O.shows_blind(d, dmin) == (G.judge_response(G.response_interval(d), dmin) == "FAIL")
+    # the engine's verdict order where GATE 4 ran (oracle.engine_outcome against report.decide_cause):
+    # "explained by depth" comes before the metric's validity, which the second review found unmodelled
+    from metric_autopsy.core import Assessment
+    from metric_autopsy.report import decide_cause
+    from types import SimpleNamespace
+    effects = {P.NS_DEPTH: Assessment("INCONCLUSIVE", "x", [], dict(explained_by_depth=True)),
+               P.NDE: Assessment("NO_DETECTABLE_EFFECT", "x", [], {}),
+               P.SUPPORTED: Assessment("DETECTED", "x", [], dict(effect=-1.0)),
+               P.INCONCLUSIVE: Assessment("INCONCLUSIVE", "x", [], {})}
+    validity = {"FAIL": Assessment("FAIL", "x", [], dict(failed_gate=4)), "PASS": Assessment("PASS", "x"),
+                "UNTESTED": Assessment("UNTESTED", "x")}
+    for g4, mv in validity.items():
+        for outcome, ef in effects.items():
+            a = SimpleNamespace(metric_validity=mv, design_adequacy=Assessment("ADEQUATE", "x"), effect=ef,
+                                replication=Assessment("NOT_RUN", "x"), params=dict(groups=["A", "B"]),
+                                prereg=dict(direction="increase"), judgment_pending=False)
+            label, cause = decide_cause(a)
+            assert P.outcome(label, cause) == O.engine_outcome(outcome, g4), (g4, outcome, cause)
 
 
 def test_the_oracles_gate4_response_matches_the_engines_injection(bgs):
@@ -478,6 +496,29 @@ def test_the_truth_follows_the_data_of_the_condition(bgs):
     assert P.metric_truth(conds["N5"], "sham", 0, pilot) == "valid" and "N5" not in P.TRUTH_CASE_CONDITIONS
 
 
+def test_duplicate_gene_symbols_are_made_unique_and_the_engine_runs(tmp_path):
+    """The second review's K2: several Ensembl genes can share a symbol; the engine refuses duplicate
+    var_names, so every card of such a background would have been an engine error. The loader makes
+    the symbols unique (anndata's convention) before the plan, and a card runs."""
+    import run_panel as R
+    assert P.unique_names(["A", "B", "A", "A", "A-1"]) == ["A", "B", "A-2", "A-3", "A-1"]
+    bg = simulated_background("B1", plan=False)
+    genes = list(bg.genes)
+    for j in (1, 5, 9, 130, 131):  # a coupled pair's genes among them
+        genes[j] = "HMGB2"
+    P.save_npz(tmp_path / "B1.npz", bg.X, pd.DataFrame({"donor_id": bg.donor}), genes)
+    spec = {"B1": dict(file="B1.npz", sha256=P.sha256(tmp_path / "B1.npz"), donor="donor_id", counts="X")}
+    (tmp_path / "backgrounds.json").write_text(json.dumps(spec))
+    got = P.load_backgrounds(tmp_path / "backgrounds.json", tmp_path)["B1"]
+    assert len(set(got.genes)) == len(got.genes)
+    bgs = {"B1": got, "B2": simulated_background("B2", donors=12, seed=1)}
+    pilot = _pilot(bgs)
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    pick = [next(e for e in entries if e["condition"] == "N1")]
+    summary = R.run(pick, bgs, pilot, tmp_path / "out", workers=1)
+    assert summary["errors"] == 0
+
+
 def test_the_panel_loads_only_its_own_backgrounds(tmp_path):
     """The first review's K1: a backgrounds.json with the anchors' B3 (three batches of 96 cells, as
     select_backgrounds.fetch_b3 writes it) must not stop the pilot, the preparation or the timing:
@@ -544,8 +585,10 @@ def test_the_pilot_and_the_run_go_through_their_command_lines_on_files(tmp_path,
     expected = ((P.n_cards() - 790) * 30.0 + 790 * 90.0) / 80 / 3600
     assert f"a shard's expected time {expected:.2f} h" in timing_out and "drops written" in timing_out
     assert json.loads(pilot_path.read_text())["dropped"] == []
-    oc.main(["--pilot", str(pilot_path)])
-    assert "P(S1-S5 all pass | sound)" in capsys.readouterr().out
+    oc.main(["--pilot", str(pilot_path), "--write-judged"])
+    assert "P(S1-S7 all pass | sound)" in capsys.readouterr().out
+    fixed = json.loads(pilot_path.read_text())["s3_rules"]  # S3's tiers, fixed before the key
+    assert set(fixed["tiers"]) == set(oc.STRATA) and 0 <= fixed["joint"] <= 1
     B.main(["prepare", "--backgrounds", str(spec), "--data-dir", str(data), "--out", str(tmp_path / "compact")])
     B.main(["run", "--dry-run", "--compact", str(tmp_path / "compact"), "--pilot", str(pilot_path), "--shard", "0",
             "--shards", "1", "--workers", "2", "--limit", "2", "--out", str(tmp_path / "shards" / "shard-0")])
@@ -554,7 +597,8 @@ def test_the_pilot_and_the_run_go_through_their_command_lines_on_files(tmp_path,
     S.main(["--key", simulate.DRY_RUN_KEY, "--results", str(tmp_path / "results"), "--pilot", str(pilot_path),
             "--out", str(tmp_path / "scores.json")])
     scores = json.loads((tmp_path / "scores.json").read_text())
-    assert scores["n_cards"] == P.n_cards() and "S3" in scores["criteria"]
+    assert scores["n_cards"] == P.n_cards() and set(scores["criteria"]) == set(oc.CRITERIA)
+    assert scores["criteria"]["S3"]["tiers_fixed_before_the_key"]
     assert "validation" in capsys.readouterr().out
 
 
@@ -605,11 +649,14 @@ def test_gate4_odds_and_outcome_follow_the_rule():
 
 
 def test_the_sound_validator_model_takes_every_open_route_at_its_measured_size(bgs):
-    """The first review's V4: a card's nominal is what a sound validator following the engine's rules
-    gets wrong on its case, from the pilot's measurements: on a valid metric GATE 4's measured odds of
-    FAILing plus GATE 5's designed 1.5 alpha, then the effect's measured outcomes after a PASS; on a
-    blind metric the engine's rules on the case's datasets (a PASS then a NO DETECTABLE EFFECT is an
-    error); without measurements, the designed sizes."""
+    """The first review's V4: a card's rates are what a sound validator following the engine's rules
+    gets on its case, from the pilot's measurements, in the engine's verdict order: on a valid metric
+    GATE 5's designed 1.5 alpha, then GATE 4's measured odds of FAILing, then the effect's measured
+    outcomes after a PASS; on a blind metric GATE 5 too, then the engine's rules on the case's
+    datasets (a PASS then a NO DETECTABLE EFFECT is an error); without measurements, the designed
+    sizes. The second review: after an UNTESTED GATE 4 an effect explained by depth is still called
+    (the engine checks it before the metric's validity), and the thresholds use, per card, the larger
+    of the rate and the designed size."""
     import oc
     conds = P.conditions()
     pilot = _pilot(bgs, truth={"low": "blind"})
@@ -619,15 +666,31 @@ def test_the_sound_validator_model_takes_every_open_route_at_its_measured_size(b
                                                                P.INCONCLUSIVE: 5}),
         "N1:null:20": dict(establishable=True, engine_outcomes={P.NS_INVALID: 80, P.NDE: 15, P.INCONCLUSIVE: 5})}
     m = oc.sound_model(conds["N1"], "null", 0, pilot)
-    reach = 0.9 * (1 - oc.E_GATE5)
-    assert m["measured"] and m["p_inv"] == pytest.approx(0.08 + oc.E_GATE5)
+    g5 = oc.E_GATE5
+    reach = 0.9 * (1 - g5)
+    assert m["measured"] and m["p_inv"] == pytest.approx(g5 + (1 - g5) * 0.08)
     assert m["p_sup"] == pytest.approx(reach * 0.03) and m["p_err"] == pytest.approx(m["p_inv"] + reach * 0.03)
-    assert m["decisive"] == pytest.approx(reach * 0.92)
+    assert m["decisive"] == pytest.approx(reach * 0.92) and m["p_nde"] == 0.0  # NDE is allowed on a null
+    row = oc.card_model(conds["N1"], "null", 0, pilot)
+    assert row["r_sup"] == oc.E_SUPPORTED and row["r_nde"] == 0.0  # the designed size above the rate
+    assert row["r_inv"] == pytest.approx(m["p_inv"])                   # the rate above the designed size
+    assert row["r_err"] == pytest.approx(max(m["p_err"], 0.125))
     b = oc.sound_model(conds["N1"], "null", 20, pilot)                     # blind: PASS then NDE is an error
-    assert b["p_err"] == pytest.approx(0.15) and b["p_inv"] == 0 and b["decisive"] == pytest.approx(0.80)
+    assert b["p_err"] == pytest.approx((1 - g5) * 0.15) and b["p_nde"] == pytest.approx((1 - g5) * 0.15)
+    assert b["p_inv"] == 0 and b["decisive"] == pytest.approx(g5 + (1 - g5) * 0.80)
     t = oc.sound_model(conds["N1"], "null", 1, pilot)                      # nothing measured
     assert not t["measured"] and t["p_err"] == pytest.approx(0.125) and t["decisive"] == oc.D_NOMINAL
-    assert oc.stratum(conds["E1"], "valid") == "effect" and oc.stratum(conds["N8"], "valid") == "null"
+    # an UNTESTED GATE 4 with the effect explained by depth: NOT SUPPORTED (explained by depth), an
+    # error on a real effect above the SESOI (E2 at the key dose), not INCONCLUSIVE
+    pilot["truth_case"] = {"B1": {"E2:against": {"0": dict(pilot["truth"]["B1"]["0"],
+                                                           gate4=dict(p_pass=0.0, p_fail=0.0, p_untested=1.0))}}}
+    pilot["establishable"]["E2:against:0"] = dict(establishable=True,
+                                                  effect_outcomes={P.NS_DEPTH: 40, P.SUPPORTED: 60})
+    e = oc.sound_model(conds["E2"], "against", 0, pilot)
+    assert P.NS_DEPTH not in P.allowed(conds["E2"], "against", 0, pilot)
+    assert e["p_err"] == pytest.approx(g5 + (1 - g5) * 0.4) and e["decisive"] == 0.0
+    assert oc.stratum(conds["E1"], "valid") == "effect" and oc.stratum(conds["N1"], "valid") == "null"
+    assert oc.stratum(conds["N8"], "valid") is None and oc.stratum(conds["N3"], "blind") is None  # the oracle's
     assert oc.stratum(conds["N6c"], "useless") == "invalid" and oc.stratum(conds["N1"], "ambiguous") is None
 
 
@@ -712,6 +775,7 @@ def test_the_pilot_fixes_sesoi_saturation_truth_doses_and_establishable_cases(sm
             lv for lv in P.LEVELS for _ in range(4)]
         for lv in P.LEVELS:
             assert pilot["sesoi"][b][lv] in O.SESOI_GRID
+            assert pilot["sesoi_found"][b][lv] or pilot["sesoi"][b][lv] == O.SESOI_GRID[-1]
             assert pilot["saturation_dose"][b][lv] in O.DOSE_GRID
         for k, t in pilot["truth"][b].items():
             assert t["class"] == P.classify_response(t["response"], t["delta_min"])
@@ -758,6 +822,36 @@ CAUSE_OF = {P.SUPPORTED: ("SUPPORTED (provisional until replicated)", "provision
             P.REFUSAL: ("NOT SUPPORTED — metric invalid: bias", "metric_invalid_gate0")}
 
 
+def test_a_background_without_a_candidate_is_dropped_with_its_cases(small_bgs, monkeypatch):
+    """The second review's V6: v1.md 3.1 drops a background without a qualifying candidate with the
+    cases that need it, but without B2 the pilot stopped (KeyError 'B2'). The pilot records 'B2:*',
+    which drops N7 from the key's assignment, the expected cards, the timing and the scoring; the
+    order's drops come after it. Without B1 there is no validation to run."""
+    pytest.importorskip("scipy")
+    import oc
+    import oracle as O
+    import timing as T
+    monkeypatch.setattr(O, "DOSE_GRID", (1.0, 2.0, 3.0))
+    pilot = O.run_pilot({"B1": small_bgs["B1"]}, n=2, draws=10,
+                        sizes=dict(curve=(1, 2), truth=(2, 3), case=(2, 2), gate4=10, sesoi=4))
+    assert pilot["dropped"] == ["B2:*"] and "B2" not in pilot["pool_size"]
+    assert not any(k.startswith("N7:") for k in pilot["establishable"])
+    entries = P.assign(KEY, pilot["dropped"], pilot["pool_size"])
+    assert {e["condition"] for e in entries} == {c.name for c in P.CONDITIONS} - {"N7"}
+    assert len(entries) == P.n_datasets() - 200 == P.n_datasets(pilot["dropped"])
+    assert not any(r["condition"] == "N7" for r in oc.expected_rows(pilot, pilot["dropped"]))
+    slow = {c.name: 160.0 for c in P.CONDITIONS}  # slow enough that some of the order's drops are needed
+    order = T.decide_drops(slow, dropped=pilot["dropped"])
+    assert order and P.check_dropped(pilot["dropped"] + order) == ["B2:*"] + order
+    assert T.shard_hours(slow, ["B2:*"] + order) <= T.BUDGET_HOURS
+    with pytest.raises(ValueError):
+        P.check_dropped(["N3:f=0.1", "B2:*"])
+    with pytest.raises(ValueError):
+        P.check_dropped(["B1:*"])
+    with pytest.raises(SystemExit):
+        P.background_drops({"B2"})
+
+
 def _est_pilot(bgs, delta=0.3, truth=None):
     pilot = _pilot(bgs, delta=delta, truth=truth)
     pilot["establishable"] = {f"{c.name}:{v}:{k}": dict(establishable=c.oracle)
@@ -770,46 +864,110 @@ def _reports(entries, fn):
     return {cid: CAUSE_OF[fn(conds[e["condition"]], e)] for e in entries for cid in P.card_ids(e)}
 
 
-def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
-    """A validator that always gives a correct definite outcome passes; one that always rejects
-    the metric, always says INCONCLUSIVE, always refuses, always says SUPPORTED or always NO
-    DETECTABLE EFFECT fails (the reviewer's question: no bad validator passes)."""
-    pytest.importorskip("scipy")
-    import score as S
-    pilot = _est_pilot(bgs, truth={"low": "blind"})
-    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
-    order = (P.NS_INVALID, P.SUPPORTED, P.NS_DEPTH, P.NDE, P.NS_OPPOSITE, P.DEGENERATE)
+ORDER = (P.NS_INVALID, P.SUPPORTED, P.NS_DEPTH, P.NDE, P.NS_OPPOSITE, P.DEGENERATE)
 
-    def perfect(c, e):
+
+def _perfect(pilot):
+    def fn(c, e):
         good = P.definite(c, e["variant"], e["pair"], pilot)
-        return next((o for o in order if o in good), P.INCONCLUSIVE)
-    res = S.score(entries, _reports(entries, perfect), pilot)
-    assert res["passed"] and all(res["criteria"][s]["passed"] for s in ("S1", "S2", "S3", "S4", "S5"))
-    assert res["joint_pass_probability_sound"] >= 0.9
+        return next((o for o in ORDER if o in good), P.INCONCLUSIVE)
+    return fn
+
+
+def _bad_validators(pilot):
+    """The bad validators of v1.md section 6, with the criteria each must fail (at least)."""
+    perfect = _perfect(pilot)
+
     def no_supported(c, e):  # the first review's: perfect, but never SUPPORTED
         o = perfect(c, e)
         return P.INCONCLUSIVE if o == P.SUPPORTED else o
+
+    def nde_not_supported(c, e):  # the second review's: perfect, but NO DETECTABLE EFFECT for SUPPORTED
+        o = perfect(c, e)
+        return P.NDE if o == P.SUPPORTED else o
 
     def blind_or_nde(c, e):  # shows blindness where it can, else NO DETECTABLE EFFECT, never tests the effect
         return P.NS_INVALID if P.NS_INVALID in P.definite(c, e["variant"], e["pair"], pilot) else P.NDE
 
     def blind_or_unsure(c, e):  # shows blindness where it can, else INCONCLUSIVE
         return P.NS_INVALID if P.NS_INVALID in P.definite(c, e["variant"], e["pair"], pilot) else P.INCONCLUSIVE
-    for name, fn, fails in (
-            ("always invalid", lambda c, e: P.NS_INVALID, {"S3", "S4", "S5"}),
+
+    def nde_on_unestablishable_blind(c, e):  # the second review's V8: NO DETECTABLE EFFECT on a quarter of the
+        truth = P.metric_truth(c, e["variant"], e["pair"], pilot)  # blind or useless cards it cannot settle
+        est = (pilot["establishable"].get(f"{c.name}:{e['variant']}:{e['pair']}") or {}).get("establishable")
+        if truth in ("blind", "useless") and not (c.oracle and est) and int(e["id"][1:]) % 4 == 0:
+            return P.NDE
+        return perfect(c, e)
+    return (("always invalid", lambda c, e: P.NS_INVALID, {"S3", "S4", "S5"}),
             ("always inconclusive", lambda c, e: P.INCONCLUSIVE, {"S3"}),
             ("always refuses", lambda c, e: P.REFUSAL, {"S3"}),
             ("always supported", lambda c, e: P.SUPPORTED, {"S1", "S2", "S4"}),
-            ("always no effect", lambda c, e: P.NDE, {"S3", "S4"}),
+            ("always no effect", lambda c, e: P.NDE, {"S3", "S4", "S6"}),
             ("perfect but never SUPPORTED", no_supported, {"S3"}),
+            ("perfect but NO DETECTABLE EFFECT for SUPPORTED", nde_not_supported, {"S3"}),
             ("blindness, else NO DETECTABLE EFFECT", blind_or_nde, {"S3"}),
-            ("blindness, else INCONCLUSIVE", blind_or_unsure, {"S3"})):
-        got = S.score(entries, _reports(entries, fn), pilot)["criteria"]
-        failed = {s for s in ("S1", "S2", "S3", "S4", "S5") if not got[s]["passed"]}
-        assert fails <= failed, (name, failed)
-    got = S.score(entries, _reports(entries, no_supported), pilot)["criteria"]["S3"]["strata"]
+            ("blindness, else INCONCLUSIVE", blind_or_unsure, {"S3"}),
+            ("NO DETECTABLE EFFECT on a quarter of the unsettled blind or useless cards",
+             nde_on_unestablishable_blind, {"S6"}))
+
+
+def _failed(res):
+    import oc
+    return {s for s in oc.CRITERIA if not res["criteria"][s]["passed"]}
+
+
+def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
+    """A validator that always gives a correct definite outcome passes; one that always rejects
+    the metric, always says INCONCLUSIVE, always refuses, always says SUPPORTED or always NO
+    DETECTABLE EFFECT fails, and so do the reviews' perfect-but validators (the reviewer's question:
+    no bad validator passes). An engine that fails on cards fails S7, however few."""
+    pytest.importorskip("scipy")
+    import score as S
+    pilot = _est_pilot(bgs, truth={"low": "blind"})
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    perfect = _perfect(pilot)
+    res = S.score(entries, _reports(entries, perfect), pilot, sims=2000)
+    assert res["passed"] and not _failed(res)
+    assert res["joint_pass_probability_sound"] >= 0.9
+    for name, fn, fails in _bad_validators(pilot):
+        if name.startswith("NO DETECTABLE EFFECT on a quarter"):
+            continue  # every case of this pilot is establishable: see the scenario C test
+        got = _failed(S.score(entries, _reports(entries, fn), pilot, sims=2000))
+        assert fails <= got, (name, got)
+    got = S.score(entries, _reports(entries, _bad_validators(pilot)[5][1]), pilot, sims=2000)["criteria"]["S3"]["strata"]
     assert not got["effect"]["passed"] and got["null"]["passed"] and got["invalid"]["passed"]
-    assert S.score(entries, {}, pilot)["criteria"]["S4"]["rate"] == 1.0  # no reports: every card an error
+    assert S.score(entries, {}, pilot, sims=2000)["criteria"]["S4"]["rate"] == 1.0  # no reports: every card an error
+    reports = _reports(entries, perfect)
+    lost = [e["id"] for e in entries if e["condition"] == "N1"][0]
+    reports.pop(lost)                                     # one missing report among 6,000 cards
+    res = S.score(entries, reports, pilot, sims=2000)
+    assert _failed(res) == {"S7"} and res["criteria"]["S7"]["k"] == 1 and not res["passed"]
+
+
+@pytest.mark.parametrize("scenario", [(True, 1.0, 0.25), (True, 0.5, 0.5)], ids=["C", "A"])
+def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
+    """The second review's K1: in scenario C of oc.log (the low and medium levels blind, a quarter of
+    the cases establishable) only 81 real-effect cards are establishable; with that stratum reported
+    only, a validator that never says SUPPORTED, one that shows blindness where it can and otherwise
+    says NO DETECTABLE EFFECT, and one that says NO DETECTABLE EFFECT for SUPPORTED passed every
+    criterion; and in scenario A one that says NO DETECTABLE EFFECT on a quarter of the blind or
+    useless cards it cannot settle, and an engine failing on half of N1's cards (V8). Every stratum is
+    judged now (in C the real effects at the floor's tier), S6 counts a false NO DETECTABLE EFFECT and
+    S7 an engine error: they all fail, and a perfect validator passes."""
+    pytest.importorskip("scipy")
+    import oc
+    import score as S
+    pilot = oc.scenario_pilot(*scenario)
+    entries = P.assign(KEY, pool_sizes=pilot["pool_size"])
+    res = S.score(entries, _reports(entries, _perfect(pilot)), pilot, sims=4000)
+    assert not _failed(res) and res["joint_pass_probability_sound"] >= 0.90
+    assert res["criteria"]["S3"]["strata"]["effect"]["tier"] == ("floor" if scenario[2] == 0.25 else "principle")
+    for name, fn, fails in _bad_validators(pilot):
+        got = _failed(S.score(entries, _reports(entries, fn), pilot, sims=4000))
+        assert fails <= got, (name, got)
+    half = set(sorted(e["id"] for e in entries if e["condition"] == "N1")[::2])
+    reports = {cid: rec for cid, rec in _reports(entries, _perfect(pilot)).items() if cid not in half}
+    assert _failed(S.score(entries, reports, pilot, sims=4000)) == {"S7"}  # crashing on half of N1: S4 absorbed it
 
 
 def test_s3_counts_only_correct_definite_outcomes_and_nde_on_a_large_effect_is_an_error(bgs):
@@ -866,7 +1024,10 @@ def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
     assert oc.nominal_error(frozenset({P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL})) == pytest.approx(0.175)  # invalid, NDE, opposite
     for scenario in ((True, 0.5, 0.5), (False, 0.0, 1.0), (True, 1.0, 0.25)):
         rules = oc.criteria_rules(oc.expected_rows(oc.scenario_pilot(*scenario)), sims=4000)
-        assert rules["joint"] >= 0.90 and any(r["judged"] for r in rules["S3"].values()), scenario
+        assert rules["joint"] >= 0.90 and rules["s3_feasible"], scenario
+        for name in oc.ERROR_CRITERIA:  # the second review's V4: every error criterion meets the principle
+            r = rules[name]
+            assert r["judged"] and r["p_pass_sound"] >= 0.90 and r["p_pass_doubled"] <= 0.05, (scenario, name)
     # where the designed sizes leave less room than D_NOMINAL, the fallback's decisiveness is what is left
     assert oc.sound_model(P.conditions()["E1"], "dose=key", 0, oc.scenario_pilot(False, 0.0, 1.0))["decisive"] \
         == pytest.approx(1 - 0.175)
@@ -876,35 +1037,104 @@ def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
     assert sens[1.5] == pytest.approx((0.800, 0.085), abs=1e-3)
 
 
+def _rows(stratum, n, decisive, **kw):
+    """Hand-made cards for oc.criteria_rules: establishable, of one stratum, with a sound validator's
+    decisiveness and no error."""
+    row = dict(condition="N6a" if stratum == "invalid" else "N1" if stratum == "null" else "E1", key=False,
+               sup_error_possible=stratum != "effect", invalid_error_possible=stratum != "invalid",
+               nde_error_possible=stratum != "null", valid=stratum != "invalid", stratum=stratum,
+               establishable=True, p_sup=0.0, p_inv=0.0, p_nde=0.0, p_err=0.0, decisive=decisive, measured=True,
+               r_sup=0.025, r_inv=0.1 if stratum != "invalid" else 0.0, r_nde=0.05, r_err=0.1)
+    return [dict(row, **kw) for _ in range(n)]
+
+
 def test_s3_judges_a_stratum_whose_measured_decisiveness_is_one():
     """The dry run's smoke pilot measured the blind and useless cards' decisiveness at 1.000: doubling
     a shortfall of 0 leaves nothing to tell apart, so that stratum went unjudged and a validator that
     never shows blindness would have passed S3. The nominal is the measured rate at most 0.85."""
     pytest.importorskip("scipy")
     import oc
-    rows = [dict(condition="N6a", key=False, sup_error_possible=True, valid=False, stratum="invalid",
-                 establishable=True, p_sup=0.0, p_inv=0.0, p_err=0.0, decisive=1.0, nominal=0.0, measured=True)
-            for _ in range(400)]
+    rows = _rows("invalid", 400, 1.0) + _rows("null", 400, 0.85) + _rows("effect", 400, 0.85)
     rules = oc.criteria_rules(rows, sims=2000)
     r3 = rules["S3"]["invalid"]
-    assert r3["measured"] == 1.0 and r3["nominal"] == oc.D_NOMINAL and r3["applies"] and r3["judged"]
-    assert 0 < r3["min_required"] <= 0.85 * 400 and rules["joint"] >= 0.90
+    assert r3["measured"] == 1.0 and r3["nominal"] == oc.D_NOMINAL and r3["tier"] == "principle"
+    assert 0 < r3["min_required"] <= 0.85 * 400 and rules["joint"] >= 0.90 and rules["s3_feasible"]
     assert oc.error_rule(400, 0.0)[0] == 0  # where the sound validator cannot err, no error is allowed
 
 
-def test_s3_judges_a_stratum_only_within_the_joint_requirement():
-    """Scenario C of oc.log: 81 establishable real-effect cards pass a sound validator with 0.973,
-    which with S1 as a whole (0.915) would bring P(S1-S5 together | sound) below 0.90: that stratum
-    is reported, not judged; the null and invalid strata are judged (decided in the third round:
-    the thresholds keep P(S1-S5 together | sound) >= 0.90)."""
+def test_s3_judges_every_stratum_at_the_strictest_tier_the_joint_requirement_allows():
+    """Scenario C of oc.log: 81 establishable real-effect cards pass a sound validator at the
+    principle's tier with 0.973, which with S1 as a whole (0.915) would bring P(S1-S7 together |
+    sound) below 0.90 (decided in the third round). Before the second review that stratum was then
+    reported only; now it is judged at the floor's tier (a validator half as decisive fails), the
+    nulls and the blind cards at the principle's. In scenario A every stratum takes the principle's."""
     pytest.importorskip("scipy")
     import oc
     rules = oc.criteria_rules(oc.expected_rows(oc.scenario_pilot(True, 1.0, 0.25)), sims=4000)
     eff = rules["S3"]["effect"]
-    assert eff["n"] == 81 and eff["applies"] and not eff["judged"]
-    assert rules["S3"]["null"]["judged"] and rules["S3"]["invalid"]["judged"] and rules["joint"] >= 0.90
+    assert eff["n"] == 81 and eff["tiers"]["principle"]["attainable"] and eff["tier"] == "floor"
+    assert eff["tiers"]["principle"]["p_pass_sound"] < 0.90 / 0.915 < eff["tiers"]["floor"]["p_pass_sound"]
+    assert eff["min_required"] == eff["tiers"]["floor"]["min_required"] and eff["tiers"]["floor"]["alternative"] \
+        == pytest.approx(eff["nominal"] / 2)
+    assert rules["S3"]["null"]["tier"] == rules["S3"]["invalid"]["tier"] == "principle" and rules["joint"] >= 0.90
     rules = oc.criteria_rules(oc.expected_rows(oc.scenario_pilot(True, 0.5, 0.5)), sims=4000)
-    assert all(r["judged"] for r in rules["S3"].values())
+    assert all(r["tier"] == "principle" for r in rules["S3"].values())
+
+
+def test_s3_fails_when_a_stratum_cannot_be_judged():
+    """Every stratum is judged (the second review's K1): with 5 establishable real-effect cards not even
+    the floor's tier is attainable, so S3 fails for any validator, a perfect one included, and the
+    joint probability of a sound validator is 0 — visible in oc_pilot.log before the key."""
+    pytest.importorskip("scipy")
+    import oc
+    rows = _rows("invalid", 400, 0.9) + _rows("null", 400, 0.9) + _rows("effect", 5, 0.9)
+    rules = oc.criteria_rules(rows, sims=2000)
+    assert not rules["S3"]["effect"]["tiers"]["floor"]["attainable"] and rules["S3"]["effect"]["tier"] is None
+    assert not rules["s3_feasible"] and rules["joint"] == 0.0
+    assert rules["S3"]["null"]["tier"] is not None  # the strata that fit are still judged, and reported
+
+
+def test_error_criteria_and_decisiveness_meet_the_principle_at_any_rate():
+    """The second review's V4 and V5: a mean nominal of 0.001 on 5,600 cards passed a sound validator
+    with 0.51 (too few expected errors to tell a doubled rate apart); the nominal is raised to the
+    first rate at which the principle holds. Decisiveness below 0.5 crashed the rule (a negative
+    doubled rate); the alternative is at least half the nominal."""
+    pytest.importorskip("scipy")
+    import oc
+    assert oc.error_rule(5600, 0.001)[1] < 0.90
+    r = oc.error_criterion(5600, 0.001)
+    assert r["raised"] and r["judged"] and r["p_pass_sound"] >= 0.90 and r["p_pass_doubled"] <= 0.05
+    assert 0.001 < r["rule_nominal"] < 0.004
+    assert not oc.error_criterion(5600, 0.025)["raised"]
+    assert oc.error_criterion(0, 0.1)["judged"] is False                     # no card: holds
+    for d0 in (0.2, 0.45, 0.5, 0.51, 0.6):
+        k, ps, pa = oc.decisiveness_rule(400, d0)
+        assert k is not None and pa <= 0.05 and oc.tier_alternative(d0, "principle") >= d0 / 2
+    assert oc.decisiveness_rule(0, 0.8)[0] is None and oc.decisiveness_rule(100, float("nan"))[0] is None
+    assert oc.tier_alternative(0.85, "principle") == pytest.approx(0.70)
+    assert oc.tier_alternative(0.85, "floor") == pytest.approx(0.425)
+
+
+def test_the_tiers_fixed_before_the_key_are_the_ones_scored(bgs, tmp_path):
+    """The second review's V3: score.py recomputed which strata were judged from the realized cards,
+    so the judged set was not known before the key. `oc.py --pilot ... --write-judged` writes S3's
+    tiers into pilot.json; score.py judges at them, with thresholds from the realized n."""
+    pytest.importorskip("scipy")
+    import oc
+    import score as S
+    pilot = oc.scenario_pilot(True, 1.0, 0.25)
+    path = tmp_path / "pilot.json"
+    path.write_text(json.dumps(pilot))
+    oc.main(["--pilot", str(path), "--write-judged"])
+    fixed = json.loads(path.read_text())["s3_rules"]
+    assert fixed["tiers"] == {"effect": "floor", "null": "principle", "invalid": "principle"} and fixed["feasible"]
+    entries = P.assign(KEY, pool_sizes=pilot["pool_size"])
+    pilot["s3_rules"] = dict(fixed, tiers={"effect": "principle", "null": "floor", "invalid": "principle"})
+    res = S.score(entries, _reports(entries, _perfect(pilot)), pilot, sims=2000)["criteria"]["S3"]
+    assert res["tiers_fixed_before_the_key"]
+    assert {st: v["tier"] for st, v in res["strata"].items()} == pilot["s3_rules"]["tiers"]
+    eff = res["strata"]["effect"]
+    assert eff["min_required"] == oc.decisiveness_tiers(eff["n"], eff["nominal"])["principle"]["min_required"]
 
 
 def test_the_shared_donor_interval_widens_only_when_donors_drive_the_outcome():
@@ -1106,8 +1336,11 @@ def test_the_manifest_keeps_the_round_not_when_or_where_it_was_fetched(tmp_path)
 
 def test_verify_re_runs_a_finished_run_and_compares_its_reports(tmp_path):
     """`blind.py verify`, the check anyone can run: the first datasets of a finished run, re-run from
-    its key, give the published reports' sha256; a manifest whose hash was altered, or another pilot,
-    does not pass."""
+    its key, give the published datasets' and reports' sha256; a manifest whose hash was altered, or
+    another pilot, does not pass. The second review's V1: between CPU models the last digits of a
+    report's numbers can differ, so a report that says the same (verdict, cause, every field; numbers
+    within 1e-9) is the same, not different; one with another verdict is different; a dataset whose
+    hash differs is reported; and verify refuses a non-empty output (the runner reuses reports there)."""
     pytest.importorskip("scipy")
     import blind as B
     import simulate
@@ -1123,13 +1356,37 @@ def test_verify_re_runs_a_finished_run_and_compares_its_reports(tmp_path):
     (tmp_path / "res" / "key.json").write_text(json.dumps(rec))
     res = B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun", workers=1, datasets=2)
     assert res["datasets"] == 2 and res["cards"] >= 2 and res["identical"] == res["cards"] and res["key"] == rec["key"]
+    assert res["datasets_identical"] == 2 and res["different"] == 0
+    with pytest.raises(SystemExit, match="not empty"):
+        B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun", workers=1, datasets=1)
     m = json.loads((tmp_path / "res" / "manifest.json").read_text())
-    m["datasets"][0]["cards"][0]["report_sha256"] = "0" * 64
+    first, second = m["datasets"][0]["cards"][0], m["datasets"][1]["cards"][0]
+    m["datasets"][0]["cards"][0]["report_sha256"] = "0" * 64        # a hash that binds no report
+    path = tmp_path / "res" / "reports" / f"{second['id']}.json"   # as if run on another CPU model
+    rep = json.loads(path.read_text())
+    nums = [k for k, v in rep["fields"]["effect"]["detail"].items() if isinstance(v, float) and v]
+    assert nums
+    rep["fields"]["effect"]["detail"][nums[0]] *= 1 + 8e-13
+    path.write_text(json.dumps(rep, sort_keys=True))
+    m["datasets"][1]["cards"][0]["report_sha256"] = P.sha256(path)
+    m["datasets"][2]["data_sha256"] = "1" * 64
     (tmp_path / "res" / "manifest.json").write_text(json.dumps(m))
     res = B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun2", workers=1)
-    assert res["datasets"] == 3 and res["identical"] == res["cards"] - 1
+    row = {r["card"]: r for r in res["rows"]}
+    assert res["datasets"] == 3 and res["identical"] == res["cards"] - 2 and res["datasets_identical"] == 2
+    assert not row[first["id"]]["same"] and row[second["id"]]["same"] and not row[second["id"]]["identical"]
+    assert res["different"] == 1
+    rep["verdict"] = "INCONCLUSIVE — x"                             # another verdict: different
+    path.write_text(json.dumps(rep, sort_keys=True))
+    m["datasets"][1]["cards"][0]["report_sha256"] = P.sha256(path)
+    (tmp_path / "res" / "manifest.json").write_text(json.dumps(m))
+    assert not {r["card"]: r for r in B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun3",
+                                               workers=1)["rows"]}[second["id"]]["same"]
     with pytest.raises(SystemExit, match="pilot"):
-        B.verify(tmp_path / "res", compact, dict(pilot, dropped=["N3 steps"]), tmp_path / "rerun3", workers=1)
+        B.verify(tmp_path / "res", compact, dict(pilot, dropped=["N3 steps"]), tmp_path / "rerun4", workers=1)
+    assert B.same_report({"a": [1.0, "x", True]}, {"a": [1.0 + 1e-12, "x", True]})
+    assert not B.same_report({"a": [1.0, "x", True]}, {"a": [1.0 + 1e-6, "x", True]})
+    assert not B.same_report({"a": True}, {"a": 1}) and not B.same_report({"a": 1}, {"b": 1})
 
 
 def test_the_guard_and_the_key_follow_the_frozen_tag_and_the_run_tag(tmp_path, monkeypatch):

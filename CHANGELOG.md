@@ -115,8 +115,10 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   (the key: a drand quicknet round named in the run tag before it exists, BLS-verified),
   `run_panel.py` (datasets built on the fly, one engine run per claim card, deterministic
   reports), `blind.py` (guard, shards, collection, and `verify`: anyone re-runs datasets of a
-  finished run and compares the reports' sha256), `score.py` (S1-S5, per-level and per-truth rates, per-gate outcomes,
-  design effects), `oc.py` (thresholds by one principle with nominals by cause), `anchors.py`,
+  finished run, checks the datasets' sha256 and compares the reports by what they say),
+  `score.py` (S1-S7, per-level and per-truth rates, per-gate outcomes, design effects), `oc.py`
+  (thresholds by one principle with nominals by cause; S3 judged on every stratum at the
+  principle's tier or the floor's, fixed before the key), `anchors.py`,
   `simulate.py`, `timing.py` (with the drop rule) and `test_prereg.py`;
   `.github/workflows/validation.yml` runs everything from the tag `v0.3.0-prereg` to the scores
   (results committed to `results/panel-v1`), and `.github/workflows/audit.yml` the flagship

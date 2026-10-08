@@ -52,17 +52,18 @@ def shard_hours(seconds_per_card: dict, dropped=()) -> float:
     return total / WORKERS / SHARDS / 3600
 
 
-def decide_drops(seconds_per_card: dict, budget_hours: float = BUDGET_HOURS) -> list:
+def decide_drops(seconds_per_card: dict, budget_hours: float = BUDGET_HOURS, dropped=()) -> list:
     """Drops in the pre-registered order (panel.DROP_ORDER) until a shard's expected time
-    (`shard_hours`) fits the budget (v1.md, section 4)."""
-    dropped = []
+    (`shard_hours`) fits the budget (v1.md, section 4), after the drops already made (`dropped`: a
+    background without a candidate, with its cases). Returns the order's drops."""
+    before, out = list(dropped), []
     for name, variant in P.DROP_ORDER:
-        if shard_hours(seconds_per_card, dropped) <= budget_hours:
+        if shard_hours(seconds_per_card, before + out) <= budget_hours:
             break
-        dropped.append(f"{name}:{variant}")
-    if shard_hours(seconds_per_card, dropped) > budget_hours:
+        out.append(f"{name}:{variant}")
+    if shard_hours(seconds_per_card, before + out) > budget_hours:
         raise SystemExit("the key conditions and the real effects at the key dose do not fit the budget")
-    return dropped
+    return out
 
 
 def sample(entries, k: int, rng) -> list:
@@ -138,7 +139,8 @@ def main(argv=None):
     if args.write_drops:
         if w != WORKERS:
             raise SystemExit(f"the drops are decided at the run's {WORKERS} workers")
-        dropped = decide_drops(sec[w])
+        backgrounds = [d for d in pilot.get("dropped", ()) if d.endswith(":*")]  # the pilot's: kept
+        dropped = backgrounds + decide_drops(sec[w], dropped=backgrounds)
         pilot["dropped"] = P.check_dropped(dropped)
         Path(args.pilot).write_text(json.dumps(pilot, indent=1))
         print(f"# drops written to {args.pilot}: {dropped or 'none'}")

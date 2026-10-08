@@ -158,15 +158,31 @@ def conditions() -> dict:
 
 
 def _dropped(name: str, variant: str, dropped) -> bool:
-    return any(d in (name, f"{name}:{variant}") for d in (dropped or ()))
+    background = conditions()[name].background if name in conditions() else None
+    return any(d in (name, f"{name}:{variant}", f"{background}:*") for d in (dropped or ()))
+
+
+def background_drops(present) -> list:
+    """The drop of every background without a qualifying candidate (v1.md 3.1: dropped with the
+    cases that need it): 'B2:*' drops N7 (and the anchors drop R1). B1 carries every other case, so
+    without it there is no validation to run."""
+    if "B1" not in present:
+        raise SystemExit("B1 has no qualifying candidate: the cases N1-N6, N8 and E1-E3 cannot be built "
+                         "and the validation cannot run (v1.md 3.1)")
+    return [f"{b}:*" for b in BACKGROUNDS if b not in present]
 
 
 def check_dropped(dropped) -> list:
-    """Drops are allowed only in DROP_ORDER, as a prefix of it (v1.md section 4)."""
+    """Drops are allowed only as v1.md section 4 and 3.1 fix them: the backgrounds without a
+    qualifying candidate (`background_drops`; only B2), then a prefix of DROP_ORDER."""
     dropped = list(dropped or ())
+    backgrounds = [d for d in dropped if d.endswith(":*")]
+    if backgrounds and (backgrounds != dropped[:len(backgrounds)] or set(backgrounds) - {"B2:*"}):
+        raise ValueError(f"only B2 can be dropped as a background, before the order's drops; got {dropped}")
+    rest = dropped[len(backgrounds):]
     allowed = [f"{n}:{v}" for n, v in DROP_ORDER]
-    if dropped != allowed[:len(dropped)]:
-        raise ValueError(f"drops must be a prefix of the pre-registered order {allowed}, got {dropped}")
+    if rest != allowed[:len(rest)]:
+        raise ValueError(f"drops must be a prefix of the pre-registered order {allowed}, got {rest}")
     return dropped
 
 
@@ -387,9 +403,32 @@ def _counts_matrix(ad, spec: dict):
     return X, genes
 
 
+def unique_names(names) -> list[str]:
+    """Gene symbols made unique as anndata's var_names_make_unique does: the second occurrence of a
+    symbol becomes 'symbol-1', the third 'symbol-2', skipping a name already taken; first
+    occurrences keep their symbol. Several Ensembl genes can share one symbol, and the engine
+    refuses duplicate var_names (the second review's K2)."""
+    names = [str(n) for n in names]
+    taken, seen, out = set(names), {}, []
+    for n in names:
+        if n not in seen:
+            seen[n] = 0
+            out.append(n)
+            continue
+        k = seen[n]
+        while f"{n}-{k + 1}" in taken:
+            k += 1
+        k += 1
+        seen[n] = k
+        taken.add(f"{n}-{k}")
+        out.append(f"{n}-{k}")
+    return out
+
+
 def load_background(name: str, spec: dict) -> Background:
     """An .h5ad (raw counts as `_counts_matrix` finds them; cells filtered by spec['filter'] before
-    anything is loaded into memory) or an .npz written by `save_npz`. Counts stay sparse."""
+    anything is loaded into memory) or an .npz written by `save_npz`. Counts stay sparse; gene
+    symbols are made unique (`unique_names`)."""
     path = Path(spec["path"])
     filters = spec.get("filter") or {}
     if path.suffix == ".npz":
@@ -400,7 +439,7 @@ def load_background(name: str, spec: dict) -> Background:
             X = sparse.csr_matrix((z["X_data"], z["X_indices"], z["X_indptr"]), shape=tuple(z["X_shape"]))
         else:
             X = z["X"]
-        genes = [str(g) for g in z["genes"]]
+        genes = unique_names(z["genes"])
         keep = np.ones(len(obs), bool)
         for col, val in filters.items():
             keep &= np.asarray(obs[col]).astype(str) == str(val)
@@ -413,6 +452,7 @@ def load_background(name: str, spec: dict) -> Background:
             keep &= np.asarray(ad.obs[col]).astype(str) == str(val)
         sub = ad[np.where(keep)[0]].to_memory()
         X, genes = _counts_matrix(sub, spec)
+        genes = unique_names(genes)
         obs = sub.obs.reset_index(drop=True)
     X = X.tocsr() if _is_sparse(X) else np.asarray(X)
     vals = X.data if _is_sparse(X) else X

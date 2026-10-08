@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import shutil
 import time
 from functools import partial
@@ -90,17 +91,37 @@ def make_run_args(card: dict):
     return metric, kw
 
 
+def _cpu_model() -> str | None:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or None
+
+
 def machine() -> dict:
-    """Cores, BLAS threads and the numerical environment of the run, for the record (v1.md,
-    section 4). The threads in use are read with threadpoolctl when it is installed (None
-    otherwise)."""
+    """Where the run ran, for the record (v1.md, section 3.3; the second review found the versions
+    and the CPU missing): the CPU model and cores, the BLAS libraries with their threads in use and
+    the kernels they chose (threadpoolctl, when installed; None otherwise), the numerical
+    environment, and the versions of Python, numpy, scipy, pandas and the engine. Between CPU models
+    the last digits of a report's numbers can differ; its verdict and cause do not (blind.verify)."""
     try:
         from threadpoolctl import threadpool_info
-        used = sorted({i["num_threads"] for i in threadpool_info() if i.get("user_api") == "blas"})
+        blas = [{k: i.get(k) for k in ("internal_api", "version", "architecture", "num_threads")}
+                for i in threadpool_info() if i.get("user_api") == "blas"]
+        used = sorted({b["num_threads"] for b in blas})
     except ImportError:
-        used = None
-    return dict(cpus=os.cpu_count(), blas_threads_in_use=used,
-                numeric_env={v: os.environ.get(v) for v in frozen.NUMERIC_ENV})
+        blas = used = None
+    versions = {"python": platform.python_version(), "platform": platform.platform()}
+    for mod in ("numpy", "scipy", "pandas", "metric_autopsy"):
+        try:
+            versions[mod] = __import__(mod).__version__
+        except ImportError:
+            versions[mod] = None
+    return dict(cpus=os.cpu_count(), cpu_model=_cpu_model(), blas_threads_in_use=used, blas=blas,
+                numeric_env={v: os.environ.get(v) for v in frozen.NUMERIC_ENV}, versions=versions)
 
 
 _STATE: dict = {}  # backgrounds, pilot and output directory, inherited by forked workers

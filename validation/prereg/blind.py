@@ -215,11 +215,34 @@ def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None, r
     return summary
 
 
+REL_TOL = 1e-9  # numbers of a re-run report agree with the published ones within this (relative)
+
+
+def same_report(a, b, rel: float = REL_TOL) -> bool:
+    """Whether two reports say the same: equal everywhere, numbers within `rel` of each other
+    (relative; absolutely within rel where both are below 1). Byte-identity holds on the same kind
+    of machine; between CPU models the last digits of floating-point numbers can differ (the second
+    review: relative differences up to 8.4e-13 between GitHub's runners and an AVX-512 Xeon, with
+    the same verdicts and causes)."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        return a.keys() == b.keys() and all(same_report(a[k], b[k], rel) for k in a)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(same_report(x, y, rel) for x, y in zip(a, b))
+    if isinstance(a, bool) or isinstance(b, bool):
+        return type(a) is type(b) and a == b  # True is not 1 in a report
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b or abs(a - b) <= rel * max(1.0, abs(a), abs(b))
+    return a == b
+
+
 def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, datasets: int | None = None) -> dict:
-    """Re-run datasets of a finished run and compare every report's sha256 with the run's manifest:
-    anyone can check that the published reports are what the frozen code gives for the key. The
-    datasets are the first `datasets` of the key's order (all if None); the key, the pilot and the
-    prepared backgrounds must be the run's."""
+    """Re-run datasets of a finished run and compare them with the run's: every dataset's sha256
+    with the manifest's, and every report with the published one — byte-identical, or saying the
+    same (`same_report`: the verdict, the cause and every field equal, numbers within REL_TOL),
+    else different. Anyone can check that the published reports are what the frozen code gives
+    for the key. The datasets are the first `datasets` of the key's order (all if None); the key,
+    the pilot and the prepared backgrounds must be the run's, and `out` must be empty (the runner
+    reuses a report it finds there)."""
     manifest = json.loads((results / "manifest.json").read_text())
     key = P.check_key(manifest["key"])
     record = results / "key.json"
@@ -227,6 +250,8 @@ def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, d
         raise SystemExit("key.json and the manifest name different keys")
     if manifest["pilot_sha256"] != pilot_sha256(pilot):
         raise SystemExit("the pilot differs from the run's")
+    if Path(out).exists() and any(Path(out).iterdir()):
+        raise SystemExit(f"{out} is not empty: verify re-runs into an empty directory")
     bgs, info = load_prepared(compact, None)
     if json.dumps(info, sort_keys=True) != json.dumps(manifest["backgrounds"], sort_keys=True):
         raise SystemExit("the prepared backgrounds differ from the run's")
@@ -234,12 +259,22 @@ def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, d
     entries = [e for e in P.assign(key, pilot.get("dropped", ()), pilot.get("pool_size")) if e["id"] in want]
     entries = entries[:datasets] if datasets is not None else entries
     R.run(entries, bgs, pilot, out, workers)
-    rows = []
+    rerun = {r["id"]: r for r in json.loads((out / "manifest.json").read_text())["datasets"]}
+    rows, data = [], []
     for e in entries:
+        data.append(dict(dataset=e["id"], identical=rerun[e["id"]]["data_sha256"] == want[e["id"]]["data_sha256"]))
         for c in want[e["id"]]["cards"]:
-            got = hashlib.sha256((out / "reports" / f"{c['id']}.json").read_bytes()).hexdigest()
-            rows.append(dict(card=c["id"], published=c["report_sha256"], rerun=got, identical=got == c["report_sha256"]))
-    return dict(key=key, datasets=len(entries), cards=len(rows), identical=sum(r["identical"] for r in rows), rows=rows)
+            mine = (out / "reports" / f"{c['id']}.json").read_bytes()
+            got = hashlib.sha256(mine).hexdigest()
+            published = results / "reports" / f"{c['id']}.json"  # bound to the manifest by its sha256
+            bound = published.exists() and hashlib.sha256(published.read_bytes()).hexdigest() == c["report_sha256"]
+            same = got == c["report_sha256"] or (bound and same_report(json.loads(published.read_text()),
+                                                                       json.loads(mine)))
+            rows.append(dict(card=c["id"], published=c["report_sha256"], rerun=got,
+                             identical=got == c["report_sha256"], same=bool(same)))
+    return dict(key=key, datasets=len(entries), datasets_identical=sum(d["identical"] for d in data),
+                cards=len(rows), identical=sum(r["identical"] for r in rows), same=sum(r["same"] for r in rows),
+                different=sum(not r["same"] for r in rows), rows=rows, data=data)
 
 
 def main(argv=None):
@@ -269,7 +304,7 @@ def main(argv=None):
         else:
             r.add_argument("--backgrounds", type=Path)
             r.add_argument("--data-dir", type=Path)
-    v = sub.add_parser("verify", help="re-run datasets of a finished run and compare the reports' sha256")
+    v = sub.add_parser("verify", help="re-run datasets of a finished run and compare the datasets and reports")
     v.add_argument("--results", type=Path, required=True, help="the run's results (manifest.json, key.json)")
     v.add_argument("--compact", type=Path, required=True, help="the backgrounds prepared by `prepare`")
     v.add_argument("--pilot", type=Path)
@@ -306,9 +341,12 @@ def main(argv=None):
             pilot = json.loads(args.pilot.read_text())
         res = verify(args.results, args.compact, pilot, args.out, args.workers, args.datasets)
         for r in res["rows"]:
-            print(f"{r['card']}  published {r['published']}  re-run {r['rerun']}  {'identical' if r['identical'] else 'DIFFERENT'}")
-        print(f"{res['identical']} of {res['cards']} reports identical ({res['datasets']} datasets, key {res['key']})")
-        if res["identical"] != res["cards"]:
+            word = "identical" if r["identical"] else f"the same within {REL_TOL:g}" if r["same"] else "DIFFERENT"
+            print(f"{r['card']}  published {r['published']}  re-run {r['rerun']}  {word}")
+        print(f"{res['datasets_identical']} of {res['datasets']} datasets identical; {res['identical']} of "
+              f"{res['cards']} reports identical, {res['same']} the same (verdicts, causes, numbers within "
+              f"{REL_TOL:g}), {res['different']} different (key {res['key']})")
+        if res["different"] or res["datasets_identical"] != res["datasets"]:
             raise SystemExit(1)
         return
     if args.limit is not None and not args.dry_run:

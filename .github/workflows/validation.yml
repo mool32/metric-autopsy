@@ -4,21 +4,23 @@
 # nobody decides anything afterwards. The run's commits go to its own branch prereg/panel-v1,
 # created from the tag's commit (no other branch is needed or touched): select -> the backgrounds
 # by the rule of section 3.1, committed there; pilot -> pilot.json (oracle), the timing pilot and
-# its drops, oc_pilot.log, committed there; run_tag -> the tag panel-v1-run on that commit, naming
-# a drand quicknet round at least an hour later; key -> waits for the round, verifies it, its
-# randomness is the key; prepare -> the planned backgrounds; shard x 20 -> the engine on every
-# claim card; check_shards / rerun -> shards lost to the infrastructure are run again (the result
-# is the same: the run is a deterministic function of the code, the backgrounds, the pilot and
-# the key) and recorded; collect -> the results and the planned backgrounds committed to the
-# branch results/panel-v1; score -> scores.json committed; anchors -> R1-R3 committed. Every job
-# first runs the frozen tag's own frozen.py on its checkout, before it installs anything.
+# its drops, oc_pilot.log and S3's tiers, committed there; run_tag -> the tag panel-v1-run on that
+# commit, naming a drand quicknet round at least an hour later; key -> waits for the round,
+# verifies it, its randomness is the key; prepare -> the planned backgrounds; shard x 20 -> the
+# engine on every claim card; check_shards / rerun -> shards lost to the infrastructure are run
+# again (the verdicts are the same: the run is a deterministic function of the code, the
+# backgrounds, the pilot and the key) and recorded; collect -> the results and the planned
+# backgrounds committed to the branch results/panel-v1; score -> scores.json committed;
+# anchors -> R1-R3 committed. Every job
+# that runs the panel's code first runs the frozen tag's own frozen.py on its checkout, before it
+# installs anything (guard, check_shards and cleanup run none: git checks, artifacts, a deletion).
 #
 # Dry run: pull requests that touch the panel run the same jobs and the same scripts on simulated
 # backgrounds written as files (simulate.py write), with a recent drand round as the key: the
 # Census selection as a rehearsal that prints no identities, a scratch data branch and a scratch
 # run tag (both deleted), the whole pilot as a smoke test (oracle.py --smoke, the timing pilot
-# with its drops, oc.py), two shards of four datasets (shard 1 leaves no results on purpose and
-# is re-run), the results committed to results/panel-v1-dry.
+# with its drops, oc.py --write-judged), two shards of four datasets (shard 1 leaves no results
+# on purpose and is re-run), the results committed to results/panel-v1-dry.
 name: Validation v1
 
 on:
@@ -194,9 +196,9 @@ jobs:
           python validation/prereg/timing.py --workers 4 --cards $cards --backgrounds validation/prereg/backgrounds.json \
             --data-dir data --pilot validation/prereg/pilot.json --write-drops > validation/prereg/timing_pilot.log
           cat validation/prereg/timing_pilot.log
-      - name: Operating characteristics on the pilot's expected cards
+      - name: Operating characteristics on the pilot's expected cards, and S3's tiers fixed before the key
         run: |
-          python validation/prereg/oc.py --pilot validation/prereg/pilot.json > validation/prereg/oc_pilot.log
+          python validation/prereg/oc.py --pilot validation/prereg/pilot.json --write-judged > validation/prereg/oc_pilot.log
           cat validation/prereg/oc_pilot.log
       - name: Commit the pilot to the run's own branch
         id: commit

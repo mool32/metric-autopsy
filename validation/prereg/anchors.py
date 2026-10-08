@@ -56,7 +56,7 @@ def _load(spec_path: Path, name: str, data_dir: Path):
     X = (sparse.csr_matrix((z["X_data"], z["X_indices"], z["X_indptr"]), shape=tuple(z["X_shape"]))
          if "X_data" in z.files else z["X"])
     obs = pd.DataFrame({k[4:]: z[k] for k in z.files if k.startswith("obs_")})
-    return X, [str(g) for g in z["genes"]], obs
+    return X, P.unique_names(z["genes"]), obs  # unique symbols, as the panel's backgrounds
 
 
 def _cols(genes, wanted):

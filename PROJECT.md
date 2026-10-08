@@ -102,8 +102,20 @@ turns that checklist into runnable behavior.
   stratum within the joint requirement; `sesoi_scale` and a TOST-backed "explained by depth" in
   the engine (journal D7); the truth per case; a sound validator's nominals measured by the pilot;
   the pool rule per candidate; the scripts pin the numerical environment; the dry run rehearses
-  the whole pilot; the run's own branches. v1.md section 10 lists every change. A second review
-  checks them; then the owner's «утверждаю». No tag yet.
+  the whole pilot; the run's own branches. v1.md section 10 lists every change.
+- **Step 2g (after the second independent review):** the review found two critical defects —
+  bad validators passed where S3's real-effect stratum was only reported (scenario C), and
+  duplicate gene symbols would have made every card of a background an engine error — and
+  important ones (cross-CPU last-digit differences against a byte-for-byte `verify`, S3's judged
+  strata decided after the key, error criteria outside the principle at small nominals, the
+  decisiveness rule failing below 0.5, a missing B2 stopping the pilot, the sound validator's model
+  off the engine's verdict order, targeted errors absorbed by S4). Fixed: S3 judges every stratum
+  at the principle's tier or the floor's, fixed in pilot.json before the key; unique gene symbols;
+  `verify` by what the reports say; rule nominals at least the designed sizes; B2 dropped with N7;
+  the model in the engine's order with N3 and N8 outside S3's strata; new criteria S6 (false NO
+  DETECTABLE EFFECT) and S7 (no engine error). The review predicts S1 failing on N8 (the engine's
+  ~8% false SUPPORTED there in simulation), an open point for the owner. A third review checks the
+  fixes; then the owner's «утверждаю». No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
