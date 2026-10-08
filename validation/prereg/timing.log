@@ -1,9 +1,10 @@
-# timing pilot — git f41021a, python 3.13.16, numpy 2.5.3
+# timing pilot — git f319e3a, python 3.13.16, numpy 2.5.3
 # machine: {"cpus": 4, "blas_threads_in_use": [1], "blas_env": {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}}
-# sample of 24 datasets: {'N6a': 1, 'E2': 2, 'N1': 6, 'N2': 6, 'N6c': 2, 'N5': 2, 'E1': 4, 'E3': 1}
+# backgrounds: simulated (validation/prereg/simulate.py, dry_backgrounds)
+# sample of 24 datasets: {'N8': 4, 'N5': 4, 'E1': 3, 'N6c': 3, 'N2': 4, 'N6b': 1, 'N1': 2, 'N6a': 1, 'E2': 2}; levels {'low': 7, 'high': 12, 'medium': 5}
 # dataset shape (cells x genes): (3200, 2000)
-workers=1: 24 cards in 761 s wall; per card mean 31.7 s, median 32.1 s; errors 0
-  per condition (mean s): E1 33.1, E2 28.9, E3 33.5, N1 36.2, N2 32.6, N5 14.9, N6a 30.3, N6c 32.4
-workers=4: 24 cards in 191 s wall; per card mean 30.5 s, median 30.3 s; errors 0
-  per condition (mean s): E1 31.3, E2 28.1, E3 28.3, N1 35.0, N2 31.9, N5 15.4, N6a 28.6, N6c 31.3
-# whole panel: 4450 cards; at 4 workers 9.8 h wall (8.0 s per card); single-core 39.2 CPU-h
+workers=1: 24 cards in 785 s wall; per card mean 32.5 s, median 34.6 s; errors 0
+  per condition (mean s): E1 38.4, E2 29.0, N1 42.5, N2 36.8, N5 14.9, N6a 30.6, N6b 31.9, N6c 35.5, N8 36.7
+workers=4: 24 cards in 201 s wall; per card mean 30.4 s, median 32.8 s; errors 0
+  per condition (mean s): E1 35.0, E2 29.4, N1 38.6, N2 34.1, N5 14.5, N6a 28.7, N6b 28.4, N6c 33.5, N8 34.3
+# whole panel: 6000 cards; at 4 workers 14.0 h wall (8.4 s per card); single-core 54.2 CPU-h
