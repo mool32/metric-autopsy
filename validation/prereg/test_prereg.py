@@ -129,6 +129,30 @@ def test_injected_coupling_raises_the_pair_correlation_on_its_side_only(bgs):
     assert ma / mb == pytest.approx(1.0, abs=0.15)
 
 
+def test_backgrounds_load_from_their_spec_filtered_and_planned(tmp_path):
+    """The real-data path of panel.py, oracle.py and timing.py (`load_backgrounds`): a background
+    named in a backgrounds JSON loads as raw counts, keeps only the filtered cells and gets the
+    plan the same counts get in memory; counts that are not integers are refused."""
+    import pandas as pd
+    bg = simulated_background("B1", donors=6, cells=60, n_genes=300)
+    cell_type = np.where(np.arange(len(bg.donor)) % 10 == 0, "other", "fibroblast")
+    P.save_npz(tmp_path / "b1.npz", bg.X, pd.DataFrame({"donor_id": bg.donor, "cell_type": cell_type}),
+               bg.genes)
+    spec = {"B1": {"path": str(tmp_path / "b1.npz"), "donor": "donor_id",
+                   "filter": {"cell_type": "fibroblast"}}}
+    (tmp_path / "backgrounds.json").write_text(json.dumps(spec))
+    got = P.load_backgrounds(tmp_path / "backgrounds.json")["B1"]
+    keep = cell_type == "fibroblast"
+    assert np.array_equal(got.X, bg.X[keep]) and list(got.donor) == list(bg.donor[keep])
+    ref = P.Background(bg.X[keep], bg.genes, bg.donor[keep], "B1")
+    P.plan_background(ref)
+    assert got.plan == ref.plan and got.plan_cols == ref.plan_cols and got.plan["pair"]
+    np.savez_compressed(tmp_path / "b1.npz", X=bg.X + 0.5, genes=np.asarray(bg.genes),
+                        obs_donor_id=bg.donor, obs_cell_type=cell_type)
+    with pytest.raises(ValueError, match="raw counts"):
+        P.load_backgrounds(tmp_path / "backgrounds.json")
+
+
 def test_the_panel_and_the_oracle_never_import_the_engine():
     for name in ("panel.py", "oracle.py", "score.py", "oc.py"):
         tree = ast.parse((HERE / name).read_text())

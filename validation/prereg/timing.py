@@ -3,9 +3,11 @@
 Runs the frozen engine through run_panel.py on a sample of claim cards built by panel.py from a
 simulated background of B1's planned size (2 x 8 donors, 200 cells each, 2,000 genes), with the
 condition mix of the panel, at 1 worker and at W workers, and extrapolates to the whole panel.
-Re-run on the real B1 once it is downloaded (section 8, step 2).
+In the pilot (section 8, step 3) it is re-run on the real backgrounds with the pilot's SESOI and
+key dose, at the workers the panel run will use.
 
     python validation/prereg/timing.py --workers 4 --cards 24 > validation/prereg/timing.log
+    python validation/prereg/timing.py --workers W --backgrounds backgrounds.json --pilot pilot.json
 """
 from __future__ import annotations
 
@@ -42,15 +44,22 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--cards", type=int, default=24)
-    p.add_argument("--genes", type=int, default=2500)
+    p.add_argument("--genes", type=int, default=2500, help="genes of the simulated backgrounds")
+    p.add_argument("--backgrounds", help="backgrounds JSON as panel.py takes it (default: simulated)")
+    p.add_argument("--pilot", help="pilot.json from oracle.py (default: SESOI 0.1, key dose 2.0)")
     args = p.parse_args(argv)
     rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=HERE, capture_output=True,
                          text=True).stdout.strip() or "?"
     print(f"# timing pilot — git {rev}, python {platform.python_version()}, numpy {np.__version__}")
     print(f"# machine: {json.dumps(R.machine())}")
-    bgs = {"B1": simulated_background("B1", donors=24, cells=220, n_genes=args.genes),
-           "B2": simulated_background("B2", donors=12, cells=220, n_genes=args.genes, seed=1)}
-    pilot = dict(sesoi=0.1, key_dose=2.0)
+    if args.backgrounds:
+        bgs = P.load_backgrounds(args.backgrounds)
+        print(f"# backgrounds: {args.backgrounds} (sha256 {P.sha256(Path(args.backgrounds))})")
+    else:
+        bgs = {"B1": simulated_background("B1", donors=24, cells=220, n_genes=args.genes),
+               "B2": simulated_background("B2", donors=12, cells=220, n_genes=args.genes, seed=1)}
+        print("# backgrounds: simulated (validation/prereg/test_prereg.py, simulated_background)")
+    pilot = json.loads(Path(args.pilot).read_text()) if args.pilot else dict(sesoi=0.1, key_dose=2.0)
     entries = sample(P.assign(1), args.cards, np.random.default_rng(0))
     print(f"# sample of {len(entries)} datasets: {dict(Counter(e['condition'] for e in entries))}")
     rows = {}

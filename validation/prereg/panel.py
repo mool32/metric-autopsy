@@ -155,6 +155,16 @@ def load_background(name: str, spec: dict) -> Background:
     return Background(X, genes, np.asarray(obs[spec["donor"]]).astype(str), name, obs)
 
 
+
+def load_backgrounds(spec_path) -> dict:
+    """Every background of a backgrounds JSON ({"B1": {"path", "donor", "filter"}, ...}, written by
+    the rule of v1.md section 3.1), loaded and planned (`plan_background`)."""
+    spec = json.loads(Path(spec_path).read_text())
+    bgs = {k: load_background(k, v) for k, v in spec.items()}
+    for bg in bgs.values():
+        plan_background(bg)
+    return bgs
+
 def _norm_log(X: np.ndarray) -> np.ndarray:
     tot = X.sum(axis=1, keepdims=True)
     return np.log1p(X / np.where(tot > 0, tot, 1.0) * 1e4)
@@ -385,10 +395,7 @@ def main(argv=None):
     p.add_argument("--pilot", required=True, help="pilot.json from oracle.py")
     p.add_argument("--out", required=True)
     args = p.parse_args(argv)
-    spec = json.loads(Path(args.backgrounds).read_text())
-    bgs = {k: load_background(k, v) for k, v in spec.items()}
-    for bg in bgs.values():
-        plan_background(bg)
+    bgs = load_backgrounds(args.backgrounds)
     pilot = json.loads(Path(args.pilot).read_text())
     m = write_panel(args.key_seed, bgs, pilot, Path(args.out))
     print(f"{len(m['datasets'])} claim cards from {m['n_datasets']} datasets written to {args.out}")

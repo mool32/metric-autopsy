@@ -318,11 +318,7 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--datasets", type=int, default=PILOT_DATASETS)
     args = p.parse_args(argv)
-    spec = json.loads(Path(args.backgrounds).read_text())
-    bgs = {k: P.load_background(k, v) for k, v in spec.items()}
-    for bg in bgs.values():
-        P.plan_background(bg)
-    pilot = run_pilot(bgs, args.datasets)
+    pilot = run_pilot(P.load_backgrounds(args.backgrounds), args.datasets)
     Path(args.out).write_text(json.dumps(pilot, indent=1))
     print(json.dumps(pilot, indent=1))
 
