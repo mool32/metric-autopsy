@@ -1,4 +1,4 @@
-# metric-autopsy probes — git 739799a, python 3.13.16, numpy 2.5.3
+# metric-autopsy probes — git af9f8d3, python 3.13.16, numpy 2.5.3
 =================== p01_null_metrics_and_offset.py
 P1a: constant metric lambda d: 0.0 on clean data, via run_autopsy defaults
   G0 DEGENERATE the metric returned the same value (0) on every resample, null and perturbation — it carries no information about the data
@@ -107,8 +107,8 @@ GATE 5 false-FAIL rate on null data (controls behave identically in every stratu
    K= 16 strata:    2%     2%     3%     0%
   pair_metric=mi_3bin; cells/stratum -> [10, 30, 100, 400]
    K=  1 strata:    3%     7%     2%     2%
-   K=  4 strata:    8%     3%     0%     7%
-   K= 16 strata:    3%     0%     2%     2%
+   K=  4 strata:    7%     5%     0%     7%
+   K= 16 strata:    3%     0%     0%     2%
 =================== p06_gate5_closure_artifact.py
 norm_pearson pos (Actb-Gapdh): mean 0.633   band neg_max = 0.2*pos = 0.127
 norm_pearson neg (Gene0-Gene1): mean 0.079 sd 0.053  -> fraction |neg|>band: 20%
