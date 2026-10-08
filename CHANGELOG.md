@@ -19,13 +19,27 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   / INCONCLUSIVE / UNIDENTIFIABLE / DEGENERATE METRIC, qualified by *parametric only* and
   *underpowered*. Metric validity PASS now needs a demonstrated response (a positive control
   that beats its null, or an injected signal); a random-number metric is no longer certified.
-- **GATE 0** classifies each nuisance response as *bias* (the nuisance moves the gene-shuffled
-  null, reverses or inflates the signal: FAIL), *attenuation* (the signal shrinks toward the
-  null: reported, passed to design adequacy as a power check) or *level shift* (no material
+- **GATE 0** classifies each nuisance response as *bias* (the nuisance moves the null,
+  reverses or inflates the signal), *attenuation* (the signal shrinks toward the null:
+  reported, passed to design adequacy as a power check) or *level shift* (no material
   structure to classify it: reported). Rules are invariant to affine re-expressions of the
   metric (v0.1 divided by |baseline|). A metric that never varies is DEGENERATE. A detectable
   but immaterial null signal (< `tol` × the effect scale) no longer becomes the unit in which
-  level metrics are judged.
+  level metrics are judged. Decided 2026-10-08:
+  - the null gives every gene, independently, a depth-matched draw from neighbouring cells (as
+    GATE 5's positive control); the shuffle within depth bins made a pair coupled only
+    through cell size look coupled above the null;
+  - a bias blocks only where it matters for the claim: a depth bias that the declared
+    correction removes between groups is reported, not failed; any other bias FAILs only if it
+    and the lower bound of its 95% interval exceed `bias_tolerance` × SESOI (pre-registered,
+    default 0.5); without a SESOI it is reported as unsized and SUPPORTED is withheld. At 800
+    cells per donor the earlier rule failed log-normalized Pearson on a truly coupled pair in
+    4 of 4 datasets (probe p13).
+- **Directional claims (decided 2026-10-08).** The pre-registration states the claimed
+  `direction` of the change from `groups[0]` to `groups[1]` (`increase`, `decrease`, or
+  `two-sided`). SUPPORTED needs the effect in that direction (two-sided test at alpha, so a null
+  gives a false SUPPORTED at alpha/2); a detected effect the other way is NOT SUPPORTED;
+  without a direction the verdict stays INCONCLUSIVE; a non-directional claim is marked.
 - **GATE 1 is a diagnostic.** Bootstrap intervals, Bonferroni across assessable strata and
   `min_cells`; a confident imbalance is WARN (handled by the correction), STOP only when no
   stratum contains both groups. (v0.1 flagged 82% of null datasets at 64 × 20 cells.)
@@ -84,7 +98,8 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   log counts attempts per claim: every run with a pre-registration is logged in every interface,
   the Python API included (`log_path=`, else `$METRIC_AUTOPSY_LOG`, else
   `metric_autopsy_runs.jsonl`; `"off"` disables); runs without one and the demo are not.
-- CLI flags `--replicate-col`, `--estimand`, `--sesoi`, `--min-replicates`, `--prereg`,
+- CLI flags `--replicate-col`, `--estimand`, `--direction`, `--sesoi`, `--bias-tolerance`,
+  `--min-replicates`, `--prereg`,
   `--inject-signal coupling`, `--seed`, `--json`, `--log`, `--no-log`; the same parameters on the
   MCP `autopsy_report` tool.
 - `DenseMemoryWarning` (threshold `$METRIC_AUTOPSY_DENSE_WARN_GB`, default 2).
@@ -113,14 +128,12 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   separation, so a pure depth artifact is often INCONCLUSIVE rather than "explained by depth"
   (p11a: NOT SUPPORTED in 3 of 10 splits of its cells into mice); with 20 mice per group it is
   explained in 40 of 40 datasets (p11b; dev-set journal D1).
-- GATE 0's null still shuffles genes within depth bins, the null that let a depth-only pair pass
-  as a positive control before GATE 5 moved to depth-matched draws (open before the freeze).
-- At a realistic scale GATE 0 classifies depth as *bias* for log-normalized Pearson
-  (`norm_pearson`) on a truly coupled pair: the CP10k ratio correlation in its null grows when
-  depth is halved, and with enough cells the shift is both resolved and material
-  (`validation/probes/p13_depth_bias_at_scale.py`). The metric is then invalid and the analysis
-  stops, although the composition correction removes a between-group depth difference. Open
-  before the freeze (`validation/prereg/v1.md`, decision 6).
+- GATE 0's depth-matched null can sit slightly above the data for leverage-heavy raw metrics
+  in small samples, because the deepest cells have few deeper neighbours; for a depth-only pair
+  the signal above the null stays below 0.01 (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
+- "Explained by depth" is a diagnosis the design must be able to establish: in p11b's
+  conditions it needs about 20 mice per group; on typical designs the tool protects against a
+  false SUPPORTED but does not prove the artifact (`paper/drafts/limitations.md`).
 
 ## [0.1.1] — 2026-07-07
 

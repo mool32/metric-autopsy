@@ -96,19 +96,19 @@ def main():
     show("mean G2M score + injected module", run_autopsy(
         tp.probe_sim.mean_g2m_score, tp._sorted_cell_cycle(), group_col="sorted_phase",
         groups=("G2M", "G1"), replicate_col="plate",
-        signal_test=injected_signal.module(tp.G2M_GENES, fold=2.0, frac=0.3), prereg=tp.RESOLVED))
+        signal_test=injected_signal.module(tp.G2M_GENES, fold=2.0, frac=0.3), prereg=tp.TRUE_DECREASE))
 
     print("=== p03 proliferation 35% -> 5% cycling, 3 mice per sex x age")
     a = run_autopsy(tp.probe_sim.mean_g2m_score, tp._proliferation(), within=["sex"],
                     replicate_col="mouse",
                     signal_test=injected_signal.module(tp.G2M_GENES, fold=2.0, frac=0.3),
-                    prereg=tp.RESOLVED, **AGE)
+                    prereg=tp.TRUE_DECREASE, **AGE)
     show(f"mean G2M score, retained {a.effect.detail['retained']:.0%} after depth thinning", a)
 
     print("=== p04 Xist female > male on the demo data (male-old capture 30%)")
     a = run_autopsy(tp._mean_lognorm_xist, tp._xist_demo(), group_col="sex", groups=("female", "male"),
                     within=["age"], replicate_col="mouse",
-                    signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=tp.RESOLVED)
+                    signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=tp.TRUE_DECREASE)
     show(f"mean log Xist, retained {a.effect.detail['retained']:.0%}", a)
 
     print("=== p05 null strata: flag / FAIL rates")
@@ -232,39 +232,41 @@ def _random_metric(seed):
 
 
 SIGNAL = injected_signal.coupling("Smad3", "Col1a1")
-CTRL = dict(pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"))
 G2M = injected_signal.module(tp.G2M_GENES, fold=2.0, frac=0.3)
+# JOURNAL.md, D3: real effects declare their true direction; nulls and artifacts declare
+# 'two-sided', so a detected effect in either direction could become SUPPORTED
+ANY = {**tp.RESOLVED, "direction": "two-sided"}
 
 
 def cases():
     out = [
         Case("p01 random-number metric, full design (mice, estimand, injected signal)",
              lambda s: (_random_metric(s), add_mice(make_clean(seed=s)),
-                        dict(within=["sex"], replicate_col="mouse", signal_test=SIGNAL, prereg=tp.RESOLVED, **AGE)),
+                        dict(within=["sex"], replicate_col="mouse", signal_test=SIGNAL, prereg=ANY, **AGE)),
              allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True),
         Case("p01 constant metric",
              lambda s: (lambda data: 0.0, add_mice(make_clean(seed=s)),
-                        dict(replicate_col="mouse", prereg=tp.RESOLVED, **AGE)),
+                        dict(replicate_col="mouse", prereg=ANY, **AGE)),
              allowed=("DEGENERATE METRIC",), definite=("DEGENERATE METRIC",), null=True),
         Case("blind pair metric (ignores gene b), its own controls, 800 cells per stratum",
              lambda s: (partial(blind_pair_metric, gene_a="Smad3", gene_b="Col1a1"), add_mice(make_clean(seed=s)),
                         dict(within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
                              pair_metric=blind_pair_metric, pos_pair=("Actb", "Gapdh"),
-                             neg_pair=("Gene0", "Gene1"), prereg=tp.RESOLVED, **AGE)),
+                             neg_pair=("Gene0", "Gene1"), prereg=ANY, **AGE)),
              allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True),
         Case("p02 sorted G2M vs G1, 4 plates each (real, huge)",
              lambda s: (tp.probe_sim.mean_g2m_score, tp._sorted_cell_cycle(seed=s + 1),
                         dict(group_col="sorted_phase", groups=("G2M", "G1"), replicate_col="plate",
-                             signal_test=G2M, prereg=tp.RESOLVED)),
+                             signal_test=G2M, prereg=tp.TRUE_DECREASE)),
              allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
         Case("p03 proliferation 35% -> 5%, 3 mice per sex x age (real)",
              lambda s: (tp.probe_sim.mean_g2m_score, tp._proliferation(seed=s + 2),
-                        dict(within=["sex"], replicate_col="mouse", signal_test=G2M, prereg=tp.RESOLVED, **AGE)),
+                        dict(within=["sex"], replicate_col="mouse", signal_test=G2M, prereg=tp.TRUE_DECREASE, **AGE)),
              allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
         Case("p04 Xist female > male, demo data, 4 mice per block (real, QC gap)",
              lambda s: (tp._mean_lognorm_xist, _xist_demo_seeded(s),
                         dict(group_col="sex", groups=("female", "male"), within=["age"], replicate_col="mouse",
-                             signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=tp.RESOLVED)),
+                             signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=tp.TRUE_DECREASE)),
              allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
         Case("p07 no effect, 3 vs 3 mice with mouse variance (not establishable)",
              lambda s: (tp.NPR, tp._mice(3, mouse_sd=0.35, seed=s), dict(replicate_col="mouse", prereg=tp.COMPOSITION, **AGE)),
@@ -272,12 +274,12 @@ def cases():
         Case("p09 no effect, 6 vs 6, SESOI 0.15, injected signal (establishable absence)",
              lambda s: (tp.NPR, tp._mice(6, seed=s),
                         dict(replicate_col="mouse", signal_test=SIGNAL,
-                             prereg={**tp.RESOLVED, "sesoi": 0.15}, **AGE)),
+                             prereg={**ANY, "sesoi": 0.15}, **AGE)),
              allowed=("NO DETECTABLE EFFECT", "INCONCLUSIVE", "NOT SUPPORTED"), definite=("NO DETECTABLE EFFECT",),
              null=True, n=20),
         Case("p09 moderate effect (coupling 1.5 vs 1.2), 6 vs 6, injected signal (real)",
              lambda s: (tp.NPR, tp._mice(6, c_old=1.2, seed=s),
-                        dict(replicate_col="mouse", signal_test=SIGNAL, prereg=tp.RESOLVED, **AGE)),
+                        dict(replicate_col="mouse", signal_test=SIGNAL, prereg=tp.TRUE_DECREASE, **AGE)),
              allowed=("SUPPORTED", "INCONCLUSIVE"), definite=("SUPPORTED",)),
         Case("p11a pure depth artifact, 4 vs 4 mice (not establishable)",
              lambda s: (tp.MI, _demo_males(s, 4), dict(replicate_col="mouse", prereg=tp.COMPOSITION, **AGE)),
@@ -285,7 +287,7 @@ def cases():
         Case("level metric on a pure depth artifact, 6 vs 6, injected module",
              lambda s: (mean_lognorm_gene5, capture_confound_mice(seed=s),
                         dict(replicate_col="mouse", signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
-                             prereg=tp.RESOLVED, **AGE)),
+                             prereg=ANY, **AGE)),
              allowed=("NOT SUPPORTED", "INCONCLUSIVE"), definite=("NOT SUPPORTED",), null=True, n=20),
         Case("content estimand, capture halved, ERCC present (artifact)",
              lambda s: (log_total_endogenous, with_ercc(capture=(1.0, 0.5), seed=s),

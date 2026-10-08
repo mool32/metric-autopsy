@@ -14,21 +14,22 @@ then believe**, never "compute → believe."
 
 1. **This repo, directly (you're here).** Use the CLI or the Python API.
    - Fastest check: `python scripts/run_gates.py --demo --no-stop` (reference `mi_3bin` failure, no data).
-   - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --replicate-col mouse --estimand composition --sesoi 0.1 --pos-pair Actb Gapdh --neg-pair G1 G2 --json autopsy.json`
-   - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(..., replicate_col="mouse", prereg={"estimand": "composition", "sesoi": 0.1})` → `.to_markdown()` / `.save_json(path)`.
+   - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --replicate-col mouse --estimand composition --direction decrease --sesoi 0.1 --pos-pair Actb Gapdh --neg-pair G1 G2 --json autopsy.json`
+   - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(..., replicate_col="mouse", prereg={"estimand": "composition", "direction": "decrease", "sesoi": 0.1})` → `.to_markdown()` / `.save_json(path)`.
 2. **As a Claude Code skill.** `SKILL.md` — elicit a pre-registration first, then run the gates, then emit the autopsy. This is the skill's required behavior; follow it verbatim when invoked.
 3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"` then `metric-autopsy-mcp` (not on PyPI yet). Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
 
 ## The one rule that matters
 
 A metric that changes between conditions is **not** a finding. Declare the commitments first
-(estimand, replicate unit, SESOI — `references/prereg_template.md`), then run the gates, then
+(estimand, direction, replicate unit, SESOI — `references/prereg_template.md`), then run the gates, then
 report the verdict that `report.decide` gives from four fields: **metric validity, design
 adequacy, effect, replication**. An invalid metric (nuisance *bias*, a failed negative control,
 no response to an injected signal) stops the analysis — a later field cannot rescue it. The
 effect is judged across biological replicates at equal depth (or spike-in capture), never
 across cells. SUPPORTED needs a metric whose response is demonstrated (positive control or
-injected signal), a replicate-level DETECTED effect and resolved judgment gates. Always stratify
+injected signal), a replicate-level DETECTED effect in the pre-registered direction and resolved
+judgment gates. Always stratify
 by every factor (`--within sex tissue …`) — confounds hide in interactions that pooling
 erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill switch.
 

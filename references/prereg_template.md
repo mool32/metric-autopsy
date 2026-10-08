@@ -31,10 +31,19 @@ Estimand:            composition | content     ← required; no estimand = UNIDE
                 thinning to equal depth would delete the signal, so groups are thinned to
                 equal spike-in (ERCC) capture; without spike-ins the comparison is
                 UNIDENTIFIABLE.
+Direction:           increase | decrease | two-sided   ← required for SUPPORTED
+  the claimed change of the metric from groups[0] to groups[1] (groups = young, old and
+  "increase" = higher in old). SUPPORTED needs the effect in this direction; a detected effect
+  the other way is NOT SUPPORTED. "two-sided" is a non-directional claim, marked in the verdict.
 Replicate unit (obs column):  ___  (mouse, donor, plate — the unit of inference, never the cell)
 Minimum replicates per group: ___  (default 3; the graded rule below applies on top)
 SESOI:               ___  smallest effect size of interest, on the construct scale
-                          (needed for "no detectable effect" and for the power check)
+                          (needed for "no detectable effect", for the power check, and to size
+                          GATE 0's nuisance biases: without it a bias cannot block, and
+                          SUPPORTED is withheld while one is unsized)
+Bias tolerance:      ___  (default 0.5 SESOI: a dropout or library-size bias blocks only if
+                          it and the lower bound of its 95% interval exceed this; a depth bias
+                          the declared correction removes between groups never blocks)
 Alpha / power:       ___ / ___  (defaults 0.05 / 0.8)
 Signal direction:    increase | decrease   (for an injected-signal test)
 Positive control pair: ___   Negative control pair: ___
@@ -54,8 +63,8 @@ Graded replicate rule (fixed in the engine, not chosen per analysis):
   (`design_adequacy = INSUFFICIENT_REPLICATION`).
 
 ```json
-{"estimand": "composition", "min_replicates": 3, "sesoi": 0.1, "alpha": 0.05,
- "power": 0.8, "signal_direction": "increase",
+{"estimand": "composition", "direction": "decrease", "min_replicates": 3, "sesoi": 0.1,
+ "bias_tolerance": 0.5, "alpha": 0.05, "power": 0.8, "signal_direction": "increase",
  "positive_control_dose": 2.0, "positive_control_power": 0.8,
  "hypothesis": "Smad3-Col1a1 coupling declines with age in fibroblasts",
  "simplest_non_biological_explanation": "old cells are sequenced shallower"}

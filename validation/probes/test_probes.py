@@ -52,6 +52,9 @@ MI = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
 G2M_GENES = [f"M{i}" for i in range(probe_sim.N_G2M)]
 COMPOSITION = {"estimand": "composition"}
 RESOLVED = {"estimand": "composition", "judgment_pending": False}
+# Directions became mandatory for SUPPORTED on 2026-10-08 (JOURNAL.md, D3). In p02-p04 the first
+# group is the higher one, so the true claim is a decrease from groups[0] to groups[1].
+TRUE_DECREASE = {**RESOLVED, "direction": "decrease"}
 
 
 # --------------------------------------------------------------------------- #
@@ -242,7 +245,7 @@ def test_p02_sorted_g2m_vs_g1_is_supported():
     from metric_autopsy import injected_signal
     a = run_autopsy(probe_sim.mean_g2m_score, _sorted_cell_cycle(),
                     group_col="sorted_phase", groups=("G2M", "G1"), replicate_col="plate",
-                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=TRUE_DECREASE)
     assert a.effect.status == "DETECTED" and a.effect.detail["effect"] > 0
     assert a.metric_validity.status == "PASS"
     assert a.design_adequacy.status in ("ADEQUATE", "CORRECTED")
@@ -259,7 +262,7 @@ def test_p03_proliferation_decline_is_supported_and_not_removed():
     from metric_autopsy import injected_signal
     a = run_autopsy(probe_sim.mean_g2m_score, _proliferation(),
                     group_col="age", groups=("young", "old"), within=["sex"], replicate_col="mouse",
-                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(G2M_GENES, fold=2.0, frac=0.3), prereg=TRUE_DECREASE)
     assert a.effect.status == "DETECTED"
     assert a.effect.detail["retained"] >= 0.8
     assert a.metric_validity.status == "PASS"
@@ -276,7 +279,7 @@ def test_p04_xist_female_vs_male_is_supported_on_demo_data():
     from metric_autopsy import injected_signal
     a = run_autopsy(_mean_lognorm_xist, _xist_demo(), group_col="sex", groups=("female", "male"),
                     within=["age"], replicate_col="mouse",
-                    signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=RESOLVED)
+                    signal_test=injected_signal.module(["Xist"], fold=2.0, frac=0.3), prereg=TRUE_DECREASE)
     assert a.effect.status == "DETECTED"
     assert a.effect.detail["retained"] >= 0.9
     assert a.design_adequacy.status == "CORRECTED"
@@ -483,3 +486,27 @@ def test_p12_warns_before_densifying_a_large_sparse_matrix(monkeypatch):
     ad = anndata.AnnData(X=X, obs=obs, var=var)
     with pytest.warns(UserWarning, match="dense"):
         gate1_qc_parity(ad, "age", ("young", "old"))
+
+
+# --------------------------------------------------------------------------- #
+# p13 — GATE 0 and depth at a realistic scale (found after the rework)
+# --------------------------------------------------------------------------- #
+# decided 2026-10-08 (JOURNAL.md, D4): a depth bias that the declared correction removes
+# between groups is reported, not blocking
+def test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked():
+    """Truth: norm_pearson on a truly coupled pair is a valid coupling metric and the two
+    groups differ in nothing. With 800 cells per donor GATE 0 resolves the metric's depth
+    response (the CP10k ratio correlation of its null grows as depth falls) and classifies it
+    as bias; the rule before 2026-10-08 invalidated the metric in 4/4 datasets
+    (p13_depth_bias_at_scale.log, 2,000 genes). This test uses 500 genes for speed, where the
+    depth response is likewise classified as bias. Under the composition estimand the
+    correction removes it between groups, so it must not block."""
+    import p13_depth_bias_at_scale as p13
+    d = p13.simulate(500, 800, seed=0)
+    a = run_autopsy(partial(metrics.norm_pearson, gene_a="A", gene_b="B"), d, group_col="group",
+                    groups=("A", "B"), gene_pair=("A", "B"), replicate_col="donor",
+                    prereg={"estimand": "composition", "sesoi": 0.1, "direction": "two-sided"})
+    r = next(g for g in a.results if g.gate == 0).detail["responses"]["depth_downsample"]
+    assert r["classification"] == "bias" and r["handling"] == "corrected"
+    assert a.metric_validity.status != "FAIL"
+    assert "DEPTH_BIAS_CORRECTED" in a.metric_validity.flags

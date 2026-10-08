@@ -177,7 +177,7 @@ def test_full_autopsy_clean_is_supported_only_with_full_evidence():
     data = add_mice(make_clean())
     full = dict(group_col="age", groups=("young", "old"), within=["sex"],
                 gene_pair=("Smad3", "Col1a1"), replicate_col="mouse", **CONTROLS,
-                prereg={"estimand": "composition", "judgment_pending": False})
+                prereg={"estimand": "composition", "direction": "decrease", "judgment_pending": False})
     autopsy = run_autopsy(NPR, data, **full)
     assert autopsy.metric_validity.status == "PASS"
     assert autopsy.design_adequacy.status == "ADEQUATE"
@@ -185,10 +185,11 @@ def test_full_autopsy_clean_is_supported_only_with_full_evidence():
     assert autopsy.verdict == "SUPPORTED (provisional until replicated)", autopsy.verdict
 
     without = {
-        "estimand": {**full, "prereg": {"judgment_pending": False}},
+        "estimand": {**full, "prereg": {"direction": "decrease", "judgment_pending": False}},
+        "direction": {**full, "prereg": {"estimand": "composition", "judgment_pending": False}},
         "replicates": {**full, "replicate_col": None},
         "controls": {k: v for k, v in full.items() if k not in CONTROLS},
-        "judgment": {**full, "prereg": {"estimand": "composition"}},
+        "judgment": {**full, "prereg": {"estimand": "composition", "direction": "decrease"}},
     }
     for missing, kw in without.items():
         verdict = run_autopsy(NPR, data, **kw).verdict

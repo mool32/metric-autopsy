@@ -25,7 +25,7 @@ different question:
 
 | Field | Question | Statuses |
 |---|---|---|
-| `metric_validity` | Does the metric respond to its construct and resist nuisance? | PASS · FAIL · UNTESTED · DEGENERATE |
+| `metric_validity` | Does the metric respond to its construct and resist nuisance? | PASS · FAIL · UNTESTED · DEGENERATE (flags: LEVEL_SHIFT, DEPTH_BIAS_CORRECTED, BIAS_BELOW_TOLERANCE, BIAS_UNSIZED) |
 | `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED) |
 | `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN |
 | `replication` | Does it hold on independent data? | REPLICATED · NOT_REPLICATED · INCONCLUSIVE · NOT_RUN |
@@ -33,19 +33,29 @@ different question:
 `decide` reads them in this order; the first matching line is the verdict:
 
 1. metric DEGENERATE → **DEGENERATE METRIC**
-2. metric FAIL (nuisance bias, failed control, no response to an injected signal) → **NOT SUPPORTED — metric invalid**
+2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a failed control, no response to an injected signal) → **NOT SUPPORTED — metric invalid**
 3. design UNIDENTIFIABLE (no estimand, content estimand without spike-ins, partially crossed replicates, groups confounded with a stratifier) → **UNIDENTIFIABLE**
 4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
 5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
 6. effect NO_DETECTABLE_EFFECT → **NO DETECTABLE EFFECT**, only if the metric is PASS (absence of an effect cannot be claimed with a metric whose response is untested)
 7. effect not DETECTED → **INCONCLUSIVE**
 8. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
-9. replication NOT_REPLICATED → **NOT SUPPORTED**
-10. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
-11. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+9. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
+10. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
+    the pre-registered one → **NOT SUPPORTED**
+11. replication NOT_REPLICATED → **NOT SUPPORTED**
+12. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
+13. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+
+**Claims are directional.** The pre-registration states the claimed change of the metric from
+`groups[0]` to `groups[1]`: `increase`, `decrease`, or `two-sided`. SUPPORTED needs the effect in
+that direction (the test stays two-sided at alpha, so a null gives a false SUPPORTED at alpha/2);
+a non-directional claim is allowed and the verdict marks it. An effect whose sign the correction
+reverses is INCONCLUSIVE, as before.
 
 The verdict names the assumption it rests on: *parametric only* (too few replicates for the
-permutation test to reach alpha) and *underpowered relative to the SESOI*.
+permutation test to reach alpha), *underpowered relative to the SESOI* and *non-directional
+claim*.
 
 **No rescue language.** A FAIL in an earlier field is never softened by a later one. With
 `stop_on_first_fail` (the default) an invalid metric stops the analysis before the effect is
@@ -93,9 +103,15 @@ by-hand analysis; the automated real-data run is under audit in `validation/flag
 **How the engine tests it.** On *your own data*:
 
 1. a **bootstrap baseline** (cells resampled with replacement, 60×): the metric's sampling spread;
-2. an **automatic null**: every gene permuted independently across cells *within depth
-   deciles* (10×). Gene-gene structure is destroyed, each gene's distribution and the depth
-   structure are kept. *Signal* = baseline − null;
+2. an **automatic null** (10×): for count input every gene, independently, takes the count of
+   a random cell among the 20 next cells at least as deep, binomially thinned to the cell's own
+   depth (the depth-matched draw of GATE 5's positive control). Gene-gene structure is
+   destroyed; each gene's dependence on depth is kept cell by cell. *Signal* = baseline − null.
+   (Until 2026-10-08 genes were permuted within depth deciles. The depth variation left inside
+   each decile made a pair coupled only through cell size look coupled above the null, by more
+   than 0.05 of a raw correlation of 0.7–0.9; with the new null the signal stays below 0.01.
+   Non-count input keeps the decile shuffle; a perturbation that leaves the counts non-integer,
+   `library_scale`, is compared with the decile null of the unperturbed data);
 3. each **nuisance perturbation** (20×): `extra_dropout` (20% of detected entries zeroed),
    `depth_downsample` (binomial thinning to half depth; per-cell scaling for non-count
    input), `library_scale` (per-cell factors 0.5–2), and for whole-matrix metrics
@@ -104,9 +120,22 @@ by-hand analysis; the automated real-data run is under audit in `validation/flag
 A shift counts only if it is beyond estimator noise (z > `z_thresh`, default 4). It is then
 classified:
 
-- **bias** — the perturbation moves the *null* by more than `tol` (0.25) of the signal, or
-  reverses the signal, or inflates it by more than `tol`. A nuisance that does this can create
-  a difference with no biology: **FAIL**.
+- **bias** — the perturbation moves the *null* (beyond noise) by more than `tol` (0.25) of the
+  signal or more than the SESOI tolerance below, or reverses the signal, or inflates it by more
+  than either. A nuisance that does this can create a difference with no biology. Whether it
+  **blocks** depends on whether anything else handles it and whether it matters for the claim:
+  - a bias in **depth** is reported, not failed, when the declared correction removes depth
+    between the groups (composition: thinning to equal depth; content with spike-ins: thinning
+    to equal capture) — the verdict then rests on the effect at equal depth;
+  - any other bias (dropout, library scale; depth without such a correction) **FAILs** only if
+    its size exceeds `bias_tolerance` × SESOI (pre-registered, default 0.5) **and** so does the
+    lower bound of its 95% interval; otherwise it is reported;
+  - without a SESOI a bias cannot be sized against the claim: it is reported as unsized, the
+    effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE).
+  At a realistic scale (probe p13, 800 cells per donor) log-normalized Pearson on a truly
+  coupled pair has a resolved depth bias — the CP10k ratio correlation of its null grows as
+  depth falls — that the earlier rule failed in 4 of 4 datasets although the composition
+  correction removes it between groups.
 - **attenuation** — the signal shrinks toward the null while the null stays put. This is
   reliability, not confounding (Spearman): uniform attenuation pulls an effect toward zero
   and cannot create one. It is **reported, not failed** — the fraction of signal lost goes to
@@ -128,7 +157,8 @@ under extra dropout and ~25% under depth halving (attenuation); `norm_pearson` l
 measurably.
 
 **Pass.** No nuisance biases the metric. Attenuation and level shifts are reported with their
-size.
+size. **WARN** — biases exist but none blocks (removed by the correction, within the tolerance,
+or unsized); each is named with its size.
 
 ---
 

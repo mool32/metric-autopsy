@@ -11,8 +11,11 @@ Part 2 asks whether the same depth response would reach a verdict if it did not 
 capture loss in one group (identical biology, 8 vs 8 donors), the effect field alone (thinning to
 equal depth, permutation over donors) should explain the raw difference by depth.
 
-No expected verdict is frozen here. Whether a depth bias that the composition correction removes
-between groups should block the metric is a design decision (validation/prereg/v1.md, sec. 10).
+Decided 2026-10-08 (JOURNAL.md, D4): a depth bias that the declared correction removes between
+groups is reported, not blocking; the regression is
+test_probes.py::test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked. The log records the
+finding under the earlier rule (git ac8f1a8); run directly, GATE 0 now reports these biases as
+unsized (no SESOI is passed here) instead of failing.
 
     python p13_depth_bias_at_scale.py > p13_depth_bias_at_scale.log   # ~20 min
 """

@@ -63,3 +63,47 @@ conserving the v0.1.1 one: the rescaling test compares classifications and |shif
 units (v0.1.1 compared statuses only); p10 keeps mi_3bin's dropout sensitivity but expects it to
 be classified as attenuation and reported, not failed. Recorded here for completeness; the change
 was made in `d3f05fb`.
+
+## D3 — directional claims (2026-10-08; decided by the project owner)
+
+**What changed.** SUPPORTED needs a pre-registered `direction`: the change of the metric from
+`groups[0]` to `groups[1]` (`increase`, `decrease`, or `two-sided` for a non-directional claim,
+which the verdict marks). A detected effect in the other direction is NOT SUPPORTED; an effect
+whose sign the correction reverses stays INCONCLUSIVE; without a declared direction a detected
+effect is INCONCLUSIVE.
+
+**Frozen expectations.** No expected verdict changes. The probes' pre-registrations gain the
+commitment that is now mandatory: p02, p03 and p04 their true direction (`decrease`: the first
+group is the higher one). In `verdicts_v03.py` the real-effect cases get their true direction and
+the null and artifact cases get `two-sided`, so that a detected effect in either direction could
+still become SUPPORTED: the guard is as strict as before the change, not vacuously met. (p07 and
+p11a cannot reach SUPPORTED by construction, before and after: no demonstrated response, or
+judgment pending; their error rates count the other verdicts.)
+
+## D4 — GATE 0: depth-matched null, option (b), SESOI tolerance (2026-10-08; decided by the project owner)
+
+**What changed.**
+- The null gives every gene, independently, the count of a random neighbouring cell at least as
+  deep, thinned to the cell's depth (as GATE 5's positive control); non-count input keeps the
+  shuffle within depth bins. The bin shuffle made a pair coupled only through cell size look
+  coupled above the null (more than 0.05 of a raw correlation of 0.7-0.9 in every one of six
+  datasets); with the new null the signal above it stays below 0.01
+  (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
+- A depth bias that the declared correction removes between groups (composition: depth
+  thinning; content with spike-ins: capture thinning) is reported, not blocking. Any other bias
+  (dropout, library scale) blocks only if it exceeds `bias_tolerance` x SESOI (pre-registered,
+  default 0.5) and so does the lower bound of its 95% interval; otherwise it is reported.
+  Without a SESOI a bias cannot be sized against the claim: it is reported as unsized, the
+  effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE). The last rule is the
+  agent's reading of "otherwise, a message without blocking"; it keeps a detected bias from
+  passing silently when no SESOI was declared.
+
+**p13 joins the dev set as a regression.** `test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked`:
+at 800 cells per donor the depth response of `norm_pearson` is still classified as bias, and
+under the composition estimand it no longer blocks. It runs with 500 genes for speed;
+`p13_depth_bias_at_scale.log` (2,000 genes, rule before this entry, git ac8f1a8) records the
+finding.
+
+**Frozen expectations.** None edited. p01 (GATE 0 invariance to offsets and rescaling), p08
+(attenuation is not bias) and p10 (mi_3bin's dropout sensitivity reported as attenuation) pass
+on the new null unchanged.

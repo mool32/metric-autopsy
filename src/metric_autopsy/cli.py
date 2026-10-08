@@ -98,7 +98,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--replicate-col", help="obs column of the biological replicate (mouse, donor)")
     p.add_argument("--estimand", choices=["composition", "content"],
                    help="what the metric claims to measure: relative expression or RNA content")
+    p.add_argument("--direction", choices=["increase", "decrease", "two-sided"],
+                   help="the claimed change of the metric from the first group to the second "
+                        "(required for SUPPORTED; 'two-sided' marks a non-directional claim)")
     p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale)")
+    p.add_argument("--bias-tolerance", type=float,
+                   help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
     p.add_argument("--min-replicates", type=int, help="minimum replicates per group (>= 3)")
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
     p.add_argument("--inject-signal", choices=["coupling"],
@@ -124,8 +129,8 @@ def build_prereg(args) -> dict:
     if args.prereg:
         with open(args.prereg) as fh:
             prereg = json.load(fh)
-    for key, val in (("estimand", args.estimand), ("sesoi", args.sesoi),
-                     ("min_replicates", args.min_replicates)):
+    for key, val in (("estimand", args.estimand), ("direction", args.direction), ("sesoi", args.sesoi),
+                     ("bias_tolerance", args.bias_tolerance), ("min_replicates", args.min_replicates)):
         if val is not None:
             prereg[key] = val
     if args.resolve_judgment:

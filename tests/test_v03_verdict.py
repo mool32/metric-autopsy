@@ -18,6 +18,7 @@ from metric_autopsy import (
     gate4_signal_response, gate5_controls, injected_signal, metrics, run_autopsy,
 )
 from metric_autopsy import cli, mcp_server
+from metric_autopsy import gates as _gates
 from metric_autopsy import provenance as prov
 from metric_autopsy.core import as_dense, gene_column
 from metric_autopsy.equalize import thin_to_match
@@ -29,6 +30,9 @@ from metric_autopsy.stats import (empirical_two_sided_p, extend_null, permutatio
 from test_gates import MI, NPR, _assemble, _block, add_mice, make_clean, make_confounded
 
 COMPOSITION = {"estimand": "composition"}
+# A claim that a null or an artifact must never support: non-directional, so that a detected
+# effect in either direction could become SUPPORTED (the strictest guard).
+ANY_DIRECTION = {"direction": "two-sided", "judgment_pending": False}
 
 
 # --------------------------------------------------------------------------- #
@@ -300,7 +304,7 @@ def test_injected_signal_separates_a_responsive_metric_from_useless_ones():
 def test_injected_signal_can_establish_metric_validity_without_controls():
     a = _run(add_mice(make_clean()), within=["sex"], replicate_col="mouse",
              gene_pair=("Smad3", "Col1a1"), signal_test=injected_signal.coupling("Smad3", "Col1a1"),
-             prereg={**COMPOSITION, "judgment_pending": False})
+             prereg={**COMPOSITION, "direction": "decrease", "judgment_pending": False})
     assert a.metric_validity.status == "PASS"
     assert "responds to coupling" in a.metric_validity.reason
     assert a.verdict == "SUPPORTED (provisional until replicated)"
@@ -379,7 +383,7 @@ def test_controls_count_only_for_the_metric_they_test():
     d = add_mice(make_clean())
     kw = dict(within=["sex"], replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
               pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
-              prereg={**COMPOSITION, "judgment_pending": False}, log_path="off")
+              prereg={**COMPOSITION, **ANY_DIRECTION}, log_path="off")
     blind = _run(d, metric=partial(blind_pair_metric, gene_a="Smad3", gene_b="Col1a1"), **kw)
     g5 = next(r for r in blind.results if r.gate == 5)
     assert g5.status == GateStatus.SKIP and g5.detail["controls_tied"] is False
@@ -457,6 +461,107 @@ def test_pair_coupled_only_through_depth_is_not_a_positive_control():
     assert fired <= 2
 
 
+def test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure():
+    """Decided 2026-10-08: GATE 0's null gives every gene, independently, the count of a random
+    neighbouring cell at least as deep, thinned to the cell's depth (as GATE 5's positive
+    control). The old null permuted genes within depth bins; the depth variation left inside each
+    bin made a pair coupled only through cell size look coupled above the null (+0.10 to +0.25
+    of a raw correlation of 0.7-0.9): the class of false positive that let such a pair pass as
+    GATE 5's positive control."""
+    pear = partial(metrics.pearson, gene_a="A", gene_b="B")
+    for s in range(6):
+        d = depth_only_pair(seed=s)
+        g0 = gate0_independence(pear, d, protect_genes=("A", "B"))
+        assert g0.detail["null_construction"] == "depth-matched"
+        assert g0.detail["signal"] < 0.01, (s, g0.detail["signal"])
+        rng = np.random.default_rng(s)
+        bins = _gates._depth_bins(d)
+        old = np.mean([pear(_gates._shuffle_null(d, bins, rng)) for _ in range(10)])
+        assert pear(d) - old > 0.05  # the bin shuffle saw coupling where there is none
+
+
+def test_gate0_null_falls_back_to_depth_bins_for_non_counts():
+    d = make_clean()
+    logged = SimpleData(np.log1p(d.X), d.obs, d.var_names)
+    assert gate0_independence(NPR, logged).detail["null_construction"] == "depth bins"
+
+
+def _depth_biased(data):
+    """A valid coupling metric plus a term in the cells' mean depth (a depth bias)."""
+    return NPR(data) + 0.3 * float(np.log(np.asarray(data.X).sum(axis=1).mean()))
+
+
+def _only(kinds):
+    """GATE 0 with every perturbation outside `kinds` replaced by the identity (isolates one)."""
+    orig = _gates._perturb
+
+    def perturb(data, kind, rng, protect=frozenset()):
+        if kind in kinds:
+            return orig(data, kind, rng, protect)
+        return _gates.SimpleData(data.X.copy(), data.obs, data.var_names), {}
+    return perturb
+
+
+def test_gate0_blocks_a_bias_only_beyond_the_sesoi_tolerance_and_not_when_corrected(monkeypatch):
+    """Decided 2026-10-08 (option b): a depth bias is reported, not blocking, when the declared
+    correction equalizes depth between the groups. Any other bias blocks only if it exceeds
+    bias_tolerance x SESOI and so does the lower bound of its 95% interval; otherwise it is
+    reported. Without a SESOI it cannot be sized and is reported as unsized."""
+    monkeypatch.setattr(_gates, "_perturb", _only({"depth_downsample"}))
+    d = make_clean()  # halving the depth moves _depth_biased by 0.3 ln 2 = 0.21, null included
+    tight = gate0_independence(_depth_biased, d, sesoi=0.1)  # tolerance 0.05
+    r = tight.detail["responses"]["depth_downsample"]
+    assert r["classification"] == "bias" and r["bias_kind"] == "null moves"
+    assert r["handling"] == "blocking" and tight.status == GateStatus.FAIL
+    assert r["bias_ci_low"] > r["bias_tolerance"] == pytest.approx(0.05)
+    corrected = gate0_independence(_depth_biased, d, sesoi=0.1, corrected=("depth_downsample",))
+    assert corrected.status == GateStatus.WARN
+    assert corrected.detail["bias_handling"] == {"depth_downsample": "corrected"}
+    loose = gate0_independence(_depth_biased, d, sesoi=1.0)  # tolerance 0.5 > 0.21
+    assert loose.status == GateStatus.WARN
+    assert loose.detail["bias_handling"] == {"depth_downsample": "below tolerance"}
+    unsized = gate0_independence(_depth_biased, d)
+    assert unsized.status == GateStatus.WARN
+    assert unsized.detail["bias_handling"] == {"depth_downsample": "unsized"}
+
+
+def test_unsized_and_tolerated_biases_reach_the_verdict(monkeypatch):
+    """The same metric, with its bias in a nuisance the correction does not remove (here the
+    dropout perturbation thins like depth). Without a SESOI the bias is unsized: the effect is
+    estimated but SUPPORTED is withheld. Within the tolerance it is reported and the claim stands;
+    beyond it the metric is invalid."""
+    def dropout_as_thinning(data, kind, rng, protect=frozenset()):
+        if kind == "extra_dropout":
+            return _gates.SimpleData(rng.binomial(data.X.astype(np.int64), 0.5).astype(float),
+                                     data.obs, data.var_names), {}
+        return _gates.SimpleData(data.X.copy(), data.obs, data.var_names), {}
+    monkeypatch.setattr(_gates, "_perturb", dropout_as_thinning)
+    kw = dict(within=["sex"], replicate_col="mouse", signal_test=injected_signal.coupling("Smad3", "Col1a1"),
+              stop_on_first_fail=False)
+    claim = {**COMPOSITION, "direction": "decrease", "judgment_pending": False}
+    d = add_mice(make_clean())
+    unsized = _run(d, metric=_depth_biased, prereg=claim, **kw)
+    assert "BIAS_UNSIZED" in unsized.metric_validity.flags
+    assert unsized.effect.status == "DETECTED"
+    assert unsized.verdict.startswith("INCONCLUSIVE") and "cannot be sized" in unsized.verdict
+    tolerated = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0}, **kw)
+    assert "BIAS_BELOW_TOLERANCE" in tolerated.metric_validity.flags
+    assert tolerated.verdict.startswith("SUPPORTED"), tolerated.verdict
+    blocking = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 0.1}, **kw)
+    assert blocking.metric_validity.status == "FAIL"
+    assert blocking.verdict.startswith("NOT SUPPORTED — metric invalid")
+
+
+def test_a_depth_bias_does_not_block_under_a_correction_that_equalizes_depth(monkeypatch):
+    monkeypatch.setattr(_gates, "_perturb", _only({"depth_downsample"}))
+    kw = dict(within=["sex"], replicate_col="mouse", signal_test=injected_signal.coupling("Smad3", "Col1a1"))
+    claim = {"direction": "decrease", "judgment_pending": False, "sesoi": 0.1}
+    a = _run(add_mice(make_clean()), metric=_depth_biased, prereg={**claim, **COMPOSITION}, **kw)
+    assert a.metric_validity.status == "PASS" and "DEPTH_BIAS_CORRECTED" in a.metric_validity.flags
+    assert a.design_adequacy.detail["correction"] == "depth_thinning"
+    assert a.verdict.startswith("SUPPORTED"), a.verdict
+
+
 def capture_confound_mice(n_per_group=6, cells=150, eff_old=0.5, seed=0):
     """Identical biology; old cells have half the capture (a pure depth artifact)."""
     rng = np.random.default_rng(seed)
@@ -486,7 +591,7 @@ def test_level_metric_driven_by_depth_is_caught_by_the_effect_field():
         a = run_autopsy(mean_lognorm_gene5, capture_confound_mice(seed=s), group_col="age",
                         groups=("young", "old"), replicate_col="mouse",
                         signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
-                        prereg={**COMPOSITION, "judgment_pending": False})
+                        prereg={**COMPOSITION, **ANY_DIRECTION})
         assert a.metric_validity.status == "PASS" and "LEVEL_SHIFT" in a.metric_validity.flags
         verdicts.append(a.verdict)
         explained += bool(a.effect.detail["explained_by_depth"])
@@ -500,7 +605,7 @@ def test_effect_reversed_by_the_correction_is_inconclusive():
     a = run_autopsy(mean_lognorm_gene5, capture_confound_mice(seed=3), group_col="age",
                     groups=("young", "old"), replicate_col="mouse",
                     signal_test=injected_signal.module(["Gene5"], fold=2.0, frac=0.3),
-                    prereg={**COMPOSITION, "judgment_pending": False})
+                    prereg={**COMPOSITION, **ANY_DIRECTION})
     assert a.effect.detail["reversed_by_correction"] is True
     assert a.effect.status == "INCONCLUSIVE" and a.verdict.startswith("INCONCLUSIVE")
     assert "reversed the sign" in a.verdict
@@ -517,7 +622,7 @@ def test_legacy_fixed_band_still_fails_a_silent_positive_control():
 # --------------------------------------------------------------------------- #
 def _autopsy(mv="PASS", da="ADEQUATE", ef="DETECTED", rp="NOT_RUN", pending=False, ef_flags=(),
              da_flags=(), ef_detail=None):
-    return Autopsy("m", [], {"judgment_pending": pending},
+    return Autopsy("m", [], {"judgment_pending": pending, "direction": "two-sided"},
                    Assessment(mv, "mv"), Assessment(da, "da", list(da_flags)),
                    Assessment(ef, "ef", list(ef_flags), dict(ef_detail or {})), Assessment(rp, "rp"))
 
@@ -538,6 +643,35 @@ def _autopsy(mv="PASS", da="ADEQUATE", ef="DETECTED", rp="NOT_RUN", pending=Fals
 ])
 def test_decide_order(fields, prefix):
     assert decide(_autopsy(**fields)).startswith(prefix)
+
+
+def test_supported_needs_the_pre_registered_direction():
+    """Decided 2026-10-08: claims are directional. SUPPORTED only for an effect in the declared
+    direction (the change from groups[0] to groups[1]); a detected effect the other way is NOT
+    SUPPORTED; no declared direction holds the verdict at INCONCLUSIVE; 'two-sided' is allowed
+    and marked. The effect is groups[0] - groups[1], so +0.2 is a decrease."""
+    def with_direction(direction, effect=0.2):
+        a = _autopsy(ef_detail={"effect": effect})
+        a.prereg = {"judgment_pending": False, **({"direction": direction} if direction else {})}
+        a.params = {"groups": ["young", "old"]}
+        return decide(a)
+    assert with_direction("decrease") == "SUPPORTED (provisional until replicated)"
+    assert with_direction("increase").startswith("NOT SUPPORTED — the effect is in the direction opposite")
+    assert with_direction("increase", effect=-0.2) == "SUPPORTED (provisional until replicated)"
+    assert "shows an increase from young to old" in with_direction("decrease", effect=-0.2)
+    missing = with_direction(None)
+    assert missing.startswith("INCONCLUSIVE") and "no direction was pre-registered" in missing
+    two_sided = with_direction("two-sided", effect=-0.2)
+    assert two_sided.startswith("SUPPORTED") and "non-directional claim" in two_sided
+
+
+def test_direction_is_validated_and_plumbed_through_the_cli():
+    from metric_autopsy.report import normalize_prereg
+    with pytest.raises(ValueError):
+        normalize_prereg({"direction": "up"})
+    args = cli.build_parser().parse_args(["--demo", "--direction", "increase", "--bias-tolerance", "0.25"])
+    prereg = cli.build_prereg(args)
+    assert prereg["direction"] == "increase" and prereg["bias_tolerance"] == 0.25
 
 
 def test_decide_names_the_assumption_the_verdict_rests_on():

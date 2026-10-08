@@ -49,6 +49,20 @@ from .stats import mde, nested_t, paired_t, permutation_test_nested, permutation
 THINNING = ("depth_thinning", "capture_thinning")
 
 
+def equalizing_correction(data, estimand: str | None, spikein_prefix: str = "ERCC-") -> str | None:
+    """The thinning the estimand implies, if any: depth thinning for a composition estimand and
+    capture thinning for a content estimand with spike-ins, both on raw counts. Either removes
+    a between-group depth (capture) difference, so GATE 0 does not block a depth bias it
+    removes."""
+    if not looks_like_counts(data.X):
+        return None
+    if estimand == "composition":
+        return "depth_thinning"
+    if estimand == "content" and spikein_columns(data.var_names, spikein_prefix):
+        return "capture_thinning"
+    return None
+
+
 def attenuation_lambda(a_half: float | None, depth_ratio: float = 1.0) -> tuple[float, dict]:
     """Fraction of a construct-scale difference retained at the analysed depth.
 

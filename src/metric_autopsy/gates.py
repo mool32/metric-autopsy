@@ -104,6 +104,7 @@ def _perturb(data: SimpleData, kind: str, rng: np.random.Generator,
 
 
 MIN_CELLS_PER_DEPTH_BIN = 10
+BIAS_TOLERANCE = 0.5  # in SESOI units: a nuisance bias blocks only above this (and its 95% lower bound)
 
 
 def _depth_bins(sd: SimpleData, n_bins: int = NULL_DEPTH_BINS) -> np.ndarray:
@@ -149,15 +150,25 @@ def gate0_independence(
     seed: int = 0,
     effect_scale: float | None = None,
     n_null: int = 10,
+    sesoi: float | None = None,
+    corrected: Sequence[str] = (),
+    bias_tolerance: float | None = None,
 ) -> GateResult:
     """Does a nuisance *create or inflate* signal (bias), or only *shrink* it (attenuation)?
 
     Three references are measured on the user's own data: a bootstrap baseline (the metric's
-    sampling spread), an automatic null (every gene permuted within depth bins: no gene-gene
-    biology, same technology), and each nuisance perturbation. Every shift is classified:
+    sampling spread), an automatic null (no gene-gene biology, same technology: for counts every
+    gene takes, independently, the count of a random neighbouring cell at least as deep, thinned
+    to the cell's depth, as in GATE 5; otherwise genes are permuted within depth bins), and each
+    nuisance perturbation. Every shift is classified:
 
     * **bias** — the nuisance moves the null, reverses the signal, or inflates it. It can
-      create a false effect, so GATE 0 FAILs;
+      create a false effect. It blocks (GATE 0 FAILs) only where nothing else handles it and it
+      is material for the claim: a bias in a nuisance that the declared correction removes
+      between groups (`corrected`, e.g. depth under thinning) is reported, not failed; any
+      other bias blocks only if its size exceeds `bias_tolerance` x `sesoi` and so does the
+      lower bound of its 95% interval. Without a SESOI a bias cannot be sized for the claim:
+      it is reported as unsized (and ``report.decide`` then withholds SUPPORTED);
     * **attenuation** — the signal shrinks toward the null while the null stays put. This
       is reliability, not confounding: uniform attenuation pulls toward zero and cannot
       create an effect. It is reported (``detail["attenuation"]``, fraction of signal lost)
@@ -194,7 +205,8 @@ def gate0_independence(
     base_mean, base_sd = _mean_sd(base_vals)
 
     bins = _depth_bins(sd)
-    null_vals = [v for v in (_safe_call(lambda: metric(_shuffle_null(sd, bins, rng)))
+    mode = _null_mode(sd)
+    null_vals = [v for v in (_safe_call(lambda: metric(_gene_null(sd, rng, bins, mode)))
                              for _ in range(n_null)) if v is not None]
     if len(null_vals) >= 2:
         null_center, null_sd = _mean_sd(null_vals)
@@ -225,6 +237,23 @@ def gate0_independence(
         scale, scale_source = base_sd, "null SD (size not judged)"
     else:
         scale, scale_source = None, "none"
+
+    if bias_tolerance is None:
+        bias_tolerance = BIAS_TOLERANCE
+    tol_abs = (float(bias_tolerance) * abs(float(sesoi))
+               if sesoi is not None and np.isfinite(sesoi) and sesoi != 0 else None)
+    corrected = set(corrected)
+    # reference nulls by construction: a perturbation that leaves the counts non-integer
+    # (library_scale) gets the depth-bin null, and is compared with the depth-bin null of the
+    # unperturbed data, never with the depth-matched one
+    refs = {mode: (null_center, null_sd, len(null_vals))} if null_center is not None else {}
+
+    def _ref(m):
+        if m not in refs:
+            vals = [v for v in (_safe_call(lambda: metric(_gene_null(sd, rng, bins, m)))
+                                for _ in range(n_null)) if v is not None]
+            refs[m] = (*_mean_sd(vals), len(vals)) if len(vals) >= 2 else (None, None, 0)
+        return refs[m]
 
     kinds = ["extra_dropout", "depth_downsample", "library_scale"]
     if include_matrix_perturbations:
@@ -259,30 +288,48 @@ def gate0_independence(
         if z <= z_thresh:
             cls = "none"
         elif has_signal:
-            nvals = []
+            nvals, pmode = [], None
             for _ in range(min(5, n_null)):
                 pdata, _ = _perturb(sd, kind, rng, protect)
+                pmode = pmode or _null_mode(pdata)
                 pbins = bins if pdata.n_obs == len(bins) else _depth_bins(pdata)
-                v = _safe_call(lambda: metric(_shuffle_null(pdata, pbins, rng)))
+                v = _safe_call(lambda: metric(_gene_null(pdata, rng, pbins, pmode)))
                 if v is not None:
                     nvals.append(v)
-            if len(nvals) >= 2:
+            ref_center, ref_sd, ref_n = _ref(pmode) if pmode else (None, None, 0)
+            if len(nvals) >= 2 and ref_center is not None:
+                ref_signal = base_mean - ref_center
                 null_pert, null_pert_sd = _mean_sd(nvals)
-                null_shift = null_pert - null_center
-                null_se = float(np.sqrt(null_sd ** 2 / len(null_vals) + null_pert_sd ** 2 / len(nvals)))
+                null_shift = null_pert - ref_center
+                null_se = float(np.sqrt(ref_sd ** 2 / ref_n + null_pert_sd ** 2 / len(nvals)))
                 null_z = abs(null_shift) / null_se if null_se > 0 else (float("inf") if null_shift else 0.0)
                 signal_pert = pert_mean - null_pert
                 r.update(null_perturbed=null_pert, null_shift=float(null_shift),
                          null_shift_std=float(null_shift / scale), null_shift_z=float(null_z),
-                         signal=float(signal), signal_perturbed=float(signal_pert))
-                null_moves = abs(null_shift) / scale > tol and null_z > z_thresh
-                reverses = np.sign(signal_pert) != np.sign(signal) and abs(signal_pert) > tol * abs(signal)
-                change = (abs(signal_pert) - abs(signal)) / abs(signal)
+                         signal=float(ref_signal), signal_perturbed=float(signal_pert),
+                         null_construction=pmode)
+                material = (lambda x, rel: abs(x) > rel or (tol_abs is not None and abs(x) > tol_abs))
+                null_moves = null_z > z_thresh and material(null_shift, tol * scale)
+                reverses = (np.sign(signal_pert) != np.sign(ref_signal)
+                            and abs(signal_pert) > tol * abs(ref_signal))
+                gain = abs(signal_pert) - abs(ref_signal)
+                change = gain / abs(ref_signal) if ref_signal else float("inf")
                 r["signal_change"] = float(change)
-                if null_moves or reverses or change > tol:
+                if null_moves or reverses or material(max(gain, 0.0), tol * abs(ref_signal)):
                     cls = "bias"
                     r["bias_kind"] = ("null moves" if null_moves else
                                       "signal reverses" if reverses else "signal inflated")
+                    size, size_se = ((abs(null_shift), null_se) if null_moves else (abs(shift), se))
+                    r.update(bias_size=float(size), bias_se=float(size_se),
+                             bias_ci_low=float(size - 1.96 * size_se))
+                    if kind in corrected:
+                        r["handling"] = "corrected"
+                    elif tol_abs is None:
+                        r["handling"] = "unsized"
+                    else:
+                        r["bias_tolerance"] = tol_abs
+                        r["handling"] = ("blocking" if size > tol_abs and size - 1.96 * size_se > tol_abs
+                                         else "below tolerance")
                 elif change < 0:
                     cls = "attenuation"
                     r["signal_loss"] = float(-change)
@@ -301,14 +348,17 @@ def gate0_independence(
         else:
             cls = "unscaled"
         r["classification"] = cls
-        r["confounded"] = cls == "bias"
+        r["confounded"] = cls == "bias" and r.get("handling") == "blocking"
         responses[kind] = r
 
     detail = dict(baseline=base_mean, baseline_sd=base_sd, null_center=null_center,
                   null_sd=null_sd, signal=signal, has_signal=bool(has_signal),
                   immaterial_signal=immaterial_signal, scale=scale,
                   scale_source=scale_source, effect_scale=effect_scale, responses=responses,
-                  attenuation=attenuation, level_shifts=level_shifts, tol=tol, z_thresh=z_thresh)
+                  attenuation=attenuation, level_shifts=level_shifts, tol=tol, z_thresh=z_thresh,
+                  null_construction=mode, sesoi=sesoi, bias_tolerance=float(bias_tolerance),
+                  bias_tolerance_abs=tol_abs, corrected=sorted(corrected),
+                  bias_handling={k: r["handling"] for k, r in responses.items() if r.get("handling")})
 
     spread = float(np.ptp(all_vals)) if all_vals else 0.0
     if spread <= 1e-12 * max(1.0, abs(base_mean)):
@@ -320,16 +370,28 @@ def gate0_independence(
 
     flagged = {k: r for k, r in responses.items() if r.get("confounded")}
     if flagged:
-        worst = max(flagged, key=lambda k: abs(flagged[k].get("null_shift_std", flagged[k]["shift_std"])))
+        worst = max(flagged, key=lambda k: flagged[k]["bias_size"] / flagged[k]["bias_tolerance"])
         w = flagged[worst]
-        what = w.get("bias_kind", "level shift")
-        size = abs(w.get("null_shift_std", w["shift_std"]))
         return GateResult(
             0, "Mathematical independence", GateStatus.FAIL,
-            f"'{worst}' biases the metric ({what}): {size:.0%} of the {scale_source} scale "
-            f"(z={w['z']:.1f}) — the nuisance can create a difference with no biology",
+            f"'{worst}' biases the metric ({w['bias_kind']}): {w['bias_size']:.4g} "
+            f"(95% lower bound {w['bias_ci_low']:.4g}) against a tolerance of {w['bias_tolerance']:.4g} "
+            f"({float(bias_tolerance):g} x SESOI; z={w['z']:.1f}) — the nuisance can create a "
+            "difference with no biology",
             detail,
         )
+    handled = {k: r for k, r in responses.items() if r.get("classification") == "bias"}
+    notes = []
+    for k, r in handled.items():
+        if r["handling"] == "corrected":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); the declared "
+                         "correction removes it between groups")
+        elif r["handling"] == "below tolerance":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, 95% lower "
+                         f"bound {r['bias_ci_low']:.4g}) within the tolerance {r['bias_tolerance']:.4g}")
+        else:
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); without a "
+                         "SESOI it cannot be sized against the claim")
     parts = []
     if attenuation:
         parts.append("attenuation " + ", ".join(f"{k} −{v:.0%}" for k, v in attenuation.items())
@@ -338,6 +400,9 @@ def gate0_independence(
         parts.append("level shift " + ", ".join(f"{k} {v:+.0%}" for k, v in level_shifts.items())
                      + " of the effect scale (no structure to classify it; the effect field equalizes "
                      "depth between groups)")
+    if notes:
+        msg = "; ".join(notes + parts) + " — reported, not failed"
+        return GateResult(0, "Mathematical independence", GateStatus.WARN, msg, detail)
     msg = ("no bias; " + "; ".join(parts) + " — reported, not failed") if parts else \
         "no bias or attenuation beyond estimator noise under any nuisance perturbation"
     return GateResult(0, "Mathematical independence", GateStatus.PASS, msg, detail)
@@ -731,6 +796,54 @@ def _depth_matched_draw(b: np.ndarray, depth: np.ndarray, rng, window: int = DEP
     ratio = np.where(depth[j] > 0, depth / np.where(depth[j] > 0, depth[j], 1.0), 1.0)
     return rng.binomial(np.round(np.asarray(b, float)[j]).astype(np.int64),
                         np.clip(ratio, 0.0, 1.0)).astype(float)
+
+
+def _depth_matched_matrix(X: np.ndarray, depth: np.ndarray, rng, window: int = DEPTH_SWAP_WINDOW,
+                          chunk: int = 256) -> np.ndarray:
+    """`_depth_matched_draw` for every column of a count matrix, independently per gene.
+
+    Cell i takes gene g's count from a random cell among the next `window` cells at least as
+    deep (a fresh draw for each gene, so no cell's genes travel together), thinned to cell i's
+    depth. Every gene keeps its dependence on depth; every gene-gene link is destroyed.
+    """
+    n, n_genes = X.shape
+    depth = np.asarray(depth, float)
+    order = np.argsort(depth, kind="mergesort")
+    rank = np.empty(n, dtype=np.int64)
+    rank[order] = np.arange(n)
+    width_up = np.minimum(window, n - 1 - rank)
+    up = (width_up > 0)[:, None]
+    width = np.maximum(width_up, 1)[:, None]
+    safe = np.where(depth > 0, depth, 1.0)
+    out = np.empty((n, n_genes), dtype=float)
+    for c0 in range(0, n_genes, chunk):
+        c1 = min(n_genes, c0 + chunk)
+        u = rng.random((n, c1 - c0))
+        partner = np.where(up, rank[:, None] + 1 + np.floor(u * width).astype(np.int64), rank[:, None])
+        j = order[np.clip(partner, 0, n - 1)]
+        counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
+        ratio = np.where(depth[j] > 0, depth[:, None] / safe[j], 1.0)
+        out[:, c0:c1] = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+    return out
+
+
+def _null_mode(sd: SimpleData) -> str:
+    return "depth-matched" if _looks_like_counts(sd.X) else "depth bins"
+
+
+def _gene_null(sd: SimpleData, rng, bins: np.ndarray | None = None, mode: str | None = None) -> SimpleData:
+    """GATE 0's 'no biology, same technology' reference.
+
+    Counts: every gene replaced by a depth-matched draw (`_depth_matched_matrix`, depth = the
+    cell's total). A shuffle within depth bins leaves the depth variation inside each bin, so
+    genes coupled only through cell size looked coupled above the null (the same flaw let a
+    depth-only pair pass as GATE 5's positive control). Non-count input: genes permuted within
+    depth bins.
+    """
+    if (mode or _null_mode(sd)) == "depth-matched":
+        X = np.asarray(sd.X, float)
+        return SimpleData(_depth_matched_matrix(X, X.sum(axis=1), rng), sd.obs, sd.var_names)
+    return _shuffle_null(sd, bins if bins is not None else _depth_bins(sd), rng)
 
 
 def _pair_depth(X: np.ndarray, ia: int, ib: int) -> np.ndarray:

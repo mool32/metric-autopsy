@@ -44,9 +44,14 @@ and what would disprove the claim. Then the commitments the engine enforces:
 - **estimand** — `composition` (relative expression) or `content` (amount of RNA). It decides
   the correction: thinning to equal depth, or to equal spike-in capture. No estimand, or a
   content estimand without spike-ins, is UNIDENTIFIABLE;
+- **direction** — the claimed change of the metric from the first group to the second
+  (`increase`, `decrease`, or `two-sided` for a non-directional claim, which the verdict marks).
+  SUPPORTED needs the effect in this direction; a detected effect the other way is NOT SUPPORTED;
 - **replicate unit** and **minimum replicates** per group;
-- **SESOI** — the smallest effect size of interest (needed to claim "no detectable effect"
-  and for the power check);
+- **SESOI** — the smallest effect size of interest (needed to claim "no detectable effect",
+  for the power check, and to size nuisance biases: a dropout or library-size bias blocks only
+  above `bias_tolerance` × SESOI, default 0.5; without a SESOI SUPPORTED is withheld while a
+  bias is unsized);
 - alpha, power, controls (or an injected signal and its direction).
 
 An empty field is not "TBD" — it is the reason the analysis will fail. Save the commitments as
@@ -76,7 +81,7 @@ The gates, and what each catches (full detail in `references/gates.md`):
 
 | Gate | Catches | Feeds |
 |---|---|---|
-| **0 Mathematical independence** | a nuisance (dropout, depth, library size) that *biases* the metric — FAIL; attenuation is reported, not failed | metric validity; attenuation → power |
+| **0 Mathematical independence** | a nuisance (dropout, depth, library size) that *biases* the metric — FAIL beyond the SESOI tolerance; a depth bias the declared correction removes is reported; attenuation is reported, not failed | metric validity; attenuation → power |
 | **1 QC parity** | groups differ in technical quality — *in any factorial stratum*; a diagnostic (WARN), not a kill switch | design adequacy |
 | **2 Estimand-dependent correction** | the raw difference is depth or capture: thinning to equal depth (composition) or spike-in capture (content), then replicate-level inference | effect |
 | **3 Raw visibility** | effect isn't visible in the raw scatter; a "shape change" is really dropout | export + judgment |

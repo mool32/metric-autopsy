@@ -63,7 +63,9 @@ def autopsy_report(
     stop_on_first_fail: bool = True,
     replicate_col: str | None = None,
     estimand: str | None = None,
+    direction: str | None = None,
     sesoi: float | None = None,
+    bias_tolerance: float | None = None,
     min_replicates: int | None = None,
     prereg_path: str | None = None,
     inject_signal: str | None = None,
@@ -79,7 +81,10 @@ def autopsy_report(
     within: factorial obs columns to stratify QC/controls/effects by, e.g. ["sex", "tissue"].
     replicate_col: obs column of the biological replicate (mouse, donor) — required for an
     effect verdict. estimand: 'composition' (relative expression) or 'content' (RNA amount).
-    sesoi: smallest effect size of interest (enables equivalence and power checks).
+    direction: the claimed change of the metric from groups[0] to groups[1] — 'increase',
+    'decrease' or 'two-sided' (non-directional); required for SUPPORTED.
+    sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
+    GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
     pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
     metric's response to an injected coupling of (gene_a, gene_b). data2_path: GATE 6.
     resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
@@ -98,7 +103,8 @@ def autopsy_report(
     if prereg_path:
         with open(prereg_path) as fh:
             prereg = json.load(fh)
-    for key, val in (("estimand", estimand), ("sesoi", sesoi), ("min_replicates", min_replicates)):
+    for key, val in (("estimand", estimand), ("direction", direction), ("sesoi", sesoi),
+                     ("bias_tolerance", bias_tolerance), ("min_replicates", min_replicates)):
         if val is not None:
             prereg[key] = val
     if resolve_judgment:

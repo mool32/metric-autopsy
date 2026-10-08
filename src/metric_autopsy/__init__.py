@@ -17,7 +17,7 @@ Quick start
 ...     m, adata, group_col="age", groups=("young", "old"), within=["sex"],
 ...     replicate_col="mouse", gene_pair=("Smad3", "Col1a1"),
 ...     pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene1", "Gene2"),
-...     prereg={"estimand": "composition", "sesoi": 0.1},
+...     prereg={"estimand": "composition", "direction": "decrease", "sesoi": 0.1},
 ... )
 >>> print(autopsy.to_markdown()); autopsy.save_json("autopsy.json")
 

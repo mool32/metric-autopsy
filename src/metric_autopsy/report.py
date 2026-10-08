@@ -39,7 +39,10 @@ from . import provenance as _prov
 
 DEFAULT_PREREG = dict(judgment_pending=True, alpha=0.05, power=0.8, min_replicates=3,
                       signal_direction="increase", spikein_prefix="ERCC-",
-                      positive_control_dose=2.0, positive_control_power=0.8)
+                      positive_control_dose=2.0, positive_control_power=0.8, bias_tolerance=0.5)
+# The claim's direction: the change of the metric from groups[0] to groups[1]. Mandatory for
+# SUPPORTED; "two-sided" declares a non-directional claim, which the verdict marks as such.
+DIRECTIONS = ("increase", "decrease", "two-sided")
 
 NOT_RUN = "NOT_RUN"
 
@@ -65,6 +68,9 @@ def normalize_prereg(prereg: dict | None) -> dict:
     p.update(prereg or {})
     if "judgment_resolved" in (prereg or {}):
         p["judgment_pending"] = not bool(prereg["judgment_resolved"])
+    if p.get("direction") is not None and p["direction"] not in DIRECTIONS:
+        raise ValueError(f"direction must be one of {DIRECTIONS} (the change from groups[0] to "
+                         f"groups[1]), not {p['direction']!r}")
     return p
 
 
@@ -107,6 +113,26 @@ def decide(a: "Autopsy") -> str:
     if mv.status != "PASS":
         return ("INCONCLUSIVE — effect detected, but the metric's response to signal is untested "
                 "(supply a positive control or an injected signal)" + tail)
+    if "BIAS_UNSIZED" in mv.flags:
+        return ("INCONCLUSIVE — effect detected, but a nuisance bias of the metric "
+                f"({', '.join(mv.detail.get('unsized_bias', []))}) cannot be sized against the claim "
+                "without a pre-registered SESOI" + tail)
+    groups = [str(g) for g in (a.params or {}).get("groups") or ("groups[0]", "groups[1]")]
+    direction = (a.prereg or {}).get("direction")
+    if direction is None:
+        return ("INCONCLUSIVE — effect detected, but no direction was pre-registered (declare "
+                f"'increase' or 'decrease' from {groups[0]} to {groups[1]}, or 'two-sided')" + tail)
+    effect = ef.detail.get("effect")
+    if direction != "two-sided" and effect is not None and np.isfinite(effect):
+        observed = "decrease" if effect > 0 else "increase"  # the effect is groups[0] - groups[1]
+        if observed != direction:
+            article = {"increase": "an", "decrease": "a"}
+            return (f"NOT SUPPORTED — the effect is in the direction opposite to the pre-registered "
+                    f"one: the metric shows {article[observed]} {observed} from {groups[0]} to "
+                    f"{groups[1]}, the claim was {article[direction]} {direction}" + tail)
+    if direction == "two-sided":
+        notes.append("non-directional claim")
+        tail = f" [{'; '.join(notes)}]"
     if rp.status == "NOT_REPLICATED":
         return f"NOT SUPPORTED — the effect did not replicate: {rp.reason}{tail}"
     if a.judgment_pending:
@@ -229,11 +255,21 @@ def _controls_tie(metric, pair_metric, data, gene_pair) -> tuple[bool, str, dict
                    "pair_metric, and seed it if it is stochastic)"), detail
 
 
+_BIAS_FLAGS = {"corrected": "DEPTH_BIAS_CORRECTED", "below tolerance": "BIAS_BELOW_TOLERANCE",
+               "unsized": "BIAS_UNSIZED"}
+
+
 def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | None) -> Assessment:
     lvl = g0.detail.get("level_shifts", {}) if g0 else {}
+    handling = g0.detail.get("bias_handling", {}) if g0 else {}
     detail = dict(gate0=g0.status.value if g0 else None, level_shifts=lvl,
-                  gate5=g5.status.value if g5 else None, gate4=g4.status.value if g4 else None)
-    flags = ["LEVEL_SHIFT"] if lvl else []
+                  gate5=g5.status.value if g5 else None, gate4=g4.status.value if g4 else None,
+                  bias_handling=handling,
+                  unsized_bias=sorted(k for k, h in handling.items() if h == "unsized"))
+    flags = (["LEVEL_SHIFT"] if lvl else []) + sorted(
+        {_BIAS_FLAGS[h] for h in handling.values() if h in _BIAS_FLAGS})
+    bias_txt = (g0.message if g0 is not None and g0.status == GateStatus.WARN
+                else "no nuisance bias")
     if g0 is None or g0.status == GateStatus.SKIP:
         base = Assessment("UNTESTED", "nuisance invariance could not be evaluated (GATE 0 skipped)", [], detail)
     elif g0.status == GateStatus.DEGENERATE:
@@ -259,13 +295,13 @@ def _metric_validity(g0: GateResult, g5: GateResult | None, g4: GateResult | Non
     lvl_txt = (" Level shift (reported, not failed): "
                + ", ".join(f"{k} {v:+.0%}" for k, v in lvl.items()) + " of the effect scale.") if lvl else ""
     if evidence:
-        return Assessment("PASS", "no nuisance bias; " + "; ".join(evidence) + "." + lvl_txt,
+        return Assessment("PASS", bias_txt + "; " + "; ".join(evidence) + "." + lvl_txt,
                           flags, detail)
     why = ("the positive control did not beat its null in any stratum"
            if g5 is not None and g5.status == GateStatus.WARN else
            f"controls not run: {g5.message}" if g5 is not None and g5.status == GateStatus.SKIP else
            "supply a positive control pair or an injected signal")
-    return Assessment("UNTESTED", f"no nuisance bias, but no demonstrated response to signal ({why})."
+    return Assessment("UNTESTED", f"{bias_txt}, but no demonstrated response to signal ({why})."
                       + lvl_txt, flags, detail)
 
 
@@ -389,15 +425,19 @@ def run_autopsy(
     if include_matrix_perturbations is None:
         include_matrix_perturbations = gene_pair is None
 
-    from .effect import _cell_effect, assess_design, estimate_effect, public_design
+    from .effect import _cell_effect, assess_design, equalizing_correction, estimate_effect, public_design
 
     raw_cell = _cell_effect(metric, data, group_col, groups)
     scale_candidates = [abs(v) for v in (raw_cell, sesoi) if v is not None and np.isfinite(v) and v != 0]
     effect_scale = max(scale_candidates) if scale_candidates else None
+    # a depth bias is not blocking when the declared correction removes depth between groups
+    corrected = (("depth_downsample",) if equalizing_correction(
+        data, prereg.get("estimand"), prereg.get("spikein_prefix", "ERCC-")) else ())
 
     g0 = _g.gate0_independence(metric, data, protect_genes=gene_pair or (),
                                include_matrix_perturbations=include_matrix_perturbations,
-                               seed=seed, effect_scale=effect_scale)
+                               seed=seed, effect_scale=effect_scale, sesoi=sesoi, corrected=corrected,
+                               bias_tolerance=float(prereg["bias_tolerance"]))
     results.append(g0)
     g5 = None
     if pair_metric is not None and pos_pair is not None and neg_pair is not None:

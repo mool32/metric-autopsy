@@ -230,15 +230,16 @@ def test_resolving_judgment_is_necessary_but_not_sufficient_for_supported():
     d = add_mice(make_clean())
     kw = dict(group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"))
     full = dict(kw, replicate_col="mouse", **CONTROLS)
-    pending = run_autopsy(NPR, d, prereg={"estimand": "composition"}, **full)
-    resolved = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False}, **full)
+    claim = {"estimand": "composition", "direction": "decrease"}  # young couples more than old
+    pending = run_autopsy(NPR, d, prereg=claim, **full)
+    resolved = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False}, **full)
     assert pending.verdict.startswith("INCONCLUSIVE") and "judgment" in pending.verdict
     assert resolved.verdict == "SUPPORTED (provisional until replicated)"
     assert ({k: v.status for k, v in pending.fields().items()}
             == {k: v.status for k, v in resolved.fields().items()})  # only the judgment differs
-    no_reps = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False},
+    no_reps = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False},
                           **dict(kw, **CONTROLS))
-    no_control = run_autopsy(NPR, d, prereg={"estimand": "composition", "judgment_pending": False},
+    no_control = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False},
                              **dict(kw, replicate_col="mouse"))
     for a in (no_reps, no_control):
         assert a.verdict.startswith("INCONCLUSIVE"), a.verdict
