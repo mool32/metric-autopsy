@@ -876,6 +876,22 @@ def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
     assert sens[1.5] == pytest.approx((0.800, 0.085), abs=1e-3)
 
 
+def test_s3_judges_a_stratum_whose_measured_decisiveness_is_one():
+    """The dry run's smoke pilot measured the blind and useless cards' decisiveness at 1.000: doubling
+    a shortfall of 0 leaves nothing to tell apart, so that stratum went unjudged and a validator that
+    never shows blindness would have passed S3. The nominal is the measured rate at most 0.85."""
+    pytest.importorskip("scipy")
+    import oc
+    rows = [dict(condition="N6a", key=False, sup_error_possible=True, valid=False, stratum="invalid",
+                 establishable=True, p_sup=0.0, p_inv=0.0, p_err=0.0, decisive=1.0, nominal=0.0, measured=True)
+            for _ in range(400)]
+    rules = oc.criteria_rules(rows, sims=2000)
+    r3 = rules["S3"]["invalid"]
+    assert r3["measured"] == 1.0 and r3["nominal"] == oc.D_NOMINAL and r3["applies"] and r3["judged"]
+    assert 0 < r3["min_required"] <= 0.85 * 400 and rules["joint"] >= 0.90
+    assert oc.error_rule(400, 0.0)[0] == 0  # where the sound validator cannot err, no error is allowed
+
+
 def test_s3_judges_a_stratum_only_within_the_joint_requirement():
     """Scenario C of oc.log: 81 establishable real-effect cards pass a sound validator with 0.973,
     which with S1 as a whole (0.915) would bring P(S1-S5 together | sound) below 0.90: that stratum

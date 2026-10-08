@@ -37,7 +37,9 @@ E_INVALID = 2 * ALPHA         # false "metric invalid": GATE 4 (alpha / 2) + GAT
 E_GATE5 = 1.5 * ALPHA         # the GATE 5 share of it (negative control alpha, silent positive control alpha/2)
 E_NDE = ALPHA                 # false NO DETECTABLE EFFECT (or "explained by depth"): the TOST's size
 E_OPPOSITE = ALPHA / 2        # a real effect detected against its direction: one tail of the test
-D_NOMINAL = 0.85              # correct definite outcomes on establishable cards, where no pilot measures it
+D_NOMINAL = 0.85              # correct definite outcomes on establishable cards: where no pilot measures it,
+                              # and the most S3's thresholds ask for (a measured rate near 1 leaves no doubled
+                              # shortfall to tell apart, which would leave the stratum unjudged)
 STRATA = ("effect", "null", "invalid")  # S3's strata (decided after the first review)
 
 
@@ -135,13 +137,16 @@ def binom_cdf(k: int, n: int, p: float) -> float:
 
 def error_rule(n: int, p0: float):
     """For an error-rate criterion: the largest k* with P(X <= k* | 2 p0) <= 0.05, and
-    P(pass | p0), P(pass | 2 p0) for the rule 'at most k* errors'. For a mixture of cards with
+    P(pass | p0), P(pass | 2 p0) for the rule 'at most k* errors' (with p0 = 0, where no doubled
+    rate can be told apart, k* = 0: any such error fails). For a mixture of cards with
     different nominal rates, p0 is their mean; the count is then Poisson-binomial, more
     concentrated than the binomial (Hoeffding 1956), so the binomial rule is conservative on
     both sides."""
     p1 = min(1.0, 2 * p0)
     if n <= 0:
         return -1, 1.0, 1.0
+    if p0 <= 0:  # the sound validator cannot make this error on these cards: none is allowed
+        return 0, 1.0, 1.0
     from scipy import stats
     k = int(stats.binom.ppf(P_PASS_DOUBLED, n, p1))
     while k >= 0 and binom_cdf(k, n, p1) > P_PASS_DOUBLED:
@@ -187,9 +192,9 @@ def decisiveness_applies(n: int, d0: float) -> bool:
 def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0) -> dict:
     """The thresholds of S1-S5 on a set of cards (as ``score.card_rows`` and ``expected_rows`` give
     them): S1 per key condition at alpha/2; S2 at the mean measured rate of a false SUPPORTED on its
-    cards; S3 per stratum at the mean measured decisiveness of its establishable cards; S4 at the
-    cards' mean measured error; S5 at the mean measured rate of a false "metric invalid" on the
-    valid-metric cards. S3's strata are judged in the order of STRATA where the principle is
+    cards; S3 per stratum at the mean measured decisiveness of its establishable cards, at most
+    D_NOMINAL (0.85, doubled shortfall 0.70); S4 at the cards' mean measured error; S5 at the mean
+    measured rate of a false "metric invalid" on the valid-metric cards. S3's strata are judged in the order of STRATA where the principle is
     attainable on the stratum (`decisiveness_applies`) and judging it keeps P(S1-S5 together |
     sound) >= 0.90 (decided in the third round; simulated, `_simulate_passes`); the others are
     reported only. `joint` is P(S1-S5 together | sound) with the strata judged."""
@@ -203,9 +208,10 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0) -> dict:
     out["S2"] = dict(n=len(s2), nominal=p2, max_allowed=error_rule(len(s2), p2)[0] if s2 else -1)
     for st in STRATA:
         rs = [r for r in rows if r["establishable"] and r["stratum"] == st]
-        d0 = float(np.mean([r["decisive"] for r in rs])) if rs else float("nan")
+        measured = float(np.mean([r["decisive"] for r in rs])) if rs else float("nan")
+        d0 = min(measured, D_NOMINAL) if rs else float("nan")
         applies = decisiveness_applies(len(rs), d0)
-        out["S3"][st] = dict(n=len(rs), nominal=d0, applies=applies, judged=False,
+        out["S3"][st] = dict(n=len(rs), nominal=d0, measured=measured, applies=applies, judged=False,
                              min_required=decisiveness_rule(len(rs), d0)[0] if applies else None)
     e4 = float(np.mean([r["nominal"] for r in rows])) if rows else 0.0
     out["S4"] = dict(n=len(rows), nominal=e4, max_allowed=error_rule(len(rows), e4)[0] if rows else -1)
@@ -392,13 +398,14 @@ def show_design(title: str, rows: list[dict]):
     for st in STRATA:
         r3 = rules["S3"][st]
         if r3["judged"]:
-            show_decisive(f"S3 {st}: correct definite outcomes, establishable cards (mean nominal)", r3["n"], r3["nominal"])
+            show_decisive(f"S3 {st}: correct definite outcomes, establishable cards (nominal: the measured "
+                          f"{r3['measured']:.3f}, at most {D_NOMINAL})", r3["n"], r3["nominal"])
         elif r3["applies"]:
             show_decisive(f"S3 {st} (reported only: judging it would bring P(S1-S5 together | sound) below "
-                          f"{P_JOINT_SOUND})", r3["n"], r3["nominal"])
+                          f"{P_JOINT_SOUND}; measured {r3['measured']:.3f})", r3["n"], r3["nominal"])
         else:
-            print(f"  S3 {st}: n = {r3['n']} establishable cards, nominal {r3['nominal']:.3f}: the principle is "
-                  "not attainable, reported only")
+            print(f"  S3 {st}: n = {r3['n']} establishable cards, nominal {r3['nominal']:.3f} (measured "
+                  f"{r3['measured']:.3f}): the principle is not attainable, reported only")
     show_error("S4 outside the allowed outcomes, all cards (mean nominal)", rules["S4"]["n"], rules["S4"]["nominal"])
     show_error("S5 false metric invalid, valid-metric cards (mean nominal)", rules["S5"]["n"], rules["S5"]["nominal"])
     print(f"  P(S1-S5 all pass | sound), simulated, S3 judged on {', '.join(st for st in STRATA if rules['S3'][st]['judged']) or 'no stratum'}: "
