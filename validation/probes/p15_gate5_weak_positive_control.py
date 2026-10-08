@@ -25,6 +25,10 @@ response rule's estimate, averaged over the 20 datasets): valid above 1.2 x delt
 0.8 x delta_min. delta_min = 0.05 (0.5 x the stand-in SESOI 0.1 of ``simulate.dry_pilot``),
 alpha = 0.05. A FAIL is false where the metric is valid.
 
+Three rules on every dataset: the power rule as the engine had it until D6 (a frozen copy below,
+so that the comparison reproduces at any commit), the engine's GATE 5 at this commit (with
+delta_min), and the probe's own copy of the response rule, which also measures the truth.
+
     python p15_gate5_weak_positive_control.py > p15_gate5_weak_positive_control.log   # ~15 min
 """
 import platform
@@ -42,6 +46,7 @@ import panel as PANEL  # noqa: E402
 import simulate  # noqa: E402
 from metric_autopsy import SimpleData, gate5_controls, injected_signal, metrics  # noqa: E402
 from metric_autopsy import gates as G  # noqa: E402
+from metric_autopsy.stats import extend_null  # noqa: E402
 
 DATASETS = 20
 DELTA_MIN = 0.05
@@ -49,6 +54,55 @@ N_REP = G.GATE4_N_REP
 CASES = [("planted", "high", None), ("planted", "medium", None), ("planted", "low", None),
          ("weak", "high", 0.25), ("weak", "high", 0.35), ("weak", "high", 0.5)]
 _BG = {}
+
+
+# --------------------------------------------------------------------------- #
+# the power rule of 2026-10-07, as removed from gates.py by D6 (a frozen copy)
+# --------------------------------------------------------------------------- #
+POWER_MIN, POWER_REPS = 0.8, 40
+
+
+def _ranks(x):
+    _, inv, counts = np.unique(x, return_inverse=True, return_counts=True)
+    order = np.argsort(x, kind="mergesort")
+    r = np.empty(len(x))
+    r[order] = np.arange(len(x))
+    return (np.bincount(inv, weights=r) / counts)[inv]
+
+
+def _ref_coupling(a, b):
+    """The removed rule's reference detector: Spearman correlation of raw counts."""
+    ra, rb = _ranks(np.asarray(a, float)), _ranks(np.asarray(b, float))
+    ra, rb = ra - ra.mean(), rb - rb.mean()
+    den = float(np.sqrt((ra * ra).sum() * (rb * rb).sum()))
+    return float((ra * rb).sum() / den) if den > 0 else 0.0
+
+
+def power_rule_power(sd, pair, dose, alpha_s, rng, n_rep=POWER_REPS, n_null=200, threshold=POWER_MIN):
+    """The removed ``_positive_control_power``: the stratum's power to establish a coupling of `dose`
+    injected into the decoupled control pair, with the reference detector against the
+    depth-matched self-null at alpha/K (stopping once ``power >= threshold`` is decided)."""
+    X = np.asarray(sd.X, float)
+    names = [str(g) for g in sd.var_names]
+    ia, ib = names.index(pair[0]), names.index(pair[1])
+    a0, b0, rest = X[:, ia], X[:, ib], G._pair_depth(X, ia, ib)
+    obs = pd.DataFrame(index=range(len(a0)))
+    inject = injected_signal.coupling("a", "b", strength=dose)
+    need = int(np.ceil(threshold * n_rep))
+    hits = done = 0
+    for _ in range(n_rep):
+        base = SimpleData(np.column_stack([a0, G._depth_matched_draw(b0, rest, rng), rest]), obs, ["a", "b", "rest"])
+        inj = np.asarray(inject(base, rng).X)
+        a, b = inj[:, 0], inj[:, 1]
+
+        def draw(k, a=a, b=b):
+            return np.array([_ref_coupling(a, G._depth_matched_draw(b, rest, rng)) for _ in range(int(k))])
+        _, pval, _ = extend_null(_ref_coupling(a, b), draw, n_null, alpha_s)
+        hits += bool(np.isfinite(pval) and pval < alpha_s)
+        done += 1
+        if hits >= need or hits + (n_rep - done) < need:
+            break
+    return hits / done
 
 
 def blind_to_b(data, *, gene_a, gene_b, third):
@@ -100,15 +154,21 @@ def one(job):
     if mname == "blind":
         third = next(g for q in pool for g in q["pair"] if g not in pos + neg)
         pm = partial(blind_to_b, third=third)
-    r = gate5_controls(pm, sd, pos, neg, seed=i)
+    r = gate5_controls(pm, sd, pos, neg, seed=i, delta_min=DELTA_MIN)
     row = r.detail["rows"][0]
-    power_rule = ("FAIL (silent, power >= 0.8)" if row.get("pos_insensitive") else
-                  "FAIL (negative control)" if r.status.value == "FAIL" else
+    engine = ("FAIL (silent, shown blind)" if row.get("pos_blind") else
+              "FAIL (negative control)" if not row["neg_ok"] else
+              "fires" if row["pos_fires"] else "silent, WARN")
+    # the removed power rule, on the same controls (a firing control never fails)
+    power = (None if row["pos_fires"] else
+             power_rule_power(sd, pos, G.POSITIVE_CONTROL_DOSE, 0.05, np.random.default_rng(30_000 + i)))
+    power_rule = ("FAIL (silent, power >= 0.8)" if power is not None and power >= POWER_MIN else
+                  "FAIL (negative control)" if not row["neg_ok"] else
                   "fires" if row["pos_fires"] else "silent, WARN")
     # the response rule runs on every dataset: its estimate is the truth; its FAIL counts only where
     # the control is silent (a firing control never fails)
     resp = response_rule(pm, sd, pos, G.POSITIVE_CONTROL_DOSE, np.random.default_rng(20_000 + i))
-    return job, power_rule, row["neg_ok"], row["pos_fires"], resp
+    return job, power_rule, engine, row["neg_ok"], row["pos_fires"], resp
 
 
 def main():
@@ -121,29 +181,36 @@ def main():
     with Pool(4) as pool:
         out = pool.map(one, jobs)
     rows = {}
-    for job, power_rule, neg_ok, fires, resp in out:
-        rows.setdefault(job[:4], []).append((power_rule, neg_ok, fires, resp))
+    for job, power_rule, engine, neg_ok, fires, resp in out:
+        rows.setdefault(job[:4], []).append(dict(power=power_rule, engine=engine, neg_ok=neg_ok, fires=fires,
+                                                 resp=resp))
+    print("# per row: the truth (the metric's mean response); the removed power rule; the engine's GATE 5 at "
+          "this commit; the probe's copy of the response rule on the silent controls; false (or correct) FAILs "
+          "of a silent control by each rule")
     for (kind, lvl, dose, m), rr in rows.items():
         what = f"{kind}{'' if dose is None else f' dose {dose:g}'}"
-        r = float(np.mean([x[3][1] for x in rr]))
+        r = float(np.mean([x["resp"][1] for x in rr]))
         t = "valid" if r >= 1.2 * DELTA_MIN else "blind" if r <= 0.8 * DELTA_MIN else "ambiguous"
-        pc = {}
-        for power_rule, *_ in rr:
-            pc[power_rule] = pc.get(power_rule, 0) + 1
-        silent = [x for x in rr if not x[2]]
+
+        def tally(key):
+            c = {}
+            for x in rr:
+                c[x[key]] = c.get(x[key], 0) + 1
+            return ", ".join(f"{k} {v}/{len(rr)}" for k, v in sorted(c.items()))
         oc = {}
-        for x in silent:
-            oc[x[3][0]] = oc.get(x[3][0], 0) + 1
-        power_fail = sum(x[0].startswith("FAIL (silent") for x in rr)
+        for x in rr:
+            if not x["fires"]:
+                oc[x["resp"][0]] = oc.get(x["resp"][0], 0) + 1
+        power_fail = sum(x["power"].startswith("FAIL (silent") for x in rr)
+        engine_fail = sum(x["engine"].startswith("FAIL (silent") for x in rr)
         resp_fail = oc.get("FAIL", 0)
-        false = (f"false FAIL: power rule {power_fail}/{len(rr)}, response rule {resp_fail}/{len(rr)}"
-                 if t == "valid" else f"FAIL (correct where blind): power rule {power_fail}/{len(rr)}, "
-                 f"response rule {resp_fail}/{len(rr)}")
-        print(f"{m:12s} PC {what:13s} {lvl:6s}: response {r:+.4f} -> metric {t}; power rule: "
-              + ", ".join(f"{k} {v}/{len(rr)}" for k, v in sorted(pc.items()))
-              + " | response rule on the silent ones: "
+        what_fail = "false FAIL" if t == "valid" else "FAIL (correct where blind)" if t == "blind" else "FAIL"
+        print(f"{m:12s} PC {what:13s} {lvl:6s}: response {r:+.4f} -> metric {t} | power rule: {tally('power')} | "
+              f"engine GATE 5: {tally('engine')} | response rule on the silent ones: "
               + (", ".join(f"{k} {v}/{len(rr)}" for k, v in sorted(oc.items())) or "none silent")
-              + f" | {false} | negative control outside its null {sum(not x[1] for x in rr)}/{len(rr)}")
+              + f" | {what_fail} of a silent control: power rule {power_fail}/{len(rr)}, engine {engine_fail}/{len(rr)}, "
+              f"response rule {resp_fail}/{len(rr)} | negative control outside its null "
+              f"{sum(not x['neg_ok'] for x in rr)}/{len(rr)}")
 
 
 if __name__ == "__main__":

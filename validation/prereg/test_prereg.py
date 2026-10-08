@@ -846,6 +846,34 @@ def test_collect_merges_shards_and_refuses_inconsistent_ones(tmp_path):
         B.collect(tmp_path / "twice", tmp_path / "res5")
 
 
+def test_verify_re_runs_a_finished_run_and_compares_its_reports(tmp_path):
+    """`blind.py verify`, the check anyone can run: the first datasets of a finished run, re-run from
+    its key, give the published reports' sha256; a manifest whose hash was altered, or another pilot,
+    does not pass."""
+    pytest.importorskip("scipy")
+    import blind as B
+    import simulate
+    bgs = {"B1": simulate.simulated_background("B1", n_genes=240),
+           "B2": simulate.simulated_background("B2", donors=12, n_genes=240, seed=1)}
+    pilot = simulate.dry_pilot(bgs)
+    rec = dict(chain="quicknet", round=7, signature="ab" * 48)
+    rec["randomness"] = rec["key"] = hashlib.sha256(bytes.fromhex(rec["signature"])).hexdigest()
+    compact = tmp_path / "compact"
+    B.write_compact(bgs, compact)
+    B.run_shard(compact, pilot, rec["key"], dict(rec), 0, 1, tmp_path / "shards" / "shard-0", workers=1, limit=3)
+    B.collect(tmp_path / "shards", tmp_path / "res")
+    (tmp_path / "res" / "key.json").write_text(json.dumps(rec))
+    res = B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun", workers=1, datasets=2)
+    assert res["datasets"] == 2 and res["cards"] >= 2 and res["identical"] == res["cards"] and res["key"] == rec["key"]
+    m = json.loads((tmp_path / "res" / "manifest.json").read_text())
+    m["datasets"][0]["cards"][0]["report_sha256"] = "0" * 64
+    (tmp_path / "res" / "manifest.json").write_text(json.dumps(m))
+    res = B.verify(tmp_path / "res", compact, pilot, tmp_path / "rerun2", workers=1)
+    assert res["datasets"] == 3 and res["identical"] == res["cards"] - 1
+    with pytest.raises(SystemExit, match="pilot"):
+        B.verify(tmp_path / "res", compact, dict(pilot, dropped=["N3 steps"]), tmp_path / "rerun3", workers=1)
+
+
 def test_the_guard_and_the_key_follow_the_frozen_tag_and_the_run_tag(tmp_path, monkeypatch):
     """In a scratch repository: the guard passes when only data files changed after the frozen tag
     and fails when frozen code changed; the key record must be the randomness (sha256 of the

@@ -14,6 +14,8 @@ can rebuild and check every dataset and report from the public key.
     python blind.py collect --shards-dir shards --pilot pilot.json --key-record key.json --out results
     python blind.py all --backgrounds backgrounds.json --data-dir DATA --pilot pilot.json \\
         --key-record key.json --workers 8 --out results       # the same steps on one machine
+    python blind.py verify --results RESULTS --compact compact --pilot pilot.json --datasets 20 \\
+        --out rerun                 # anyone: re-run datasets of a finished run, compare the reports
 
 ``--dry-run`` replaces the backgrounds by simulated ones (simulate.py) and, without a key
 record, the key by a public test key; the workflow runs it on pull requests.
@@ -105,12 +107,18 @@ def read_key(dry_run: bool, key_record: Path | None, run_tag: str | None) -> tup
 # prepare: verify, plan and compact the backgrounds
 # --------------------------------------------------------------------------- #
 def prepare(backgrounds: Path | None, out: Path, data_dir: Path | None, dry_run: bool = False) -> dict:
-    out.mkdir(parents=True, exist_ok=True)
     if dry_run:
         import simulate
         bgs = simulate.dry_backgrounds()
     else:
         bgs = P.load_backgrounds(backgrounds, data_dir)  # every file is checked against its sha256
+    return write_compact(bgs, out)
+
+
+def write_compact(bgs: dict, out: Path) -> dict:
+    """The planned backgrounds as compact files with their sha256 and content sha256, and the
+    digest of the whole (compact/SHA256), which every shard checks."""
+    out.mkdir(parents=True, exist_ok=True)
     info = {}
     for name, bg in bgs.items():
         P.save_compact(bg, out / f"{name}.npz")
@@ -223,6 +231,33 @@ def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None, r
     return summary
 
 
+def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, datasets: int | None = None) -> dict:
+    """Re-run datasets of a finished run and compare every report's sha256 with the run's manifest:
+    anyone can check that the published reports are what the frozen code gives for the key. The
+    datasets are the first `datasets` of the key's order (all if None); the key, the pilot and the
+    prepared backgrounds must be the run's."""
+    manifest = json.loads((results / "manifest.json").read_text())
+    key = P.check_key(manifest["key"])
+    record = results / "key.json"
+    if record.exists() and check_key_record(json.loads(record.read_text())) != key:
+        raise SystemExit("key.json and the manifest name different keys")
+    if manifest["pilot_sha256"] != pilot_sha256(pilot):
+        raise SystemExit("the pilot differs from the run's")
+    bgs, info = load_prepared(compact, None)
+    if json.dumps(info, sort_keys=True) != json.dumps(manifest["backgrounds"], sort_keys=True):
+        raise SystemExit("the prepared backgrounds differ from the run's")
+    want = {r["id"]: r for r in manifest["datasets"]}
+    entries = [e for e in P.assign(key, pilot.get("dropped", ()), pilot.get("pool_size")) if e["id"] in want]
+    entries = entries[:datasets] if datasets is not None else entries
+    R.run(entries, bgs, pilot, out, workers)
+    rows = []
+    for e in entries:
+        for c in want[e["id"]]["cards"]:
+            got = hashlib.sha256((out / "reports" / f"{c['id']}.json").read_bytes()).hexdigest()
+            rows.append(dict(card=c["id"], published=c["report_sha256"], rerun=got, identical=got == c["report_sha256"]))
+    return dict(key=key, datasets=len(entries), cards=len(rows), identical=sum(r["identical"] for r in rows), rows=rows)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -250,6 +285,14 @@ def main(argv=None):
         else:
             r.add_argument("--backgrounds", type=Path)
             r.add_argument("--data-dir", type=Path)
+    v = sub.add_parser("verify", help="re-run datasets of a finished run and compare the reports' sha256")
+    v.add_argument("--results", type=Path, required=True, help="the run's results (manifest.json, key.json)")
+    v.add_argument("--compact", type=Path, required=True, help="the backgrounds prepared by `prepare`")
+    v.add_argument("--pilot", type=Path)
+    v.add_argument("--dry-run", action="store_true")
+    v.add_argument("--datasets", type=int, help="the first N datasets of the key's order (default: all)")
+    v.add_argument("--workers", type=int, default=max(1, os.cpu_count() or 1))
+    v.add_argument("--out", type=Path, required=True)
     c = sub.add_parser("collect")
     c.add_argument("--shards-dir", type=Path, required=True)
     c.add_argument("--out", type=Path, required=True)
@@ -268,6 +311,21 @@ def main(argv=None):
         n = P.n_datasets(pilot.get("dropped", ())) if pilot and not pilot.get("dry_run") else None
         reruns = json.loads(args.reruns.read_text()) if args.reruns and args.reruns.exists() else []
         print(json.dumps(collect(args.shards_dir, args.out, n, reruns), indent=1))
+        return
+    if args.cmd == "verify":
+        if args.pilot is None:
+            if not args.dry_run:
+                raise SystemExit("verify needs the run's pilot.json (--pilot), or --dry-run for a dry run")
+            import simulate
+            pilot = simulate.dry_pilot(simulate.dry_backgrounds())
+        else:
+            pilot = json.loads(args.pilot.read_text())
+        res = verify(args.results, args.compact, pilot, args.out, args.workers, args.datasets)
+        for r in res["rows"]:
+            print(f"{r['card']}  published {r['published']}  re-run {r['rerun']}  {'identical' if r['identical'] else 'DIFFERENT'}")
+        print(f"{res['identical']} of {res['cards']} reports identical ({res['datasets']} datasets, key {res['key']})")
+        if res["identical"] != res["cards"]:
+            raise SystemExit(1)
         return
     if args.limit is not None and not args.dry_run:
         raise SystemExit("--limit is for the dry run only: the blind run takes every dataset")
