@@ -13,8 +13,8 @@
 #
 # Dry run: pull requests that touch the panel run the same jobs on simulated backgrounds with a
 # recent drand round as the key: the Census selection as a rehearsal that prints no identities,
-# a scratch tag pushed and deleted, two shards of four datasets (shard 1 is lost on purpose and
-# re-run), the results committed to results/panel-v1-dry.
+# a scratch tag pushed and deleted, two shards of four datasets (shard 1 leaves no results on
+# purpose and is re-run), the results committed to results/panel-v1-dry.
 name: Validation v1
 
 on:
@@ -331,11 +331,13 @@ jobs:
           name: key
           path: keyrec
       - name: A runner lost on purpose (dry run, shard 1)
+        id: lost
         if: needs.guard.outputs.real != 'true' && matrix.shard == 1
         run: |
-          echo "the dry run tests the re-run of a shard lost to the infrastructure"
-          exit 1
+          echo "the dry run tests the re-run of a shard lost to the infrastructure: this one leaves no results"
+          echo "lost=true" >> "$GITHUB_OUTPUT"
       - name: Run the shard
+        if: steps.lost.outputs.lost != 'true'
         run: |
           test "$(sha256sum keyrec/key.json | cut -d' ' -f1)" = "${{ needs.key.outputs.sha256 }}"
           if [ "${{ needs.guard.outputs.real }}" = "true" ]; then
@@ -348,6 +350,7 @@ jobs:
               --workers 4 --limit 4 --out out
           fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.lost.outputs.lost != 'true'
         with:
           name: shard-${{ matrix.shard }}
           path: out/
