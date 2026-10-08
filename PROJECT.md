@@ -81,8 +81,19 @@ turns that checklist into runnable behavior.
   the true effect Δ\*, S1 as a whole (790 datasets per key condition), S3 on correct definite
   verdicts, a 128-bit key with a sha256 commitment, and the blind run in GitHub Actions from the
   tag with the key in a secret and no dataset stored (`blind.py`, `.github/workflows/panel.yml`).
-  Probe p14 found that GATE 4 fails the valid metric where its response is weak or absent
-  (open). Second-round final draft awaiting an independent code review and approval. No tag yet.
+  Probe p14 found that GATE 4 fails the valid metric where its response is weak or absent.
+- **Step 2e (third round of 2026-10-08; the second final draft was not approved):** GATE 4 by
+  the interval of its response (PASS on the lower 95% bound above 0, FAIL only on the upper bound
+  below delta_min = 0.5 x SESOI, else UNTESTED; p14 a dev-set regression, journal D5); GATE 5's
+  silent positive control by the same rule (p15: the power rule failed a weak but valid control in
+  17/20 datasets; D6); verdicts carry their cause. The panel scores (label, cause) pairs against
+  the truth about the metric on every pair (the oracle's population response to GATE 4's
+  injection), with a new criterion S5 (false "metric invalid") and nominals by cause; the key is a
+  drand round named in the run tag before it exists; the run is deterministic and automatic from
+  the tag to the scores in GitHub Actions (`.github/workflows/validation.yml`), the backgrounds
+  selected from the CELLxGENE Census by the rule of v1.md 3.1, the results and scores committed to
+  `results/panel-v1`; the flagship audit on v0.1.1 runs in `audit.yml` on the same tag.
+  Third-round final draft awaiting the independent review and the owner's «утверждаю». No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

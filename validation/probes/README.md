@@ -221,7 +221,7 @@ owner's requirement (high: PASS; medium: FAIL no more often than alpha; low: FAI
 `run_all.sh`, ~10 min on 4 cores) checks GATE 5's silent-positive-control rule by the same measure
 on the same data: positive controls planted at each level, and weak but valid ones (a coupling of
 dose 0.25-0.5 injected into an uncoupled high-level pair), with `norm_pearson` and a metric blind
-to gene b. The power rule of 2026-10-07 failed the valid metric with a weak control in 16, 10 and
-1 of 20 datasets; the response rule (the metric's own response to an injected coupling of the
+to gene b. The power rule of 2026-10-07 (a frozen copy in the probe) failed the valid metric with a
+weak control in 17, 8 and 0 of 20 datasets; the response rule (the metric's own response to an injected coupling of the
 control's genes, FAIL only if its upper 95% bound is below delta_min) in none, and both failed
 the blind metric 20/20. By the owner's condition GATE 5 now uses the response rule (JOURNAL.md, D6).

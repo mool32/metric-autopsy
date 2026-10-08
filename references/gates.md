@@ -369,7 +369,7 @@ response its two-sided interval at alpha/K. The metric is shown blind when the b
 declared direction is below `delta_min`; otherwise the silence says that the control is not
 coupled here (when the metric responds to the injection), or nothing. The former rule failed a
 silent control wherever a reference detector had power ≥ 0.8 for the dose, and so failed a valid
-metric whose control was coupled, but weakly, in 16 of 20 p15 datasets.
+metric whose control was coupled, but weakly, in 17 of 20 p15 datasets.
 
 **Read-out.**
 - **FAIL** — the negative control stands out in some stratum (the metric reports association

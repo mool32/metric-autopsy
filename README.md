@@ -32,7 +32,9 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 > the controls, and data/pre-registration hashes in every report. All 18 failures found by
 > the probes now pass their regression tests — but the fixes were developed against those
 > probes, so that is a development result with no confirmatory weight. Confirmatory
-> validation will run on a frozen tag and a new, blind panel.
+> validation will run on a frozen tag and a new, blind panel: its protocol is
+> [`validation/prereg/v1.md`](validation/prereg/v1.md), and the push of the tag
+> `v0.3.0-prereg` starts it in GitHub Actions.
 
 ---
 

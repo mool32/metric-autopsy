@@ -84,7 +84,7 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   control's genes, with their own coupling removed, and the control FAILs only if the upper
   bound of the metric's response is below `delta_min` (decided 2026-10-08, probe p15; the rule
   of 2026-10-07, power ≥ 0.8 of a reference detector, failed a valid metric whose control was
-  coupled, but weakly, in 16 of 20 datasets). The positive control's self-null replaces gene b with a
+  coupled, but weakly, in 17 of 20 datasets). The positive control's self-null replaces gene b with a
   depth-matched, thinned draw from neighbouring cells (a shuffle within depth bins let a pair
   coupled only through depth pass). p values are rank-based Monte Carlo p values with a
   two-stage extension to the resolution alpha/K needs (no normal tail; null pairs drawn without
@@ -100,20 +100,27 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   to a known construct change planted by binomial thinning, measured against a matched sham
   (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
-- `validation/prereg/`: the confirmatory validation's protocol (`v1.md`) and its code —
-  `panel.py` (design, 128-bit key and its sha256 commitment, a pool of gene pairs at three
-  expression levels drawn by the key independently of the condition, truth generators including
-  N8's per-cell variable capture, claim cards, allowed sets by the true effect Δ\*, canonical
-  sha256 of datasets and cards; never imports the engine), `oracle.py` (per level: SESOI, key
-  dose, Δ\*, N2's informativeness; establishability by any correct definite verdict),
-  `run_panel.py` (datasets built on the fly, one engine run per claim card, in parallel),
-  `blind.py` and `.github/workflows/panel.yml` (the blind run from the tag with the key in a
-  secret; a dry run on pull requests; a one-machine fallback), `score.py` (criteria, per-level
-  rates, a shared-donor interval), `oc.py` (thresholds by one principle, S1 as a whole),
-  `simulate.py`, `timing.py` and `test_prereg.py`.
-- `validation/probes/p14_gate4_by_expression_level.py`: GATE 4 fails the valid metric where its
-  response to the injected coupling is weak (medium expression, 8 of 12 simulated datasets at
-  the default strength) or absent (low expression, 12 of 12); open, put to the project owner.
+- `validation/prereg/`: the confirmatory validation's protocol (`v1.md`, third round) and its
+  code — `select_backgrounds.py` (the mechanical choice of the backgrounds from the CELLxGENE
+  Census and the named B3/B4 sources), `panel.py` (design, the assignment by a 256-bit key, a pool
+  of up to 8 gene pairs per expression level drawn by the key independently of the condition,
+  truth generators including N8's per-cell variable capture, claim cards, the allowed (label,
+  cause) outcomes by the truth about the metric and the data, canonical sha256 of datasets and
+  cards; never imports the engine), `oracle.py` (per background and level: SESOI, the response
+  curve to GATE 4's injection and its saturation dose, the truth about the metric on every pair;
+  on B1 the key dose and Δ\*; establishability per condition, variant and pair), `beacon.py`
+  (the key: a drand quicknet round named in the run tag before it exists, BLS-verified),
+  `run_panel.py` (datasets built on the fly, one engine run per claim card, deterministic
+  reports), `blind.py` (guard, shards, collection, and `verify`: anyone re-runs datasets of a
+  finished run and compares the reports' sha256), `score.py` (S1-S5, per-level and per-truth rates, per-gate outcomes,
+  design effects), `oc.py` (thresholds by one principle with nominals by cause), `anchors.py`,
+  `simulate.py`, `timing.py` (with the drop rule) and `test_prereg.py`;
+  `.github/workflows/validation.yml` runs everything from the tag `v0.3.0-prereg` to the scores
+  (results committed to `results/panel-v1`), and `.github/workflows/audit.yml` the flagship
+  audit on v0.1.1.
+- `validation/probes/p14_gate4_by_expression_level.py` (now a dev-set regression of GATE 4's
+  interval rule) and `p15_gate5_weak_positive_control.py` (GATE 5's power rule against the
+  response rule on weak but valid controls).
 - `validation/probes/verdicts_v03.py` scores errors (verdict outside the set allowed by the
   design, false SUPPORTED) and decisiveness (definite verdicts where the design makes the truth
   establishable) per case, with Clopper-Pearson intervals. `validation/probes/JOURNAL.md`

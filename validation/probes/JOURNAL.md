@@ -163,10 +163,14 @@ gives a false FAIL on a weak but valid control more often than alpha, move it to
 20 null datasets per row, delta_min 0.05). With the rule of 2026-10-07 (a silent control FAILs
 where a reference detector had power >= 0.8 for an injected coupling of dose 2.0) a valid metric
 whose control was coupled, but weakly (a coupling of dose 0.25, 0.35 or 0.5 injected into an
-uncoupled high-level pair), was failed in 16, 10 and 1 of 20 datasets. Judged by the metric's own
+uncoupled high-level pair), was failed in 17, 8 and 0 of 20 datasets. Judged by the metric's own
 response to a coupling of dose 2.0 injected into the control's genes with their own coupling
 removed (FAIL if the upper 95% bound is below delta_min), it was failed in none. Both rules failed
-a metric blind to gene b (20/20) and the low level, where the metric is blind (16/20 and 18/20).
+a metric blind to gene b (20/20) and the low level, where the metric is blind (13/20 and 17/20).
+The log was regenerated after the switch, with a frozen copy of the removed rule in the probe and
+the engine's GATE 5 at that commit (200 injections), which agrees with the probe's copy of the
+response rule on every row. The first measurement, at 777f18e with the engine's own power rule and
+50 injections, gave 16, 10 and 1 of 20, and 16/20 and 18/20 (in the git history).
 
 **What changed.** A silent positive control is judged by that response rule (`gate5_controls`:
 `pos_dose` = pre-registered `positive_control_dose`, default 2.0; `delta_min`; the interval at

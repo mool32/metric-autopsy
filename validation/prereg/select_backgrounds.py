@@ -75,7 +75,7 @@ def _known(donor: pd.Series) -> np.ndarray:
         return ~v.str.strip().str.lower().isin(MISSING_DONOR)
     if isinstance(donor.dtype, pd.CategoricalDtype):
         return _codes_mask(donor, ok)
-    return np.asarray(ok(pd.Index(donor.astype(str))))
+    return np.asarray(ok(pd.Index(donor.astype(str)))) & donor.notna().to_numpy()
 
 
 def _equals(s: pd.Series, value) -> np.ndarray:
@@ -94,12 +94,13 @@ def count_cells(batches, cols: list[str]) -> pd.DataFrame:
         df = b.to_pandas() if hasattr(b, "to_pandas") else b
         n = df[cols].groupby(cols, observed=True, dropna=False).size()
         part = n.rename("cells").reset_index()
-        for c in cols:
-            part[c] = part[c].astype(str)
+        for c in cols:  # a missing value becomes "nan" whatever the pandas version does with astype(str)
+            part[c] = ["nan" if pd.isna(v) else str(v) for v in part[c]]
         parts.append(part)
     if not parts:
         return pd.DataFrame({**{c: pd.Series(dtype=str) for c in cols}, "cells": pd.Series(dtype=int)})
-    return pd.concat(parts, ignore_index=True).groupby(cols, sort=True)["cells"].sum().reset_index()
+    return (pd.concat(parts, ignore_index=True).groupby(cols, sort=True, dropna=False)["cells"].sum()
+            .reset_index())
 
 
 def candidates(counts: pd.DataFrame, keys: list[str], min_donors: int, both_sexes: bool = False) -> pd.DataFrame:

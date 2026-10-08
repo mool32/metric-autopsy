@@ -463,7 +463,7 @@ def test_a_silent_positive_control_fails_only_a_metric_shown_blind():
     with their own coupling removed, and the metric's own response gets its 95% interval: FAIL
     only when its upper bound is below delta_min (the metric is shown blind), else WARN. The rule
     of 2026-10-07 (FAIL wherever a reference detector had power >= 0.8) failed a valid metric
-    whose control was coupled, but weakly, in 16 of 20 datasets (p15); a metric blind to gene b
+    whose control was coupled, but weakly, in 17 of 20 datasets (p15); a metric blind to gene b
     still fails, and without a delta_min blindness cannot be shown."""
     for s in range(3):
         blind = gate5_controls(blind_pair_metric, null_control_strata(1, 600, s), *CTRL, delta_min=0.5)
