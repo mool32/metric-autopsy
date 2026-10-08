@@ -1,4 +1,4 @@
-# metric-autopsy probes — git 677d1b8, python 3.13.16, numpy 2.5.3
+# metric-autopsy probes — git 739799a, python 3.13.16, numpy 2.5.3
 =================== p01_null_metrics_and_offset.py
 P1a: constant metric lambda d: 0.0 on clean data, via run_autopsy defaults
   G0 DEGENERATE the metric returned the same value (0) on every resample, null and perturbation — it carries no information about the data
@@ -12,10 +12,10 @@ P1b: random-number metric (pure noise, no data dependence)
   VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
 
 P1c: GATE 0 location-invariance: mi_3bin vs mi_3bin + C on clean data
-  C=    0: GATE0 PASS  worst=extra_dropout rel=0.674 z=29.9
-  C=  0.5: GATE0 PASS  worst=extra_dropout rel=0.674 z=29.9
-  C=    1: GATE0 PASS  worst=extra_dropout rel=0.674 z=29.9
-  C=   10: GATE0 PASS  worst=extra_dropout rel=0.674 z=29.9
+  C=    0: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=  0.5: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=    1: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=   10: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
 
 P1d: GATE 0 scale-invariance? mi_3bin * k
   k=     1: GATE0 PASS
@@ -23,9 +23,9 @@ P1d: GATE 0 scale-invariance? mi_3bin * k
   k=  0.01: GATE0 PASS
 
 P1e: affine reparametrisation of norm_pearson: Fisher z / (1 - r)
-  r                           : GATE0 PASS worst=extra_dropout rel=0.025 base=0.520
-  1-r (a 'decoupling' score)  : GATE0 PASS worst=extra_dropout rel=0.025 base=0.480
-  atanh(r)                    : GATE0 PASS worst=extra_dropout rel=0.031 base=0.577
+  r                           : GATE0 PASS worst=depth_downsample rel=0.042 base=0.520
+  1-r (a 'decoupling' score)  : GATE0 PASS worst=depth_downsample rel=0.042 base=0.480
+  atanh(r)                    : GATE0 PASS worst=depth_downsample rel=0.050 base=0.577
 =================== p02_cellcycle_positive_control.py
 P3a: POSITIVE CONTROL — sorted G1 vs sorted G2M cells (FUCCI/Hoechst-style ground truth)
      metric = mean G2M score (normalized, Tirosh-style). True effect is huge by construction.
@@ -58,7 +58,7 @@ P3b: REAL BIOLOGY THAT MOVES QC — young tissue proliferates (35% cycling), old
      Cycling cells carry more RNA (biology). metric = fraction of G2M-high cells / mean G2M score.
 
   content(G1,S,G2M)=(1.0, 1.4, 1.9)  metric=frac_cycling
-  G0 PASS     no bias; attenuation depth_downsample −14% of the signal (passed to design adequacy as a power check) — reported, not failed
+  G0 PASS     no bias; attenuation depth_downsample −4% of the signal (passed to design adequacy as a power check) — reported, not failed
   G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.07x; alpha 0.05 Bonferroni)
   G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
   VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
@@ -76,7 +76,7 @@ P3b: REAL BIOLOGY THAT MOVES QC — young tissue proliferates (35% cycling), old
   VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
 
   content(G1,S,G2M)=(1.0, 1.6, 2.4)  metric=mean_g2m_score
-  G0 PASS     no bias; level shift extra_dropout -28% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) — reported,
+  G0 PASS     no bias; level shift extra_dropout -27% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) — reported,
   G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.08x; alpha 0.05 Bonferroni)
   G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
   VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
@@ -121,20 +121,20 @@ all 630 independent filler pairs: norm_pearson mean r = 0.084 ; raw codetected s
   replicate-level exact permutation p<0.05: 0 / 40  (min attainable p with 3v3 = 0.10)
 
 example full autopsy on null seed 0 (Python API defaults):
-  G0 PASS     no bias; attenuation depth_downsample −18% of the signal (passed to design adequacy as a power check) — reported, not failed
+  G0 PASS     no bias; attenuation depth_downsample −21%, gene_subsample −14% of the signal (passed to design adequacy as a power check) — reported, not failed
   G1 PASS     no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)
   G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
   VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
 =================== p08_attenuation.py
 mean UMI/cell of the coupled pair -> GATE 0 status, worst perturbation, rel shift
-  mean~  0.3  norm_pearson                base=0.510 -> PASS  extra_dro=1%  depth_dow=6%  library_s=6%
-  mean~  0.3  lognorm_pearson(all cells)  base=0.165 -> PASS  extra_dro=23%  depth_dow=35%  library_s=1%
+  mean~  0.3  norm_pearson                base=0.510 -> PASS  extra_dro=2%  depth_dow=11%  library_s=7%
+  mean~  0.3  lognorm_pearson(all cells)  base=0.165 -> PASS  extra_dro=26%  depth_dow=36%  library_s=1%
   mean~  1.0  norm_pearson                base=0.350 -> PASS  extra_dro=5%  depth_dow=5%  library_s=4%
-  mean~  1.0  lognorm_pearson(all cells)  base=0.299 -> PASS  extra_dro=35%  depth_dow=30%  library_s=1%
-  mean~  3.0  norm_pearson                base=0.477 -> PASS  extra_dro=0%  depth_dow=10%  library_s=0%
-  mean~  3.0  lognorm_pearson(all cells)  base=0.429 -> PASS  extra_dro=50%  depth_dow=23%  library_s=0%
-  mean~ 10.0  norm_pearson                base=0.577 -> PASS  extra_dro=0%  depth_dow=12%  library_s=0%
-  mean~ 10.0  lognorm_pearson(all cells)  base=0.585 -> PASS  extra_dro=69%  depth_dow=19%  library_s=0%
+  mean~  1.0  lognorm_pearson(all cells)  base=0.299 -> PASS  extra_dro=36%  depth_dow=30%  library_s=1%
+  mean~  3.0  norm_pearson                base=0.477 -> PASS  extra_dro=2%  depth_dow=13%  library_s=0%
+  mean~  3.0  lognorm_pearson(all cells)  base=0.429 -> PASS  extra_dro=55%  depth_dow=28%  library_s=1%
+  mean~ 10.0  norm_pearson                base=0.577 -> PASS  extra_dro=1%  depth_dow=13%  library_s=0%
+  mean~ 10.0  lognorm_pearson(all cells)  base=0.585 -> PASS  extra_dro=75%  depth_dow=21%  library_s=0%
 =================== p09_gate2_floor_noise.py
 young coupling 1.5 vs old 1.5: (last effect +0.017)  {'PASS-survives': 3, 'PASS-no-effect': 37, 'FAIL': 0, 'STOP': 0}   null floor across seeds: median 0.080, range 0.049-0.119
 young coupling 1.5 vs old 1.2: (last effect +0.119)  {'PASS-survives': 21, 'PASS-no-effect': 19, 'FAIL': 0, 'STOP': 0}   null floor across seeds: median 0.080, range 0.047-0.123
@@ -142,9 +142,9 @@ young coupling 1.5 vs old 0.9: (last effect +0.268)  {'PASS-survives': 40, 'PASS
 =================== p10_perturbation_magnitude.py
 demo data, mi_3bin. rows: extra_dropout fraction; cols: binomial thinning keep-prob
               thin=0.8       thin=0.5       thin=0.3       
-  drop=0.05:  PASS(31%/4%)        PASS(31%/27%)       PASS(31%/47%)     
-  drop=0.10:  PASS(49%/5%)        PASS(49%/28%)       PASS(49%/47%)     
-  drop=0.20:  PASS(71%/5%)        PASS(71%/28%)       PASS(71%/47%)     
+  drop=0.05:  PASS(33%/4%)        PASS(33%/26%)       PASS(33%/51%)     
+  drop=0.10:  PASS(52%/4%)        PASS(52%/31%)       PASS(52%/50%)     
+  drop=0.20:  PASS(76%/7%)        PASS(76%/31%)       PASS(76%/47%)     
 =================== p11_thinning_alternative.py
 retained fraction of the between-group effect after depth equalization
 

@@ -16,7 +16,7 @@ every truth through the v0.3 API, as the tests do; its output is
 `verdicts_v0.3.0.dev0.log`.
 
 ```bash
-./run_all.sh                 # ~45 min on this branch (GATE 5's power rule in p05); prints to stdout
+./run_all.sh                 # ~45-60 min on this branch (GATE 5's power rule in p05); prints to stdout
 WITH_MEMORY=1 ./run_all.sh   # also runs p12 (peaks at ~6 GB RAM)
 python verdicts_v03.py       # ~12 min; the v0.3 verdict on every truth, then errors and decisiveness
 ```
