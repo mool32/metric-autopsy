@@ -1274,6 +1274,15 @@ def test_s5_counts_false_invalid_only_where_the_metric_is_valid(bgs):
     assert res["per_truth"]["blind"]["errors"]["rate"] == 0.0 and res["per_truth"]["ambiguous"]["errors"]["rate"] == 0.0
 
 
+def test_the_frozen_oc_log_is_what_oc_py_prints(capsys):
+    """oc.log is frozen with the tag and v1.md quotes it: it must be what the code prints (the fourth
+    review checked it by hand)."""
+    pytest.importorskip("scipy")
+    import oc
+    oc.main([])
+    assert capsys.readouterr().out == (HERE / "oc.log").read_text()
+
+
 def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
     pytest.importorskip("scipy")
     import oc
