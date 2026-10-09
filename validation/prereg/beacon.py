@@ -141,6 +141,34 @@ def fetch(rnd: int, relays=RELAYS, chain: dict = CHAIN) -> dict:
                 fetched_utc=_utc(time.time()))
 
 
+def latest(relays=RELAYS, chain: dict = CHAIN) -> int:
+    """The newest round the relays serve whose signature verifies: the beacon's own clock, so the
+    gap between the run tag's push and its round need not rest on the runner's clock alone (the
+    fourth review). Rounds that exist when it is asked include every round that existed at the
+    push before it."""
+    best = None
+    for relay in relays:
+        try:
+            got = _get(f"{relay}/{chain['hash']}/public/latest")
+            rnd = int(got.get("round", -1))
+            if rnd > 0 and verify(rnd, str(got.get("signature", "")), chain["public_key"]):
+                best = rnd if best is None else max(best, rnd)
+        except Exception:  # a relay that is down is skipped; one that answers must verify
+            continue
+    if best is None:
+        raise RuntimeError("no relay returned a verified latest round")
+    return best
+
+
+def gap_after_push(rnd: int, pushed: float, newest: int, chain: dict = CHAIN) -> dict:
+    """How far round `rnd` lies after the run tag's push, by the runner's clock (`pushed`) and by
+    the newest round that existed after the push (`newest`, ``latest``): the smaller counts."""
+    by_clock = round_time(rnd, chain) - pushed
+    by_beacon = (int(rnd) - int(newest)) * chain["period"]
+    return dict(round=int(rnd), newest=int(newest), by_clock=by_clock, by_beacon=by_beacon,
+                seconds=min(by_clock, by_beacon))
+
+
 def wait_and_fetch(rnd: int, relays=RELAYS, chain: dict = CHAIN, hours: float = FETCH_HOURS,
                    step: float = 30.0) -> dict:
     """Sleep until round `rnd` is due, then ask the relays until one verified answer arrives or

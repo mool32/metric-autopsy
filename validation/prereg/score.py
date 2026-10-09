@@ -6,14 +6,16 @@ Run by the workflow right after the blind run's results are committed. The key (
 round's randomness in the results' key record) re-derives the condition, variant and gene pair
 of every dataset ID (``panel.assign``). Each claim card's report is reduced to its outcome, the
 label and cause of the verdict (``panel.outcome``), and compared with the card's allowed
-outcomes (``panel.allowed``: by the truth about the metric on the pair and about the data, one
-rule for every condition). The primary outcomes and the criteria S1-S7 follow, every rate with
+outcomes (``panel.card_allowed``: by the truth about the metric on the pair and about the data,
+one rule for every condition, without the effect verdicts the engine's rules exclude on the card). The primary outcomes and the criteria S1-S7 follow, every rate with
 its two-sided 95% Clopper-Pearson interval (exact: given the background every dataset is an
 independent draw, so the counts are binomial), and for every criterion the design effect of
 datasets that share donors (``overlap_interval``: how much the outcomes depend on the donors a
 dataset draws, so how far a rate carries beyond the background's donors); a design effect above
-1.5 is reported as the pre-registered limitation on that reading. A missing report, an engine error or an unexpected verdict counts as
-an error (P2) and fails S7. Every other wrong outcome is counted in its cell of S2, S4, S5 or S6
+1.5 is reported as the pre-registered limitation on that reading. A missing report, an engine
+error or an unexpected verdict (one the engine cannot give there: ``oc.S7_OUTCOMES``, DEGENERATE
+METRIC on a metric that varies, an effect verdict where its rules exclude one) counts as an error
+(P2) and fails S7. Every other wrong outcome is counted in its cell of S2, S4, S5 or S6
 (``oc.error_cells``). Thresholds are computed with the rules of ``oc.py`` on the realized cards;
 S3's strata are judged at the tiers pilot.json fixed before the key ("s3_rules"). A cell without
 cards holds (no card on which its error can occur); S1 and S7 always have cards; S3 fails unless
@@ -32,9 +34,9 @@ import oc
 import panel as P
 
 DEFF_LIMIT = 1.5  # a criterion's design effect above this is a pre-registered limitation
-# the flag of a card's row that counts each wrong outcome where it is wrong (oc.CAUSE_FIELD)
-FLAG = {P.SUPPORTED: "sup_error", P.NS_INVALID: "false_invalid", P.NDE: "nde_error", P.NS_OPPOSITE: "opp_error",
-        P.NS_DEPTH: "depth_error"}
+# the flag of a card's row that counts the outcome of a cell, by the cell's field (oc.FIELDS)
+FLAG = {"sup": "sup_error", "inv": "false_invalid", "nde": "nde_error", "opp": "opp_error", "depth": "depth_error",
+        "oppnull": "opp_null"}
 
 
 def cp(k: float, n: float, alpha: float = 0.05) -> tuple[float, float]:
@@ -97,23 +99,26 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
         c = conds[e["condition"]]
         pair = int(e["pair"])
         level = P.pool_level(c, pair, pilot)
-        ok = P.allowed(c, e["variant"], pair, pilot)
-        good = P.definite(c, e["variant"], pair, pilot)
         truth = P.metric_truth(c, e["variant"], pair, pilot)
         model = oc.card_model(c, e["variant"], pair, pilot)
-        for cid in P.card_ids(e):
+        for k, cid in enumerate(P.card_ids(e)):
+            ok = P.card_allowed(c, e["variant"], pair, pilot, k)  # without what the engine's rules exclude
+            good = ok & P.DEFINITE
+            kind = oc.card_kind(model, c, k)
             rec = reports.get(cid) or (None, None)
             verdict, cause = rec[0], rec[1]
             gates = rec[2] if len(rec) > 2 else {}
             o = P.outcome(verdict, cause)
-            rows.append(dict(model, id=cid, dataset=e["id"], variant=e["variant"], level=level, pair=pair,
-                             truth=truth, outcome=o,
+            rows.append(dict(kind, id=cid, dataset=e["id"], variant=e["variant"], level=level,
+                             pair=pair, truth=truth, outcome=o,
                              sup_error=o == P.SUPPORTED and P.SUPPORTED not in ok,
                              false_invalid=truth == "valid" and o == P.NS_INVALID,
                              nde_error=o == P.NDE and P.NDE not in ok,
                              opp_error=o == P.NS_OPPOSITE and P.NS_OPPOSITE not in ok,
+                             opp_null=o == P.NS_OPPOSITE and kind["opp_null_counted"],
                              depth_error=o == P.NS_DEPTH and P.NS_DEPTH not in ok,
-                             engine_error=o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok),
+                             engine_error=(o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok)
+                                           or o in P.excluded(c, k)),
                              error=o not in ok, correct_definite=o in good, definite=o in P.DEFINITE,
                              gates=gates))
     return rows
@@ -179,6 +184,7 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
                     false_nde=rate(sum(r["nde_error"] for r in rs), sum(r["nde_error_possible"] for r in rs)),
                     false_opposite=rate(sum(r["opp_error"] for r in rs), sum(r["opp_error_possible"] for r in rs)),
                     false_depth=rate(sum(r["depth_error"] for r in rs), sum(r["depth_error_possible"] for r in rs)),
+                    opposite_on_null=rate(sum(r["opp_null"] for r in rs), sum(r["opp_null_counted"] for r in rs)),
                     engine_errors=rate(sum(r["engine_error"] for r in rs), len(rs)),
                     correct_definite=rate(sum(r["correct_definite"] for r in rs if r["establishable"]),
                                           sum(r["establishable"] for r in rs)),
@@ -218,13 +224,13 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
             if cell.split(":")[0] != name:
                 continue
             rs = [rows[i] for i in rule["members"]]
-            k = sum(r[FLAG[rule["outcome"]]] for r in rs)
+            k = sum(r[FLAG[rule["field"]]] for r in rs)
             cells[cell] = dict(rate(k, len(rs)), outcome=rule["outcome"], nominal=rule["nominal"],
                                rule_nominal=rule["rule_nominal"], raised=rule["raised"], judged=rule["judged"],
                                max_allowed=rule["max_allowed"], p_pass_sound=rule["p_pass_sound"],
                                p_pass_doubled=rule["p_pass_doubled"], p_pass_measured=rule.get("p_pass_measured"),
                                passed=(k <= rule["max_allowed"]) if rule["judged"] else True)
-            members[cell] = (rs, FLAG[rule["outcome"]])
+            members[cell] = (rs, FLAG[rule["field"]])
         crit[name] = dict(cells=cells, passed=all(v["passed"] for v in cells.values()))
     # S3: correct definite outcomes on establishable cards, per stratum (real effects, nulls, blind
     # or useless metrics; not N3 and N8), each at its mean measured decisiveness (at most 0.85) and
@@ -300,6 +306,8 @@ def main(argv=None):
     p.add_argument("--out", default="scores.json")
     args = p.parse_args(argv)
     pilot = json.loads(Path(args.pilot).read_text())
+    if not (pilot.get("s3_rules") or {}).get("tiers"):  # the fourth review: chosen after the key otherwise
+        raise SystemExit("pilot.json has no S3 tiers fixed before the key (oc.py --pilot ... --write-judged)")
     reports, donors = read_results(Path(args.results), P.check_key(args.key))
     entries = P.assign(args.key, pilot.get("dropped", ()), pilot.get("pool_size"))
     res = score(entries, reports, pilot, donors)

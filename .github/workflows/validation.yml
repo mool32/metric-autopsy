@@ -198,12 +198,14 @@ jobs:
           if [ "${{ needs.guard.outputs.real }}" = "true" ]; then smoke=""; else smoke="--smoke"; fi
           python validation/prereg/oracle.py --backgrounds validation/prereg/backgrounds.json --data-dir data \
             --out validation/prereg/pilot.json --workers 4 $smoke
-      - name: Timing pilot on the backgrounds, and the drops it needs
+      - name: Timing pilot on the backgrounds, the drops it needs, and GATE 0's refusals per S3 stratum
         run: |
-          # the sample takes one dataset of every condition (13), the rest in proportion to their cards
-          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then cards=24; else cards=13; fi
+          # the sample takes one dataset of every condition (13), the rest in proportion to their cards;
+          # then the engine runs on establishable cards of every S3 stratum (GATE 0's refusal share)
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then cards=24; refusals=100; else cards=13; refusals=2; fi
           python validation/prereg/timing.py --workers 4 --cards $cards --backgrounds validation/prereg/backgrounds.json \
-            --data-dir data --pilot validation/prereg/pilot.json --write-drops > validation/prereg/timing_pilot.log
+            --data-dir data --pilot validation/prereg/pilot.json --write-drops --refusals $refusals \
+            > validation/prereg/timing_pilot.log
           cat validation/prereg/timing_pilot.log
       - name: Operating characteristics on the pilot's expected cards, and S3's tiers fixed before the key
         run: |
@@ -242,6 +244,9 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-beacon.txt && pip check
       - name: Name a drand round at least an hour ahead and push the run tag
         id: tag
         run: |
@@ -262,9 +267,11 @@ jobs:
           sys.path.insert(0, "validation/prereg")
           import beacon
           rnd, pushed, real = int(sys.argv[1]), float(sys.argv[2]), sys.argv[3] == "true"
-          margin = beacon.round_time(rnd) - pushed
-          print(f"round {rnd} is produced {margin:.0f} s after the tag was pushed")
-          if real and margin < beacon.MIN_DELAY:
+          # by the runner's clock and by the newest verified round the relays serve after the push
+          gap = beacon.gap_after_push(rnd, pushed, beacon.latest())
+          print(f"round {rnd} is produced {gap['by_clock']:.0f} s after the tag was pushed by the runner's clock, "
+                f"{gap['by_beacon']} s after the newest round that existed after it ({gap['newest']})")
+          if real and gap["seconds"] < beacon.MIN_DELAY:
               raise SystemExit("the named round is less than an hour after the push")
           PY
           echo "round=$round" >> "$GITHUB_OUTPUT"

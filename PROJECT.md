@@ -125,8 +125,17 @@ turns that checklist into runnable behavior.
   measured on their own datasets, the oracle equalizing as the engine does; N7 at most 24 mice and a
   memory rule before the key; every environment pinned as its whole closure. The development probe
   p16 measures N8 through the whole engine on simulated backgrounds: a false SUPPORTED in 18 of 160
-  datasets (11%; N1 2 of 160), where S1 allows 3.7% — the open point for the owner stands. A fourth
-  review checks the fixes; then the owner's «утверждаю». No tag yet.
+  datasets (11%; N1 2 of 160), where S1 allows 3.7% — the open point for the owner stands.
+- **Step 2i (after the fourth independent review):** no critical defect; important ones — NOT
+  SUPPORTED against the direction on null data never bounded (a validator saying it on 16% of the
+  null cards passed), S2's small groups passing targeted false SUPPORTED (6-12%), GATE 0's refusals
+  outside the sound validator's model (a sound engine could fail S3), and E2/E3's Δ* taken at full
+  depth. Fixed: a cell for the null's other tail; effect verdicts the engine's rules exclude (N4
+  without the replicate unit, the constant) in S7; every S2 group at least 300 cards (N4, N6a, N7 at
+  300 datasets: 6,400 datasets, 6,700 claim cards) with every cell's resolution printed; GATE 0's
+  refusal share measured with the frozen engine before the key and refusing first in the model;
+  Δ* of E2/E3 at half capture; thirteen smaller items (v1.md section 10). The fixes were not
+  reviewed again (no critical finding); then the owner's «утверждаю». No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

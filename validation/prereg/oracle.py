@@ -80,6 +80,10 @@ SIZES = dict(curve=(CURVE_DATASETS, CURVE_REPS), truth=(TRUTH_DATASETS, TRUTH_RE
 SMOKE_SIZES = dict(curve=(2, 2), truth=(4, 4), case=(3, 3), gate4=20, sesoi=8)
 SMOKE_DATASETS, SMOKE_DRAWS = 3, 40  # the dry run's smoke test (--smoke): the same code, tiny sizes
 E1_FACTORS = (0.25, 0.5, 1.0, 1.5)
+# the engine's permutation test (run_autopsy's n_perm, which run_panel does not set, and effect.py's
+# max_exact; test_the_panels_copies_of_the_engines_rules_agree_with_it): exact up to MAX_EXACT
+# assignments, else N_PERM Monte Carlo draws
+MAX_EXACT, N_PERM = 20000, 1000
 MODULE_FOLD, MODULE_FRAC = 2.0, 0.3  # the engine's GATE 4 module injection in the claim cards
 
 
@@ -112,11 +116,14 @@ def module_score(X: np.ndarray, cols: list) -> float:
 # --------------------------------------------------------------------------- #
 # GATE 4's rule, re-implemented: the response to an injected coupling against its sham
 # --------------------------------------------------------------------------- #
-def coupling_deltas(X: np.ndarray, ia: int, ib: int, dose: float, rng, reps: int) -> np.ndarray:
+def coupling_deltas(X: np.ndarray, ia: int, ib: int, dose: float, rng, reps: int,
+                    capture: float = 1.0) -> np.ndarray:
     """`reps` responses of log-normalized Pearson on the whole dataset: the pair coupled by one
     shared keep probability 1 / (1 + e^(-dose z)) minus the pair thinned with independent ones
     (``panel.inject_coupling`` / ``sham_coupling`` on the two columns; the other genes' totals
-    are unchanged)."""
+    are unchanged). With `capture` < 1 both are then thinned to that capture, every molecule (the
+    other genes through their total: the thinned total of independent thinnings with one
+    probability is the binomial of the total), as E2 and E3 are analysed (``panel.delta_of``)."""
     a0, b0 = X[:, ia], X[:, ib]
     rest = X.sum(axis=1) - a0 - b0
     n = len(a0)
@@ -126,7 +133,11 @@ def coupling_deltas(X: np.ndarray, ia: int, ib: int, dose: float, rng, reps: int
         a, b = P.thin(a0, p, rng), P.thin(b0, p, rng)
         sa, sb = (P.thin(a0, P._keep(rng.standard_normal(n), dose), rng),
                   P.thin(b0, P._keep(rng.standard_normal(n), dose), rng))
-        out[r] = _npc(a, b, rest + a + b) - _npc(sa, sb, rest + sa + sb)
+        ra = rs = rest
+        if capture < 1.0:
+            a, b, ra = P.thin(a, capture, rng), P.thin(b, capture, rng), P.thin(rest, capture, rng)
+            sa, sb, rs = P.thin(sa, capture, rng), P.thin(sb, capture, rng), P.thin(rest, capture, rng)
+        out[r] = _npc(a, b, ra + a + b) - _npc(sa, sb, rs + sa + sb)
     return out
 
 
@@ -230,9 +241,10 @@ def _combos(n: int, k: int) -> np.ndarray:
     return _COMBOS[(n, k)]
 
 
-def permutation_p(a: np.ndarray, b: np.ndarray, max_exact: int = 20000, rng=None) -> float:
+def permutation_p(a: np.ndarray, b: np.ndarray, max_exact: int = MAX_EXACT, rng=None) -> float:
     """Two-sided permutation p of the difference in means: exact when the number of
-    assignments is at most max_exact, else 4999 Monte Carlo draws, (1 + hits) / (1 + draws)."""
+    assignments is at most max_exact, else N_PERM Monte Carlo draws, (1 + hits) / (1 + draws)
+    (the engine's numbers: the fourth review found 4,999 draws here against its 1,000)."""
     y = np.concatenate([a, b]).astype(float)
     n, k = len(y), len(a)
     obs = abs(a.mean() - b.mean())
@@ -243,7 +255,7 @@ def permutation_p(a: np.ndarray, b: np.ndarray, max_exact: int = 20000, rng=None
         diff = np.abs(sa / k - (y.sum() - sa) / (n - k))
         return float(np.mean(diff >= obs - eps))
     rng = rng if rng is not None else np.random.default_rng(0)
-    draws = 4999
+    draws = N_PERM
     hits = 0
     for _ in range(draws):
         p = rng.permutation(n)
@@ -352,9 +364,9 @@ def true_correction(X, obs, entry: dict, rng):
     elif name == "N8":
         target, fn = group != side, (lambda x: P.variable_capture(x, rng))
     elif name == "E2":   # capture loss on the signal side: thin the other side too
-        target, fn = group == other, (lambda x: P.thin(x, 0.5, rng))
+        target, fn = group == other, (lambda x: P.thin(x, P.E_CAPTURE, rng))
     elif name == "E3":   # capture loss on the other side: thin the signal side too
-        target, fn = group == side, (lambda x: P.thin(x, 0.5, rng))
+        target, fn = group == side, (lambda x: P.thin(x, P.E_CAPTURE, rng))
     else:
         return None
     X = X.copy()
@@ -374,19 +386,34 @@ def outcome_from_values(raw, corr, corrected: bool, sesoi: float, direction: str
     (opposite direction) against it; otherwise NO DETECTABLE EFFECT if the TOST establishes
     equivalence, else INCONCLUSIVE. `raw` and `corr` are (A values, B values); the effect is
     A - B, so > 0 is a decrease."""
+    return order_outcome(order_stats(raw, corr, corrected), sesoi, direction)
+
+
+def order_stats(raw, corr, corrected: bool) -> dict:
+    """What `outcome_from_values` needs of the replicate values, whatever the SESOI: the tests
+    of the corrected and the raw difference and the TOST's width."""
     hit, est = detects(*corr)
+    out = dict(hit=bool(hit), est=float(est), width=float(tost_width(*corr)), corrected=bool(corrected))
     if corrected:
         raw_hit, raw_est = detects(*raw)
+        out.update(raw_hit=bool(raw_hit), raw_est=float(raw_est))
+    return out
+
+
+def order_outcome(st: dict, sesoi: float, direction: str) -> str:
+    """`outcome_from_values` from `order_stats` at a SESOI."""
+    hit, est = st["hit"], st["est"]
+    if st["corrected"]:
+        raw_hit, raw_est = st["raw_hit"], st["raw_est"]
         retained = est / raw_est if raw_est else float("nan")
-        if (raw_hit and not hit and np.isfinite(retained) and abs(retained) < 0.5
-                and tost_width(*corr) < sesoi):
+        if raw_hit and not hit and np.isfinite(retained) and abs(retained) < 0.5 and st["width"] < sesoi:
             return P.NS_DEPTH
         if raw_hit and hit and np.sign(est) != np.sign(raw_est):
             return P.INCONCLUSIVE
     if hit:
         observed = "decrease" if est > 0 else "increase"
         return P.SUPPORTED if observed == direction or direction == "two-sided" else P.NS_OPPOSITE
-    return P.NDE if tost_width(*corr) < sesoi else P.INCONCLUSIVE
+    return P.NDE if st["width"] < sesoi else P.INCONCLUSIVE
 
 
 def paired_outcome(raw, corr, sesoi: float, direction: str) -> str:
@@ -463,8 +490,10 @@ def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng
     g4 = gate4_outcome(coupling_deltas(X, ia, ib, float(card["signal_test"]["strength"]), rng, reps), dmin)
     if truth == "blind" or effect is None:
         best = P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE
-    else:  # ambiguous: either verdict is correct
-        best = effect if effect != P.INCONCLUSIVE else (P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE)
+    else:  # ambiguous: either verdict is correct, so either route (the fourth review: an effect
+           # outcome that is wrong was kept where GATE 4's FAIL reaches a correct one)
+        good = P.definite(cond, entry["variant"], entry["pair"], pilot)
+        best = effect if effect in good else (P.NS_INVALID if g4 == "FAIL" else effect)
     return dict(best=best, effect=effect, gate4=g4)
 
 
@@ -492,14 +521,16 @@ def oracle_outcome(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng)
 # Δ*: the population difference of the metric under the injected coupling
 # --------------------------------------------------------------------------- #
 def delta_star(bg: P.Background, pair_index: int, dose: float, draws: int = DELTA_DRAWS,
-               seed: int = PILOT_SEED) -> dict:
+               seed: int = PILOT_SEED, capture: float = 1.0) -> dict:
     """E[metric | injected coupling] - E[metric | sham] per donor, on CELLS_PER_DONOR cells of a
     random donor: each draw takes one donor's cells and applies both to the same cells (paired),
-    so the mean difference estimates Δ* with a small standard error."""
+    so the mean difference estimates Δ* with a small standard error; at `capture` < 1 both then
+    thinned to it (``coupling_deltas``: E2 and E3 at the depth of their analysis)."""
     pe = bg.plan["pool"][pair_index]
     genes = list(bg.genes)
     ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
-    rng = np.random.default_rng([seed, pair_index, int(round(dose * 1000))])
+    rng = np.random.default_rng([seed, pair_index, int(round(dose * 1000))]
+                                + ([int(round(capture * 1000))] if capture < 1.0 else []))
     donors = bg.donors
     diffs = np.empty(draws)
     for t in range(draws):
@@ -507,9 +538,9 @@ def delta_star(bg: P.Background, pair_index: int, dose: float, draws: int = DELT
         idx = np.where(bg.donor == d)[0]
         rows = rng.choice(idx, size=min(P.CELLS_PER_DONOR, len(idx)), replace=False)
         Xd = np.asarray(bg.X[rows], dtype=np.float64)
-        diffs[t] = coupling_deltas(Xd, ia, ib, dose, rng, 1)[0]
+        diffs[t] = coupling_deltas(Xd, ia, ib, dose, rng, 1, capture)[0]
     return dict(value=float(diffs.mean()), se=float(diffs.std(ddof=1) / math.sqrt(draws)), draws=draws,
-                dose=float(dose))
+                dose=float(dose), capture=float(capture))
 
 
 def delta_level(bg: P.Background, level: str, dose: float, draws: int = DELTA_DRAWS) -> dict:
@@ -678,9 +709,9 @@ def case_truth(bgs: dict, pilot: dict, workers: int = 1) -> dict:
 
 
 def _null_job(job):
-    """On one public-seed null dataset of the background (N1 / N7), for the SESOI: whether the
-    effect test detects a difference, whether against the card's declared direction, and the
-    TOST's width."""
+    """On one public-seed null dataset of the background (N1 / N7), for the SESOI: what the
+    oracle's decision order needs (`order_stats`: raw, and after the engine's equalization of
+    depth, the third review) and the card's declared direction."""
     background, pair, i = job
     bgs, pilot = _STATE["bgs"], _STATE["pilot"]
     bg = bgs[background]
@@ -689,28 +720,27 @@ def _null_job(job):
     X, obs, genes, cards = P.build(e, bgs, _stand_in(pilot, background, bg.plan["pool"][pair]["level"]))
     pe = bg.plan["pool"][pair]
     ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
-    # the engine's analysis of the null: after its equalization of depth (the third review)
-    a, b = corrected_values(X, obs, e, lambda x: norm_pearson(x, ia, ib), np.random.default_rng([e["seed"], 2]))
-    hit, est = detects(a, b)
-    against = hit and ("decrease" if est > 0 else "increase") != cards[-1]["prereg"]["direction"]
-    return bool(hit), bool(against), float(tost_width(a, b))
+    fn = (lambda x: norm_pearson(x, ia, ib))
+    corr = corrected_values(X, obs, e, fn, np.random.default_rng([e["seed"], 2]))
+    return order_stats(per_donor(X, obs, fn), corr, True), cards[-1]["prereg"]["direction"]
 
 
 def choose_sesoi(bgs: dict, background: str, level: str, pilot: dict, n: int = PILOT_DATASETS,
                  workers: int = 1) -> tuple[float, bool]:
     """The smallest SESOI on the grid at which the oracle reaches a correct definite outcome on the
     background's null (N1 on B1: 2 x 8 donors; N7 on B2: at most N7_MAX_MICE mice split in two; pairs of this
-    level, drawn in turn) in at least SESOI_TARGET of n datasets: NO DETECTABLE EFFECT (not
-    detected, TOST within ±SESOI) or NOT SUPPORTED against the declared direction. Counted
-    exactly on the grid (decided after the first review: the null must be establishable). Returns
-    the SESOI and whether one met the target; where none did, the grid's largest, recorded as not
-    found (pilot.json "sesoi_found")."""
+    level, drawn in turn) in at least SESOI_TARGET of n datasets: NO DETECTABLE EFFECT or NOT
+    SUPPORTED against the declared direction, by the oracle's whole decision order at that SESOI
+    (`order_outcome`: the fourth review found "explained by depth" and a reversed sign left out).
+    Counted exactly on the grid (decided after the first review: the null must be establishable).
+    Returns the SESOI and whether one met the target; where none did, the grid's largest, recorded
+    as not found (pilot.json "sesoi_found")."""
     _STATE.update(bgs=bgs, pilot=pilot)
     pairs = level_pairs(bgs[background], level)
     got = _map(_null_job, [(background, pairs[i % len(pairs)], i) for i in range(n)], workers)
     need = math.ceil(SESOI_TARGET * len(got))
     for sesoi in SESOI_GRID:
-        if sum(against or (not hit and width < sesoi) for hit, against, width in got) >= need:
+        if sum(order_outcome(st, sesoi, d) in (P.NDE, P.NS_OPPOSITE) for st, d in got) >= need:
             return sesoi, True
     return SESOI_GRID[-1], False
 
@@ -866,6 +896,8 @@ def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict
     for k, pe in enumerate(bg.plan["pool"]):
         pilot["delta"][str(k)] = {f"{f:g}": delta_star(bg, k, f * pilot["e_dose"][pe["level"]], draws)
                                   for f in E1_FACTORS}
+        pilot["delta"][str(k)][f"capture={P.E_CAPTURE:g}"] = delta_star(  # E2, E3 (panel.delta_of)
+            bg, k, pilot["e_dose"][pe["level"]], draws, capture=P.E_CAPTURE)
     for level in P.LEVELS:
         idx = [str(k) for k in level_pairs(bg, level)]
         pilot["delta_level"][level] = {

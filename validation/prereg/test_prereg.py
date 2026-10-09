@@ -11,6 +11,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -43,7 +44,8 @@ def _pilot(bgs, sesoi=0.15, dose=3.0, delta=0.3, truth=None):
         out["sesoi"][name] = {lv: sesoi for lv in P.LEVELS}
         out["saturation_dose"][name] = {lv: dose for lv in P.LEVELS}
         out["truth"][name] = {str(k): {"class": truth.get(pe["level"], "valid")} for k, pe in enumerate(pool)}
-    out["delta"] = {str(k): {f"{f:g}": dict(value=delta * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
+    out["delta"] = {str(k): {**{f"{f:g}": dict(value=delta * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)},
+                             f"capture={P.E_CAPTURE:g}": dict(value=0.6 * delta, se=0.01)}  # E2, E3 at their depth
                     for k in range(len(bgs["B1"].plan["pool"]))}
     return out
 
@@ -75,8 +77,8 @@ def test_the_key_is_a_drand_randomness_of_64_hex():
 def test_assign_is_deterministic_complete_and_keyed():
     a, b, c = P.assign(KEY), P.assign(KEY), P.assign(OTHER_KEY)
     assert a == b and a != c
-    assert len(a) == P.n_datasets() == 5900
-    assert P.n_cards() == 6000 and P.n_cards(data="null") == 5100  # N4 has two cards
+    assert len(a) == P.n_datasets() == 6400
+    assert P.n_cards() == 6700 and P.n_cards(data="null") == 5800  # N4 has two cards
     assert len({e["id"] for e in a}) == len(a) and {e["id"] for e in a} == {e["id"] for e in c}
     counts = Counter((e["condition"], e["variant"]) for e in a)
     assert counts == {(cond.name, v): n for cond in P.CONDITIONS for v, n in cond.variants}
@@ -241,14 +243,24 @@ def test_an_h5ad_background_uses_raw_counts_and_gene_symbols(tmp_path):
 # datasets and claim cards
 # --------------------------------------------------------------------------- #
 def test_claim_cards_do_not_reveal_the_condition(bgs):
-    """For a given pair, cards of the norm_pearson conditions on B1 differ only in the id and the
-    claimed direction; the pair, its level's SESOI and delta_min, the injection's strength and the
+    """For a given pair, cards of the norm_pearson conditions on B1 — every condition and variant
+    (the fourth review: N5 and E1's other doses were not checked) — differ only in the id and the
+    claimed direction, and N4's first card in its missing replicate unit (another design, by
+    construction); the pair, its level's SESOI and delta_min, the injection's strength and the
     controls come from the pair."""
     pilot = _pilot(bgs)
+    cases = [(c.name, v) for c in P.CONDITIONS if c.background == "B1" and c.metric == "norm_pearson"
+             for v, _ in c.variants]
+    assert {"N5", "N4"} <= {c for c, _ in cases} and len([c for c in cases if c[0] == "E1"]) == 4
     for pair in (0, 9, 20):
-        cards = [P.build(_entry(c, v, seed=3, pair=pair), bgs, pilot)[3][0]
-                 for c, v in (("N1", "null"), ("N2", "c=0.5"), ("N3", "f=0.2"), ("N8", "beta(2,2)"),
-                              ("E1", "dose=key"), ("E2", "against"), ("E3", "with"))]
+        cards = []
+        for c, v in cases:
+            built = P.build(_entry(c, v, seed=3, pair=pair), bgs, pilot)[3]
+            if c == "N4":
+                assert {k: x for k, x in built[0].items() if k not in ("id", "replicate_col")} == \
+                    {k: x for k, x in built[1].items() if k not in ("id", "replicate_col")}
+                assert built[0]["replicate_col"] is None and built[1]["replicate_col"] == "donor"
+            cards.append(built[-1])
         strip = [{k: v for k, v in c.items() if k not in ("id", "prereg")} for c in cards]
         assert all(s == strip[0] for s in strip)
         assert all({k: v for k, v in c["prereg"].items() if k != "direction"} ==
@@ -433,6 +445,13 @@ def test_the_panels_copies_of_the_engines_rules_agree_with_it():
     assert P.MATCHED_NEIGHBOURS_FRAC == inspect.signature(G._neighbourhood).parameters["frac"].default
     assert P.NEG_NULL_PAIRS == inspect.signature(G.gate5_controls).parameters["n_null"].default
     assert O.EQUALIZE_DRAWS == inspect.signature(EF.estimate_effect).parameters["n_equalize"].default
+    # the fourth review: the oracle's Monte Carlo permutation test with the engine's numbers (run_panel
+    # sets neither, so run_autopsy's n_perm and estimate_effect's max_exact apply)
+    from metric_autopsy.report import run_autopsy
+    assert O.N_PERM == inspect.signature(run_autopsy).parameters["n_perm"].default
+    assert O.MAX_EXACT == inspect.signature(EF.estimate_effect).parameters["max_exact"].default
+    src = inspect.getsource(R.make_run_args)
+    assert "n_perm" not in src and "max_exact" not in src
     from metric_autopsy import SimpleData, metrics  # and the metric the controls are chosen by
     X = rng.poisson(rng.gamma(0.5, 2.0, size=(300, 6))).astype(float)
     data = SimpleData(X, pd.DataFrame(index=range(300)), [f"g{i}" for i in range(6)])
@@ -599,17 +618,30 @@ def test_the_allowed_outcomes_follow_the_owners_table_in_every_condition(bgs):
     small = _pilot(bgs, sesoi=0.15, delta=0.1)
     assert P.allowed(conds["E3"], "with", hi, small) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL, P.NDE, P.NS_DEPTH}
     assert P.NS_DEPTH not in P.allowed(conds["E1"], "dose=0.25", hi, small)  # no artifact planted
+    # E2 and E3 by their Δ* at the depth of their analysis (the fourth review): above the SESOI at full
+    # depth (0.2 against 0.15), below it with both sides at half capture (0.12), NDE is correct there
+    halved = _pilot(bgs, sesoi=0.15, delta=0.2)
+    assert P.delta_of("E2", "against", hi, halved) is halved["delta"][str(hi)][f"capture={P.E_CAPTURE:g}"]
+    assert P.allowed(conds["E1"], "dose=key", hi, halved) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL}
+    for name, variant in (("E2", "against"), ("E3", "with")):
+        assert P.allowed(conds[name], variant, hi, halved) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL, P.NDE,
+                                                               P.NS_DEPTH}
 
 
 def test_the_truth_follows_the_data_of_the_condition(bgs):
     """The first review: the truth measured on N1 does not hold where a condition thins the pair.
-    The conditions that change the pair's counts take the truth measured on their own datasets."""
+    The conditions that change the pair's counts take the truth measured on their own datasets; the
+    fourth review: a pilot that measured its background's cases but not one of them is refused (the
+    background's null stood in for it silently), and only a stand-in without case records (oc.py's
+    scenarios) takes the null's."""
     conds = P.conditions()
     pilot = _pilot(bgs)
+    assert "truth_case" not in pilot and P.metric_truth(conds["E1"], "dose=key", 0, pilot) == "valid"
     pilot["truth_case"] = {"B1": {"E2:against": {str(k): {"class": "blind"} for k in range(24)}}}
     assert P.metric_truth(conds["E2"], "against", 0, pilot) == "blind"
     assert P.allowed(conds["E2"], "against", 0, pilot) == P.INVALID_ALLOWED
-    assert P.metric_truth(conds["E1"], "dose=key", 0, pilot) == "valid"  # no record of its own: the null's
+    with pytest.raises(ValueError, match="no truth for E1:dose=key"):
+        P.metric_truth(conds["E1"], "dose=key", 0, pilot)
     assert P.metric_truth(conds["N1"], "null", 0, pilot) == "valid" and "N1" not in P.TRUTH_CASE_CONDITIONS
     # the third review: N4's and N5's designs are smaller than N1's, so GATE 4's odds are their own
     assert {"N4", "N5"} <= set(P.TRUTH_CASE_CONDITIONS)
@@ -700,9 +732,10 @@ def test_the_pilot_and_the_run_go_through_their_command_lines_on_files(tmp_path,
     with monkeypatch.context() as m:  # run_panel is the module blind.py runs too: stub it for the timing only
         m.setattr(T.R, "run", fake_run)
         T.main(["--workers", "4", "--cards", "13", "--backgrounds", str(spec), "--data-dir", str(data),
-                "--pilot", str(pilot_path), "--write-drops"])
+                "--pilot", str(pilot_path), "--write-drops", "--refusals", "1"])
     timing_out = capsys.readouterr().out
-    # every card at its condition's time: (6000 - 790) x 30 s + 790 x 90 s over 20 shards x 4 workers
+    assert "gate0_refusals" in json.loads(pilot_path.read_text())  # written before the key (the fourth review)
+    # every card at its condition's time: (6700 - 790) x 30 s + 790 x 90 s over 20 shards x 4 workers
     expected = ((P.n_cards() - 790) * 30.0 + 790 * 90.0) / 80 / 3600
     assert f"a shard's expected time {expected:.2f} h" in timing_out and "drops written" in timing_out
     assert "# memory: a worker's peak 500 MB x 4 workers = 2000 MB" in timing_out
@@ -798,12 +831,17 @@ def test_the_sound_validator_model_takes_every_open_route_at_its_measured_size(b
     assert row["r_inv"] == pytest.approx(m["p_inv"])                   # the rate above the designed size
     assert row["r_opp"] == 0.0 and row["r_depth"] == oc.E_DEPTH        # against the direction is right on a null;
     assert row["data_stratum"] == "null" and row["s2_group"] is None   # depth is wrong without an artifact
+    # against the direction on a null: allowed, its rate bounded as a false detection's (the fourth review)
+    assert m["opp_null_counted"] and m["p_oppnull"] == pytest.approx(reach * 0.02)
+    assert row["r_oppnull"] == oc.E_OPPOSITE                           # the designed alpha/2 above the rate
     b = oc.sound_model(conds["N1"], "null", 20, pilot)                     # blind: PASS then NDE is an error
     assert b["p_err"] == pytest.approx((1 - g5) * 0.15) and b["p_nde"] == pytest.approx((1 - g5) * 0.15)
     assert b["p_inv"] == 0 and b["decisive"] == pytest.approx(g5 + (1 - g5) * 0.80)
+    assert not b["opp_null_counted"] and b["p_oppnull"] == 0.0  # blind: an error there, counted as one (S4 invalid)
     t = oc.sound_model(conds["N1"], "null", 1, pilot)                      # nothing measured: the designed sizes
     assert not t["measured"] and t["p_err"] == pytest.approx(0.175) and t["decisive"] == pytest.approx(0.825)
     assert t["p_sup"] == oc.E_SUPPORTED and t["p_inv"] == oc.E_INVALID and t["p_depth"] == oc.E_DEPTH
+    assert t["p_oppnull"] == oc.E_OPPOSITE
     # an UNTESTED GATE 4 with the effect explained by depth: NOT SUPPORTED (explained by depth), an
     # error on a real effect above the SESOI (E2 at the key dose), not INCONCLUSIVE
     pilot["truth_case"] = {"B1": {"E2:against": {"0": dict(pilot["truth"]["B1"]["0"],
@@ -816,6 +854,44 @@ def test_the_sound_validator_model_takes_every_open_route_at_its_measured_size(b
     assert oc.stratum(conds["E1"], "valid") == "effect" and oc.stratum(conds["N1"], "valid") == "null"
     assert oc.stratum(conds["N8"], "valid") is None and oc.stratum(conds["N3"], "blind") is None  # the oracle's
     assert oc.stratum(conds["N6c"], "useless") == "invalid" and oc.stratum(conds["N1"], "ambiguous") is None
+
+
+def test_gate0s_measured_refusals_are_in_the_sound_validators_model(bgs, tmp_path, monkeypatch):
+    """The fourth review's V3: GATE 0 was left out of the sound validator's model, so at a 15% refusal
+    share of a stratum a sound engine failed S3. timing.py --refusals runs the frozen engine before the
+    key on establishable cards of every S3 stratum (a public key's datasets; not the constant metric,
+    whose DEGENERATE METRIC comes first) and writes the share per stratum into pilot.json; the model
+    then refuses first with it, and every other outcome takes the rest."""
+    import oc
+    import timing as T
+    conds = P.conditions()
+    pilot = _est_pilot(bgs)
+    entries = T.refusal_sample(pilot, 5, np.random.default_rng(1))
+    by = Counter(e["stratum"] for e in entries)
+    assert set(by) == set(oc.STRATA) and all(v == 5 for v in by.values())
+    assert all(conds[e["condition"]].metric != "constant" and conds[e["condition"]].oracle for e in entries)
+
+    def fake_run(es, bgs_, pilot_, out_dir, workers=1):  # GATE 0 refuses every second card
+        (Path(out_dir) / "reports").mkdir(parents=True, exist_ok=True)
+        for i, e in enumerate(es):
+            rep = (dict(verdict="NOT SUPPORTED — metric invalid: a nuisance bias", cause="metric_invalid_gate0")
+                   if i % 2 == 0 else dict(verdict="INCONCLUSIVE — the effect is inconclusive", cause="effect_inconclusive"))
+            (Path(out_dir) / "reports" / f"{e['id']}.json").write_text(json.dumps(rep))
+    monkeypatch.setattr(T.R, "run", fake_run)
+    rec = T.measure_refusals(entries, bgs, pilot, tmp_path / "refusals", workers=1)
+    assert sum(r["n"] for r in rec.values()) == len(entries) == 15
+    assert sum(r["refused"] for r in rec.values()) == 8 and all(r["share"] == r["refused"] / r["n"] for r in rec.values())
+    before = {c: oc.sound_model(conds[c], v, 0, pilot) for c, v in (("N1", "null"), ("N6a", "random"))}
+    pilot["gate0_refusals"] = {"null": dict(n=10, refused=2, share=0.2), "invalid": dict(n=10, refused=5, share=0.5)}
+    after = oc.sound_model(conds["N1"], "null", 0, pilot)
+    assert after["refusal"] == 0.2 and after["decisive"] == pytest.approx(0.8 * before["N1"]["decisive"])
+    assert after["p_err"] == pytest.approx(0.8 * before["N1"]["p_err"])
+    assert oc.sound_model(conds["N6a"], "random", 0, pilot)["decisive"] == pytest.approx(0.5 * before["N6a"]["decisive"])
+    assert oc.sound_model(conds["E1"], "dose=key", 0, pilot)["refusal"] == 0.0     # not measured there
+    assert oc.sound_model(conds["N6b"], "constant", 0, pilot)["refusal"] == 0.0    # DEGENERATE METRIC first
+    rows = oc.expected_rows(pilot)
+    null = [r for r in rows if r["stratum"] == "null" and r["establishable"]]
+    assert null and all(r["refusal"] == 0.2 for r in null)
 
 
 def test_the_oracle_applies_the_planted_nuisance_to_the_side_that_lacks_it(bgs):
@@ -872,10 +948,14 @@ def test_the_saturation_dose_is_the_smallest_dose_reaching_95_percent_of_the_max
 
 
 def test_delta_star_is_a_paired_estimate_with_a_small_standard_error(bgs):
+    """And E2's and E3's at the depth of their analysis, both sides at half capture (the fourth
+    review): smaller than at full depth, the coupling's correlation diluted by the thinning."""
     import oracle as O
     d = O.delta_star(bgs["B1"], 0, 3.0, draws=200)
-    assert d["value"] > 0.05 and d["se"] < d["value"] / 5
+    assert d["value"] > 0.05 and d["se"] < d["value"] / 5 and d["capture"] == 1.0
     assert O.delta_star(bgs["B1"], 0, 3.0, draws=200) == d  # public seed: reproducible
+    half = O.delta_star(bgs["B1"], 0, 3.0, draws=200, capture=P.E_CAPTURE)
+    assert half["capture"] == P.E_CAPTURE and 0 < half["value"] < d["value"] - 2 * math.hypot(d["se"], half["se"])
 
 
 @pytest.fixture(scope="module")
@@ -913,6 +993,9 @@ def test_the_pilot_fixes_sesoi_saturation_truth_doses_and_establishable_cases(sm
             assert pilot["key_dose"][lv] is None and pilot["e_dose"][lv] == pilot["saturation_dose"]["B1"][lv]
         assert 0 <= pilot["n2_raw_power"][lv] <= 1
     assert set(pilot["delta"]) == {str(k) for k in range(12)}
+    for k, pe in enumerate(pilot["pool"]["B1"]):  # E2's and E3's Δ* at the key dose and half capture
+        half = pilot["delta"][str(k)][f"capture={P.E_CAPTURE:g}"]
+        assert half["capture"] == P.E_CAPTURE and half["dose"] == pytest.approx(pilot["e_dose"][pe["level"]])
     keys = {f"{c.name}:{v}:{k}" for c in P.CONDITIONS for v, _ in c.variants for k in range(12)}
     assert set(pilot["establishable"]) == keys
     assert not pilot["establishable"]["N4:3v3:0"]["establishable"]
@@ -962,7 +1045,8 @@ def test_a_background_without_a_candidate_is_dropped_with_its_cases(small_bgs, m
     assert not any(k.startswith("N7:") for k in pilot["establishable"])
     entries = P.assign(KEY, pilot["dropped"], pilot["pool_size"])
     assert {e["condition"] for e in entries} == {c.name for c in P.CONDITIONS} - {"N7"}
-    assert len(entries) == P.n_datasets() - 200 == P.n_datasets(pilot["dropped"])
+    n7 = sum(n for _, n in P.conditions()["N7"].variants)
+    assert len(entries) == P.n_datasets() - n7 == P.n_datasets(pilot["dropped"]) and n7 == 300
     assert not any(r["condition"] == "N7" for r in oc.expected_rows(pilot, pilot["dropped"]))
     slow = {c.name: 160.0 for c in P.CONDITIONS}  # slow enough that some of the order's drops are needed
     order = T.decide_drops(slow, dropped=pilot["dropped"])
@@ -996,9 +1080,13 @@ def _reports(entries, fn):
 ORDER = (P.NS_INVALID, P.SUPPORTED, P.NS_DEPTH, P.NDE, P.NS_OPPOSITE, P.DEGENERATE)
 
 
+def _card(e, cid):
+    return P.card_ids(e).index(cid)
+
+
 def _perfect(pilot):
-    def fn(c, e):
-        good = P.definite(c, e["variant"], e["pair"], pilot)
+    def fn(c, e, cid):  # a correct definite outcome of the card (what the engine's rules exclude on it aside)
+        good = P.card_allowed(c, e["variant"], e["pair"], pilot, _card(e, cid)) & P.DEFINITE
         return next((o for o in ORDER if o in good), P.INCONCLUSIVE)
     return fn
 
@@ -1007,12 +1095,12 @@ def _bad_validators(pilot):
     """The bad validators of v1.md section 6, with the criteria each must fail (at least)."""
     perfect = _perfect(pilot)
 
-    def no_supported(c, e):  # the first review's: perfect, but never SUPPORTED
-        o = perfect(c, e)
+    def no_supported(c, e, cid):  # the first review's: perfect, but never SUPPORTED
+        o = perfect(c, e, cid)
         return P.INCONCLUSIVE if o == P.SUPPORTED else o
 
-    def nde_not_supported(c, e):  # the second review's: perfect, but NO DETECTABLE EFFECT for SUPPORTED
-        o = perfect(c, e)
+    def nde_not_supported(c, e, cid):  # the second review's: perfect, but NO DETECTABLE EFFECT for SUPPORTED
+        o = perfect(c, e, cid)
         return P.NDE if o == P.SUPPORTED else o
 
     def blind_or_nde(c, e):  # shows blindness where it can, else NO DETECTABLE EFFECT, never tests the effect
@@ -1025,28 +1113,42 @@ def _bad_validators(pilot):
         est = (pilot["establishable"].get(f"{c.name}:{e['variant']}:{e['pair']}") or {}).get("establishable")
         return bool(c.oracle and est)
 
-    def realistic(c, e):  # correct definite where the case is establishable, else INCONCLUSIVE
-        return perfect(c, e) if settled(c, e) else P.INCONCLUSIVE
+    def realistic(c, e, cid):  # correct definite where the case is establishable, else INCONCLUSIVE
+        return perfect(c, e, cid) if settled(c, e) else P.INCONCLUSIVE
 
-    def nde_on_unestablishable_blind(c, e):  # the second review's V8: NO DETECTABLE EFFECT on a quarter of the
-        truth = P.metric_truth(c, e["variant"], e["pair"], pilot)  # blind or useless cards it cannot settle
+    def nde_on_unestablishable_blind(c, e, cid):  # the second review's V8: NO DETECTABLE EFFECT on a quarter of
+        truth = P.metric_truth(c, e["variant"], e["pair"], pilot)  # the blind or useless cards it cannot settle
         if truth in ("blind", "useless") and not settled(c, e) and int(e["id"][1:]) % 4 == 0:
             return P.NDE
-        return perfect(c, e)
+        return perfect(c, e, cid)
 
-    def opposite_for_unsure(c, e):  # the third review's X1: NOT SUPPORTED (opposite direction) where a sound
-        o = realistic(c, e)          # validator would say INCONCLUSIVE or NO DETECTABLE EFFECT
+    def opposite_for_unsure(c, e, cid):  # the third review's X1: NOT SUPPORTED (opposite direction) where a
+        o = realistic(c, e, cid)          # sound validator would say INCONCLUSIVE or NO DETECTABLE EFFECT
         return P.NS_OPPOSITE if o in (P.INCONCLUSIVE, P.NDE) else o
 
-    def nde_for_unsure(c, e):  # the third review's X4: NO DETECTABLE EFFECT instead of INCONCLUSIVE
-        o = realistic(c, e)
+    def nde_for_unsure(c, e, cid):  # the third review's X4: NO DETECTABLE EFFECT instead of INCONCLUSIVE
+        o = realistic(c, e, cid)
         return P.NDE if o == P.INCONCLUSIVE else o
 
     def pseudoreplication(c, e, cid):  # the third review's X2b: SUPPORTED on N4's card without the replicate unit
-        return P.SUPPORTED if c.name == "N4" and cid.endswith("a") else perfect(c, e)
+        return P.SUPPORTED if c.name == "N4" and cid.endswith("a") else perfect(c, e, cid)
 
-    def supported_on_n7(c, e):  # the third review's X3: SUPPORTED on a quarter of N7
-        return P.SUPPORTED if c.name == "N7" and int(e["id"][1:]) % 4 == 0 else perfect(c, e)
+    def supported_on_n7(c, e, cid):  # the third review's X3: SUPPORTED on a quarter of N7
+        return P.SUPPORTED if c.name == "N7" and int(e["id"][1:]) % 4 == 0 else perfect(c, e, cid)
+
+    def opposite_on_nulls(c, e, cid):  # the fourth review's V1: NOT SUPPORTED against the direction on a sixth
+        o = perfect(c, e, cid)          # of the null cards where it is allowed (16% in its demonstration)
+        allowed = P.card_allowed(c, e["variant"], e["pair"], pilot, _card(e, cid))
+        null = c.data == "null" and P.metric_truth(c, e["variant"], e["pair"], pilot) in ("valid", "ambiguous")
+        return P.NS_OPPOSITE if null and P.NS_OPPOSITE in allowed and int(e["id"][1:]) % 6 == 0 else o
+
+    def supported_on_n6a(c, e, cid):  # the fourth review's V2: SUPPORTED on an eighth of N6a (12% passed)
+        return P.SUPPORTED if c.name == "N6a" and int(e["id"][1:]) % 8 == 0 else perfect(c, e, cid)
+
+    def pseudoreplication_tenth(c, e, cid):  # the fourth review's V2: SUPPORTED on a tenth of N4's cards
+        if c.name == "N4" and cid.endswith("a") and int(e["id"][1:]) % 10 == 0:  # without the replicate unit
+            return P.SUPPORTED
+        return perfect(c, e, cid)
     return (("always invalid", lambda c, e: P.NS_INVALID, {"S3", "S5"}),
             ("always inconclusive", lambda c, e: P.INCONCLUSIVE, {"S3"}),
             ("always refuses", lambda c, e: P.REFUSAL, {"S3"}),
@@ -1060,8 +1162,11 @@ def _bad_validators(pilot):
              nde_on_unestablishable_blind, {"S6"}),
             ("NOT SUPPORTED against the direction where unsure (X1)", opposite_for_unsure, {"S4"}),
             ("NO DETECTABLE EFFECT where unsure (X4)", nde_for_unsure, {"S6"}),
-            ("pseudoreplication on N4 (X2b)", pseudoreplication, {"S2"}),
-            ("SUPPORTED on a quarter of N7 (X3)", supported_on_n7, {"S2"}))
+            ("pseudoreplication on N4 (X2b)", pseudoreplication, {"S7"}),
+            ("SUPPORTED on a quarter of N7 (X3)", supported_on_n7, {"S2"}),
+            ("NOT SUPPORTED against the direction on a sixth of the nulls (V1)", opposite_on_nulls, {"S4"}),
+            ("SUPPORTED on an eighth of N6a (V2)", supported_on_n6a, {"S2"}),
+            ("SUPPORTED on a tenth of N4 without the replicate unit (V2)", pseudoreplication_tenth, {"S7"}))
 
 
 UNSETTLED_ONLY = ("NO DETECTABLE EFFECT on a quarter", "NOT SUPPORTED against the direction where unsure",
@@ -1097,7 +1202,7 @@ def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
     assert nothing["pooled"]["errors"]["rate"] == 1.0 and nothing["criteria"]["S7"]["rate"] == 1.0
     reports = _reports(entries, perfect)
     lost = [e["id"] for e in entries if e["condition"] == "N1"][0]
-    reports.pop(lost)                                     # one missing report among 6,000 cards
+    reports.pop(lost)                                     # one missing report among 6,700 cards
     res = S.score(entries, reports, pilot, sims=2000)
     assert _failed(res) == {"S7"} and res["criteria"]["S7"]["k"] == 1 and not res["passed"]
 
@@ -1110,8 +1215,9 @@ def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
     says NO DETECTABLE EFFECT, and one that says NO DETECTABLE EFFECT for SUPPORTED passed every
     criterion; and in scenario A one that says NO DETECTABLE EFFECT on a quarter of the blind or
     useless cards it cannot settle, and an engine failing on half of N1's cards (V8). Every stratum is
-    judged now (in C the real effects at the floor's tier), S6 counts a false NO DETECTABLE EFFECT and
-    S7 an engine error: they all fail, and a perfect validator passes."""
+    judged now (in C the real effects at the strictest tier the joint requirement allows on the key's
+    cards), S6 counts a false NO DETECTABLE EFFECT and S7 an engine error: they all fail, and a
+    perfect validator passes."""
     pytest.importorskip("scipy")
     import oc
     import score as S
@@ -1119,7 +1225,7 @@ def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
     entries = P.assign(KEY, pool_sizes=pilot["pool_size"])
     res = S.score(entries, _reports(entries, _perfect(pilot)), pilot, sims=4000)
     assert not _failed(res) and res["joint_pass_probability_sound"] >= 0.90
-    assert res["criteria"]["S3"]["strata"]["effect"]["tier"] == ("floor" if scenario[2] == 0.25 else "principle")
+    assert res["criteria"]["S3"]["strata"]["effect"]["tier"] in oc.TIERS
     for name, fn, fails in _bad_validators(pilot):
         got = _failed(S.score(entries, _reports(entries, fn), pilot, sims=4000))
         assert fails <= got, (name, got)
@@ -1214,7 +1320,8 @@ def _rows(stratum, n, decisive, **kw):
                valid=stratum != "invalid", stratum=stratum, data_stratum=stratum,
                s2_group=oc_s2_group(cond), establishable=True, p_sup=0.0, p_inv=0.0, p_nde=0.0, p_opp=0.0,
                p_depth=0.0, p_err=0.0, decisive=decisive, measured=True, r_sup=0.025,
-               r_inv=0.1 if stratum != "invalid" else 0.0, r_nde=0.05, r_opp=0.025, r_depth=0.05)
+               r_inv=0.1 if stratum != "invalid" else 0.0, r_nde=0.05, r_opp=0.025, r_depth=0.05,
+               opp_null_counted=stratum == "null", p_oppnull=0.0, r_oppnull=0.025 if stratum == "null" else 0.0)
     return [dict(row, **kw) for _ in range(n)]
 
 
@@ -1714,6 +1821,35 @@ def test_the_beacon_accepts_only_verified_and_agreeing_answers(monkeypatch):
     answers["https://a"] = dict(good, signature=sign(79))
     with pytest.raises(RuntimeError, match="no relay"):
         BC.fetch(77, relays=tuple(answers), chain=chain)
+
+
+def test_the_gap_to_the_round_is_checked_against_the_beacons_newest_round(monkeypatch):
+    """The fourth review's K10: the hour between the run tag's push and its round was measured by the
+    runner's clock alone; the newest verified round the relays serve after the push bounds it too,
+    and the smaller of the two counts."""
+    import beacon as BC
+    pk, sign = _beacon_keys()
+    chain = dict(BC.CHAIN, public_key=pk)
+    newest = {"https://a": dict(round=1000, signature=sign(1000)),
+              "https://b": dict(round=1300, signature=sign(1)),  # does not verify as round 1300
+              "https://c": None}
+
+    def fake_get(url, timeout=20.0):
+        relay = url.split("/" + chain["hash"])[0]
+        if newest[relay] is None:
+            raise OSError("down")
+        return newest[relay]
+    monkeypatch.setattr(BC, "_get", fake_get)
+    assert BC.latest(relays=tuple(newest), chain=chain) == 1000
+    pushed = BC.round_time(1000, chain)
+    assert BC.gap_after_push(2200, pushed, 1000, chain) == dict(round=2200, newest=1000, by_clock=3600,
+                                                               by_beacon=3600, seconds=3600)
+    slow = BC.gap_after_push(2200, pushed - 600, 1000, chain)  # the runner's clock ten minutes behind
+    assert slow["by_clock"] == 4200 and slow["seconds"] == 3600
+    assert BC.gap_after_push(2200, pushed, 1300, chain)["seconds"] == 2700 < BC.MIN_DELAY
+    newest["https://a"] = None
+    with pytest.raises(RuntimeError, match="no relay"):
+        BC.latest(relays=tuple(newest), chain=chain)
 
 
 # --------------------------------------------------------------------------- #

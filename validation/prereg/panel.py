@@ -30,6 +30,7 @@ KEY_N = 790            # datasets per key null condition (oc.log: S1 as a whole,
 DONORS_PER_GROUP = 8   # N1-N3, N6, N8, E1-E3: 2 x 8 donors from B1
 N7_MAX_MICE = 24       # N7: at most 24 of B2's qualifying mice per dataset, so its memory is bounded
 CELLS_PER_DONOR = 200  # cells drawn per donor and dataset; donors with fewer are not used
+E_CAPTURE = 0.5        # E2, E3: the capture of the side that loses it (the correction of depth brings the other to it)
 N_GENES = 2000         # genes kept per background: the named genes, then the most expressed
 RANDOM_SCORE_GENES = 50
 LEVELS = ("high", "medium", "low")
@@ -136,13 +137,13 @@ CONDITIONS = (
     Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 100), ("c=0.7", 100), ("c=0.3", 100)), "null",
               artifact=True, key=True, key_variant="c=0.5"),
     Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)), "null", artifact=True),
-    Condition("N4", "B1", (("3v3", 100),), "null", cards=2, oracle=False),
+    Condition("N4", "B1", (("3v3", 300),), "null", cards=2, oracle=False),
     Condition("N5", "B1", (("sham", KEY_N),), "null", key=True, key_variant="sham"),
-    Condition("N6a", "B1", (("random", 100),), "null", metric="random"),
+    Condition("N6a", "B1", (("random", 300),), "null", metric="random"),
     Condition("N6b", "B1", (("constant", 50),), "null", metric="constant"),
     Condition("N6c", "B1", (("random-genes", KEY_N),), "null", metric="score", key=True,
               key_variant="random-genes"),
-    Condition("N7", "B2", (("mice", 200),), "null"),
+    Condition("N7", "B2", (("mice", 300),), "null"),
     Condition("N8", "B1", (("beta(2,2)", KEY_N),), "null", artifact=True, key=True, key_variant="beta(2,2)"),
     Condition("E1", "B1", (("dose=key", 200), ("dose=0.25", 100), ("dose=0.5", 100), ("dose=1.5", 100)),
               "effect"),
@@ -284,8 +285,13 @@ def delta_min_of(cond: Condition, pair_index: int, pilot: dict) -> float:
 
 def delta_of(cond_name: str, variant: str, pair_index: int, pilot: dict) -> dict:
     """Δ*, the population difference of the metric (signal side minus the other) in the version
-    of the condition without its artifact, for the dataset's pair: E1 at its dose; E2 and E3 as
-    E1 at the key dose (pilot.json, written before the key)."""
+    of the condition without its artifact, for the dataset's pair: E1 at its dose; E2 and E3 at
+    the key dose and at the depth their analysis runs at, both sides at the capture E_CAPTURE (the
+    correction of depth thins the side that kept its depth: the fourth review found Δ* at full
+    depth overstating the effect their data carry, 0.12-0.69 of it on simulated data) (pilot.json,
+    written before the key)."""
+    if cond_name in ("E2", "E3"):
+        return pilot["delta"][str(pair_index)][f"capture={E_CAPTURE:g}"]
     factor = e1_factor(variant) if cond_name == "E1" else 1.0
     return pilot["delta"][str(pair_index)][f"{factor:g}"]
 
@@ -303,10 +309,16 @@ def classify_response(response: float, delta_min: float, band: float = TRUTH_BAN
 def truth_record(cond: Condition, variant: str, pair_index: int, pilot: dict) -> dict:
     """The oracle's record of the metric's population response on this case: the condition's own
     datasets where its data change the pair's counts (pilot.json "truth_case"), else the
-    background's null (pilot.json "truth")."""
-    case = (pilot.get("truth_case") or {}).get(cond.background, {}).get(f"{cond.name}:{variant}")
-    if cond.name in TRUTH_CASE_CONDITIONS and case is not None:
-        return case[str(int(pair_index))]
+    background's null (pilot.json "truth"). A pilot that measured its background's cases but not
+    this one is refused (the fourth review: the background's null stood in for it silently); a
+    stand-in without case records (oc.py's scenarios) takes the background's null."""
+    cases = (pilot.get("truth_case") or {}).get(cond.background)
+    if cond.name in TRUTH_CASE_CONDITIONS and cases:
+        rec = (cases.get(f"{cond.name}:{variant}") or {}).get(str(int(pair_index)))
+        if rec is None:
+            raise ValueError(f"pilot.json has no truth for {cond.name}:{variant} on pair {pair_index} "
+                             f"of {cond.background}, whose other cases it measured")
+        return rec
     return pilot["truth"][cond.background][str(int(pair_index))]
 
 
@@ -360,6 +372,27 @@ def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> froz
 def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:
     """The correct definite outcomes: allowed, and neither INCONCLUSIVE nor a refusal."""
     return allowed(cond, variant, pair_index, pilot) & DEFINITE
+
+
+# The effect verdicts, which the engine's rules exclude on some cards whatever the data (the fourth
+# review): without a replicate unit (N4's first card: effect.py gives no effect verdict without one)
+# and on the constant metric (DEGENERATE METRIC is decided first: report.decide_cause). There a
+# sound validator never gives them: one is an unexpected verdict, counted in S7 (none allowed).
+EFFECT_VERDICTS = frozenset({SUPPORTED, NDE, NS_OPPOSITE, NS_DEPTH})
+
+
+def excluded(cond: Condition, card: int) -> frozenset:
+    """The outcomes the engine's rules exclude on a dataset's `card`-th claim card (``card_ids``;
+    N4's first card is the one without the replicate unit, ``build``)."""
+    if (cond.cards == 2 and card == 0) or cond.metric == "constant":
+        return EFFECT_VERDICTS
+    return frozenset()
+
+
+def card_allowed(cond: Condition, variant: str, pair_index: int, pilot: dict, card: int) -> frozenset:
+    """The outcomes correct for a dataset's `card`-th claim card: ``allowed`` without those the
+    engine's rules exclude on it (``excluded``)."""
+    return allowed(cond, variant, pair_index, pilot) - excluded(cond, card)
 
 
 # --------------------------------------------------------------------------- #
@@ -719,7 +752,10 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
 
     def typical(c, d, a, b, positive, li, j):
         exclude = {a, b, c, d} | ({positive[0], positive[1]} if positive else set())
-        kept = sorted(set(top) | {a, b, c, d})
+        # a dataset's N_GENES kept genes as far as they are known here: the pair, the candidate and
+        # the most expressed (the fourth review: the most expressed N_GENES and the four came to up to
+        # 2,004, so GATE 5's neighbourhoods, 5% of the genes, to 101 genes, where the engine's are 100)
+        kept = sorted(list(dict.fromkeys([a, b, c, d, *top]))[:N_GENES])
         z_rng = np.random.default_rng([seed, li, j, c, d])
         return _gate5_typicality(value, mean, kept, (c, d), exclude, z_rng)
     tried = []
@@ -910,9 +946,9 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
         X[in_side] = inject_coupling(X[in_side], ia, ib, dose, rng)
         X[~in_side] = sham_coupling(X[~in_side], ia, ib, dose, rng)
         if cond.name == "E2":   # artifact against the effect: capture loss where the signal is
-            X[in_side] = thin(X[in_side], 0.5, rng)
+            X[in_side] = thin(X[in_side], E_CAPTURE, rng)
         elif cond.name == "E3":  # artifact with the effect: capture loss on the other side
-            X[~in_side] = thin(X[~in_side], 0.5, rng)
+            X[~in_side] = thin(X[~in_side], E_CAPTURE, rng)
     obs = pd.DataFrame({"group": group, "donor": donor})
     obs["total_counts"] = X.sum(axis=1)
     obs["n_genes_by_counts"] = (X > 0).sum(axis=1)

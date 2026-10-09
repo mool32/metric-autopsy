@@ -152,7 +152,10 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
     (deterministic) and the cards' runtime records."""
     from metric_autopsy import SimpleData, run_autopsy
     bgs, pilot, out_dir = _STATE["bgs"], _STATE["pilot"], _STATE["out"]
-    X, obs, genes, cards = P.build(entry, bgs, pilot)
+    try:
+        X, obs, genes, cards = P.build(entry, bgs, pilot)
+    except Exception as exc:  # every card of the dataset scored as an error (the fourth review: an
+        return _unbuilt(entry, out_dir, exc)  # exception here stopped the shard, and its rerun as well)
     row = dict(id=entry["id"], data_sha256=P.dataset_sha256(X, obs, genes),
                donors=sorted(set(map(str, obs["donor"]))), cards=[])
     runtime = []
@@ -182,6 +185,17 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
         runtime.append(dict(id=card["id"], seconds=time.time() - t0, pid=os.getpid(),
                             peak_rss_mb=peak_rss_mb(), **run_rec))
     return row, runtime
+
+
+def _unbuilt(entry: dict, out_dir: Path, exc: Exception) -> tuple[dict, list[dict]]:
+    """A dataset the panel could not build: an error report for each of its claim cards."""
+    row = dict(id=entry["id"], data_sha256=None, donors=[], cards=[])
+    for cid in P.card_ids(entry):
+        text = json.dumps(dict(id=cid, error=f"the panel could not build the dataset: {exc!r}"), sort_keys=True)
+        (out_dir / "reports" / f"{cid}.json").write_text(text)
+        row["cards"].append(dict(id=cid, card_sha256=None, report_sha256=hashlib.sha256(text.encode()).hexdigest(),
+                                 error=True))
+    return row, [dict(id=cid, seconds=0.0, pid=os.getpid(), peak_rss_mb=peak_rss_mb()) for cid in P.card_ids(entry)]
 
 
 def fork_map(fn, jobs: list, workers: int, chunksize: int = 1) -> list:

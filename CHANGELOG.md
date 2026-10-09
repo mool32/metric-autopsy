@@ -118,9 +118,13 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   finished run, checks the datasets' sha256 and compares the reports by what they say),
   `score.py` (S1-S7, per-level and per-truth rates, per-gate outcomes, design effects), `oc.py`
   (thresholds by one principle with nominals by cause; every error criterion a set of cells — S2
-  per group of conditions, S4-S6 per stratum and cause — each of which must pass; S3 judged on
-  every stratum at the principle's tier or the floor's, fixed before the key), `anchors.py`,
-  `simulate.py`, `timing.py` (with the drop rule and the memory rule), `frozen.py` (the frozen
+  per group of conditions, at least 300 cards each, S4-S6 per stratum and cause, NOT SUPPORTED
+  against the direction on null data bounded as a false detection — each of which must pass, with
+  its resolution printed; an effect verdict where the engine's rules give none is an unexpected
+  verdict (S7); S3 judged on every stratum at the principle's tier or the floor's, fixed before
+  the key, with GATE 0's refusals in the sound validator's model), `anchors.py`, `simulate.py`,
+  `timing.py` (with the drop rule, the memory rule and GATE 0's refusal shares measured before the
+  key), `frozen.py` (the frozen
   files, the workflow's records only, one attempt) and `test_prereg.py`; every environment pinned
   as its whole closure; `.github/workflows/validation.yml` runs everything from the tag
   `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`), and

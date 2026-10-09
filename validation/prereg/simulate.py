@@ -108,8 +108,9 @@ def write_backgrounds(out_dir: Path, spec_path: Path, report: Path | None = None
 def dry_pilot(bgs: dict, sesoi: float = 0.1, dose: float = 2.0) -> dict:
     """A stand-in pilot.json with every field the panel and the scoring read (not the oracle's
     pilot): SESOI `sesoi` and saturation dose `dose` everywhere, the truth 'valid' for the high
-    and medium pairs and 'blind' for the low ones (as probe p14 found on these backgrounds),
-    every case establishable."""
+    and medium pairs and 'blind' for the low ones (as probe p14 found on these backgrounds), Δ*
+    above the SESOI (E2's and E3's at their depth too); no case is marked establishable (the
+    oracle has not run)."""
     out = dict(dry_run=True, dropped=[], pool={}, pool_size={}, sesoi={}, saturation_dose={}, truth={},
                e_dose={lv: dose for lv in P.LEVELS}, key_dose={lv: dose for lv in P.LEVELS},
                key_dose_found={lv: True for lv in P.LEVELS}, establishable={})
@@ -124,7 +125,8 @@ def dry_pilot(bgs: dict, sesoi: float = 0.1, dose: float = 2.0) -> dict:
                                            dose=dose, delta_min=dm,
                                            **{"class": "blind" if pe["level"] == "low" else "valid"})
                               for k, pe in enumerate(pool)}
-    out["delta"] = {str(k): {f"{f:g}": dict(value=0.2 * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)}
+    out["delta"] = {str(k): {**{f"{f:g}": dict(value=0.2 * f, se=0.01) for f in (0.25, 0.5, 1.0, 1.5)},
+                             f"capture={P.E_CAPTURE:g}": dict(value=0.13, se=0.01)}  # E2, E3 at their depth
                     for k in range(len(bgs["B1"].plan["pool"]))}
     return out
 

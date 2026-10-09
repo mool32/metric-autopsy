@@ -1,4 +1,4 @@
-"""Timing pilot for the compute plan (validation/prereg/v1.md, section 4).
+"""Timing pilot for the compute plan (validation/prereg/v1.md, section 4), and GATE 0's refusals.
 
 Runs the frozen engine through run_panel.py on a sample of the panel's datasets, built on the
 fly by panel.py, stratified by condition (one dataset of every condition, the rest in proportion
@@ -6,10 +6,15 @@ to the conditions' cards), at 1 worker and at W workers, and extrapolates to the
 condition by condition: every card at its condition's mean time. Default: simulated backgrounds
 of the planned sizes (simulate.py). In the pilot (section 8, step 3) it is re-run on the real
 backgrounds with the pilot's SESOI and key dose, at the workers the run will use, and decides
-the drops of section 4.
+the drops of section 4. With --refusals N it then runs the engine on N establishable cards of
+every S3 stratum (``refusal_sample``) and writes GATE 0's refusal share per stratum into the
+pilot (the fourth review: the sound validator's model left GATE 0 out, so a sound engine could
+fail S3; the oracle has no copy of GATE 0, so its share is the one model input measured with the
+engine itself, before the key, on datasets the key does not draw).
 
     python validation/prereg/timing.py --workers 4 --cards 24 > validation/prereg/timing.log
-    python validation/prereg/timing.py --workers W --backgrounds backgrounds.json --pilot pilot.json
+    python validation/prereg/timing.py --workers W --backgrounds backgrounds.json --pilot pilot.json \
+        --write-drops --refusals 100
 """
 from __future__ import annotations
 
@@ -37,6 +42,7 @@ import run_panel as R  # noqa: E402
 import simulate  # noqa: E402
 
 TIMING_KEY = "7" * 64  # public: the timing sample is not the panel
+REFUSAL_KEY = "8" * 64  # public: nor is the refusal sample
 SHARDS, WORKERS = 20, 4  # the blind run: 20 shard jobs of 4 workers (validation.yml)
 BUDGET_HOURS = 3.0       # a shard's expected time may not exceed this (a job may run 6 h)
 MEMORY_SHARE = 0.75      # the run's workers at a worker's measured peak may use at most this share of the runner's memory
@@ -109,6 +115,47 @@ def sample(entries, k: int, rng) -> list:
     return [entries[i] for i in sorted(pick)]
 
 
+def refusal_sample(pilot: dict, n: int, rng) -> list:
+    """n datasets of every S3 stratum (fewer where it has fewer): drawn uniformly from the datasets
+    of a public key (REFUSAL_KEY, after the drops) whose card is establishable in that stratum
+    (``oc.card_model``), so in proportion to the conditions' share of the stratum's cards. Not the
+    constant metric: the engine decides DEGENERATE METRIC before GATE 0."""
+    import oc
+    conds = P.conditions()
+    by = {st: [] for st in oc.STRATA}
+    for e in P.assign(REFUSAL_KEY, pilot.get("dropped", ()), pilot.get("pool_size")):
+        c = conds[e["condition"]]
+        row = oc.card_model(c, e["variant"], int(e["pair"]), pilot)
+        if row["establishable"] and row["stratum"] in by and c.metric != "constant":
+            by[row["stratum"]].append(e)
+    out = []
+    for st in oc.STRATA:
+        if by[st]:
+            pick = rng.choice(len(by[st]), size=min(n, len(by[st])), replace=False)
+            out += [dict(by[st][int(i)], stratum=st) for i in sorted(pick)]
+    return out
+
+
+def measure_refusals(entries: list, bgs: dict, pilot: dict, out_dir: Path, workers: int) -> dict:
+    """GATE 0's refusals on `refusal_sample`'s datasets, run by the frozen engine as in the blind
+    run: per S3 stratum the number of cards, of refusals and their share, and every outcome's
+    count (an engine error included)."""
+    R.run([{k: v for k, v in e.items() if k != "stratum"} for e in entries], bgs, pilot, out_dir, workers=workers)
+    out = {}
+    for e in entries:
+        rec = out.setdefault(e["stratum"], dict(n=0, refused=0, outcomes={}))
+        for cid in P.card_ids(e):
+            path = out_dir / "reports" / f"{cid}.json"
+            rep = json.loads(path.read_text()) if path.exists() else {}
+            o = P.ERROR if "error" in rep or not rep else P.outcome(rep.get("verdict"), rep.get("cause"))
+            rec["n"] += 1
+            rec["refused"] += o == P.REFUSAL
+            rec["outcomes"][o] = rec["outcomes"].get(o, 0) + 1
+    for rec in out.values():
+        rec["share"] = rec["refused"] / rec["n"]
+    return out
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--workers", type=int, default=4)
@@ -119,6 +166,9 @@ def main(argv=None):
     p.add_argument("--data-dir", help="the downloaded files of backgrounds.json (default: next to it)")
     p.add_argument("--write-drops", action="store_true",
                    help="write the drops the projection needs into --pilot (the pilot step, before the key)")
+    p.add_argument("--refusals", type=int, default=0,
+                   help="then measure GATE 0's refusals on this many establishable cards per S3 stratum, after "
+                        "the drops; with --write-drops written into --pilot")
     args = p.parse_args(argv)
     rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=HERE, capture_output=True,
                          text=True).stdout.strip() or "?"
@@ -172,6 +222,17 @@ def main(argv=None):
         pilot["dropped"] = P.check_dropped(dropped)
         Path(args.pilot).write_text(json.dumps(pilot, indent=1))
         print(f"# drops written to {args.pilot}: {dropped or 'none'}")
+    if args.refusals > 0:
+        entries = refusal_sample(pilot, args.refusals, np.random.default_rng(1))
+        with tempfile.TemporaryDirectory() as tmp:
+            rec = measure_refusals(entries, bgs, pilot, Path(tmp) / "refusals", args.workers)
+        for st, r in rec.items():
+            print(f"# GATE 0 refusals, S3 stratum {st}: {r['refused']} of {r['n']} establishable cards "
+                  f"({r['share']:.3f}); outcomes {dict(sorted(r['outcomes'].items()))}")
+        if args.write_drops:
+            pilot["gate0_refusals"] = rec
+            Path(args.pilot).write_text(json.dumps(pilot, indent=1))
+            print(f"# GATE 0's refusal shares written to {args.pilot}")
 
 
 if __name__ == "__main__":
