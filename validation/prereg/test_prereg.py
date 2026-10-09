@@ -1159,10 +1159,12 @@ def test_s5_counts_false_invalid_only_where_the_metric_is_valid(bgs):
     pilot = _est_pilot(bgs, truth={"low": "blind", "medium": "ambiguous"})
     entries = P.assign(KEY, pool_sizes=_sizes(bgs))
     res = S.score(entries, _reports(entries, lambda c, e: P.NS_INVALID), pilot)
-    s5 = res["criteria"]["S5"]
+    s5 = res["criteria"]["S5"]  # per stratum since the third review: real effects, nulls
     n_valid = sum(P.metric_truth(P.conditions()[e["condition"]], e["variant"], e["pair"], pilot) == "valid"
                   for e in entries for _ in P.card_ids(e))
-    assert s5["n"] == n_valid and s5["k"] == n_valid and not s5["passed"]
+    assert set(s5["cells"]) == {"S5:effect", "S5:null"}
+    assert sum(c["n"] for c in s5["cells"].values()) == n_valid == sum(c["k"] for c in s5["cells"].values())
+    assert not s5["passed"] and not any(c["passed"] for c in s5["cells"].values() if c["n"])
     assert res["per_truth"]["blind"]["errors"]["rate"] == 0.0 and res["per_truth"]["ambiguous"]["errors"]["rate"] == 0.0
 
 
@@ -1304,14 +1306,15 @@ def test_the_tiers_fixed_before_the_key_are_the_ones_scored(bgs, tmp_path):
     path.write_text(json.dumps(pilot))
     oc.main(["--pilot", str(path), "--write-judged"])
     fixed = json.loads(path.read_text())["s3_rules"]
-    assert fixed["tiers"] == {"effect": "floor", "null": "principle", "invalid": "principle"} and fixed["feasible"]
+    # scenario C: since the third review its 81 real-effect cards are judged at the principle's tier too
+    assert fixed["tiers"] == {"effect": "principle", "null": "principle", "invalid": "principle"} and fixed["feasible"]
     entries = P.assign(KEY, pool_sizes=pilot["pool_size"])
-    pilot["s3_rules"] = dict(fixed, tiers={"effect": "principle", "null": "floor", "invalid": "principle"})
+    pilot["s3_rules"] = dict(fixed, tiers={"effect": "floor", "null": "floor", "invalid": "principle"})
     res = S.score(entries, _reports(entries, _perfect(pilot)), pilot, sims=2000)["criteria"]["S3"]
     assert res["tiers_fixed_before_the_key"]
     assert {st: v["tier"] for st, v in res["strata"].items()} == pilot["s3_rules"]["tiers"]
     eff = res["strata"]["effect"]
-    assert eff["min_required"] == oc.decisiveness_tiers(eff["n"], eff["nominal"])["principle"]["min_required"]
+    assert eff["min_required"] == oc.decisiveness_tiers(eff["n"], eff["nominal"])["floor"]["min_required"]
 
 
 def test_the_shared_donor_interval_widens_only_when_donors_drive_the_outcome():
