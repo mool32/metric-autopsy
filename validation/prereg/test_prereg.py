@@ -483,7 +483,10 @@ def test_gate5_on_the_panels_null_datasets_fails_no_more_than_a_sound_validator(
                                   delta_min=card["prereg"]["delta_min"])
             fails += g5.status.value == "FAIL"
             runs += 1
-    assert runs >= 24 and (fails == 0 or oc.binom_cdf(fails - 1, runs, 1.5 * oc.ALPHA) < 0.99), (fails, runs)
+    import math  # the binomial tail without scipy, which the core-only CI jobs lack
+    p = 1.5 * oc.ALPHA
+    below = sum(math.comb(runs, j) * p ** j * (1 - p) ** (runs - j) for j in range(fails))  # P(X <= fails - 1)
+    assert runs >= 24 and below < 0.99, (fails, runs)
 
 
 def test_the_oracles_gate4_response_matches_the_engines_injection(bgs):
