@@ -1,0 +1,59 @@
+{
+ "B1": {
+  "counts": "X",
+  "donor": "donor_id",
+  "file": "B1.npz",
+  "sha256": "563623c69bafbc8fc336eef488d367ede63ef610f741c80c28c40f60dfafe3ac",
+  "source": {
+   "cell_type": "oligodendrocyte",
+   "census_release": "2025-11-08",
+   "dataset_id": "37a17b78-4864-4a42-b67b-31c00962795a",
+   "extracted_cells": 78332,
+   "genes": 61497,
+   "organism": "Homo sapiens",
+   "qualifying_donors": 942,
+   "rank": 1,
+   "rule": "max 200 donors, 400 cells each, seed 20261008",
+   "title": "MSSM_Cohort"
+  }
+ },
+ "B2": {
+  "counts": "X",
+  "donor": "donor_id",
+  "file": "B2.npz",
+  "sha256": "abc0e04d7618ed0262bfc1e47e15a4da448ba6b748a65adc147c767ce0f8cad5",
+  "source": {
+   "cell_type": "type B pancreatic cell",
+   "census_release": "2025-11-08",
+   "dataset_id": "49e4ffcc-5444-406d-bdee-577127404ba8",
+   "extracted_cells": 19475,
+   "genes": 53384,
+   "organism": "Mus musculus",
+   "qualifying_donors": 50,
+   "rank": 1,
+   "rule": "all donors, 400 cells each, seed 20261008",
+   "tissue": "islet of Langerhans",
+   "title": "Mouse pancreatic islet scRNA-seq atlas across sexes, ages, and stress conditions including diabetes"
+  }
+ },
+ "B3": {
+  "counts": "X",
+  "donor": "batch",
+  "file": "B3.npz",
+  "sha256": "c7f16e68be248cf7cb41840d3dc3be6f833ee9370ac30f09690307f9cfabbb10",
+  "source": {
+   "cells_per_phase": {
+    "G1": 96,
+    "G2M": 96,
+    "S": 96
+   },
+   "ercc_genes": 100,
+   "study": "E-MTAB-2805",
+   "urls": [
+    "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/805/E-MTAB-2805/Files/G1_singlecells_counts.txt",
+    "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/805/E-MTAB-2805/Files/S_singlecells_counts.txt",
+    "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/805/E-MTAB-2805/Files/G2M_singlecells_counts.txt"
+   ]
+  }
+ }
+}
