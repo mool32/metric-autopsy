@@ -28,6 +28,7 @@ import pandas as pd
 
 KEY_N = 790            # datasets per key null condition (oc.log: S1 as a whole, 5 conditions)
 DONORS_PER_GROUP = 8   # N1-N3, N6, N8, E1-E3: 2 x 8 donors from B1
+N7_MAX_MICE = 24       # N7: at most 24 of B2's qualifying mice per dataset, so its memory is bounded
 CELLS_PER_DONOR = 200  # cells drawn per donor and dataset; donors with fewer are not used
 N_GENES = 2000         # genes kept per background: the named genes, then the most expressed
 RANDOM_SCORE_GENES = 50
@@ -38,6 +39,13 @@ LEVEL_CANDIDATES = 1000  # the most expressed eligible genes of a level enter it
 PLAN_CELLS_PER_DONOR = 200  # cells per donor (public seed) on which pair correlations are computed
 MIN_DONOR_DETECTION = 0.05  # a pair gene is detected in >= 5% of the cells of every donor
 NEG_MAX_R = 0.02       # a negative control's |partial correlation| is below this
+NEG_CANDIDATES = 10    # of the 10 such pairs closest in mean expression, the most typical of GATE 5's null
+# GATE 5's matched null for a negative control (copies of the engine's rule, checked against it in
+# test_the_panels_copies_of_the_engines_rules_agree_with_it): pairs from the two genes' expression
+# neighbourhoods, each the closest genes in mean count, at least 20 or 5% of the genes; 200 pairs
+MATCHED_NEIGHBOURS_MIN = 20
+MATCHED_NEIGHBOURS_FRAC = 0.05
+NEG_NULL_PAIRS = 200
 N8_BETA = (2.0, 2.0)   # N8: per-cell capture ~ Beta(2, 2) in one group (mean 0.5)
 PLAN_SEED = 20261008   # public seed of the plan's cell subsample and N6c's random genes
 DELTA_MIN_FRACTION = 0.5  # delta_min = 0.5 x SESOI: the smallest response to the injection that matters
@@ -143,9 +151,11 @@ CONDITIONS = (
 )
 BACKGROUNDS = ("B1", "B2")
 # Conditions whose data change the pair's counts (capture loss, dropout, variable capture, an
-# injected coupling): the truth about the metric is measured on their own datasets (pilot.json
-# "truth_case"); the others share their background's null (N1 on B1, N7 on B2).
-TRUTH_CASE_CONDITIONS = ("N2", "N3", "N8", "E1", "E2", "E3")
+# injected coupling) or the dataset's size (N4: 2 x 3 donors; N5: 8 donors whose cells are split at
+# random, so GATE 4's precision differs: the third review): the truth about the metric and GATE 4's odds are
+# measured on their own datasets (pilot.json "truth_case"); the others share their background's
+# null (N1 on B1, N7 on B2).
+TRUTH_CASE_CONDITIONS = ("N2", "N3", "N4", "N5", "N8", "E1", "E2", "E3")
 
 # The drop order of v1.md section 4 (compute budget): whole variants, never replicates of the
 # rest, and never a key null condition or E1-E3 at the key dose.
@@ -519,6 +529,44 @@ def _dense(X) -> np.ndarray:
     return X.toarray() if _is_sparse(X) else np.asarray(X)
 
 
+def norm_pearson_cols(a: np.ndarray, b: np.ndarray, tot: np.ndarray) -> float:
+    """The engine's log-normalized Pearson (metrics.norm_pearson) of two count columns with the
+    cells' totals: CP10k and log1p, over the cells where both are detected."""
+    both = (a > 0) & (b > 0)
+    if both.sum() < 3:
+        return 0.0
+    t = np.where(tot == 0, 1.0, tot)
+    x, y = np.log1p(a / t * 1e4)[both], np.log1p(b / t * 1e4)[both]
+    if x.std() == 0 or y.std() == 0:
+        return 0.0
+    return float(np.corrcoef(x, y)[0, 1])
+
+
+def _neighbourhood(means: np.ndarray, genes: list, target: int, exclude: set) -> list:
+    """The genes closest to `target` in mean count among `genes` (GATE 5's rule, gates._neighbourhood)."""
+    k = max(MATCHED_NEIGHBOURS_MIN, int(np.ceil(MATCHED_NEIGHBOURS_FRAC * len(genes))))
+    pool = [g for g in genes if g != target and g not in exclude]
+    dist = np.array([abs(means[g] - means[target]) for g in pool])
+    return [pool[j] for j in np.argsort(dist, kind="mergesort")[:k]]
+
+
+def _gate5_typicality(value, means, kept, pair, exclude, rng) -> float:
+    """|z| of a candidate negative control's log-normalized Pearson against GATE 5's matched null
+    on the plan's cells (pairs from the two genes' expression neighbourhoods among the kept genes,
+    NEG_NULL_PAIRS of them drawn): the third review found the controls chosen by partial
+    correlation alone failing GATE 5 systematically on some pairs (|z| 2 to 3.4, at 48 mice in 5 of
+    5 datasets). `value(x, y)` is the metric of genes x and y on the plan's cells."""
+    na = _neighbourhood(means, kept, pair[0], exclude)
+    nb = _neighbourhood(means, kept, pair[1], exclude)
+    pool = sorted({tuple(sorted((x, y))) for x in na for y in nb if x != y})
+    pick = [pool[i] for i in rng.permutation(len(pool))[:NEG_NULL_PAIRS]]
+    null = np.array([value(x, y) for x, y in pick])
+    sd = float(null.std(ddof=1)) if len(null) > 1 else 0.0
+    if not sd > 0:
+        return float("inf")
+    return float(round(abs(value(*pair) - float(np.median(null))) / sd, 10))
+
+
 def _partial_corr(blocks, libs) -> np.ndarray:
     """Pooled within-donor correlation of log-normalized expression over all cells, with the log
     library size partialled out per donor: the co-variation of two genes that depth does not
@@ -553,9 +601,11 @@ def _level_search(X, names, mean, level, order, tot, plan_rows):
     return out
 
 
-def _choose_pairs(search: dict, mean, names, k: int):
+def _choose_pairs(search: dict, mean, names, k: int, typical=None):
     """The pool with k pairs per level (and the positive control) by the rule of
-    `plan_background`; ValueError if some level cannot provide them."""
+    `plan_background`; ValueError if some level cannot provide them. `typical(c, d, a, b,
+    positive, li, j)` scores a candidate negative control (lower is more typical of GATE 5's
+    null); without it the closest pair in mean expression is taken."""
     used: set = set()
     pool, positive, levels = [], None, {}
     for li, lvl in enumerate(LEVELS):
@@ -584,11 +634,19 @@ def _choose_pairs(search: dict, mean, names, k: int):
             gap = np.where(ok, np.abs(avg - (mean[a] + mean[b]) / 2), np.inf)
             if not np.isfinite(gap).any():
                 raise ValueError(f"no negative control with |r| < {NEG_MAX_R} for {names[a]}-{names[b]}")
-            i, jj = np.unravel_index(int(np.argmin(gap)), gap.shape)
+            flat = np.argsort(gap, axis=None, kind="mergesort")[:NEG_CANDIDATES]
+            closest = [np.unravel_index(int(t), gap.shape) for t in flat if np.isfinite(gap.flat[int(t)])]
+            if typical is None:
+                (i, jj), z = closest[0], None
+            else:
+                scored = [(typical(cand[i], cand[jj], a, b, positive, li, j), rank, (i, jj))
+                          for rank, (i, jj) in enumerate(closest)]
+                z, _, (i, jj) = min(scored)
             c, d = cand[i], cand[jj]
             used.update((c, d))
             pool.append(dict(level=lvl, index=li * k + j, pair=[names[a], names[b]], r=rab,
-                             neg_pair=[names[c], names[d]], neg_r=float(C[i, jj]), _genes=(a, b, c, d)))
+                             neg_pair=[names[c], names[d]], neg_r=float(C[i, jj]),
+                             neg_gate5_z=z, _genes=(a, b, c, d)))
         levels[lvl] = dict(candidates=len(cand), median_r=float(np.nanmedian(r)) if len(r) else float("nan"))
     return pool, positive, used, levels
 
@@ -605,8 +663,10 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
     depth. Per level the k most correlated disjoint pairs form the pool, k = 8 where every level
     has them (each with its negative control) and otherwise the largest k >= 4 that every level
     has; the next disjoint pair of the high level is the background's positive control (GATE 5),
-    as a housekeeping pair would be; each pool pair's negative control is the unused pair of its
-    level closest to it in mean expression whose |partial correlation| is below 0.02."""
+    as a housekeeping pair would be; each pool pair's negative control is, of the 10 unused pairs of
+    its level closest to it in mean expression whose |partial correlation| is below 0.02, the one
+    whose log-normalized Pearson is most typical of GATE 5's matched null on the plan's cells
+    (`_gate5_typicality`, the third review)."""
     rng = np.random.default_rng(seed)
     donor_all = np.asarray(bg.donor).astype(str)
     vals, counts = np.unique(donor_all, return_counts=True)
@@ -629,10 +689,43 @@ def plan_background(bg: Background, seed: int = PLAN_SEED) -> dict:
     plan_rows = [np.sort(rng.choice(np.where(donor == d)[0], size=min(PLAN_CELLS_PER_DONOR, int((donor == d).sum())),
                                     replace=False)) for d in donors]
     search = _level_search(X, names, mean, level, order, tot, plan_rows)
+    # GATE 5's view of a candidate negative control: on the plan's cells, with the totals and the
+    # expression neighbourhoods of the genes a dataset keeps (the most expressed; the named genes
+    # join them)
+    cells = np.concatenate(plan_rows)
+    Xc = X[cells]
+    top = [int(j) for j in order[:N_GENES]]
+    if _is_sparse(Xc):
+        Xc = Xc.tocsc()
+        Xc.eliminate_zeros()
+        tot_kept = np.asarray(Xc[:, top].sum(axis=1, dtype=np.int64)).ravel().astype(float)
+    else:
+        Xc = np.asarray(Xc)
+        tot_kept = Xc[:, top].sum(axis=1).astype(np.int64).astype(float)
+    tot_kept = np.where(tot_kept == 0, 1.0, tot_kept)
+
+    def detected(j):  # the cells where gene j is detected (sorted) and its counts there
+        if _is_sparse(Xc):
+            lo, hi = Xc.indptr[j], Xc.indptr[j + 1]
+            return Xc.indices[lo:hi], Xc.data[lo:hi].astype(float)
+        idx = np.nonzero(Xc[:, j] > 0)[0]
+        return idx, Xc[idx, j].astype(float)
+
+    def value(x, y):  # norm_pearson_cols on the plan's cells, from the co-detected entries only
+        ix, vx = detected(x)
+        iy, vy = detected(y)
+        common, px, py = np.intersect1d(ix, iy, assume_unique=True, return_indices=True)
+        return norm_pearson_cols(vx[px], vy[py], tot_kept[common])
+
+    def typical(c, d, a, b, positive, li, j):
+        exclude = {a, b, c, d} | ({positive[0], positive[1]} if positive else set())
+        kept = sorted(set(top) | {a, b, c, d})
+        z_rng = np.random.default_rng([seed, li, j, c, d])
+        return _gate5_typicality(value, mean, kept, (c, d), exclude, z_rng)
     tried = []
     for k in range(MAX_PAIRS_PER_LEVEL, MIN_PAIRS_PER_LEVEL - 1, -1):
         try:
-            pool, positive, used, levels = _choose_pairs(search, mean, names, k)
+            pool, positive, used, levels = _choose_pairs(search, mean, names, k, typical)
             break
         except ValueError as exc:
             tried.append(f"{k}: {exc}")
@@ -799,8 +892,9 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
         group = rng.choice(np.array(["A", "B"]), size=len(donor))
     elif cond.name == "N4":
         X, donor, group = _two_groups(bg, rng, 3)
-    elif cond.name == "N7":  # every qualifying mouse; with an odd number B has one more
-        X, donor, group = _two_groups(bg, rng, len(bg.donors) // 2, total=len(bg.donors))
+    elif cond.name == "N7":  # N7_MAX_MICE mice (all where B2 has fewer); with an odd number B has one more
+        mice = min(len(bg.donors), N7_MAX_MICE)
+        X, donor, group = _two_groups(bg, rng, mice // 2, total=mice)
     else:
         X, donor, group = _two_groups(bg, rng, DONORS_PER_GROUP)
     in_side = group == side
@@ -823,10 +917,14 @@ def build(entry: dict, bgs: dict, pilot: dict) -> tuple[np.ndarray, pd.DataFrame
     obs["total_counts"] = X.sum(axis=1)
     obs["n_genes_by_counts"] = (X > 0).sum(axis=1)
     # the claim's direction: for a real effect the true one (the signal side is higher where
-    # Δ* > 0); for a null a coin, so that the card does not reveal the condition
+    # Δ* > 0; an effect dataset whose Δ* is unknown is refused, not given the signal side's
+    # direction: the third review); for a null a coin, so that the card does not reveal the condition
     if cond.data == "effect":
-        known = str(entry["pair"]) in (pilot.get("delta") or {})
-        positive = (not known) or float(delta_of(cond.name, variant, entry["pair"], pilot)["value"]) >= 0
+        try:
+            positive = float(delta_of(cond.name, variant, entry["pair"], pilot)["value"]) >= 0
+        except (KeyError, TypeError) as exc:
+            raise ValueError(f"{entry.get('id')}: Δ* of pair {entry['pair']} ({cond.name} {variant}) is unknown; "
+                             "the claim's direction is its sign") from exc
         higher = side if positive else other
     else:
         higher = ("A", "B")[int(rng.integers(2))]

@@ -103,10 +103,13 @@ def _cpu_model() -> str | None:
 
 def machine() -> dict:
     """Where the run ran, for the record (v1.md, section 3.3; the second review found the versions
-    and the CPU missing): the CPU model and cores, the BLAS libraries with their threads in use and
-    the kernels they chose (threadpoolctl, when installed; None otherwise), the numerical
-    environment, and the versions of Python, numpy, scipy, pandas and the engine. Between CPU models
-    the last digits of a report's numbers can differ; its verdict and cause do not (blind.verify)."""
+    and the CPU missing): the CPU model and cores, the runner's image (GitHub's ImageOS and
+    ImageVersion), the numerical environment as set (`numeric_env`) and as loaded (the third
+    review): the BLAS libraries with their threads in use and the kernels they chose
+    (threadpoolctl, when installed; None otherwise) and numpy's SIMD baseline and the dispatch
+    targets it uses (`numpy_simd`); and the versions of Python, numpy, scipy, pandas and the
+    engine. Between CPU models the last digits of a report's numbers can differ; its verdict and
+    cause do not (blind.verify)."""
     try:
         from threadpoolctl import threadpool_info
         blas = [{k: i.get(k) for k in ("internal_api", "version", "architecture", "num_threads")}
@@ -120,7 +123,15 @@ def machine() -> dict:
             versions[mod] = __import__(mod).__version__
         except ImportError:
             versions[mod] = None
-    return dict(cpus=os.cpu_count(), cpu_model=_cpu_model(), blas_threads_in_use=used, blas=blas,
+    try:
+        from numpy._core import _multiarray_umath as mu
+        simd = dict(baseline=list(mu.__cpu_baseline__),
+                    dispatch=[t for t in mu.__cpu_dispatch__ if mu.__cpu_features__.get(t)])
+    except (ImportError, AttributeError):
+        simd = None
+    image = {k: os.environ[k] for k in ("ImageOS", "ImageVersion") if os.environ.get(k)}
+    return dict(cpus=os.cpu_count(), cpu_model=_cpu_model(), runner_image=image or None,
+                blas_threads_in_use=used, blas=blas, numpy_simd=simd,
                 numeric_env={v: os.environ.get(v) for v in frozen.NUMERIC_ENV}, versions=versions)
 
 
@@ -149,7 +160,8 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
         out = out_dir / "reports" / f"{card['id']}.json"
         rec = dict(id=card["id"], card_sha256=P.card_sha256(card))
         if out.exists():
-            rec.update(report_sha256=hashlib.sha256(out.read_bytes()).hexdigest(), error=b'"error"' in out.read_bytes())
+            rec.update(report_sha256=hashlib.sha256(out.read_bytes()).hexdigest(),
+                       error="error" in json.loads(out.read_bytes()))  # the report's own field, as below
             row["cards"].append(rec)
             runtime.append(dict(id=card["id"], skipped=True))
             continue
@@ -172,6 +184,16 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
     return row, runtime
 
 
+def fork_map(fn, jobs: list, workers: int, chunksize: int = 1) -> list:
+    """`fn` over `jobs` in `workers` forked processes, in order. A worker the system kills (out of
+    memory) breaks the pool at once (BrokenProcessPool), where multiprocessing.Pool waits for it
+    until the job's timeout (the third review)."""
+    import multiprocessing as mp
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(workers, mp_context=mp.get_context("fork")) as ex:
+        return list(ex.map(fn, jobs, chunksize=chunksize))
+
+
 def run(entries: list[dict], bgs: dict, pilot: dict, out_dir: Path, workers: int = 1) -> dict:
     """Run every entry (in parallel with `workers` forked processes); write manifest.json (the
     datasets and the sha256 of every card and report, deterministic), runtime.json and
@@ -185,9 +207,7 @@ def run(entries: list[dict], bgs: dict, pilot: dict, out_dir: Path, workers: int
     if workers <= 1:
         results = [run_entry(e) for e in entries]
     else:
-        import multiprocessing as mp
-        with mp.get_context("fork").Pool(workers) as pool:
-            results = list(pool.imap_unordered(run_entry, entries, chunksize=1))
+        results = fork_map(run_entry, entries, workers)
     wall = time.time() - t0
     rows = sorted((r for r, _ in results), key=lambda r: r["id"])
     runtime = sorted((c for _, rt in results for c in rt), key=lambda c: c["id"])

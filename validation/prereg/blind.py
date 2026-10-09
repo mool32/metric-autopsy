@@ -144,6 +144,14 @@ def pilot_sha256(pilot: dict) -> str:
     return hashlib.sha256(json.dumps(pilot, sort_keys=True).encode()).hexdigest()
 
 
+def workflow_run(env=None) -> dict:
+    """The GitHub Actions run and attempt a job belongs to (empty outside Actions), recorded with
+    every shard and in the results' summary (the third review: the attempt was nowhere recorded)."""
+    env = os.environ if env is None else env
+    names = dict(run_id="GITHUB_RUN_ID", run_attempt="GITHUB_RUN_ATTEMPT", job="GITHUB_JOB", sha="GITHUB_SHA")
+    return {k: env[v] for k, v in names.items() if env.get(v)}
+
+
 def run_shard(compact: Path, pilot: dict, key: str, beacon: dict, shard: int, shards: int, out: Path,
               workers: int, expect: str | None = None, limit: int | None = None) -> dict:
     bgs, info = load_prepared(compact, expect)
@@ -154,7 +162,7 @@ def run_shard(compact: Path, pilot: dict, key: str, beacon: dict, shard: int, sh
     mine = shard_entries(entries, shard, shards)[:limit]
     summary = R.run(mine, bgs, pilot, out, workers)
     meta = dict(shard=shard, shards=shards, key=key, beacon=beacon, entries=len(mine),
-                backgrounds=info, pilot_sha256=pilot_sha256(pilot))
+                backgrounds=info, pilot_sha256=pilot_sha256(pilot), workflow=workflow_run())
     (out / "shard.json").write_text(json.dumps(meta, indent=1, sort_keys=True))
     return dict(meta, summary=summary)
 
@@ -199,20 +207,56 @@ def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None, r
     (out / "runtime.json").write_text(json.dumps(dict(shards=runtime, reruns=reruns or []), indent=1, default=str))
     (out / "runlog.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in runlog))
     cards = [c for r in datasets for c in r["cards"]]
+
+    def one_run(w):  # a job's run and attempt, without the job's name
+        return json.dumps({k: v for k, v in (w or {}).items() if k != "job"}, sort_keys=True)
+    runs = sorted({one_run(m.get("workflow")) for m in metas} | {one_run(workflow_run())})
     summary = dict(datasets=len(datasets), cards=len(cards), errors=sum(c.get("error", False) for c in cards),
                    key=m0["key"], beacon_round=m0["beacon"].get("round"), reruns=len(reruns or []),
-                   slowest_shard_seconds=max(r["wall_seconds"] for r in runtime))
+                   slowest_shard_seconds=max(r["wall_seconds"] for r in runtime),
+                   workflow_runs=[json.loads(r) for r in runs])
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
-    sums = sorted(f"{P.sha256(p)}  {p.relative_to(out).as_posix()}" for p in out.rglob("*")
-                  if p.is_file() and p.name != "SHA256SUMS")
-    (out / "SHA256SUMS").write_text("\n".join(sums) + "\n")
+    write_sums(out)
     (out / "summary.md").write_text(
         f"### Panel v1 blind run\n\n- datasets {summary['datasets']}, claim cards {summary['cards']}, "
         f"engine errors {summary['errors']}\n- key: drand {m0['beacon'].get('chain', '?')} round "
         f"{summary['beacon_round']}, randomness `{summary['key']}`\n- shards re-run after an "
         f"infrastructure failure: {summary['reruns']}\n- slowest shard {summary['slowest_shard_seconds']:.0f} s\n"
+        f"- workflow runs and attempts of the shards and the collection: "
+        f"{', '.join(_run_text(r) for r in summary['workflow_runs'])}\n"
         f"- sha256 of SHA256SUMS `{P.sha256(out / 'SHA256SUMS')}`\n")
     return summary
+
+
+def write_sums(out: Path) -> Path:
+    """SHA256SUMS: the sha256 of every file under `out` but itself."""
+    sums = sorted(f"{P.sha256(p)}  {p.relative_to(out).as_posix()}" for p in out.rglob("*")
+                  if p.is_file() and p.name != "SHA256SUMS")
+    (out / "SHA256SUMS").write_text("\n".join(sums) + "\n")
+    return out / "SHA256SUMS"
+
+
+def check_sums(results: Path) -> int:
+    """Every file SHA256SUMS lists that is present under `results` has its sha256 (the third
+    review: verify did not check them); the manifest must be listed. Returns the files checked."""
+    sums = results / "SHA256SUMS"
+    if not sums.exists():
+        raise SystemExit(f"no SHA256SUMS in {results}")
+    listed = dict(reversed(line.split("  ", 1)) for line in sums.read_text().splitlines() if line.strip())
+    if "manifest.json" not in listed:
+        raise SystemExit("SHA256SUMS does not list manifest.json")
+    checked = 0
+    for name, digest in sorted(listed.items()):
+        f = results / name
+        if f.exists():
+            if P.sha256(f) != digest:
+                raise SystemExit(f"{name}: its sha256 differs from SHA256SUMS")
+            checked += 1
+    return checked
+
+
+def _run_text(r: dict) -> str:
+    return f"run {r['run_id']} attempt {r.get('run_attempt', '?')}" if r.get("run_id") else "outside GitHub Actions"
 
 
 REL_TOL = 1e-9  # numbers of a re-run report agree with the published ones within this (relative)
@@ -242,7 +286,9 @@ def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, d
     else different. Anyone can check that the published reports are what the frozen code gives
     for the key. The datasets are the first `datasets` of the key's order (all if None); the key,
     the pilot and the prepared backgrounds must be the run's, and `out` must be empty (the runner
-    reuses a report it finds there)."""
+    reuses a report it finds there). First every file of the results that SHA256SUMS lists, the
+    manifest among them, must have its sha256."""
+    sums_checked = check_sums(results)
     manifest = json.loads((results / "manifest.json").read_text())
     key = P.check_key(manifest["key"])
     record = results / "key.json"
@@ -272,7 +318,7 @@ def verify(results: Path, compact: Path, pilot: dict, out: Path, workers: int, d
                                                                        json.loads(mine)))
             rows.append(dict(card=c["id"], published=c["report_sha256"], rerun=got,
                              identical=got == c["report_sha256"], same=bool(same)))
-    return dict(key=key, datasets=len(entries), datasets_identical=sum(d["identical"] for d in data),
+    return dict(key=key, files_checked=sums_checked, datasets=len(entries), datasets_identical=sum(d["identical"] for d in data),
                 cards=len(rows), identical=sum(r["identical"] for r in rows), same=sum(r["same"] for r in rows),
                 different=sum(not r["same"] for r in rows), rows=rows, data=data)
 

@@ -117,15 +117,18 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   reports), `blind.py` (guard, shards, collection, and `verify`: anyone re-runs datasets of a
   finished run, checks the datasets' sha256 and compares the reports by what they say),
   `score.py` (S1-S7, per-level and per-truth rates, per-gate outcomes, design effects), `oc.py`
-  (thresholds by one principle with nominals by cause; S3 judged on every stratum at the
-  principle's tier or the floor's, fixed before the key), `anchors.py`,
-  `simulate.py`, `timing.py` (with the drop rule) and `test_prereg.py`;
-  `.github/workflows/validation.yml` runs everything from the tag `v0.3.0-prereg` to the scores
-  (results committed to `results/panel-v1`), and `.github/workflows/audit.yml` the flagship
-  audit on v0.1.1.
+  (thresholds by one principle with nominals by cause; every error criterion a set of cells — S2
+  per group of conditions, S4-S6 per stratum and cause — each of which must pass; S3 judged on
+  every stratum at the principle's tier or the floor's, fixed before the key), `anchors.py`,
+  `simulate.py`, `timing.py` (with the drop rule and the memory rule), `frozen.py` (the frozen
+  files, the workflow's records only, one attempt) and `test_prereg.py`; every environment pinned
+  as its whole closure; `.github/workflows/validation.yml` runs everything from the tag
+  `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`), and
+  `.github/workflows/audit.yml` the flagship audit on v0.1.1.
 - `validation/probes/p14_gate4_by_expression_level.py` (now a dev-set regression of GATE 4's
-  interval rule) and `p15_gate5_weak_positive_control.py` (GATE 5's power rule against the
-  response rule on weak but valid controls).
+  interval rule), `p15_gate5_weak_positive_control.py` (GATE 5's power rule against the
+  response rule on weak but valid controls) and `p16_variable_capture_n8.py` (the whole engine on
+  N8's per-cell variable capture against N1).
 - `validation/probes/verdicts_v03.py` scores errors (verdict outside the set allowed by the
   design, false SUPPORTED) and decisiveness (definite verdicts where the design makes the truth
   establishable) per case, with Clopper-Pearson intervals. `validation/probes/JOURNAL.md`

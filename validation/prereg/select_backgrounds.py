@@ -35,7 +35,6 @@ from __future__ import annotations
 
 import argparse
 import gzip
-import hashlib
 import io
 import json
 import time
@@ -268,12 +267,10 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
                 lines.append(f"{name}: none of the first {MAX_RANKS} candidates has raw counts and the pair pool: "
                              "dropped with the cases that need it")
                 continue
-            if rehearsal:
-                target.unlink()
-                digest = hashlib.sha256(json.dumps({k: str(choice[k]) for k in keys}).encode()).hexdigest()
-                lines.append(f"{name}: {len(cand)} candidates; chosen rank {rank}, sha256 {digest[:16]}, with "
-                             f"{int(choice['donors'])} qualifying donors; a {rec['cells']}-cell test extraction of "
-                             f"{rec['genes']} genes with raw counts; {time.time() - t0:.0f} s")
+            if rehearsal:  # nothing that singles the choice out (the third review: a hash prefix and the
+                target.unlink()  # donor count did, by search over the public Census)
+                lines.append(f"{name}: {len(cand)} candidates; chosen rank {rank}; a {rec['cells']}-cell test "
+                             f"extraction of {rec['genes']} genes with raw counts; {time.time() - t0:.0f} s")
                 continue
             spec[name] = dict(file=f"{name}.npz", sha256=rec["sha256"], donor="donor_id", counts="X",
                               source=dict(census_release=release, organism=organism, rank=rank,

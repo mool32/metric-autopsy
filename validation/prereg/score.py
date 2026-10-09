@@ -8,13 +8,16 @@ of every dataset ID (``panel.assign``). Each claim card's report is reduced to i
 label and cause of the verdict (``panel.outcome``), and compared with the card's allowed
 outcomes (``panel.allowed``: by the truth about the metric on the pair and about the data, one
 rule for every condition). The primary outcomes and the criteria S1-S7 follow, every rate with
-its two-sided 95% Clopper-Pearson interval, and for every criterion the design effect of
-datasets that share donors (``overlap_interval``); a design effect above 1.5 is reported as the
-pre-registered limitation. A missing report, an engine error or an unexpected verdict counts as
-an error (S4) and fails S7. Thresholds are computed with the rules of ``oc.py`` on the realized
-cards; S3's strata are judged at the tiers pilot.json fixed before the key ("s3_rules"). A
-criterion without cards: S2, S5 and S6 hold (no card on which their error can occur); S1, S4 and
-S7 always have cards; S3 fails unless every stratum is judged (what it shows is not shown).
+its two-sided 95% Clopper-Pearson interval (exact: given the background every dataset is an
+independent draw, so the counts are binomial), and for every criterion the design effect of
+datasets that share donors (``overlap_interval``: how much the outcomes depend on the donors a
+dataset draws, so how far a rate carries beyond the background's donors); a design effect above
+1.5 is reported as the pre-registered limitation on that reading. A missing report, an engine error or an unexpected verdict counts as
+an error (P2) and fails S7. Every other wrong outcome is counted in its cell of S2, S4, S5 or S6
+(``oc.error_cells``). Thresholds are computed with the rules of ``oc.py`` on the realized cards;
+S3's strata are judged at the tiers pilot.json fixed before the key ("s3_rules"). A cell without
+cards holds (no card on which its error can occur); S1 and S7 always have cards; S3 fails unless
+every stratum is judged (what it shows is not shown).
 """
 from __future__ import annotations
 
@@ -29,6 +32,9 @@ import oc
 import panel as P
 
 DEFF_LIMIT = 1.5  # a criterion's design effect above this is a pre-registered limitation
+# the flag of a card's row that counts each wrong outcome where it is wrong (oc.CAUSE_FIELD)
+FLAG = {P.SUPPORTED: "sup_error", P.NS_INVALID: "false_invalid", P.NDE: "nde_error", P.NS_OPPOSITE: "opp_error",
+        P.NS_DEPTH: "depth_error"}
 
 
 def cp(k: float, n: float, alpha: float = 0.05) -> tuple[float, float]:
@@ -46,8 +52,11 @@ def rate(k: int, n: int) -> dict:
 def overlap_interval(y, donor_sets: list, alpha: float = 0.05) -> dict:
     """A rate's interval that allows for datasets sharing donors (chosen before the key).
 
-    Datasets drawn from one background share donors, so their verdicts can be correlated, and
-    donor-disjoint subsets would leave about 11 datasets per condition. Working model: the
+    Given the background the datasets are independent draws and the Clopper-Pearson interval is
+    exact for the rate on it (the third review); but datasets share donors and their outcomes can
+    depend on the donors drawn, which bounds how far the rate carries to other donors of the same
+    kind (donor-disjoint subsets would leave about 11 datasets per condition). This interval is for
+    that reading, secondary. Working model: the
     covariance of two datasets' outcomes grows with the number of donors they share,
     Cov(y_j, y_k) = beta * |S_j & S_k| (an additive donor effect). beta is the moment estimate
     over all pairs of datasets, truncated at 0; the variance of the rate is then
@@ -102,7 +111,9 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
                              sup_error=o == P.SUPPORTED and P.SUPPORTED not in ok,
                              false_invalid=truth == "valid" and o == P.NS_INVALID,
                              nde_error=o == P.NDE and P.NDE not in ok,
-                             engine_error=o in (P.ERROR, P.OTHER),
+                             opp_error=o == P.NS_OPPOSITE and P.NS_OPPOSITE not in ok,
+                             depth_error=o == P.NS_DEPTH and P.NS_DEPTH not in ok,
+                             engine_error=o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok),
                              error=o not in ok, correct_definite=o in good, definite=o in P.DEFINITE,
                              gates=gates))
     return rows
@@ -166,6 +177,8 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
                     false_supported=rate(sum(r["sup_error"] for r in rs), sum(r["sup_error_possible"] for r in rs)),
                     false_invalid=rate(sum(r["false_invalid"] for r in rs), sum(r["valid"] for r in rs)),
                     false_nde=rate(sum(r["nde_error"] for r in rs), sum(r["nde_error_possible"] for r in rs)),
+                    false_opposite=rate(sum(r["opp_error"] for r in rs), sum(r["opp_error_possible"] for r in rs)),
+                    false_depth=rate(sum(r["depth_error"] for r in rs), sum(r["depth_error_possible"] for r in rs)),
                     engine_errors=rate(sum(r["engine_error"] for r in rs), len(rs)),
                     correct_definite=rate(sum(r["correct_definite"] for r in rs if r["establishable"]),
                                           sum(r["establishable"] for r in rs)),
@@ -178,6 +191,7 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
         groups.setdefault(("per_truth", r["truth"]), []).append(r)
     for (where, key), rs in groups.items():
         out[where][key] = summary(rs)
+    out["pooled"] = summary(rows)  # P1-P4 and P6-P7 pooled over every card (reported)
     crit = out["criteria"]
     members = {}
     fixed = (pilot.get("s3_rules") or {}).get("tiers")
@@ -194,16 +208,24 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
         members[f"S1:{c.name}"] = (rs, "sup_error")
     crit["S1"] = dict(conditions=s1, passed=bool(s1) and all(v["passed"] for v in s1.values()))
 
-    def error_criterion(name, rs, field, must_have_cards=False):
-        rule = rules[name]
-        k = sum(r[field] for r in rs)
-        passed = (k <= rule["max_allowed"]) if rule["judged"] else (not must_have_cards or bool(rs))
-        crit[name] = dict(rate(k, len(rs)), nominal=rule["nominal"], rule_nominal=rule["rule_nominal"],
-                          raised=rule["raised"], max_allowed=rule["max_allowed"], judged=rule["judged"],
-                          p_pass_sound=rule["p_pass_sound"], p_pass_doubled=rule["p_pass_doubled"], passed=passed)
-        members[name] = (rs, field)
-    # S2: false SUPPORTED on every card where SUPPORTED is an error, at their mean rule nominal
-    error_criterion("S2", [r for r in rows if r["sup_error_possible"]], "sup_error")
+    # S2, S4, S5, S6: every wrong outcome in its cell (oc.error_cells): a false SUPPORTED per group of
+    # the cards outside S1; a false NOT SUPPORTED against the direction or explained by depth, a false
+    # "metric invalid" and a false NO DETECTABLE EFFECT, each per stratum. A criterion holds if every
+    # cell holds; a cell without cards holds (no card on which its error can occur).
+    for name in oc.ERROR_CRITERIA:
+        cells = {}
+        for cell, rule in rules["cells"].items():
+            if cell.split(":")[0] != name:
+                continue
+            rs = [rows[i] for i in rule["members"]]
+            k = sum(r[FLAG[rule["outcome"]]] for r in rs)
+            cells[cell] = dict(rate(k, len(rs)), outcome=rule["outcome"], nominal=rule["nominal"],
+                               rule_nominal=rule["rule_nominal"], raised=rule["raised"], judged=rule["judged"],
+                               max_allowed=rule["max_allowed"], p_pass_sound=rule["p_pass_sound"],
+                               p_pass_doubled=rule["p_pass_doubled"], p_pass_measured=rule.get("p_pass_measured"),
+                               passed=(k <= rule["max_allowed"]) if rule["judged"] else True)
+            members[cell] = (rs, FLAG[rule["outcome"]])
+        crit[name] = dict(cells=cells, passed=all(v["passed"] for v in cells.values()))
     # S3: correct definite outcomes on establishable cards, per stratum (real effects, nulls, blind
     # or useless metrics; not N3 and N8), each at its mean measured decisiveness (at most 0.85) and
     # at the tier fixed before the key (oc.criteria_rules). S3 holds if every stratum is judged and
@@ -220,13 +242,6 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
         members[f"S3:{st}"] = (rs, "correct_definite")
     crit["S3"] = dict(strata=s3, tiers_fixed_before_the_key=fixed is not None,
                       passed=all(s3[st]["passed"] for st in oc.STRATA))
-    # S4: outside the allowed outcomes, all cards, against the mean of the cards' rule nominals
-    error_criterion("S4", rows, "error", must_have_cards=True)
-    # S5: false "metric invalid" (GATE 4/5) on cards whose metric is valid by the truth
-    error_criterion("S5", [r for r in rows if r["valid"]], "false_invalid")
-    # S6: false NO DETECTABLE EFFECT where it is an error (a blind or useless metric; a real effect
-    # at or above the SESOI)
-    error_criterion("S6", [r for r in rows if r["nde_error_possible"]], "nde_error")
     # S7: no engine error, missing report or unexpected verdict on any card
     k = sum(r["engine_error"] for r in rows)
     crit["S7"] = dict(rate(k, len(rows)), max_allowed=0, passed=bool(rows) and k == 0)
@@ -242,10 +257,11 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
         for name, (rs, field) in members.items():
             de[name] = overlap_interval([r[field] for r in rs], [donors.get(r["dataset"], []) for r in rs])
             if de[name]["deff"] > DEFF_LIMIT:
-                limitations.append(f"{name}: design effect {de[name]['deff']:.2f} > {DEFF_LIMIT} (shared donors)")
+                limitations.append(f"{name}: design effect {de[name]['deff']:.2f} > {DEFF_LIMIT} (shared donors: "
+                                   "the rate is read beyond the background's donors with care)")
         out["secondary"]["shared_donors"] = de
-        # S1's operating characteristics at the realized design effects (v1.md section 4): the
-        # principle holds for independent datasets; with shared donors the results state them
+        # S1's operating characteristics at the realized design effects (v1.md section 4): exact
+        # given the background; read beyond its donors, the results state them at these effects
         per = {}
         for c, v in s1.items():
             d = de.get(f"S1:{c}", {}).get("deff", 1.0)
@@ -258,9 +274,13 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
     return out
 
 
-def read_results(results: Path) -> tuple[dict, dict]:
-    """(verdict, cause) by card id and donors by dataset id, from the blind run's merged results."""
+def read_results(results: Path, key: str | None = None) -> tuple[dict, dict]:
+    """(verdict, cause) by card id and donors by dataset id, from the blind run's merged results;
+    with `key`, the results must be the run of that key (the third review: the key given to the
+    scoring was never compared with the manifest's)."""
     manifest = json.loads((results / "manifest.json").read_text())
+    if key is not None and manifest.get("key") != key:
+        raise SystemExit("the key given is not the key of these results (manifest.json)")
     reports, donors = {}, {}
     for d in manifest["datasets"]:
         donors[d["id"]] = d.get("donors", [])
@@ -280,13 +300,16 @@ def main(argv=None):
     p.add_argument("--out", default="scores.json")
     args = p.parse_args(argv)
     pilot = json.loads(Path(args.pilot).read_text())
-    reports, donors = read_results(Path(args.results))
+    reports, donors = read_results(Path(args.results), P.check_key(args.key))
     entries = P.assign(args.key, pilot.get("dropped", ()), pilot.get("pool_size"))
     res = score(entries, reports, pilot, donors)
     res["key"] = args.key
     Path(args.out).write_text(json.dumps(res, indent=1))
     for s in oc.CRITERIA:
         print(s, "PASS" if res["criteria"][s]["passed"] else "FAIL")
+        for cell, v in (res["criteria"][s].get("cells") or {}).items():
+            if not v["passed"]:
+                print(f"  {cell}: {v['k']}/{v['n']}, at most {v['max_allowed']} allowed")
     for st, v in res["criteria"]["S3"]["strata"].items():
         print(f"  S3 {st}: {v['k']}/{v['n']} correct definite"
               + (f", at least {v['min_required']} required ({v['tier']} tier)" if v["judged"] else

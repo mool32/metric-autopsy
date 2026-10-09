@@ -1,30 +1,18 @@
-# The selection's environment (select_backgrounds.py: the CELLxGENE Census), frozen with the tag.
-# The panel's own numerical stack is requirements-panel.txt; the selection only extracts data,
-# whose sha256 and planned content hash are recorded. `pip freeze` goes into selection.md.
-numpy==2.5.3
-pandas==2.3.3
-scipy==1.18.1
-anndata==0.13.4
-cellxgene-census==1.18.0
-tiledbsoma==2.3.0
-somacore==1.0.29
-pyarrow==25.0.1
-s3fs==2026.9.0
-fsspec==2026.9.0
+# The flagship audit's environment (.github/workflows/audit.yml, Python 3.12.15): the Census client and
+# the v0.1.1 engine's dependencies, the whole closure, resolved on 2026-10-09 (the third review found
+# scipy and anndata unpinned). Installed with --no-deps and checked with pip check; the engine itself
+# is installed from its tag with pip install --no-deps -e.
 aiobotocore==3.9.2
-scanpy==1.12.4
-requests==2.34.2
-# Their dependencies: the whole closure, resolved for Python 3.13.16 on 2026-10-09 (the third
-# review found them unpinned). The workflow installs this file with --no-deps and runs pip check,
-# so that nothing else enters the environment.
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.4
 aioitertools==0.13.0
 aiosignal==1.4.0
+anndata==0.13.4
 annotated-types==0.8.0
 array-api-compat==1.15.0
 attrs==26.1.0
 botocore==1.43.106
+cellxgene-census==1.18.0
 certifi==2026.7.22
 charset-normalizer==3.5.2
 cloudpickle==3.1.2
@@ -35,6 +23,7 @@ fast-array-utils==1.5.1
 fonttools==4.66.1
 formulaic==1.2.2
 frozenlist==1.8.0
+fsspec==2026.9.0
 google-crc32c==1.9.0
 h5py==3.16.0
 idna==3.20
@@ -53,31 +42,40 @@ natsort==8.4.0
 networkx==3.7
 numba==0.68.0
 numcodecs==0.17.0
+numpy==2.5.3
 packaging==26.3
+pandas==2.3.3
 patsy==1.0.3
 pillow==12.3.0
 propcache==0.5.4
+pyarrow==25.0.1
 pyarrow-hotfix==0.7
 pydantic==2.14.0
-pydantic_core==2.50.0
 pydantic-settings==2.15.0
+pydantic_core==2.50.0
 pynndescent==0.6.0
 pyparsing==3.3.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.4
 pytz==2026.5
 PyYAML==6.0.3
+requests==2.34.2
+s3fs==2026.9.0
+scanpy==1.12.4
 scikit-learn==1.9.1
+scipy==1.18.1
 scverse-misc==0.1.6
 seaborn==0.13.2
 session-info2==0.4.2
 shapely==2.2.0
 six==1.17.0
+somacore==1.0.29
 statsmodels==0.15.0
 threadpoolctl==3.7.0
+tiledbsoma==2.3.0
 tqdm==4.70.1
-typing_extensions==4.16.0
 typing-inspection==0.4.4
+typing_extensions==4.16.0
 tzdata==2026.5
 umap-learn==0.5.12
 urllib3==2.8.0

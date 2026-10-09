@@ -103,6 +103,15 @@ def r1_allowed(obs) -> tuple:
     return ("SUPPORTED",) if enough else ("INCONCLUSIVE",)
 
 
+def r2_allowed(obs) -> tuple:
+    """R2a's and R2b's allowed outcomes by the design (v1.md 3.2; the third review found the
+    second branch unimplemented): SUPPORTED or INCONCLUSIVE with at least 3 independent captures
+    (batches) in each of G1 and G2M, else INCONCLUSIVE (one capture per phase: no replicates)."""
+    per_phase = obs.groupby("phase")["batch"].nunique()
+    enough = min(int(per_phase.get("G1", 0)), int(per_phase.get("G2M", 0))) >= 3
+    return ("SUPPORTED", "INCONCLUSIVE") if enough else ("INCONCLUSIVE",)
+
+
 def r1(spec, data_dir) -> list[dict]:
     from metric_autopsy import SimpleData
     got = _load(spec, "B2", data_dir)
@@ -150,13 +159,13 @@ def r2(spec, data_dir) -> list[dict]:
     data = SimpleData(X, obs, genes)
     g2m = _cols(genes, P.G2M_GENES)
     endo = [j for j, g in enumerate(genes) if not g.upper().startswith("ERCC")]
-    out = []
+    out, allowed = [], r2_allowed(obs)
     a = _run(partial(log_cp10k_mean, cols=g2m), data, ("G2M", "G1"), [], "batch",
              dict(estimand="composition", direction="decrease"), [genes[j] for j in g2m], "phase")
-    out.append(_record("R2a G2M score", a, ("INCONCLUSIVE",), f"{len(g2m)} G2M genes matched"))
+    out.append(_record("R2a G2M score", a, allowed, f"{len(g2m)} G2M genes matched"))
     a = _run(partial(log_total, endogenous=endo), data, ("G2M", "G1"), [], "batch",
              dict(estimand="content", direction="decrease", spikein_prefix="ERCC"), None, "phase")
-    out.append(_record("R2b total RNA, ERCC present", a, ("INCONCLUSIVE",)))
+    out.append(_record("R2b total RNA, ERCC present", a, allowed))
     no_ercc = SimpleData(X[:, endo], obs, [genes[j] for j in endo])
     a = _run(partial(log_total, endogenous=list(range(len(endo)))), no_ercc, ("G2M", "G1"), [], "batch",
              dict(estimand="content", direction="decrease", spikein_prefix="ERCC"), None, "phase")

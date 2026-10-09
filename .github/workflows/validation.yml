@@ -13,7 +13,9 @@
 # backgrounds committed to the branch results/panel-v1; score -> scores.json committed;
 # anchors -> R1-R3 committed. Every job
 # that runs the panel's code first runs the frozen tag's own frozen.py on its checkout, before it
-# installs anything (guard, check_shards and cleanup run none: git checks, artifacts, a deletion).
+# installs anything (guard, check_shards and cleanup run none: git checks, artifacts, a deletion);
+# it also stops a job of a re-run workflow run (one attempt: github.run_attempt must be 1), and
+# every shard records its run and attempt in the results.
 #
 # Dry run: pull requests that touch the panel run the same jobs and the same scripts on simulated
 # backgrounds written as files (simulate.py write), with a recent drand round as the key: the
@@ -39,6 +41,10 @@ concurrency:
   group: validation-v1-${{ github.ref }}
   cancel-in-progress: false
 
+# The environment of every job is pinned (the third review found it pinned only in part): the runner
+# image family ubuntu-24.04 (GitHub updates its builds; each job's log names its image version, and
+# run_panel.machine records it), CPython 3.13.16, pip 26.2.1, and each requirements file the whole
+# closure of its packages, installed with --no-deps and checked with pip check.
 env:
   FROZEN_TAG: v0.3.0-prereg
   RUN_TAG: panel-v1-run
@@ -55,7 +61,7 @@ env:
 
 jobs:
   guard:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       real: ${{ steps.mode.outputs.real }}
       shards: ${{ steps.mode.outputs.shards }}
@@ -86,16 +92,19 @@ jobs:
           test "$(git cat-file -t "$FROZEN_TAG")" = tag
           test "$(git rev-list -n 1 "$FROZEN_TAG")" = "$(git rev-parse HEAD)"
           git tag -l --format='%(contents)' "$FROZEN_TAG"
-      - name: The run's branches and run tag do not exist yet (real run, one attempt; v1.md section 2)
+      - name: The run's branches and run tag do not exist yet, and this is the run's first attempt (real run, one attempt; v1.md section 2)
         if: env.REAL == 'true'
         run: |
+          # every later job of the real run checks the attempt again in frozen.py (a re-run of failed jobs
+          # does not re-run this one)
+          if [ "$GITHUB_RUN_ATTEMPT" != "1" ]; then echo "attempt $GITHUB_RUN_ATTEMPT of the run: the real run is one attempt"; exit 1; fi
           for ref in "refs/heads/$DATA_BRANCH" refs/heads/results/panel-v1 "refs/tags/$RUN_TAG"; do
             if git ls-remote --exit-code origin "$ref" > /dev/null; then echo "$ref exists: the run was started before"; exit 1; fi
           done
 
   select:
     needs: guard
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     permissions:
       contents: write
@@ -113,11 +122,11 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - name: Install the selection's environment
         run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-select.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-select.txt && pip check
       - name: Rehearsal (dry run, no identities printed)
         if: needs.guard.outputs.real != 'true'
         run: python validation/prereg/select_backgrounds.py --rehearsal --out-dir data
@@ -156,7 +165,7 @@ jobs:
 
   pilot:
     needs: [guard, select]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 340
     permissions:
       contents: write
@@ -174,11 +183,11 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - name: Install the pinned environment and the engine from this commit
         run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -213,7 +222,7 @@ jobs:
 
   run_tag:
     needs: [guard, pilot]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     outputs:
@@ -232,7 +241,7 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - name: Name a drand round at least an hour ahead and push the run tag
         id: tag
         run: |
@@ -265,7 +274,7 @@ jobs:
   key:
     needs: [guard, run_tag]
     if: always() && needs.run_tag.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 330
     outputs:
       sha256: ${{ steps.key.outputs.sha256 }}
@@ -281,10 +290,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-beacon.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-beacon.txt && pip check
       - name: The relays' chain info against the constants
         run: python validation/prereg/beacon.py info
       - name: Wait for the round, fetch it from the relays, verify its signature
@@ -302,7 +311,7 @@ jobs:
   prepare:
     needs: [guard, run_tag]
     if: always() && needs.run_tag.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     outputs:
       compact: ${{ steps.prep.outputs.compact }}
@@ -318,10 +327,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -341,7 +350,7 @@ jobs:
   shard:
     needs: [guard, run_tag, key, prepare]
     if: always() && needs.key.result == 'success' && needs.prepare.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 330
     # a lost shard is found by check_shards and run again by rerun; collect needs every shard
     continue-on-error: true
@@ -361,10 +370,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -403,7 +412,7 @@ jobs:
   check_shards:
     needs: [guard, key, prepare, shard]
     if: always() && needs.key.result == 'success' && needs.prepare.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       actions: read
     outputs:
@@ -426,7 +435,7 @@ jobs:
   rerun:
     needs: [guard, run_tag, key, prepare, check_shards]
     if: always() && needs.check_shards.result == 'success' && needs.check_shards.outputs.missing != '[]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 330
     strategy:
       fail-fast: false
@@ -444,10 +453,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -469,7 +478,7 @@ jobs:
               --pilot validation/prereg/pilot.json --key-record keyrec/key.json --shard ${{ matrix.shard }} \
               --shards ${{ needs.guard.outputs.n_shards }} --workers 4 --limit 4 --out out
           fi
-          echo '{"shard": ${{ matrix.shard }}, "reason": "no artifact from the first attempt (a lost runner or an infrastructure failure)", "rerun_job": "${{ github.job }}", "run_id": ${{ github.run_id }}}' > out/rerun.json
+          echo '{"shard": ${{ matrix.shard }}, "reason": "no artifact from the first attempt (a lost runner or an infrastructure failure)", "rerun_job": "${{ github.job }}", "run_id": ${{ github.run_id }}, "run_attempt": ${{ github.run_attempt }}}' > out/rerun.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: shard-${{ matrix.shard }}
@@ -479,7 +488,7 @@ jobs:
   collect:
     needs: [guard, run_tag, key, check_shards, rerun]
     if: always() && needs.check_shards.result == 'success' && (needs.rerun.result == 'success' || needs.rerun.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     permissions:
       contents: write
@@ -497,10 +506,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -537,17 +546,20 @@ jobs:
           cp ../validation/prereg/pilot.json ../validation/prereg/backgrounds.json .
           cp ../results/manifest.json ../results/summary.json ../results/summary.md ../results/runtime.json ../results/key.json ../results/SHA256SUMS .
           gzip -c ../results/runlog.jsonl > runlog.jsonl.gz
-          printf '# Validation v1: results of workflow run %s\n\nThe frozen code is the tag %s; the run tag %s names the drand round whose randomness is the key (key.json).\nreports.tar.gz holds one JSON report per claim card; SHA256SUMS covers every file of the uncompressed results.\ncompact.tar (or its parts, concatenated) holds the planned backgrounds the shards read (compact/SHA256 is their digest); pilot.json and backgrounds.json are the run tag'"'"'s.\nAnyone can re-run datasets and compare the reports: tar -xf compact.tar, then, at the run tag, python validation/prereg/blind.py verify --results . --compact compact --pilot pilot.json --datasets 20 --out rerun\n' \
+          printf '# Validation v1: results of workflow run %s\n\nThe frozen code is the tag %s; the run tag %s names the drand round whose randomness is the key (key.json).\nreports.tar.gz holds one JSON report per claim card; SHA256SUMS covers every file of the uncompressed results.\ncompact.tar (or its parts, concatenated) holds the planned backgrounds the shards read (compact/SHA256 is their digest); pilot.json and backgrounds.json are the run tag'"'"'s.\nAnyone can re-run datasets and compare the reports: tar -xf compact.tar and cat reports.tar.gz* | tar -xzf - (concatenate the parts first where they are split), then, at the run tag, python validation/prereg/blind.py verify --results . --compact compact --pilot pilot.json --datasets 20 --out rerun (it checks SHA256SUMS first)\n' \
             "${{ github.run_id }}" "$FROZEN_TAG" "$RUN_TAG" > README.md
           git add -A
-          git commit -qm "Validation v1: the blind run's results (workflow run ${{ github.run_id }})"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/$rb"
+          git commit -qm "Validation v1: the blind run's results (workflow run ${{ github.run_id }}, attempt ${{ github.run_attempt }})"
+          # the real run creates its results branch once (a plain push fails if it exists); the dry run's
+          # scratch results branch is replaced on every pull request run
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then force=""; else force="-f"; fi
+          git push $force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/$rb"
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   score:
     needs: [guard, run_tag, collect]
     if: always() && needs.collect.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: write
@@ -563,10 +575,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -593,7 +605,7 @@ jobs:
   anchors:
     needs: [guard, run_tag, score]
     if: always() && needs.score.result == 'success' && needs.guard.outputs.real == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     permissions:
       contents: write
@@ -609,10 +621,10 @@ jobs:
           python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.13.16"
       - run: |
-          python -m pip install --upgrade pip
-          pip install -r validation/prereg/requirements-panel.txt
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install --no-deps -e .
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -634,7 +646,7 @@ jobs:
     # the dry run's scratch branch, once every job that checks out its commits is done
     needs: [guard, select, score]
     if: always() && needs.guard.outputs.real != 'true' && needs.select.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:

@@ -39,6 +39,33 @@ import simulate  # noqa: E402
 TIMING_KEY = "7" * 64  # public: the timing sample is not the panel
 SHARDS, WORKERS = 20, 4  # the blind run: 20 shard jobs of 4 workers (validation.yml)
 BUDGET_HOURS = 3.0       # a shard's expected time may not exceed this (a job may run 6 h)
+MEMORY_SHARE = 0.75      # the run's workers at a worker's measured peak may use at most this share of the runner's memory
+
+
+def runner_memory_mb() -> float | None:
+    """The machine's physical memory in MB (None where the system does not say)."""
+    try:
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2 ** 20
+    except (ValueError, OSError, AttributeError):
+        return None
+
+
+def check_memory(peak_mb: float, total_mb: float | None, workers: int = WORKERS, enforce: bool = True) -> str:
+    """The memory rule of v1.md section 4 (the third review: the drops weighed time only, and a
+    worker killed for memory after the key would leave no results): `workers` workers at the
+    sample's peak memory of one worker (every condition is in the sample, N7 at its largest
+    design) must fit in MEMORY_SHARE of the runner's memory; else, where the rule is enforced (the
+    pilot step), the pilot stops before the key exists. Returns the line for the log."""
+    need = peak_mb * workers
+    if total_mb is None:
+        if enforce:
+            raise SystemExit("the runner's memory is unknown: the memory rule cannot be checked")
+        return f"# memory: a worker's peak {peak_mb:.0f} MB x {workers} workers = {need:.0f} MB; the machine's memory is unknown"
+    line = (f"# memory: a worker's peak {peak_mb:.0f} MB x {workers} workers = {need:.0f} MB; the runner has "
+            f"{total_mb:.0f} MB (at most {MEMORY_SHARE:.0%} may be used)")
+    if enforce and need > MEMORY_SHARE * total_mb:
+        raise SystemExit(line[2:] + ": too much, the run stops before the key")
+    return line
 
 
 def shard_hours(seconds_per_card: dict, dropped=()) -> float:
@@ -110,7 +137,7 @@ def main(argv=None):
     print(f"# sample of {len(entries)} datasets: {dict(Counter(e['condition'] for e in entries))}; levels "
           f"{dict(Counter(level[(P.conditions()[e['condition']].background, e['pair'])] for e in entries))}")
     print(f"# dataset shape (cells x genes): {P.build(entries[0], bgs, pilot)[0].shape}")
-    rows, sec = {}, {}
+    rows, sec, peaks = {}, {}, {}
     with tempfile.TemporaryDirectory() as tmp:
         for w in sorted({1, args.workers}):
             s = R.run(entries, bgs, pilot, Path(tmp) / f"out{w}", workers=w)
@@ -123,7 +150,7 @@ def main(argv=None):
                 for c in row["cards"]:
                     by.setdefault(cond_of[row["id"]], []).append(runtime[c["id"]]["seconds"])
             sec[w] = {c: float(np.mean(v)) for c, v in by.items()}
-            peak = max(c.get("peak_rss_mb") or 0 for c in runtime.values())
+            peak = peaks[w] = max(c.get("peak_rss_mb") or 0 for c in runtime.values())
             print(f"workers={w}: {s['run']} cards in {s['wall_seconds']:.0f} s wall; per card mean "
                   f"{s['mean_seconds']:.1f} s, median {s['median_seconds']:.1f} s; errors {s['errors']}; "
                   f"peak memory of a worker {peak:.0f} MB")
@@ -136,9 +163,10 @@ def main(argv=None):
           f"(single-core {shard_hours(sec[1], dropped) * WORKERS * SHARDS:.1f} CPU-h)")
     print(f"# blind run: {SHARDS} shards of {WORKERS} workers, a shard's expected time "
           f"{shard_hours(sec[w], dropped):.2f} h (budget {BUDGET_HOURS} h per shard; a job may run 6 h)")
+    if args.write_drops and w != WORKERS:
+        raise SystemExit(f"the drops are decided at the run's {WORKERS} workers")
+    print(check_memory(peaks[w], runner_memory_mb(), WORKERS, enforce=args.write_drops))
     if args.write_drops:
-        if w != WORKERS:
-            raise SystemExit(f"the drops are decided at the run's {WORKERS} workers")
         backgrounds = [d for d in pilot.get("dropped", ()) if d.endswith(":*")]  # the pilot's: kept
         dropped = backgrounds + decide_drops(sec[w], dropped=backgrounds)
         pilot["dropped"] = P.check_dropped(dropped)

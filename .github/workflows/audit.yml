@@ -25,7 +25,7 @@ env:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     permissions:
       contents: write
@@ -36,12 +36,14 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.12"
-      - name: The v0.1.1 engine from its tag, and the Census client
+          python-version: "3.12.15"
+      - name: The v0.1.1 engine from its tag, and the Census client (pinned, the whole closure)
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install pip==26.2.1
           git worktree add ../metric-autopsy-v0.1.1 v0.1.1
-          pip install -e ../metric-autopsy-v0.1.1 cellxgene-census==1.18.0 scipy anndata
+          pip install --no-deps -r validation/flagship_audit/requirements-audit.txt
+          pip install --no-deps -e ../metric-autopsy-v0.1.1
+          pip check
           python -c "import metric_autopsy; print(metric_autopsy.__version__)"
       - name: Audit (dry run on fabricated data)
         if: env.REAL != 'true'

@@ -9,7 +9,7 @@ dose without saturation (the smallest dose whose response reaches 95% of the gri
 per pool pair the truth about the metric: its population response at that dose against
 delta_min = 0.5 x SESOI, valid at >= 1.2 delta_min, blind at <= 0.8 delta_min, ambiguous
 between - on the background's null, and for the conditions whose data change the pair's counts
-(N2, N3, N8, E1-E3: panel.TRUTH_CASE_CONDITIONS) on the condition's own datasets ("truth_case").
+(N2-N5, N8, E1-E3: panel.TRUTH_CASE_CONDITIONS) on the condition's own datasets ("truth_case").
 On B1 it also fixes, per level, the key dose (the smallest grid dose at which the oracle detects
 E1 with power >= 0.9 and the level's Δ* >= 1.25 x SESOI; where there is none, the real effects
 use the saturation dose), Δ* per pair (the population difference of the metric under the
@@ -306,6 +306,40 @@ def per_donor_paired(X, obs, fn) -> np.ndarray:
     return np.asarray(out)
 
 
+EQUALIZE_DRAWS = 5  # the engine's equalizations per analysis (effect.estimate_effect's n_equalize)
+
+
+def equalized_sets(X, obs, rng, draws: int = EQUALIZE_DRAWS) -> list:
+    """The engine's composition correction where nothing is planted (equalize.thin_to_match, as
+    effect.estimate_effect runs it; the third review found the oracle analysing such data raw): the
+    group with the higher mean total thinned by one common ratio to the other's, `draws` times."""
+    group = np.asarray(obs["group"])
+    tot = X.sum(axis=1)
+    a, b = group == "A", group == "B"
+    hi, lo = (a, b) if tot[a].mean() >= tot[b].mean() else (b, a)
+    p = float(np.clip(tot[lo].mean() / tot[hi].mean(), 0.0, 1.0)) if tot[hi].mean() > 0 else 1.0
+    out = []
+    for _ in range(draws):
+        Y = X.copy()
+        Y[hi] = rng.binomial(np.round(Y[hi]).astype(np.int64), p).astype(np.float64)
+        out.append(Y)
+    return out
+
+
+def corrected_values(X, obs, entry: dict, fn, rng, paired: bool = False):
+    """The replicate values the oracle tests: after the true correction where a nuisance is
+    planted (`true_correction`), else after the engine's equalization (`equalized_sets`, the mean
+    of the replicate values over its draws, as the engine averages them)."""
+    per = per_donor_paired if paired else per_donor
+    fixed = true_correction(X, obs, entry, rng)
+    if fixed is not None:
+        return per(fixed, obs, fn)
+    vals = [per(Y, obs, fn) for Y in equalized_sets(X, obs, rng)]
+    if paired:
+        return np.mean(vals, axis=0)
+    return np.mean([v[0] for v in vals], axis=0), np.mean([v[1] for v in vals], axis=0)
+
+
 def true_correction(X, obs, entry: dict, rng):
     """The planted nuisance applied to the side that lacks it (None if nothing was planted)."""
     name, variant, side = entry["condition"], entry["variant"], entry["side"]
@@ -355,27 +389,40 @@ def outcome_from_values(raw, corr, corrected: bool, sesoi: float, direction: str
     return P.NDE if tost_width(*corr) < sesoi else P.INCONCLUSIVE
 
 
+def paired_outcome(raw, corr, sesoi: float, direction: str) -> str:
+    """`outcome_from_values` for the paired design (N5): per-donor differences A - B, raw and
+    corrected, tested by sign flips and the paired TOST, in the engine's order."""
+    hit, est = detects_paired(corr)
+    raw_hit, raw_est = detects_paired(raw)
+    retained = est / raw_est if raw_est else float("nan")
+    if raw_hit and not hit and np.isfinite(retained) and abs(retained) < 0.5 and paired_tost_width(corr) < sesoi:
+        return P.NS_DEPTH
+    if raw_hit and hit and np.sign(est) != np.sign(raw_est):
+        return P.INCONCLUSIVE
+    if hit:
+        observed = "decrease" if est > 0 else "increase"
+        return P.SUPPORTED if observed == direction or direction == "two-sided" else P.NS_OPPOSITE
+    return P.NDE if paired_tost_width(corr) < sesoi else P.INCONCLUSIVE
+
+
 def effect_outcome(entry: dict, X, obs, card: dict, ia: int, ib: int, rng) -> str:
-    """The oracle's outcome on the effect, with the metric's validity known."""
+    """The oracle's outcome on the effect, with the metric's validity known: the engine's analysis
+    (its correction where nothing is planted, the true one where a nuisance is), in its order."""
     sesoi = float(card["prereg"]["sesoi"])
     direction = card["prereg"]["direction"]
     fn = (lambda x: norm_pearson(x, ia, ib))
     if entry["condition"] == "N5":
-        d = per_donor_paired(X, obs, fn)
-        hit, est = detects_paired(d)
-        if hit:
-            observed = "decrease" if est > 0 else "increase"
-            return P.SUPPORTED if observed == direction else P.NS_OPPOSITE
-        return P.NDE if paired_tost_width(d) < sesoi else P.INCONCLUSIVE
-    raw = per_donor(X, obs, fn)
-    fixed = true_correction(X, obs, entry, rng)
-    corr = raw if fixed is None else per_donor(fixed, obs, fn)
-    return outcome_from_values(raw, corr, fixed is not None, sesoi, direction)
+        return paired_outcome(per_donor_paired(X, obs, fn), corrected_values(X, obs, entry, fn, rng, paired=True),
+                              sesoi, direction)
+    return outcome_from_values(per_donor(X, obs, fn), corrected_values(X, obs, entry, fn, rng), True, sesoi,
+                               direction)
 
 
-def _values_outcome(raw, card: dict) -> str:
-    """The engine's order on replicate values of null data without a planted nuisance."""
-    return outcome_from_values(raw, raw, False, float(card["prereg"]["sesoi"]), card["prereg"]["direction"])
+def _values_outcome(raw, card: dict, corr=None) -> str:
+    """The engine's order on replicate values of null data without a planted nuisance: raw, and
+    after the engine's equalization where it is given (`corr`)."""
+    return outcome_from_values(raw, raw if corr is None else corr, corr is not None,
+                               float(card["prereg"]["sesoi"]), card["prereg"]["direction"])
 
 
 def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> dict:
@@ -401,7 +448,10 @@ def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng
             genes = list(bg.genes)
             cols = [genes.index(g) for g in card["score_genes"]]
             g4 = gate4_outcome(module_deltas(X, cols, [genes.index(g) for g in bg.plan["g2m"]], rng, reps), dmin)
-            values = per_donor(X, obs, lambda x: module_score(x, cols))
+            score = (lambda x: module_score(x, cols))
+            return dict(best=P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE, gate4=g4,
+                        effect=_values_outcome(per_donor(X, obs, score), card,
+                                               corrected_values(X, obs, entry, score, rng)))
         return dict(best=P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE, effect=_values_outcome(values, card),
                     gate4=g4)
     pe = P.pool_entry(bg, entry)
@@ -499,11 +549,14 @@ def _sizes() -> dict:
 
 
 def _map(fn, jobs: list, workers: int) -> list:
+    """`fn` over `jobs` in forked processes, in order; a worker the system kills (out of memory)
+    breaks the pool at once rather than at the job's timeout (as run_panel.fork_map)."""
     if workers <= 1 or len(jobs) < 2:
         return [fn(j) for j in jobs]
     import multiprocessing as mp
-    with mp.get_context("fork").Pool(workers) as pool:
-        return pool.map(fn, jobs, chunksize=max(1, len(jobs) // (8 * workers)))
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(workers, mp_context=mp.get_context("fork")) as ex:
+        return list(ex.map(fn, jobs, chunksize=max(1, len(jobs) // (8 * workers))))
 
 
 def _base_condition(background: str) -> P.Condition:
@@ -597,7 +650,7 @@ def pair_truth(bgs: dict, background: str, pilot: dict, workers: int = 1) -> dic
 
 def case_truth(bgs: dict, pilot: dict, workers: int = 1) -> dict:
     """The truth about the metric on the data of every condition and variant that changes the
-    pair's counts (panel.TRUTH_CASE_CONDITIONS: capture loss, dropout, variable capture, the real
+    pair's counts or the dataset's size (panel.TRUTH_CASE_CONDITIONS: capture loss, dropout, N4's and N5's designs, variable capture, the real
     effects' coupling): per pool pair its population response to GATE 4's injection on
     CASE_DATASETS datasets of the case x CASE_REPS injections, at the card's dose (decided after
     the first review: the truth measured on N1 alone does not hold where the data thin the pair)."""
@@ -636,7 +689,8 @@ def _null_job(job):
     X, obs, genes, cards = P.build(e, bgs, _stand_in(pilot, background, bg.plan["pool"][pair]["level"]))
     pe = bg.plan["pool"][pair]
     ia, ib = genes.index(pe["pair"][0]), genes.index(pe["pair"][1])
-    a, b = per_donor(X, obs, lambda x: norm_pearson(x, ia, ib))
+    # the engine's analysis of the null: after its equalization of depth (the third review)
+    a, b = corrected_values(X, obs, e, lambda x: norm_pearson(x, ia, ib), np.random.default_rng([e["seed"], 2]))
     hit, est = detects(a, b)
     against = hit and ("decrease" if est > 0 else "increase") != cards[-1]["prereg"]["direction"]
     return bool(hit), bool(against), float(tost_width(a, b))
@@ -645,7 +699,7 @@ def _null_job(job):
 def choose_sesoi(bgs: dict, background: str, level: str, pilot: dict, n: int = PILOT_DATASETS,
                  workers: int = 1) -> tuple[float, bool]:
     """The smallest SESOI on the grid at which the oracle reaches a correct definite outcome on the
-    background's null (N1 on B1: 2 x 8 donors; N7 on B2: all mice split in two; pairs of this
+    background's null (N1 on B1: 2 x 8 donors; N7 on B2: at most N7_MAX_MICE mice split in two; pairs of this
     level, drawn in turn) in at least SESOI_TARGET of n datasets: NO DETECTABLE EFFECT (not
     detected, TOST within ±SESOI) or NOT SUPPORTED against the declared direction. Counted
     exactly on the grid (decided after the first review: the null must be establishable). Returns
@@ -819,8 +873,9 @@ def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict
                            se=float(math.sqrt(sum(pilot["delta"][k][f"{f:g}"]["se"] ** 2 for k in idx)) / len(idx)))
             for f in E1_FACTORS}
         pilot["n2_raw_power"][level] = raw_difference_power(bgs, level, pilot, n, workers)
+    # reported only (v1.md section 3.2): the levels where N2's capture loss is visible in the raw
+    # difference with the oracle's power, so that N2 there tests the engine's correction of depth
     pilot["informative_levels"] = [lv for lv in P.LEVELS if pilot["n2_raw_power"][lv] >= POWER]
-    pilot["n2n3_informative"] = bool(pilot["informative_levels"])
     pilot["truth_case"] = case_truth(bgs, pilot, workers)
     pilot["establishable"] = establishability(bgs, pilot, n, workers)
     pilot["backgrounds"] = {k: P.background_sha256(b) for k, b in bgs.items()}

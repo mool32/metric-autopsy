@@ -114,8 +114,17 @@ turns that checklist into runnable behavior.
   `verify` by what the reports say; rule nominals at least the designed sizes; B2 dropped with N7;
   the model in the engine's order with N3 and N8 outside S3's strata; new criteria S6 (false NO
   DETECTABLE EFFECT) and S7 (no engine error). The review predicts S1 failing on N8 (the engine's
-  ~8% false SUPPORTED there in simulation), an open point for the owner. A third review checks the
-  fixes; then the owner's «утверждаю». No tag yet.
+  ~8% false SUPPORTED there in simulation), an open point for the owner.
+- **Step 2h (after the third independent review):** the review found one critical defect — the
+  pooled error criteria let errors concentrated on the real effects, on N4 or on N7 through — and
+  important ones (one attempt enforced only at the start of the run, the sound validator's model
+  off the engine on GATE 5's controls, N4/N5's GATE 4 odds and the oracle's equalization, N7's
+  unbounded memory). Fixed: every error criterion is a set of cells (S2 per group of conditions,
+  S4-S6 per stratum and cause), each of which must pass; one attempt per job with the attempt
+  recorded and the results pushed without force; negative controls typical of GATE 5's null, N4/N5
+  measured on their own datasets, the oracle equalizing as the engine does; N7 at most 24 mice and a
+  memory rule before the key; every environment pinned as its whole closure. A fourth review checks
+  the fixes; then the owner's «утверждаю». No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

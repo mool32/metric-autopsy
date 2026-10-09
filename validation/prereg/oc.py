@@ -13,9 +13,11 @@ Errors are judged by the cause of a verdict, not its label (decided 2026-10-08):
 its allowed outcomes (``panel.allowed``). A card's error rates are a sound validator's on its
 case (``sound_model``), and a criterion's nominal is, per card, the larger of that rate and the
 error's designed size (``rule_nominals``, the second review): the rules are designed to allow that
-much. The n of S2-S7 depend on the truth about the metric on each pair (pilot.json) and on the
-key's assignment, so ``score.py`` computes every threshold with the rules here from the realized
-cards; S3's strata are judged at the tiers fixed before the key (``--write-judged``). This file
+much. Every kind of wrong outcome is counted where it can occur, per stratum or condition group
+(``error_cells``, the third review: errors pooled over unlike cards were absorbed). The n of S2-S7
+depend on the truth about the metric on each pair (pilot.json) and on the key's assignment, so
+``score.py`` computes every threshold with the rules here from the realized cards; S3's strata are
+judged at the tiers fixed before the key (``--write-judged``). This file
 shows the rules on the design and on scenarios for the truth, and, given pilot.json, on its
 expected cards.
 
@@ -39,8 +41,10 @@ E_SUPPORTED = ALPHA / 2       # false SUPPORTED: the two-sided effect test at al
 E_INVALID = 2 * ALPHA         # false "metric invalid": GATE 4 (alpha / 2) + GATE 5's negative control
                               # (alpha) + a silent positive control shown blind (alpha / 2)
 E_GATE5 = 1.5 * ALPHA         # the GATE 5 share of it (negative control alpha, silent positive control alpha/2)
-E_NDE = ALPHA                 # false NO DETECTABLE EFFECT (or "explained by depth"): the TOST's size
-E_OPPOSITE = ALPHA / 2        # a real effect detected against its direction: one tail of the test
+E_NDE = ALPHA                 # false NO DETECTABLE EFFECT: the TOST's size
+E_DEPTH = ALPHA               # false NOT SUPPORTED (explained by depth): the TOST's size as well (with a SESOI
+                              # the engine calls depth only where the corrected effect is shown smaller than it)
+E_OPPOSITE = ALPHA / 2        # NOT SUPPORTED (opposite direction) where it is an error: one tail of the test
 D_NOMINAL = 0.85              # correct definite outcomes on establishable cards: where no pilot measures it,
                               # and the most S3's thresholds ask for (a measured rate near 1 leaves no doubled
                               # shortfall to tell apart, which would leave the stratum unjudged)
@@ -51,16 +55,69 @@ TIERS = ("principle", "floor")          # S3's thresholds, strictest first (the 
 # judged (the second review)
 OUTSIDE_STRATA = ("N3", "N8")
 MAX_RAISED = 0.5              # the largest nominal an error criterion is raised to (``error_criterion``)
+EPS_CELL = 0.0005             # a sound validator fails an error cell with probability <= this (the 15 cells
+                              # together <= 0.0075 of the 0.016 that S1 at its design leaves of the joint 0.90)
+DATA_STRATA = ("effect", "null", "invalid")  # the strata of the error criteria: every card, by the truth
+S2_GROUPS = ("N2", "N3", "N4", "N6", "N7", "E")  # S2's groups: the cards outside S1, by condition
+# the error criteria's cells: (criterion, outcome counted, the strata or groups it is counted in);
+# every wrong outcome but an engine error (S7) is counted in exactly one cell of a card
+CAUSE_FIELD = {P.SUPPORTED: "sup", P.NS_INVALID: "inv", P.NDE: "nde", P.NS_OPPOSITE: "opp", P.NS_DEPTH: "depth"}
+DESIGNED = {P.SUPPORTED: E_SUPPORTED, P.NS_INVALID: E_INVALID, P.NDE: E_NDE, P.NS_OPPOSITE: E_OPPOSITE,
+            P.NS_DEPTH: E_DEPTH}
 ERROR_CRITERIA = ("S2", "S4", "S5", "S6")
 CRITERIA = ("S1", "S2", "S3", "S4", "S5", "S6", "S7")
+S7_OUTCOMES = (P.ERROR, P.OTHER, P.UNIDENTIFIABLE)  # and DEGENERATE METRIC on a metric that varies
 
 
 def nominal_error(ok: frozenset) -> float:
     """The designed sizes of the routes to an outcome outside the allowed set `ok`: SUPPORTED
     alpha/2, NOT SUPPORTED (metric invalid) 2 alpha, NO DETECTABLE EFFECT alpha, NOT SUPPORTED
-    (opposite direction) alpha/2."""
-    return ((E_SUPPORTED if P.SUPPORTED not in ok else 0.0) + (E_INVALID if P.NS_INVALID not in ok else 0.0)
-            + (E_NDE if P.NDE not in ok else 0.0) + (E_OPPOSITE if P.NS_OPPOSITE not in ok else 0.0))
+    (opposite direction) alpha/2, NOT SUPPORTED (explained by depth) alpha."""
+    return sum(size for o, size in DESIGNED.items() if o not in ok)
+
+
+def data_stratum(cond: P.Condition, truth: str) -> str:
+    """The stratum of a card for the error criteria (every card, unlike S3's): a blind or useless
+    metric; else real effects or nulls, by the data."""
+    if truth in ("blind", "useless", "constant"):
+        return "invalid"
+    return "effect" if cond.data == "effect" else "null"
+
+
+def s2_group(cond: P.Condition, variant: str) -> str | None:
+    """S2's group of a card outside S1 (the third review: false SUPPORTED concentrated in one
+    condition, N4's pseudoreplication or N7, passed the pooled S2): N2's steps, N3, N4, the useless
+    metrics N6a and N6b, N7, and the real effects (whose blind or useless cards can err). None for
+    S1's cards."""
+    if cond.key and variant == cond.key_variant:
+        return None
+    if cond.data == "effect":
+        return "E"
+    return "N6" if cond.name in ("N6a", "N6b") else cond.name
+
+
+def error_cells(rows: list[dict]) -> dict:
+    """The cells of S2, S4, S5 and S6 on a set of cards: per cell, the outcome it counts and its
+    member cards (indices). S2: a false SUPPORTED per group of the cards outside S1; S4: a false NOT
+    SUPPORTED for another cause than the metric (opposite direction; explained by depth) per stratum;
+    S5: a false "metric invalid" on a valid metric per stratum (real effects, nulls); S6: a false NO
+    DETECTABLE EFFECT per stratum (real effects at or above the SESOI, blind or useless metrics)."""
+    cells = {}
+
+    def add(name, outcome, member):
+        cells[name] = dict(outcome=outcome, members=[i for i, r in enumerate(rows) if member(r)])
+    for g in S2_GROUPS:
+        add(f"S2:{g}", P.SUPPORTED, lambda r, g=g: r["sup_error_possible"] and r["s2_group"] == g)
+    for st in DATA_STRATA:  # on null data a valid metric's NOT SUPPORTED against the direction is correct
+        if st != "null":
+            add(f"S4:{st}:opposite", P.NS_OPPOSITE,
+                lambda r, st=st: r["opp_error_possible"] and r["data_stratum"] == st)
+        add(f"S4:{st}:depth", P.NS_DEPTH, lambda r, st=st: r["depth_error_possible"] and r["data_stratum"] == st)
+    for st in ("effect", "null"):
+        add(f"S5:{st}", P.NS_INVALID, lambda r, st=st: r["valid"] and r["data_stratum"] == st)
+    for st in ("effect", "invalid"):
+        add(f"S6:{st}", P.NDE, lambda r, st=st: r["nde_error_possible"] and r["data_stratum"] == st)
+    return cells
 
 
 def stratum(cond: P.Condition, truth: str) -> str | None:
@@ -130,40 +187,39 @@ def outcome_distribution(cond: P.Condition, variant: str, pair: int, pilot: dict
 
 
 def sound_model(cond: P.Condition, variant: str, pair: int, pilot: dict) -> dict:
-    """A sound validator's rates on a card (``outcome_distribution``): a false SUPPORTED (`p_sup`),
-    a false "metric invalid" on a valid metric (`p_inv`), a false NO DETECTABLE EFFECT (`p_nde`), any
-    outcome outside the allowed set (`p_err`, all of them included) and a correct definite outcome
-    (`decisive`); `measured` says whether the pilot measured them. Without a measurement: the
-    designed sizes of the routes the card's allowed outcomes leave open (``nominal_error``) and
-    decisiveness D_NOMINAL, or what the errors leave of it."""
+    """A sound validator's rates on a card (``outcome_distribution``), per wrong outcome where it is
+    wrong: a false SUPPORTED (`p_sup`), "metric invalid" on a valid metric (`p_inv`), NO DETECTABLE
+    EFFECT (`p_nde`), NOT SUPPORTED against the direction (`p_opp`) and explained by depth
+    (`p_depth`); any outcome outside the allowed set (`p_err`, all of them included) and a correct
+    definite outcome (`decisive`); `measured` says whether the pilot measured them. Without a
+    measurement: the designed sizes of the routes the card's allowed outcomes leave open
+    (``DESIGNED``, ``nominal_error``) and decisiveness D_NOMINAL, or what the errors leave of it."""
     ok = P.allowed(cond, variant, pair, pilot)
     good = P.definite(cond, variant, pair, pilot)
     valid = P.metric_truth(cond, variant, pair, pilot) == "valid"
     dist = outcome_distribution(cond, variant, pair, pilot)
     if dist is not None:
-        return dict(p_sup=dist.get(P.SUPPORTED, 0.0) if P.SUPPORTED not in ok else 0.0,
-                    p_inv=dist.get(P.NS_INVALID, 0.0) if valid else 0.0,
-                    p_nde=dist.get(P.NDE, 0.0) if P.NDE not in ok else 0.0,
-                    p_err=sum(v for o, v in dist.items() if o not in ok),
+        rates = {f"p_{f}": (dist.get(o, 0.0) if (o not in ok and (o != P.NS_INVALID or valid)) else 0.0)
+                 for o, f in CAUSE_FIELD.items()}
+        return dict(rates, p_err=sum(v for o, v in dist.items() if o not in ok),
                     decisive=sum(v for o, v in dist.items() if o in good), measured=True)
     err = nominal_error(ok)
-    return dict(p_sup=E_SUPPORTED if P.SUPPORTED not in ok else 0.0,
-                p_inv=E_INVALID if (valid and P.NS_INVALID not in ok) else 0.0,
-                p_nde=E_NDE if P.NDE not in ok else 0.0,
-                p_err=err, decisive=min(D_NOMINAL, 1.0 - err), measured=False)
+    rates = {f"p_{f}": (DESIGNED[o] if (o not in ok and (o != P.NS_INVALID or valid)) else 0.0)
+             for o, f in CAUSE_FIELD.items()}
+    return dict(rates, p_err=err, decisive=min(D_NOMINAL, 1.0 - err), measured=False)
 
 
 def rule_nominals(model: dict, ok: frozenset, valid: bool) -> dict:
-    """A card's nominals for the thresholds of S2, S4, S5 and S6: per error, the larger of the
-    sound validator's rate (``sound_model``) and the error's designed size — a false SUPPORTED
-    alpha/2, a false "metric invalid" on a valid metric 2 alpha, a false NO DETECTABLE EFFECT alpha,
-    any error the sum of the designed sizes open on the card (``nominal_error``). The second review:
-    a measured rate far below the designed size can leave too few expected errors to tell a doubled
-    rate apart; the design allows the designed size, and the validation asks no more of it."""
-    return dict(r_sup=max(E_SUPPORTED, model["p_sup"]) if P.SUPPORTED not in ok else 0.0,
-                r_inv=max(E_INVALID, model["p_inv"]) if valid else 0.0,
-                r_nde=max(E_NDE, model["p_nde"]) if P.NDE not in ok else 0.0,
-                r_err=max(nominal_error(ok), model["p_err"]))
+    """A card's nominals for the thresholds of S2, S4, S5 and S6: per wrong outcome where it is
+    wrong, the larger of the sound validator's rate (``sound_model``) and the outcome's designed
+    size (``DESIGNED``: a false SUPPORTED alpha/2, "metric invalid" on a valid metric 2 alpha, NO
+    DETECTABLE EFFECT alpha, NOT SUPPORTED against the direction alpha/2, explained by depth alpha).
+    The second review: a measured rate far below the designed size can leave too few expected errors
+    to tell a doubled rate apart; the design allows the designed size, and the validation asks no
+    more of it. Each outcome has its own nominal (the third review: one nominal for any error let a
+    validator trade one kind of error for another)."""
+    return {f"r_{f}": (max(DESIGNED[o], model[f"p_{f}"]) if (o not in ok and (o != P.NS_INVALID or valid)) else 0.0)
+            for o, f in CAUSE_FIELD.items()}
 
 
 def card_model(cond: P.Condition, variant: str, pair: int, pilot: dict) -> dict:
@@ -175,8 +231,10 @@ def card_model(cond: P.Condition, variant: str, pair: int, pilot: dict) -> dict:
     model = sound_model(cond, variant, pair, pilot)
     return dict(condition=cond.name, key=cond.key and variant == cond.key_variant,
                 sup_error_possible=P.SUPPORTED not in ok, invalid_error_possible=P.NS_INVALID not in ok,
-                nde_error_possible=P.NDE not in ok, valid=truth == "valid", stratum=stratum(cond, truth),
-                establishable=cond.oracle and bool(est.get("establishable")),
+                nde_error_possible=P.NDE not in ok, opp_error_possible=P.NS_OPPOSITE not in ok,
+                depth_error_possible=P.NS_DEPTH not in ok, degenerate_allowed=P.DEGENERATE in ok,
+                valid=truth == "valid", stratum=stratum(cond, truth), data_stratum=data_stratum(cond, truth),
+                s2_group=s2_group(cond, variant), establishable=cond.oracle and bool(est.get("establishable")),
                 **model, **rule_nominals(model, ok, truth == "valid"))
 
 
@@ -229,22 +287,27 @@ def error_rule(n: int, p0: float):
     return k, binom_cdf(k, n, p0), binom_cdf(k, n, p1)
 
 
-def error_criterion(n: int, nominal: float) -> dict:
-    """An error criterion on n cards at its nominal (the cards' mean rule nominal): 'at most k*
-    errors' (``error_rule``). Where the principle is not attainable at the nominal on n (too few
-    expected errors for a doubled rate to be told apart: the second review found P(pass | sound) =
-    0.51 at 0.001 on 5,600 cards), the nominal is raised to the first rate of the grid
-    nominal x 1.01^j at which it is; where none up to MAX_RAISED is, the criterion is reported only.
-    Without cards it holds (no card on which its error can occur)."""
-    out = dict(n=int(n), nominal=float(nominal), rule_nominal=float(nominal), raised=False)
+def error_criterion(n: int, nominal: float, sound: float | None = None, eps: float = EPS_CELL) -> dict:
+    """An error criterion (a cell) on n cards at its nominal (the cards' mean rule nominal): 'at
+    most k* errors' (``error_rule``). The nominal is raised, to the first rate of the grid
+    nominal x 1.01^j, where the principle is not attainable at it on n (too few expected errors for a
+    doubled rate to be told apart: the second review found P(pass | sound) = 0.51 at 0.001 on 5,600
+    cards) or where a sound validator — its cards' mean rate `sound` — would fail the cell with
+    probability above `eps` (the third review's cells must leave the joint requirement room); where
+    no rate up to MAX_RAISED does, the cell is reported only. Without cards it holds (no card on
+    which its error can occur)."""
+    out = dict(n=int(n), nominal=float(nominal), rule_nominal=float(nominal), raised=False,
+               sound=None if sound is None else float(sound))
     if n <= 0:
         return dict(out, judged=False, max_allowed=None, p_pass_sound=1.0, p_pass_doubled=1.0)
     p = float(nominal)
     while True:
         k, ps, pd = error_rule(n, p)
-        if p <= 0 or meets(ps, pd):
+        sound_ok = sound is None or binom_cdf(k, n, sound) >= 1 - eps
+        if p <= 0 or (meets(ps, pd) and sound_ok):
             return dict(out, rule_nominal=p, raised=p > nominal, judged=True, max_allowed=k,
-                        p_pass_sound=ps, p_pass_doubled=pd)
+                        p_pass_sound=ps, p_pass_doubled=pd,
+                        p_pass_measured=None if sound is None else binom_cdf(k, n, sound))
         if p * 1.01 > MAX_RAISED:
             return dict(out, judged=False, max_allowed=None, p_pass_sound=ps, p_pass_doubled=pd)
         p *= 1.01
@@ -301,9 +364,11 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
     them):
 
     * S1 per key condition at alpha/2 (790 datasets each, at most 29: the design);
-    * S2 (false SUPPORTED where it is an error), S4 (outside the allowed set, all cards), S5 (false
-      "metric invalid" on a valid metric) and S6 (false NO DETECTABLE EFFECT where it is an error)
-      at the mean of their cards' rule nominals (``rule_nominals``; ``error_criterion``);
+    * S2, S4, S5 and S6 per cell (``error_cells``: a false SUPPORTED per group of the cards outside
+      S1; a false NOT SUPPORTED against the direction or explained by depth, "metric invalid" on a
+      valid metric and NO DETECTABLE EFFECT, each per stratum), every cell at the mean of its cards'
+      rule nominals for its outcome (``rule_nominals``; ``error_criterion``); a criterion holds if
+      every cell holds;
     * S7 (an engine error, a missing report or an unexpected verdict, all cards): none allowed —
       a sound validator makes none, and any rate at which one makes them is told apart;
     * S3 per stratum at the mean measured decisiveness of its establishable cards, at most D_NOMINAL,
@@ -320,16 +385,17 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
     card, P(S1 | sound) = 0.915): S1's thresholds are the design's, and a measured rate on the key
     cards that differs is a finding about the engine, not a reason to judge S3 differently. `joint`
     is P(S1-S7 together | sound) so, `joint_measured` the same with every rate as measured."""
-    out = dict(S1={}, S3={})
+    out = dict(S1={}, S3={}, cells={})
     for c in P.CONDITIONS:
         if c.key:
             n = sum(1 for r in rows if r["key"] and r["condition"] == c.name)
             out["S1"][c.name] = dict(n=n, max_allowed=error_rule(n, E_SUPPORTED)[0] if n else None,
                                      nominal=E_SUPPORTED)
-    for name, where, field in (("S2", "sup_error_possible", "r_sup"), ("S4", None, "r_err"),
-                               ("S5", "valid", "r_inv"), ("S6", "nde_error_possible", "r_nde")):
-        rs = [r for r in rows if where is None or r[where]]
-        out[name] = error_criterion(len(rs), _mean(rs, field))
+    for name, cell in error_cells(rows).items():
+        field = CAUSE_FIELD[cell["outcome"]]
+        members = [rows[i] for i in cell["members"]]
+        rule = error_criterion(len(members), _mean(members, f"r_{field}"), _mean(members, f"p_{field}"))
+        out["cells"][name] = dict(rule, outcome=cell["outcome"], members=cell["members"])
     out["S7"] = dict(n=len(rows), nominal=0.0, max_allowed=0, judged=bool(rows))
     for st in STRATA:
         rs = [r for r in rows if r["establishable"] and r["stratum"] == st]
@@ -358,16 +424,26 @@ def _at_design(rows: list[dict]) -> list[dict]:
     out = []
     for r in rows:
         if r["key"] and r["sup_error_possible"]:
-            p_err = max(r["p_err"] - r["p_sup"] + E_SUPPORTED, E_SUPPORTED + r["p_inv"] + r["p_nde"])
+            others = sum(r[f"p_{f}"] for f in CAUSE_FIELD.values() if f != "sup")
+            p_err = max(r["p_err"] - r["p_sup"] + E_SUPPORTED, E_SUPPORTED + others)
             r = dict(r, p_sup=E_SUPPORTED, p_err=p_err, decisive=min(r["decisive"], 1.0 - p_err))
         out.append(r)
     return out
 
 
+def _base(passes: dict) -> np.ndarray:
+    """S1, every cell of S2 and S4-S6, and S7, per simulation."""
+    ok = passes["S1"] & passes["S7"]
+    for name, v in passes.items():
+        if name.split(":")[0] in ERROR_CRITERIA:
+            ok = ok & v
+    return ok
+
+
 def _together(passes: dict, rules: dict) -> np.ndarray:
     """Whether S1, S2, S4-S7 and S3's judged strata all pass, per simulation (a stratum without a
     tier fails S3)."""
-    ok = passes["S1"] & passes["S2"] & passes["S4"] & passes["S5"] & passes["S6"] & passes["S7"]
+    ok = _base(passes)
     for st in STRATA:
         t = rules["S3"][st]["tier"]
         if t is None or rules["S3"][st]["min_required"] is None:
@@ -378,7 +454,7 @@ def _together(passes: dict, rules: dict) -> np.ndarray:
 
 def _select_tiers(passes: dict, rules: dict) -> dict:
     """S3's tiers by the rule of ``criteria_rules``, on simulated passes of a sound validator."""
-    base = passes["S1"] & passes["S2"] & passes["S4"] & passes["S5"] & passes["S6"] & passes["S7"]
+    base = _base(passes)
     tier_ok = {(st, t): rules["S3"][st]["tiers"][t]["attainable"] for st in STRATA for t in TIERS}
     if all(tier_ok[(st, "floor")] for st in STRATA):
         chosen = {st: "floor" for st in STRATA}
@@ -402,49 +478,45 @@ def _select_tiers(passes: dict, rules: dict) -> dict:
 
 def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dict:
     """For a sound validator, by simulation on the cards `rows` with each card's model
-    (``sound_model``): on every card a false SUPPORTED with p_sup, a false "metric invalid" with
-    p_inv, a false NO DETECTABLE EFFECT with p_nde, another outcome outside the allowed set with
-    the rest of p_err, and on an establishable card otherwise a correct definite outcome with
-    `decisive`; never an engine error. The criteria share cards, so they are simulated on the same
-    draws: returns, per criterion (S1 as a whole, S2, S4-S7, every S3 stratum at every tier with a
+    (``sound_model``): on every card each wrong outcome where it is wrong with its rate (p_sup,
+    p_inv, p_nde, p_opp, p_depth), another outcome outside the allowed set with the rest of p_err,
+    and on an establishable card otherwise a correct definite outcome with `decisive`; never an
+    engine error. The criteria share cards, so they are simulated on the same draws: returns, per
+    criterion (S1 as a whole, every cell of S2 and S4-S6, S7, every S3 stratum at every tier with a
     threshold), whether it passes in each simulation."""
     rng = np.random.default_rng(seed)
     n = len(rows)
-    p_sup = np.array([r["p_sup"] for r in rows])
-    p_inv = np.array([r["p_inv"] for r in rows])
-    p_nde = np.array([r["p_nde"] for r in rows])
-    c1, c2, c3 = p_sup, p_sup + p_inv, p_sup + p_inv + p_nde
-    p_err = np.maximum(np.array([r["p_err"] for r in rows]), c3)
+    fields = list(CAUSE_FIELD.values())
+    rates = np.array([[r[f"p_{f}"] for f in fields] for r in rows]).reshape(n, len(fields))
+    upper = np.cumsum(rates, axis=1)          # outcome j of a card: u in [upper[j - 1], upper[j])
+    lower = upper - rates
+    p_err = np.maximum(np.array([r["p_err"] for r in rows]), upper[:, -1] if n else 0.0)
     p_good = np.minimum(np.array([r["decisive"] if r["establishable"] else 0.0 for r in rows]), 1 - p_err)
-    mask = {name: np.array([bool(r[name]) for r in rows])
-            for name in ("valid", "sup_error_possible", "nde_error_possible")}
     key_groups = {}
     for i, r in enumerate(rows):
         if r["key"]:
             key_groups.setdefault(r["condition"], []).append(i)
     s3 = {f"S3:{st}:{t}": (np.array([r["establishable"] and r["stratum"] == st for r in rows]), v["min_required"])
           for st in STRATA for t, v in rules["S3"][st]["tiers"].items() if v["min_required"] is not None}
-    out = {name: [] for name in ("S1", "S2", "S4", "S5", "S6", "S7", *s3)}
-
-    def at_most(count, rule, m):
-        return count <= rule["max_allowed"] if rule.get("judged") else np.ones(m, bool)
+    cells = rules.get("cells", {})
+    out = {name: [] for name in ("S1", "S7", *cells, *s3)}
+    col = {f: j for j, f in enumerate(fields)}
     chunk = 500
     for start in range(0, sims, chunk):
         m = min(chunk, sims - start)
         u = rng.random((m, n))
-        sup = u < c1
-        inv = (u >= c1) & (u < c2)
-        nde = (u >= c2) & (u < c3)
-        err = u < p_err
+        hit = {f: (u >= lower[:, j]) & (u < upper[:, j]) for f, j in col.items()}
         good = (u >= p_err) & (u < p_err + p_good)
         s1 = np.ones(m, bool)
         for c, ix in key_groups.items():
-            s1 &= sup[:, ix].sum(axis=1) <= rules["S1"][c]["max_allowed"]
+            s1 &= hit["sup"][:, ix].sum(axis=1) <= rules["S1"][c]["max_allowed"]
         out["S1"].append(s1)
-        out["S2"].append(at_most((sup & mask["sup_error_possible"]).sum(axis=1), rules["S2"], m))
-        out["S4"].append(at_most(err.sum(axis=1), rules["S4"], m))
-        out["S5"].append(at_most((inv & mask["valid"]).sum(axis=1), rules["S5"], m))
-        out["S6"].append(at_most((nde & mask["nde_error_possible"]).sum(axis=1), rules["S6"], m))
+        for name, rule in cells.items():
+            ix = rule["members"]
+            if rule.get("judged") and ix:
+                out[name].append(hit[CAUSE_FIELD[rule["outcome"]]][:, ix].sum(axis=1) <= rule["max_allowed"])
+            else:
+                out[name].append(np.ones(m, bool))
         out["S7"].append(np.ones(m, bool))
         for name, (member, k) in s3.items():
             out[name].append((good & member).sum(axis=1) >= k)
@@ -459,8 +531,10 @@ def joint_pass_probability(rows: list[dict], sims: int = 20_000, seed: int = 0) 
 
 def error_rule_deff(n: int, p0: float, deff: float):
     """`error_rule`'s threshold k* (of the independent design) when the count of errors is
-    overdispersed by a design effect `deff` (datasets sharing donors): a beta-binomial with the
-    binomial's mean and deff times its variance (intra-class correlation (deff - 1) / (n - 1)).
+    overdispersed by a design effect `deff`: a beta-binomial with the binomial's mean and deff times
+    its variance (intra-class correlation (deff - 1) / (n - 1)). Given the background the datasets
+    are independent draws and the count is binomial (the third review); this is the count read
+    beyond the background's donors, as if they were a random sample of donors of the same kind.
     Returns k*, P(pass | p0) and P(pass | 2 p0)."""
     k, ps, pd = error_rule(n, p0)
     if deff <= 1.0 or n <= 1:
@@ -540,9 +614,13 @@ def show_criterion(name: str, rule: dict):
         print(f"  {name}: n = {rule['n']}, nominal {rule['nominal']:.4f}: the principle is not attainable up to "
               f"{MAX_RAISED} — reported only")
         return
-    raised = (f" (the cards' mean rule nominal {rule['nominal']:.4f}, raised to {rule['rule_nominal']:.4f} where the "
-              "principle is attainable)" if rule["raised"] else "")
+    raised = (f" (the cards' mean rule nominal {rule['nominal']:.4f}, raised to {rule['rule_nominal']:.4f}: there "
+              f"the principle is attainable and a sound validator fails the cell with probability <= {EPS_CELL})"
+              if rule["raised"] else "")
     show_error(name + raised, rule["n"], rule["rule_nominal"], rule["max_allowed"])
+    if rule.get("sound") is not None and rule.get("p_pass_measured") is not None:
+        print(f"    a sound validator (the cards' mean rate {rule['sound']:.4f}) passes it with "
+              f"{rule['p_pass_measured']:.4f}")
 
 
 def show_joint(name: str, n: int, p0: float, m: int):
@@ -573,12 +651,14 @@ def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured:
     rules = criteria_rules(rows, sims)
     n_est = sum(r["establishable"] for r in rows)
     measured = sum(r.get("measured", False) for r in rows)
-    print(f"  cards {len(rows)}: SUPPORTED an error on {rules['S2']['n']}, NO DETECTABLE EFFECT an error on "
-          f"{rules['S6']['n']}, valid metric on {rules['S5']['n']}, establishable {n_est}"
+    cells = rules["cells"]
+    print(f"  cards {len(rows)}: valid metric on {sum(r['valid'] for r in rows)}, establishable {n_est}"
           + (f"; rates measured by the pilot on {measured}" if measured else ""))
     for c, rule in rules["S1"].items():
         show_error(f"S1 {c}", rule["n"], E_SUPPORTED)
-    show_criterion("S2 false SUPPORTED where it is an error (mean rule nominal)", rules["S2"])
+    for name, rule in cells.items():
+        if name.startswith("S2:"):
+            show_criterion(f"S2 {name[3:]}: false SUPPORTED where it is an error, the cards outside S1", rule)
     for st in STRATA:
         r3 = rules["S3"][st]
         if not r3["n"]:
@@ -590,9 +670,12 @@ def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured:
             mark = ("JUDGED" if r3["tier"] == t else
                     "attainable, not judged" if v["attainable"] else "not attainable")
             show_decisive(f"{head}, {t} tier [{mark}]", r3["n"], r3["nominal"], v["alternative"])
-    show_criterion("S4 outside the allowed outcomes, all cards (mean rule nominal)", rules["S4"])
-    show_criterion("S5 false metric invalid, valid-metric cards (mean rule nominal)", rules["S5"])
-    show_criterion("S6 false NO DETECTABLE EFFECT where it is an error (mean rule nominal)", rules["S6"])
+    words = {"S4": "false NOT SUPPORTED", "S5": "false metric invalid", "S6": "false NO DETECTABLE EFFECT"}
+    for name, rule in cells.items():
+        crit, *where = name.split(":")
+        if crit in words:
+            cause = {"opposite": " against the direction", "depth": " explained by depth"}.get(where[-1], "")
+            show_criterion(f"{crit} {where[0]}: {words[crit]}{cause} where it is an error", rule)
     print(f"  S7 engine errors, missing reports, unexpected verdicts: n = {rules['S7']['n']}, none allowed")
     judged = ", ".join(f"{st} ({rules['S3'][st]['tier']})" for st in STRATA if rules["S3"][st]["tier"])
     print(f"  P(S1-S7 all pass | sound), simulated, S1 at its design, S3 judged on {judged or 'no stratum'}: "
@@ -666,21 +749,24 @@ def main(argv=None):
         return
     m = sum(c.key for c in P.CONDITIONS)
     print("## Nominal rates (errors by cause, decided 2026-10-08; a sound validator's model after the first review,")
-    print("## the rule nominals after the second)")
+    print("## the rule nominals after the second, the cells after the third)")
     print(f"  Designed sizes: false SUPPORTED {E_SUPPORTED} (alpha/2: the effect test is two-sided at alpha, the")
     print(f"  direction checked afterwards); false NOT SUPPORTED (metric invalid) on a valid metric {E_INVALID} (2 alpha:")
     print("  GATE 4's upper bound below delta_min alpha/2, GATE 5's negative control alpha, a silent positive")
-    print(f"  control shown blind alpha/2); false NO DETECTABLE EFFECT or explained by depth {E_NDE} (alpha, the TOST's")
-    print(f"  size); NOT SUPPORTED against a real effect's direction {E_OPPOSITE} (one tail). With pilot.json a card's")
+    print(f"  control shown blind alpha/2); false NO DETECTABLE EFFECT {E_NDE} and explained by depth {E_DEPTH} (alpha, the")
+    print(f"  TOST's size); NOT SUPPORTED against the direction where it is an error {E_OPPOSITE} (one tail). With pilot.json a card's")
     print("  rates are a sound validator's on its case, in the engine's verdict order (sound_model): GATE 5 at")
     print(f"  {E_GATE5:g}, GATE 4 at the odds measured on the case, then the effect's outcomes as the oracle found them")
     print("  on the case's datasets (after an UNTESTED GATE 4 its explained-by-depth share); a blind, ambiguous or")
     print("  useless metric in the engine's order on them. Without a measurement (the scenarios below): the")
-    print(f"  designed sizes of the routes open on the card and decisiveness {D_NOMINAL}. The thresholds of S2, S4-S6 use,")
-    print("  per card, the larger of the rate and the designed size; S3 is judged on every stratum (real effects,")
-    print("  nulls, blind or useless metrics; not N3 and N8), at the principle's tier or the floor's (a validator")
-    print("  half as decisive fails); S7 allows no engine error. The joint requirement is checked with S1 at its")
-    print("  design.")
+    print(f"  designed sizes of the routes open on the card and decisiveness {D_NOMINAL}. Every wrong outcome is counted")
+    print("  in its own cell: S2 a false SUPPORTED per group of the cards outside S1 (N2's steps, N3, N4, N6a and")
+    print("  N6b, N7, the real effects), S4 a false NOT SUPPORTED against the direction or explained by depth, S5")
+    print("  metric invalid on a valid metric and S6 NO DETECTABLE EFFECT, each per stratum (real effects, nulls,")
+    print("  blind or useless metrics); a cell's threshold uses, per card, the larger of the rate and the designed")
+    print("  size. S3 is judged on every stratum (not N3 and N8), at the principle's tier or the floor's (a")
+    print("  validator half as decisive fails); S7 allows no engine error. The joint requirement is checked with")
+    print("  S1 at its design.")
     print()
     print(f"## S1 as a whole: the number of datasets per key condition ({m} conditions)")
     first = next(n for n in range(400, 2001) if joint_error_rule(n, E_SUPPORTED, m)[1] >= P_PASS_SOUND)
@@ -688,8 +774,9 @@ def main(argv=None):
     print(f"  the rule first holds at n = {first}; k* moves in steps, so it fails again at n = "
           f"{_ranges(fails)} (up to 1000); the plan's {P.KEY_N} meets it")
     show_joint("S1 false SUPPORTED, key null conditions", P.KEY_N, E_SUPPORTED, m)
-    print("  with shared donors the counts are overdispersed; at the same thresholds (beta-binomial, design effect")
-    print("  deff; the run reports the realized deff of every primary criterion, above 1.5 a limitation):")
+    print("  given the background every dataset is an independent draw, so the counts are binomial and the above is")
+    print("  exact; read beyond the background's donors (their shared donors as a random sample: beta-binomial, design")
+    print("  effect deff; the run reports the realized deff of every primary criterion, above 1.5 a limitation):")
     for deff in (1.0, 1.1, 1.2, 1.5):
         pall, pd = joint_error_rule_deff(P.KEY_N, E_SUPPORTED, m, deff)
         print(f"    deff {deff:.1f}: P(all {m} pass | {E_SUPPORTED:.3f}) = {pall:.3f}, "
