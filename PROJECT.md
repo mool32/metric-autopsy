@@ -150,7 +150,14 @@ turns that checklist into runnable behavior.
   in one job about 240 minutes, over the bound of 170, so it is split over parallel jobs (base, four
   parts of establishability, merge), with the same pilot.json; split, every job within the bound
   (45 min, 27-47 min, 63 min; the largest process 6.5 GB), and the select job's full extraction 456 s.
-  Then the fifth and last independent review. No tag yet.
+  The fifth and last independent review (at e519e2b; posted unedited on the PR) found no critical
+  defect and the full pilot within its limits; its four important findings were fixed — an
+  ambiguous metric's allowed set with the blind row's explained by depth (E2, E3), the reported
+  rates' numerators on cards whose effect verdicts the engine excludes, S3 also per condition (a
+  validator undecided on a whole condition passed its stratum), the beacon's newest round asked
+  before the round is named and again after the push — and its six cosmetic ones (the joint
+  probability over 100,000 simulations: 0.912, 0.913, 0.912; GATE 0's refusal pilot keeping only
+  refusals and crashes). The fixes were not reviewed again (no critical finding). No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

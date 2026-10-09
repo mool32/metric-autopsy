@@ -45,6 +45,9 @@ DST_G1 = b"BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_"
 RELAYS = ("https://api.drand.sh", "https://api2.drand.sh", "https://api3.drand.sh",
           "https://drand.cloudflare.com")
 MIN_DELAY = 3600     # the named round lies at least this many seconds after the run tag's push
+TAG_DELAY = 3900     # the workflow names the first round this far ahead: MIN_DELAY and a margin
+LATEST_BEFORE = 600  # before the round is named (nothing lost yet): how long the relays' newest round is asked for
+LATEST_AFTER = 240   # after the push: inside the margin TAG_DELAY - MIN_DELAY, so the gap can still hold
 FETCH_HOURS = 5.0    # how long the workflow keeps asking the relays after the round's time
 
 
@@ -141,23 +144,29 @@ def fetch(rnd: int, relays=RELAYS, chain: dict = CHAIN) -> dict:
                 fetched_utc=_utc(time.time()))
 
 
-def latest(relays=RELAYS, chain: dict = CHAIN) -> int:
+def latest(relays=RELAYS, chain: dict = CHAIN, within: float = 0.0, step: float = 10.0) -> int:
     """The newest round the relays serve whose signature verifies: the beacon's own clock, so the
     gap between the run tag's push and its round need not rest on the runner's clock alone (the
     fourth review). Rounds that exist when it is asked include every round that existed at the
-    push before it."""
-    best = None
-    for relay in relays:
-        try:
-            got = _get(f"{relay}/{chain['hash']}/public/latest")
-            rnd = int(got.get("round", -1))
-            if rnd > 0 and verify(rnd, str(got.get("signature", "")), chain["public_key"]):
-                best = rnd if best is None else max(best, rnd)
-        except Exception:  # a relay that is down is skipped; one that answers must verify
-            continue
-    if best is None:
-        raise RuntimeError("no relay returned a verified latest round")
-    return best
+    push before it. While no relay answers with a verified round, the relays are asked again every
+    `step` seconds for up to `within` seconds (the fifth review: one try after the push could lose
+    a named run to a short outage); a later answer only makes the bound on the gap stricter."""
+    deadline = time.time() + within
+    while True:
+        best = None
+        for relay in relays:
+            try:
+                got = _get(f"{relay}/{chain['hash']}/public/latest")
+                rnd = int(got.get("round", -1))
+                if rnd > 0 and verify(rnd, str(got.get("signature", "")), chain["public_key"]):
+                    best = rnd if best is None else max(best, rnd)
+            except Exception:  # a relay that is down is skipped; one that answers must verify
+                continue
+        if best is not None:
+            return best
+        if time.time() + step > deadline:
+            raise RuntimeError(f"no relay returned a verified latest round within {within:.0f} s")
+        time.sleep(step)
 
 
 def gap_after_push(rnd: int, pushed: float, newest: int, chain: dict = CHAIN) -> dict:

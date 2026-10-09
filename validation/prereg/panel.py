@@ -361,16 +361,17 @@ def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> froz
     planted (N2, N3, N8, E2, E3) also NOT SUPPORTED explained by depth, as a valid one does there
     (the owner's fifth round: a metric blind to the coupling still responds to depth, and that
     diagnosis is correct); a valid metric allows `data_allowed`; an ambiguous one the union of both
-    sets."""
+    sets (the fifth review: with the blind row's explained by depth, on E2 and E3 above the SESOI)."""
     truth = metric_truth(cond, variant, pair_index, pilot)
     if truth == "useless":
         return INVALID_ALLOWED
     if truth == "constant":
         return INVALID_ALLOWED | {DEGENERATE}
+    blind = INVALID_ALLOWED | ({NS_DEPTH} if cond.artifact else frozenset())
     if truth == "blind":
-        return INVALID_ALLOWED | ({NS_DEPTH} if cond.artifact else frozenset())
+        return blind
     ok = data_allowed(cond, variant, pair_index, pilot)
-    return ok if truth == "valid" else ok | INVALID_ALLOWED
+    return ok if truth == "valid" else ok | blind
 
 
 def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:

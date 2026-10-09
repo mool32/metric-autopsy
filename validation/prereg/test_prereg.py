@@ -607,11 +607,19 @@ def test_the_allowed_outcomes_follow_the_owners_table_in_every_condition(bgs):
                 assert got == (null | {P.NS_DEPTH} if c.artifact else null)
                 assert P.NS_INVALID not in got and P.SUPPORTED not in got
             if c.metric == "norm_pearson":
-                assert P.allowed(c, v, lo, pilot) == (blind | {P.NS_DEPTH} if c.artifact else blind)
-                assert P.allowed(c, v, med, pilot) == P.data_allowed(c, v, med, pilot) | blind
+                blind_row = blind | {P.NS_DEPTH} if c.artifact else blind
+                assert P.allowed(c, v, lo, pilot) == blind_row
+                # the union with the blind row, its explained by depth included (the fifth review)
+                assert P.allowed(c, v, med, pilot) == P.data_allowed(c, v, med, pilot) | blind_row
     # real effects: NO DETECTABLE EFFECT only where |Δ*| < SESOI (0.3 x factor against 0.15)
     for name, variant in (("E1", "dose=key"), ("E2", "against"), ("E3", "with")):
         assert P.allowed(conds[name], variant, hi, pilot) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL}
+    # an ambiguous metric above the SESOI where an artifact is planted: the valid row has no explained
+    # by depth there, the blind row has it, so the union does (the fifth review found it missing)
+    for name, variant in (("E2", "against"), ("E3", "with")):
+        assert P.allowed(conds[name], variant, med, pilot) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL,
+                                                               P.NS_INVALID, P.NS_DEPTH}
+    assert P.NS_DEPTH not in P.allowed(conds["E1"], "dose=key", med, pilot)  # no artifact planted
     assert P.allowed(conds["E1"], "dose=0.25", hi, pilot) == {P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL, P.NDE}
     assert P.NS_DEPTH not in P.allowed(conds["E3"], "with", hi, pilot)  # an artifact with a real effect
     # below the SESOI, where an artifact is planted, "explained by depth" is correct as NDE is: with a
@@ -931,6 +939,9 @@ def test_gate0s_measured_refusals_are_in_the_sound_validators_model(bgs, tmp_pat
     rec = T.measure_refusals(entries, bgs, pilot, tmp_path / "refusals", workers=1)
     assert sum(r["n"] for r in rec.values()) == len(entries) == 15
     assert sum(r["refused"] for r in rec.values()) == 8 and all(r["share"] == r["refused"] / r["n"] for r in rec.values())
+    # only the refusals and the crashes are kept before the key (the fifth review: the verdicts'
+    # distribution on establishable cards would preview S3)
+    assert all(set(r) == {"n", "refused", "crashed", "share"} and r["crashed"] == 0 for r in rec.values())
     before = {c: oc.sound_model(conds[c], v, 0, pilot) for c, v in (("N1", "null"), ("N6a", "random"))}
     pilot["gate0_refusals"] = {"null": dict(n=10, refused=2, share=0.2), "invalid": dict(n=10, refused=5, share=0.5)}
     after = oc.sound_model(conds["N1"], "null", 0, pilot)
@@ -1249,6 +1260,15 @@ def _bad_validators(pilot):
         if c.name == "N4" and cid.endswith("a") and int(e["id"][1:]) % 10 == 0:  # without the replicate unit
             return P.SUPPORTED
         return perfect(c, e, cid)
+
+    def undecided_on(name):  # the fifth review: sound everywhere but INCONCLUSIVE on a whole condition, which
+        def fn(c, e, cid):   # passed S3's pooled stratum (E2: 0.996 in scenario B)
+            return P.INCONCLUSIVE if c.name == name else perfect(c, e, cid)
+        return fn
+
+    def undecided_on_blind_n1(c, e, cid):  # ... or on the blind cards of N1 (1.000 in scenarios A and C)
+        blind = P.metric_truth(c, e["variant"], e["pair"], pilot) == "blind"
+        return P.INCONCLUSIVE if c.name == "N1" and blind else perfect(c, e, cid)
     return (("always invalid", lambda c, e: P.NS_INVALID, {"S3", "S5"}),
             ("always inconclusive", lambda c, e: P.INCONCLUSIVE, {"S3"}),
             ("always refuses", lambda c, e: P.REFUSAL, {"S3"}),
@@ -1266,7 +1286,10 @@ def _bad_validators(pilot):
             ("SUPPORTED on a quarter of N7 (X3)", supported_on_n7, {"S2"}),
             ("NOT SUPPORTED against the direction on a sixth of the nulls (V1)", opposite_on_nulls, {"S4"}),
             ("SUPPORTED on an eighth of N6a (V2)", supported_on_n6a, {"S2"}),
-            ("SUPPORTED on a tenth of N4 without the replicate unit (V2)", pseudoreplication_tenth, {"S7a"}))
+            ("SUPPORTED on a tenth of N4 without the replicate unit (V2)", pseudoreplication_tenth, {"S7a"}),
+            ("undecided on the whole of E2 (the fifth review)", undecided_on("E2"), {"S3"}),
+            ("undecided on the whole of N6c (the fifth review)", undecided_on("N6c"), {"S3"}),
+            ("undecided on N1's blind cards (the fifth review)", undecided_on_blind_n1, {"S3"}))
 
 
 UNSETTLED_ONLY = ("NO DETECTABLE EFFECT on a quarter", "NOT SUPPORTED against the direction where unsure",
@@ -1300,6 +1323,29 @@ def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
         assert fails <= got, (name, got)
     got = S.score(entries, _reports(entries, _bad_validators(pilot)[5][1]), pilot, sims=2000)["criteria"]["S3"]["strata"]
     assert not got["effect"]["passed"] and got["null"]["passed"] and got["invalid"]["passed"]
+    # the fifth review: undecided on a whole condition, the condition's own cell fails, the others hold
+    bad = dict((name, fn) for name, fn, _ in _bad_validators(pilot))
+    for name, cell in (("undecided on the whole of E2", ("effect:E2", "invalid:E2")),
+                       ("undecided on the whole of N6c", ("invalid:N6c",)), ("undecided on N1's blind", ("invalid:N1",))):
+        fn = next(f for n, f in bad.items() if n.startswith(name))
+        conds = S.score(entries, _reports(entries, fn), pilot, sims=2000)["criteria"]["S3"]["conditions"]
+        assert {k for k, v in conds.items() if not v["passed"]} == set(cell), (name, conds)
+        assert all(conds[k]["k"] == 0 and conds[k]["judged"] for k in cell)
+    conds = res["criteria"]["S3"]["conditions"]                       # the perfect validator: every cell holds
+    assert conds and all(v["passed"] for v in conds.values()) and all(v["judged"] for v in conds.values())
+    # the fifth review: the reported rates count an error where it can occur, as their denominators
+    # do (SUPPORTED on N4's 1,580 cards was 1,580 false SUPPORTED of 790); an effect verdict the
+    # engine's rules exclude (N4's first card, the constant) is a rule violation (S7a) only
+    always = S.score(entries, _reports(entries, lambda c, e: P.SUPPORTED), pilot, sims=2000)
+    for where in ("per_condition", "per_level", "per_truth"):
+        for key, summ in always[where].items():
+            for f in ("false_supported", "false_nde", "false_opposite", "false_depth", "opposite_on_null"):
+                assert summ[f]["k"] <= summ[f]["n"], (where, key, f, summ[f])
+    n4 = always["per_condition"]["N4:3v3"]
+    assert n4["n"] == 2 * 790 and n4["false_supported"]["k"] == n4["false_supported"]["n"] == 790
+    assert n4["rule_violations"]["k"] == 790 and always["per_condition"]["N6b:constant"]["rule_violations"]["k"] == 50
+    nde = S.score(entries, _reports(entries, lambda c, e: P.NDE), pilot, sims=2000)["per_condition"]["N6b:constant"]
+    assert nde["false_nde"]["k"] == nde["false_nde"]["n"] == 0 and nde["rule_violations"]["k"] == 50
     nothing = S.score(entries, {}, pilot, sims=2000)                    # no reports: every card a crash
     assert nothing["pooled"]["errors"]["rate"] == 1.0 and nothing["criteria"]["S7b"]["rate"] == 1.0
     assert nothing["criteria"]["S7a"]["k"] == 0 and len(nothing["crashes"]) == P.n_cards()
@@ -1348,7 +1394,9 @@ def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
         assert fails <= got, (name, got)
     half = set(sorted(e["id"] for e in entries if e["condition"] == "N1")[::2])
     reports = {cid: rec for cid, rec in _reports(entries, _perfect(pilot)).items() if cid not in half}
-    assert _failed(S.score(entries, reports, pilot, sims=4000)) == {"S7b"}  # crashing on half of N1: S4 absorbed it
+    # crashing on half of N1: S7b (S4 had absorbed it), and since the fifth review N1's S3 cells too, the
+    # crashed cards being undecided; a few crashes leave a condition's cell passing (the first test)
+    assert _failed(S.score(entries, reports, pilot, sims=4000)) == {"S3", "S7b"}
 
 
 def test_s3_counts_only_correct_definite_outcomes_and_nde_on_a_large_effect_is_an_error(bgs):
@@ -1356,7 +1404,7 @@ def test_s3_counts_only_correct_definite_outcomes_and_nde_on_a_large_effect_is_a
     import score as S
     pilot = _est_pilot(bgs, delta=0.3)  # |Δ*| >= SESOI at the key dose
     entries = P.assign(KEY, pool_sizes=_sizes(bgs))
-    res = S.score(entries, _reports(entries, lambda c, e: P.NDE if c.metric == "norm_pearson" else P.NS_INVALID), pilot)
+    res = S.score(entries, _reports(entries, lambda c, e: P.NDE if c.metric == "norm_pearson" else P.NS_INVALID), pilot, sims=4000)
     e1 = res["per_condition"]["E1:dose=key"]
     assert e1["errors"]["rate"] == 1.0 and e1["correct_definite"]["rate"] == 0.0
     assert e1["outcomes"][P.NDE]["rate"] == 1.0  # the dose-verdict curves: every outcome's share
@@ -1371,7 +1419,7 @@ def test_s1_fails_when_any_one_key_condition_fails(bgs):
     pilot = _est_pilot(bgs)
     entries = P.assign(KEY, pool_sizes=_sizes(bgs))
     bad = {e["id"] for e in [e for e in entries if e["condition"] == "N8"][:40]}  # 40/790 > 29
-    res = S.score(entries, _reports(entries, lambda c, e: P.SUPPORTED if e["id"] in bad else P.INCONCLUSIVE), pilot)
+    res = S.score(entries, _reports(entries, lambda c, e: P.SUPPORTED if e["id"] in bad else P.INCONCLUSIVE), pilot, sims=4000)
     assert not res["criteria"]["S1"]["conditions"]["N8"]["passed"] and not res["criteria"]["S1"]["passed"]
     assert all(v["passed"] for k, v in res["criteria"]["S1"]["conditions"].items() if k != "N8")
 
@@ -1381,7 +1429,7 @@ def test_s5_counts_false_invalid_only_where_the_metric_is_valid(bgs):
     import score as S
     pilot = _est_pilot(bgs, truth={"low": "blind", "medium": "ambiguous"})
     entries = P.assign(KEY, pool_sizes=_sizes(bgs))
-    res = S.score(entries, _reports(entries, lambda c, e: P.NS_INVALID), pilot)
+    res = S.score(entries, _reports(entries, lambda c, e: P.NS_INVALID), pilot, sims=4000)
     s5 = res["criteria"]["S5"]  # per stratum since the third review: real effects, nulls
     n_valid = sum(P.metric_truth(P.conditions()[e["condition"]], e["variant"], e["pair"], pilot) == "valid"
                   for e in entries for _ in P.card_ids(e))
@@ -1411,6 +1459,13 @@ def test_the_criteria_meet_the_principle_and_s1_as_a_whole():
         assert ps >= 0.90 and pd <= 0.05
     _, ps, pd = oc.decisiveness_rule(1000, oc.D_NOMINAL)
     assert ps >= 0.90 and pd <= 0.05
+    # S3's cell of one condition (the fifth review): the largest k* a sound validator misses with
+    # probability <= EPS_COND; one deciding none of the cards fails it wherever it is judged
+    r = oc.condition_rule(100, oc.D_NOMINAL)
+    assert r["judged"] and 1 <= r["min_required"] and r["p_fail_sound"] <= oc.EPS_COND < oc.binom_cdf(r["min_required"], 100, oc.D_NOMINAL)
+    assert r["p_pass_half"] <= 0.05
+    assert not oc.condition_rule(4, oc.D_NOMINAL)["judged"] and oc.condition_rule(5, oc.D_NOMINAL)["min_required"] == 1
+    assert not oc.condition_rule(0, oc.D_NOMINAL)["judged"]
     assert oc.nominal_error(frozenset({P.NDE, P.INCONCLUSIVE, P.NS_OPPOSITE, P.REFUSAL})) == pytest.approx(0.175)
     assert oc.nominal_error(P.INVALID_ALLOWED) == pytest.approx(0.15)  # SUPPORTED, NDE, opposite direction, depth
     assert oc.nominal_error(frozenset({P.SUPPORTED, P.INCONCLUSIVE, P.REFUSAL})) == pytest.approx(0.225)  # + invalid
@@ -1583,7 +1638,7 @@ def test_a_design_effect_above_1_5_is_reported_as_a_limitation(bgs):
     donors = {e["id"]: [f"d{j}" for j in rng.choice(30, 8, replace=False)] for e in entries}
     bad = {f"d{j}" for j in range(6)}  # the datasets with these donors err: a donor-driven outcome
     reports = _reports(entries, lambda c, e: P.SUPPORTED if bad & set(donors[e["id"]]) else P.INCONCLUSIVE)
-    res = S.score(entries, reports, pilot, donors)
+    res = S.score(entries, reports, pilot, donors, sims=4000)
     assert res["secondary"]["shared_donors"]["S1:N1"]["deff"] > 1.5
     assert any(lim.startswith("S1:N1") for lim in res["limitations"])
 
@@ -1617,7 +1672,7 @@ def test_runner_runs_the_engine_on_the_fly(bgs, tmp_path):
         reports, donors = S.read_results(tmp_path / "out")
         assert all(len(r) == 3 and r[2]["gate4"] in ("PASS", "FAIL", "UNTESTED", "SKIP", None)
                    for r in reports.values() if r)
-        res = S.score(pick, reports, pilot, donors)
+        res = S.score(pick, reports, pilot, donors, sims=4000)
         assert res["n_cards"] == 3 and "gate4" in res["per_gate"] and "S5" in res["criteria"]
 
 
@@ -2017,6 +2072,29 @@ def test_the_gap_to_the_round_is_checked_against_the_beacons_newest_round(monkey
     newest["https://a"] = None
     with pytest.raises(RuntimeError, match="no relay"):
         BC.latest(relays=tuple(newest), chain=chain)
+    # the fifth review: asked once after the push, a short outage of every relay lost the named run;
+    # the relays are asked again for a while, and the window after the push fits inside the margin
+    # of the named round's delay over the hour, so a late answer can still meet it
+    import types
+    now = [0.0]
+    down = [3]
+
+    def fake_get_outage(url, timeout=20.0):
+        if down[0] > 0:
+            raise OSError("down")
+        return dict(round=1000, signature=sign(1000))
+
+    def tick(s):
+        now[0] += s
+        down[0] -= 1
+    monkeypatch.setattr(BC, "_get", fake_get_outage)
+    monkeypatch.setattr(BC, "time", types.SimpleNamespace(time=lambda: now[0], sleep=tick))
+    assert BC.latest(relays=("https://a",), chain=chain, within=60, step=10) == 1000 and now[0] == 30
+    down[0], now[0] = 9, 0.0
+    with pytest.raises(RuntimeError, match="within 60 s"):
+        BC.latest(relays=("https://a",), chain=chain, within=60, step=10)
+    assert now[0] == 60
+    assert BC.LATEST_AFTER + 30 <= BC.TAG_DELAY - BC.MIN_DELAY and BC.LATEST_BEFORE > 0
 
 
 # --------------------------------------------------------------------------- #

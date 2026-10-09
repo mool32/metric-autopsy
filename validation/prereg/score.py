@@ -115,14 +115,18 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
             else:
                 gates, crash = (rec[2] if len(rec) > 2 else {}), None
                 o = P.outcome(rec[0], rec[1])
+            # an error of a cause counts where the card's kind says it can occur, as in the cells and
+            # in the rates' denominators (the fifth review: an effect verdict the engine's rules
+            # exclude, on N4's first card or the constant, was counted in the P1/P6 rates too); such
+            # a verdict is a rule violation (S7a)
             rows.append(dict(kind, id=cid, dataset=e["id"], variant=e["variant"], level=level,
                              pair=pair, truth=truth, outcome=o,
-                             sup_error=o == P.SUPPORTED and P.SUPPORTED not in ok,
+                             sup_error=o == P.SUPPORTED and kind["sup_error_possible"],
                              false_invalid=truth == "valid" and o == P.NS_INVALID,
-                             nde_error=o == P.NDE and P.NDE not in ok,
-                             opp_error=o == P.NS_OPPOSITE and P.NS_OPPOSITE not in ok,
+                             nde_error=o == P.NDE and kind["nde_error_possible"],
+                             opp_error=o == P.NS_OPPOSITE and kind["opp_error_possible"],
                              opp_null=o == P.NS_OPPOSITE and kind["opp_null_counted"],
-                             depth_error=o == P.NS_DEPTH and P.NS_DEPTH not in ok,
+                             depth_error=o == P.NS_DEPTH and kind["depth_error_possible"],
                              rule_violation=(o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok)
                                              or o in P.excluded(c, k)),
                              crashed=o == P.CRASH, crash=crash,
@@ -177,7 +181,7 @@ def per_gate(rows: list[dict]) -> dict:
     return out
 
 
-def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None = None, sims: int = 20_000) -> dict:
+def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None = None, sims: int = oc.SIMS) -> dict:
     """entries: panel.assign(key, dropped, pool sizes) (or a subset); reports: {card id: (verdict,
     cause)}; donors: {dataset id: [donor ids]} from the manifest (for the design effects); sims: the
     simulations of a sound validator for the joint probability (``oc.criteria_rules``)."""
@@ -257,8 +261,20 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
                       gate0_refusal_bound_failed=st in over,
                       tiers=rule["tiers"], definite_any=rate(sum(r["definite"] for r in rs), len(rs)))
         members[f"S3:{st}"] = (rs, "correct_definite")
-    crit["S3"] = dict(strata=s3, tiers_fixed_before_the_key=fixed is not None, gate0_refusal_bound_failed=over,
-                      passed=all(s3[st]["passed"] for st in oc.STRATA))
+    # and per condition of a stratum (the fifth review: a validator undecided on a whole condition passed
+    # its stratum): at least k* correct definite outcomes on its establishable cards (oc.condition_rule)
+    s3c = {}
+    for name, rule in rules["S3c"].items():
+        rs = [rows[i] for i in rule["members"]]
+        k = sum(r["correct_definite"] for r in rs)
+        s3c[name] = dict(rate(k, len(rs)), stratum=rule["stratum"], condition=rule["condition"],
+                         nominal=rule["nominal"], measured=rule["measured"], min_required=rule["min_required"],
+                         judged=rule["judged"], p_fail_sound=rule["p_fail_sound"], p_pass_half=rule["p_pass_half"],
+                         passed=(k >= rule["min_required"]) if rule["judged"] else True)
+        members[f"S3c:{name}"] = (rs, "correct_definite")
+    crit["S3"] = dict(strata=s3, conditions=s3c, tiers_fixed_before_the_key=fixed is not None,
+                      gate0_refusal_bound_failed=over,
+                      passed=all(s3[st]["passed"] for st in oc.STRATA) and all(v["passed"] for v in s3c.values()))
     # S7a: no verdict the engine's deterministic rules cannot give, on any card
     k = sum(r["rule_violation"] for r in rows)
     crit["S7a"] = dict(rate(k, len(rows)), max_allowed=0, passed=bool(rows) and k == 0)
@@ -348,6 +364,9 @@ def main(argv=None):
               + (f", at least {v['min_required']} required ({v['tier']} tier)" if v["judged"] else
                  " — not judged: S3 fails")
               + (f"; GATE 0 refused above {oc.GATE0_BOUND:g} before the key: S3 fails" if v["gate0_refusal_bound_failed"] else ""))
+    for name, v in res["criteria"]["S3"]["conditions"].items():
+        if not v["passed"]:
+            print(f"  S3 {name}: {v['k']}/{v['n']} correct definite, at least {v['min_required']} required")
     v = res["criteria"]["S7b"]
     print(f"  S7b: {v['k']} crashes of {v['n']} cards, at most {v['max_allowed']} allowed")
     for c in res["crashes"]:

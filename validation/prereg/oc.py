@@ -67,6 +67,10 @@ OUTSIDE_STRATA = ("N3", "N8")
 MAX_RAISED = 0.5              # the largest nominal an error criterion is raised to (``error_criterion``)
 EPS_CELL = 0.0005             # a sound validator fails an error cell with probability <= this (the 16 cells
                               # together <= 0.008 of the 0.016 that S1 at its design leaves of the joint 0.90)
+EPS_COND = 0.0001             # a sound validator fails S3's cell of one condition with probability <= this (the fifth
+                              # review: S3 pooled each stratum, so a validator undecided on a whole condition passed)
+SIMS = 100_000                # simulations of a sound validator for the joint probability (the fifth review: at 20,000
+                              # its Monte Carlo error, about 0.002, showed it above S1's own exact 0.915)
 DATA_STRATA = ("effect", "null", "invalid")  # the strata of the error criteria: every card, by the truth
 S2_GROUPS = ("N2", "N3", "N4", "N6", "N7", "E")  # S2's groups: the cards outside S1, by condition
 # the error criteria's cells: (criterion, outcome counted, the strata or groups it is counted in);
@@ -172,9 +176,10 @@ def card_kind(row: dict, cond: P.Condition, k: int) -> dict:
 def stratum(cond: P.Condition, truth: str) -> str | None:
     """S3's stratum of a card: real effects with a valid metric (the correct definite outcome is
     SUPPORTED, or NO DETECTABLE EFFECT below the SESOI); null data with a valid metric (NO
-    DETECTABLE EFFECT or NOT SUPPORTED); a blind or useless metric (metric invalid, or DEGENERATE
-    for the constant). Ambiguous metrics belong to none (either kind of verdict is correct there),
-    nor do N3 and N8 (``OUTSIDE_STRATA``)."""
+    DETECTABLE EFFECT or NOT SUPPORTED); a blind or useless metric (metric invalid, DEGENERATE for
+    the constant, and explained by depth on a blind one where an artifact is planted: the owner's
+    fifth round). Ambiguous metrics belong to none (either kind of verdict is correct there), nor
+    do N3 and N8 (``OUTSIDE_STRATA``)."""
     if cond.name in OUTSIDE_STRATA:
         return None
     if truth in ("blind", "useless", "constant"):
@@ -442,11 +447,32 @@ def decisiveness_tiers(n: int, d0: float) -> dict:
     return out
 
 
+def condition_rule(n: int, d0: float, eps: float = EPS_COND) -> dict:
+    """S3's cell of one condition in a stratum (the fifth review: S3 pooled decisiveness over the
+    stratum, so a validator sound everywhere but undecided on a whole condition — E2 or E3 among the
+    real effects, N6c or the blind cards of N1 among the blind or useless metrics — passed it): at
+    least k* correct definite outcomes on the condition's n establishable cards of the stratum, k*
+    the largest with P(X < k* | d0) <= eps for a sound validator at d0 (the cards' mean
+    decisiveness, at most D_NOMINAL); judged where k* >= 1, so that a validator deciding none of
+    them fails. Its power against a validator half as decisive there is reported."""
+    out = dict(n=int(n), nominal=float(d0), min_required=None, judged=False, p_fail_sound=0.0,
+               p_pass_half=None)
+    if n <= 0 or not np.isfinite(d0) or d0 <= 0:
+        return out
+    from scipy import stats
+    low = np.nonzero(stats.binom.cdf(np.arange(n + 1), n, d0) <= eps)[0]  # j with P(X <= j | d0) <= eps
+    k = int(low[-1]) + 1 if len(low) else 0                               # the cdf rises: low is 0 .. J
+    if k < 1:
+        return out
+    return dict(out, min_required=k, judged=True, p_fail_sound=binom_cdf(k - 1, n, d0),
+                p_pass_half=binom_sf(k, n, d0 / 2))
+
+
 def _mean(rows: list[dict], field: str) -> float:
     return float(np.mean([r[field] for r in rows])) if rows else 0.0
 
 
-def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers: dict | None = None) -> dict:
+def criteria_rules(rows: list[dict], sims: int = SIMS, seed: int = 0, s3_tiers: dict | None = None) -> dict:
     """The thresholds of S1-S7 on a set of cards (as ``score.card_rows`` and ``expected_rows`` give
     them):
 
@@ -469,13 +495,17 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
       then at the principle's tier in the order of STRATA where it is attainable and the joint
       requirement still holds. Where not every stratum fits, the strata that fit are judged in that
       order and S3 fails: decisiveness is not shown. `s3_tiers` (pilot.json "s3_rules", fixed before
-      the key) gives the tiers instead.
+      the key) gives the tiers instead;
+    * S3 per condition of a stratum too ("S3c", ``condition_rule``; the fifth review): at least k*
+      correct definite outcomes on the condition's establishable cards, which a sound validator
+      misses with probability <= EPS_COND and a validator deciding none of them never meets.
 
     The joint requirement is checked with S1 at its design (a false SUPPORTED at alpha/2 on every key
     card, P(S1 | sound) = 0.915): S1's thresholds are the design's, and a measured rate on the key
     cards that differs is a finding about the engine, not a reason to judge S3 differently. `joint`
-    is P(S1-S7 together | sound) so, `joint_measured` the same with every rate as measured."""
-    out = dict(S1={}, S3={}, cells={})
+    is P(S1-S7 together | sound) so, `joint_measured` the same with every rate as measured, each a
+    Monte Carlo estimate over `sims` simulations (`joint_se`, its standard error)."""
+    out = dict(S1={}, S3={}, S3c={}, cells={})
     for c in P.CONDITIONS:
         if c.key:
             n = sum(1 for r in rows if r["key"] and r["condition"] == c.name)
@@ -495,10 +525,21 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
         d0 = min(measured, D_NOMINAL) if rs else float("nan")
         out["S3"][st] = dict(n=len(rs), measured=measured, nominal=d0, tiers=decisiveness_tiers(len(rs), d0),
                              tier=None, min_required=None)
+    at_design = _at_design(rows)
+    for st in STRATA:
+        by = {}
+        for i, r in enumerate(rows):
+            if r["establishable"] and r["stratum"] == st:
+                by.setdefault(r["condition"], []).append(i)
+        for c, ix in by.items():  # the sound validator at its measured rate and at S1's design, at most D_NOMINAL
+            measured = float(np.mean([rows[i]["decisive"] for i in ix]))
+            d0 = min(measured, float(np.mean([at_design[i]["decisive"] for i in ix])), D_NOMINAL)
+            out["S3c"][f"{st}:{c}"] = dict(condition_rule(len(ix), d0), stratum=st, condition=c, measured=measured,
+                                           members=ix)
     if not rows:
-        out.update(joint=float("nan"), joint_measured=float("nan"), s3_feasible=False)
+        out.update(joint=float("nan"), joint_measured=float("nan"), joint_se=float("nan"), s3_feasible=False)
         return out
-    design = _simulate_passes(_at_design(rows), out, sims, seed)
+    design = _simulate_passes(at_design, out, sims, seed)
     tiers = dict(s3_tiers) if s3_tiers is not None else _select_tiers(design, out)
     for st in STRATA:
         t = tiers.get(st)
@@ -506,6 +547,7 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
         out["S3"][st]["min_required"] = out["S3"][st]["tiers"][t]["min_required"] if t else None
     out["s3_feasible"] = all(out["S3"][st]["min_required"] is not None for st in STRATA)
     out["joint"] = float(np.mean(_together(design, out)))
+    out["joint_se"] = float(np.sqrt(out["joint"] * (1 - out["joint"]) / sims))
     measured = _simulate_passes(rows, out, sims, seed) if any(r.get("measured") for r in rows) else design
     out["joint_measured"] = float(np.mean(_together(measured, out)))
     return out
@@ -524,10 +566,10 @@ def _at_design(rows: list[dict]) -> list[dict]:
 
 
 def _base(passes: dict) -> np.ndarray:
-    """S1, every cell of S2 and S4-S6, S7a and S7b, per simulation."""
+    """S1, every cell of S2 and S4-S6, S3's cells of one condition, S7a and S7b, per simulation."""
     ok = passes["S1"] & passes["S7a"] & passes["S7b"]
     for name, v in passes.items():
-        if name.split(":")[0] in ERROR_CRITERIA:
+        if name.split(":")[0] in (*ERROR_CRITERIA, "S3c"):
             ok = ok & v
     return ok
 
@@ -576,7 +618,8 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
     SUPPORTED against the direction on null data with p_oppnull (allowed, its rate bounded); never
     a rule violation or a crash (S7a, S7b). The criteria share cards, so they are simulated on the
     same draws: returns, per criterion (S1 as a whole, every cell of S2 and S4-S6, S7a, S7b, every S3
-    stratum at every tier with a threshold), whether it passes in each simulation."""
+    stratum at every tier with a threshold, S3's cells of one condition), whether it passes in each
+    simulation."""
     rng = np.random.default_rng(seed)
     n = len(rows)
     fields = list(CAUSE_FIELD.values())
@@ -595,7 +638,9 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
     s3 = {f"S3:{st}:{t}": (np.array([r["establishable"] and r["stratum"] == st for r in rows]), v["min_required"])
           for st in STRATA for t, v in rules["S3"][st]["tiers"].items() if v["min_required"] is not None}
     cells = rules.get("cells", {})
-    out = {name: [] for name in ("S1", "S7a", "S7b", *cells, *s3)}
+    s3c = {f"S3c:{name}": (rule["members"], rule["min_required"]) for name, rule in rules.get("S3c", {}).items()
+           if rule["judged"]}
+    out = {name: [] for name in ("S1", "S7a", "S7b", *cells, *s3, *s3c)}
     col = {f: j for j, f in enumerate(fields)}
     chunk = 500
     for start in range(0, sims, chunk):
@@ -618,10 +663,12 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
         out["S7b"].append(np.ones(m, bool))
         for name, (member, k) in s3.items():
             out[name].append((good & member).sum(axis=1) >= k)
+        for name, (ix, k) in s3c.items():
+            out[name].append(good[:, ix].sum(axis=1) >= k)
     return {k: np.concatenate(v) for k, v in out.items()}
 
 
-def joint_pass_probability(rows: list[dict], sims: int = 20_000, seed: int = 0) -> float:
+def joint_pass_probability(rows: list[dict], sims: int = SIMS, seed: int = 0) -> float:
     """P(S1-S7 all pass) for a sound validator on the cards `rows`, S1 at its design
     (``criteria_rules``)."""
     return criteria_rules(rows, sims, seed)["joint"]
@@ -726,14 +773,14 @@ def show_criterion(name: str, rule: dict):
         print(f"  {name}: n = {rule['n']}, nominal {rule['nominal']:.4f}: the principle is not attainable up to "
               f"{MAX_RAISED} — reported only")
         return
-    raised = (f" (the cards' mean rule nominal {rule['nominal']:.4f}, raised to {rule['rule_nominal']:.4f}: there "
+    raised = (f" (the cards' mean rule nominal {rule['nominal']:.4f}, raised to {rule['rule_nominal']:.4g}: there "
               f"the principle is attainable and a sound validator fails the cell with probability <= {EPS_CELL})"
               if rule["raised"] else "")
     show_error(name + raised, rule["n"], rule["rule_nominal"], rule["max_allowed"])
     if rule.get("sound") is not None and rule.get("p_pass_measured") is not None:
         print(f"    a sound validator (the cards' mean rate {rule['sound']:.4f}) passes it with "
               f"{rule['p_pass_measured']:.4f}; it fails an error rate of "
-              f"{detectable_rate(rule['max_allowed'], rule['n']):.4f} or more with probability >= 0.95")
+              f"{detectable_rate(rule['max_allowed'], rule['n']):.4g} or more with probability >= 0.95")
 
 
 def show_joint(name: str, n: int, p0: float, m: int):
@@ -757,7 +804,7 @@ def show_decisive(name: str, n: int, d0: float, alt: float | None = None):
           f"{'meets' if meets(ps, pa) else 'FAILS'} the principle")
 
 
-def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured: bool = False) -> dict:
+def show_design(title: str, rows: list[dict], sims: int = SIMS, with_measured: bool = False) -> dict:
     """The thresholds and operating characteristics of S1-S7 on a set of cards (with the joint
     probability at the measured rates too, for pilot.json's cards)."""
     print(f"## {title}")
@@ -783,6 +830,16 @@ def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured:
             mark = ("JUDGED" if r3["tier"] == t else
                     "attainable, not judged" if v["attainable"] else "not attainable")
             show_decisive(f"{head}, {t} tier [{mark}]", r3["n"], r3["nominal"], v["alternative"])
+    for st in STRATA:
+        cs = sorted((v for v in rules["S3c"].values() if v["stratum"] == st), key=lambda v: v["condition"])
+        if not cs:
+            continue
+        parts = ", ".join(f"{v['condition']} {v['min_required']}/{v['n']}" if v["judged"] else
+                          f"{v['condition']} n = {v['n']} not judged" for v in cs)
+        weak = [v["condition"] for v in cs if v["judged"] and v["p_pass_half"] > P_PASS_DOUBLED]
+        print(f"  S3 {st} per condition, at least k of its n establishable cards (a sound validator fails each with "
+              f"<= {EPS_COND:g}; one deciding none of them fails): {parts}; a validator half as decisive on a "
+              f"condition fails it with >= 0.95 " + (f"except on {', '.join(weak)}" if weak else "on every one"))
     words = {"S4": "false NOT SUPPORTED", "S5": "false metric invalid", "S6": "false NO DETECTABLE EFFECT"}
     for name, rule in cells.items():
         crit, *where = name.split(":")
@@ -798,8 +855,8 @@ def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured:
     show_criterion(f"S7b crashes (an engine exception or no report; a sound engine has none) at the nominal {E_CRASH:g}",
                    rules["S7b"])
     judged = ", ".join(f"{st} ({rules['S3'][st]['tier']})" for st in STRATA if rules["S3"][st]["tier"])
-    print(f"  P(S1-S7 all pass | sound), simulated, S1 at its design, S3 judged on {judged or 'no stratum'}: "
-          f"{rules['joint']:.3f}" + ("" if rules["s3_feasible"] else
+    print(f"  P(S1-S7 all pass | sound), simulated ({sims:,} times, standard error {rules['joint_se']:.4f}), S1 at its "
+          f"design, S3 judged on {judged or 'no stratum'}: {rules['joint']:.3f}" + ("" if rules["s3_feasible"] else
                                      " — S3 CANNOT BE JUDGED ON EVERY STRATUM: it fails for any validator"))
     if with_measured:
         print(f"  the same with every rate as measured (S1 included): {rules['joint_measured']:.3f}")
@@ -899,7 +956,9 @@ def main(argv=None):
     print("  metric invalid on a valid metric and S6 NO DETECTABLE EFFECT, each per stratum (real effects, nulls,")
     print("  blind or useless metrics); a cell's threshold uses, per card, the larger of the rate and the designed")
     print("  size, and its resolution is the error rate it fails with probability >= 0.95. S3 is judged on every")
-    print("  stratum (not N3 and N8), at the principle's tier or the floor's (a validator half as decisive fails);")
+    print("  stratum (not N3 and N8), at the principle's tier or the floor's (a validator half as decisive fails),")
+    print(f"  and on every condition of a stratum (a sound validator fails each with <= {EPS_COND:g}, one deciding none of")
+    print("  its cards fails: the fifth review);")
     print("  S7a allows no verdict the engine's deterministic rules cannot give (a label that does not match its")
     print("  cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict")
     print("  where the rules give none: N4 without the replicate unit, the constant metric); S7b counts crashes (an")
@@ -925,7 +984,7 @@ def main(argv=None):
           f"the sound side up to {sound:.3f})")
     print()
     budget = P_JOINT_SOUND / joint_error_rule(P.KEY_N, E_SUPPORTED, m)[1]
-    print(f"## GATE 0's usefulness bound (the fifth round): a stratum with a valid metric fails S3 where the frozen engine")
+    print("## GATE 0's usefulness bound (the fifth round): a stratum with a valid metric fails S3 where the frozen engine")
     print(f"## refused on more than {GATE0_BOUND:g} of its {REFUSAL_CARDS} establishable cards before the key")
     above = int(round(GATE0_BOUND * REFUSAL_CARDS)) + 1
     print("  " + ", ".join(f"refusing on {p:.0%}: fails with {binom_sf(above, REFUSAL_CARDS, p):.3f}"

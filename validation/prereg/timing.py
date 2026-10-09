@@ -138,19 +138,20 @@ def refusal_sample(pilot: dict, n: int, rng) -> list:
 
 def measure_refusals(entries: list, bgs: dict, pilot: dict, out_dir: Path, workers: int) -> dict:
     """GATE 0's refusals on `refusal_sample`'s datasets, run by the frozen engine as in the blind
-    run: per S3 stratum the number of cards, of refusals and their share, and every outcome's
-    count (a crash included)."""
+    run: per S3 stratum the number of cards, of refusals and of crashes, and the refusal share.
+    Nothing else of the verdicts is kept or printed (the fifth review: their distribution on
+    establishable cards of the real backgrounds would preview S3 before the key)."""
     R.run([{k: v for k, v in e.items() if k != "stratum"} for e in entries], bgs, pilot, out_dir, workers=workers)
     out = {}
     for e in entries:
-        rec = out.setdefault(e["stratum"], dict(n=0, refused=0, outcomes={}))
+        rec = out.setdefault(e["stratum"], dict(n=0, refused=0, crashed=0))
         for cid in P.card_ids(e):
             path = out_dir / "reports" / f"{cid}.json"
             rep = json.loads(path.read_text()) if path.exists() else {}
             o = P.CRASH if "error" in rep or not rep else P.outcome(rep.get("verdict"), rep.get("cause"))
             rec["n"] += 1
             rec["refused"] += o == P.REFUSAL
-            rec["outcomes"][o] = rec["outcomes"].get(o, 0) + 1
+            rec["crashed"] += o == P.CRASH
     for rec in out.values():
         rec["share"] = rec["refused"] / rec["n"]
     return out
@@ -228,7 +229,7 @@ def main(argv=None):
             rec = measure_refusals(entries, bgs, pilot, Path(tmp) / "refusals", args.workers)
         for st, r in rec.items():
             print(f"# GATE 0 refusals, S3 stratum {st}: {r['refused']} of {r['n']} establishable cards "
-                  f"({r['share']:.3f}); outcomes {dict(sorted(r['outcomes'].items()))}")
+                  f"({r['share']:.3f}); crashes {r['crashed']}")
         if args.write_drops:
             pilot["gate0_refusals"] = rec
             Path(args.pilot).write_text(json.dumps(pilot, indent=1))

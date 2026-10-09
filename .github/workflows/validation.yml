@@ -352,7 +352,10 @@ jobs:
         run: |
           git config user.name "metric-autopsy validation"
           git config user.email "validation@users.noreply.github.com"
-          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then tag="$RUN_TAG"; delay=3900; else tag="panel-v1-dry-${{ github.run_id }}"; delay=120; fi
+          bc='import sys; sys.path.insert(0, "validation/prereg"); import beacon'
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then tag="$RUN_TAG"; delay=$(python -c "$bc; print(beacon.TAG_DELAY)"); else tag="panel-v1-dry-${{ github.run_id }}"; delay=120; fi
+          # the relays serve a verified round before one is named (the fifth review): failing here loses nothing
+          python -c "$bc; print('the newest verified round before the run tag:', beacon.latest(within=beacon.LATEST_BEFORE))"
           info=$(python validation/prereg/beacon.py round --delay "$delay")
           round=$(echo "$info" | python -c "import json,sys; print(json.load(sys.stdin)['round'])")
           when=$(echo "$info" | python -c "import json,sys; print(json.load(sys.stdin)['round_time_utc'])")
@@ -367,8 +370,9 @@ jobs:
           sys.path.insert(0, "validation/prereg")
           import beacon
           rnd, pushed, real = int(sys.argv[1]), float(sys.argv[2]), sys.argv[3] == "true"
-          # by the runner's clock and by the newest verified round the relays serve after the push
-          gap = beacon.gap_after_push(rnd, pushed, beacon.latest())
+          # by the runner's clock and by the newest verified round the relays serve after the push,
+          # asked again for up to LATEST_AFTER seconds, inside the delay's margin (the fifth review)
+          gap = beacon.gap_after_push(rnd, pushed, beacon.latest(within=beacon.LATEST_AFTER))
           print(f"round {rnd} is produced {gap['by_clock']:.0f} s after the tag was pushed by the runner's clock, "
                 f"{gap['by_beacon']} s after the newest round that existed after it ({gap['newest']})")
           if real and gap["seconds"] < beacon.MIN_DELAY:

@@ -122,11 +122,12 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   and cause, NOT SUPPORTED against the direction on null data bounded as a false detection — each
   of which must pass, with its resolution printed; S7a, no violation of the engine's deterministic
   rules (an effect verdict where they give none among them); S7b, crashes at a nominal of 0.1%; S3
-  judged on every stratum at the principle's tier or the floor's, fixed before the key, with GATE
+  judged on every stratum at the principle's tier or the floor's, fixed before the key, and on
+  every condition of a stratum (a validator undecided on a whole condition fails), with GATE
   0's refusals in the sound validator's model, at most 0.20 on a valid metric, above which the
-  stratum fails), `anchors.py`, `simulate.py` (also backgrounds of the panel's sizes for the
+  stratum fails; the joint probability over 100,000 simulations with its standard error), `anchors.py`, `simulate.py` (also backgrounds of the panel's sizes for the
   pilot's rehearsal), `timing.py` (with the drop rule, the memory rule and GATE 0's refusal shares
-  measured before the key), `frozen.py` (the frozen
+  measured before the key, only the refusals and the crashes kept), `frozen.py` (the frozen
   files, the workflow's records only, one attempt) and `test_prereg.py`; every environment pinned
   as its whole closure; `.github/workflows/validation.yml` runs everything from the tag
   `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`; the pilot split over
