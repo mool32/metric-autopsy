@@ -157,7 +157,14 @@ turns that checklist into runnable behavior.
   validator undecided on a whole condition passed its stratum), the beacon's newest round asked
   before the round is named and again after the push — and its six cosmetic ones (the joint
   probability over 100,000 simulations: 0.912, 0.913, 0.912; GATE 0's refusal pilot keeping only
-  refusals and crashes). The fixes were not reviewed again (no critical finding). No tag yet.
+  refusals and crashes). The fixes were not reviewed again (no critical finding).
+- **Approved (2026-10-09):** the owner wrote «Утверждаю протокол v1.md на коммите 90a7718.» The
+  annotated tag `v0.3.0-prereg` goes on 90a7718f77a46440ca11cd90150733a67f6b138d (tree
+  f063c3ccc8b79b8e6be4b132921f7b613cdbf2c5); its message, in `validation/prereg/v0.3.0-prereg-tag.txt`,
+  quotes the approval with its date and lists the sha256 of the 35 frozen files (`frozen.py`
+  FROZEN_PATHS; v1.md's own: 41c6d8b55c6dc7573fe387eedad3601cf79a601f0e22fcd9f053bd17baa0886a). The
+  agent's session cannot push tags (HTTP 403 from its proxy), so the owner pushes it: that push starts
+  `validation.yml` and `audit.yml`, and from then on nobody decides anything.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

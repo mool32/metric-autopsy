@@ -1,0 +1,49 @@
+v0.3.0-prereg: the frozen pre-registration v1 of metric-autopsy v0.3
+
+Approved by the project owner on 2026-10-09:
+«Утверждаю протокол v1.md на коммите 90a7718.»
+
+The protocol is validation/prereg/v1.md at commit
+90a7718f77a46440ca11cd90150733a67f6b138d (tree f063c3ccc8b79b8e6be4b132921f7b613cdbf2c5),
+after five independent reviews of its code; the fifth found no critical defect, and its findings
+were fixed without a further review (pull request mool32/metric-autopsy#1; v1.md section 10).
+The push of this tag starts the confirmatory validation (.github/workflows/validation.yml) and
+the flagship audit (.github/workflows/audit.yml). From then on nobody decides anything; the
+engine and the protocol change only through validation/prereg/DEVIATIONS.md.
+
+sha256 of the frozen files (validation/prereg/frozen.py, FROZEN_PATHS):
+f694f0bd06b504d6e3e6201b83d97515f0c8a3a13931c55fad527822a2fbada8  .github/workflows/validation.yml
+bd103bec4af6ed178d33409ebe5deabcbea3b4b0de5069e7518d14e336cb4e62  pyproject.toml
+05246af6fa1e8b2213a738ab33bbfa07aa96a76274fed406ae23df2d8ad04221  src/metric_autopsy/__init__.py
+50b7734f3e4322a7540397836c74021975a6d295c8891043e7cae210fe4193d9  src/metric_autopsy/cli.py
+0ce473e79f1a17107cadc5f85bdd8c39ac8739d5144fd86147d6862898c4efd2  src/metric_autopsy/core.py
+0633adf21c93072a9c3d2bce76d5f1147b452fad242b19faeee103731ae2366a  src/metric_autopsy/effect.py
+f990991966f23571079c5f155591808173418d98e523c71305898b7a0270253b  src/metric_autopsy/equalize.py
+a20a0e611ea5faddf6f9c09db56bbb3e4b259d3688b3510d7b58eefa3ffe05e1  src/metric_autopsy/gates.py
+b80a0cba8fa3418fa5f97e1d8e32eb7e4bd9d38eabaccd5631cb8b897f17251a  src/metric_autopsy/injected_signal.py
+db0078c17fdeef04efea74357e4f39568371a1d75361c987de1e05cfe239df52  src/metric_autopsy/mcp_server.py
+e30aef6a3c7f3f1feeeee6b44bf6f20af44000d5003bb79d915112b47a8e573a  src/metric_autopsy/metrics.py
+5569fb1a200e26b384590b66cf47f33c4f4ff325a4fe97a311f82e77de794fe8  src/metric_autopsy/provenance.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  src/metric_autopsy/py.typed
+383d2b33a419ef063c6d4eed2cf4da8997ddf31ca80d85d23b72ed59d56b7c1e  src/metric_autopsy/qc.py
+c4ab62e88ffadc3eb15fdc32d2f1ebc6a87d88e3de1f84b962e28e7ee346ecff  src/metric_autopsy/report.py
+8e7b086124ecf435e223c4e65593c7ecfb4c4685449f7ef835ec88d268773a4b  src/metric_autopsy/stats.py
+0ea8f2e4cbace52130fca4273076648b500bd5f86e09210ea7fd3a0407cacfb4  validation/prereg/anchors.py
+8875ffba761cfd0dcfa181b07aa60c1032c7b79ae047826f7009aa3e47d42b29  validation/prereg/beacon.py
+b2ae4231ba3dc387beb8aa36f83a2bfdd65d1b22cc80a4b3ed7c52ef81fbdd80  validation/prereg/blind.py
+f52f53fecf5a7f5685861bc4128b844c1a619f45c4bb992a775dd51310ee89ec  validation/prereg/frozen.py
+733d98815c92f29d6e6993d6d6ff73892d42252fe0f186e64eea1732d97b1351  validation/prereg/oc.log
+017216441dc1ed9d39b03036f82e694dcd3a7cdc52562ccb03cab5827cbf9e75  validation/prereg/oc.py
+a88347bb9b01e50e86dbb374d967bdb56dacd43b3aa480861f7bb124bddde557  validation/prereg/oracle.py
+738f4801c8a645725276b6e802c910357937dc53a1d5ccd29f81fa5d7dbfbbe9  validation/prereg/panel.py
+58b6ebab6b4edbeeadf678fe1e7f799f4f5f066aa21fa55cce01c3c5d328faa5  validation/prereg/requirements-beacon.txt
+438c8bc88b264d6c7cf09668e96c07be948e5577dae6b988bb392714687e8805  validation/prereg/requirements-panel.txt
+74bb44f89214d12217a0f2538d8aed83f57d5fbf122a42140f7b3ec8a1f15939  validation/prereg/requirements-select.txt
+da25c0efd3d3469238cf101d1e7082a6b54a0e99ba1ffb5b2f6666c14111f5da  validation/prereg/run_panel.py
+5a9f3eb2a1f2bb74e2948f104cbec6a7c41e4c88d2431169a2854d37a24c28c9  validation/prereg/score.py
+3f75918e85f0091f8b6bb9011453e1b04a6d819f3c898c533b5817bcdc49634c  validation/prereg/select_backgrounds.py
+e23a59f1eaa7a3d00cb26518bb925ed518bad2aa74b86f63e0e607805703a79b  validation/prereg/simulate.py
+e5c788e90a6dc46e2a3386642e039477ad8d4bc0fbc994c7b5f0cf28352571cb  validation/prereg/test_prereg.py
+f910fb9641614171e08da7d7e6b832acb949332e9d7ce0d941411ada3d1f72ba  validation/prereg/timing.log
+d109b3703718c209fc86851fb978dddc98d9482890a9bb8fa9fad9feba31a0de  validation/prereg/timing.py
+41c6d8b55c6dc7573fe387eedad3601cf79a601f0e22fcd9f053bd17baa0886a  validation/prereg/v1.md
