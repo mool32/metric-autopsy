@@ -132,7 +132,9 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`; the pilot split over
   parallel jobs, `oracle.py --stage base | part | merge`, with the same pilot.json),
   `.github/workflows/pilot-rehearsal.yml` the full pilot before the tag on simulated backgrounds of
-  the panel's sizes and the selection's full extraction, timed, and `.github/workflows/audit.yml`
+  the panel's sizes and the selection's full extraction, timed (its run's lines in
+  `validation/prereg/pilot_rehearsal.log`: split, every job within 63 minutes, under the bound of
+  170), and `.github/workflows/audit.yml`
   the flagship audit on v0.1.1.
 - `validation/probes/p14_gate4_by_expression_level.py` (now a dev-set regression of GATE 4's
   interval rule), `p15_gate5_weak_positive_control.py` (GATE 5's power rule against the

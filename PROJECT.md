@@ -146,8 +146,10 @@ turns that checklist into runnable behavior.
   by depth allowed on a blind metric where an artifact is planted; the five S2 groups at 790 (9,750
   datasets, 10,540 claim cards); GATE 0's refusal share in the model at most 0.20 on a valid metric,
   a stratum above it failing S3. The full pilot was run before the tag on simulated backgrounds of
-  the panel's sizes on the Actions runner (`pilot-rehearsal.yml`): ⟦TBD:rehearsal-project⟧; it is
-  split over parallel jobs (base, four parts of establishability, merge), with the same pilot.json.
+  the panel's sizes on the Actions runner (`pilot-rehearsal.yml`, `validation/prereg/pilot_rehearsal.log`):
+  in one job about 240 minutes, over the bound of 170, so it is split over parallel jobs (base, four
+  parts of establishability, merge), with the same pilot.json; split, every job within the bound
+  (45 min, 27-47 min, 63 min; the largest process 6.5 GB), and the select job's full extraction 456 s.
   Then the fifth and last independent review. No tag yet.
 
 ## Data
