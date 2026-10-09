@@ -238,11 +238,16 @@ datasets each of the confirmatory panel's N1 and N8 on its simulated backgrounds
 (`validation/prereg/simulate.py`, pairs in turn over the pool of 24). N8 thins every cell of one side
 by its own Beta(2, 2) capture, outside the engine's correction family (one common thinning ratio per
 group). The second review predicted from the effect rule alone that S1 fails there; the third asked
-for a script of the repository behind the numbers. At c542163 the engine gives a false SUPPORTED on
+for a script of the repository behind the numbers. At c542163 the engine gave a false SUPPORTED on
 18 of 160 N8 datasets (11.3%, 95% CI 6.8-17.2%) against 2 of 160 on N1 (1.3%, 0.2-4.4%); S1 allows
-at most 29 of 790 (3.7%) per key condition. The oracle's analysis with the true correction gives 3
-of 160 on N8. No dev-set expectation changes: whether the engine should correct this family before
-the tag is the owner's decision (`validation/prereg/v1.md`, section 10).
+at most 29 of 790 (3.7%) per key condition. Re-run at a895f8f, after the fourth review's fixes
+(whose new choice of one negative control changes the kept genes of the simulated B1, so every
+dataset slightly): 18 of 160 on N8 again, 3 of 160 on N1 (1.9%, 0.4-5.4%); the oracle's analysis
+with the true correction gives 5 of 160 on N8 (3 at c542163). The engine also says NOT SUPPORTED
+against the direction on 19 of 160 N8 datasets (11.9%, 7.3-17.9%), which the pre-registration's
+new cell for that outcome on null data counts. No dev-set expectation changes: whether the engine
+should correct this family before the tag is the owner's decision (`validation/prereg/v1.md`,
+section 10).
 
 ### Found by the first independent review: the SESOI's scale and "explained by depth" (journal D7)
 

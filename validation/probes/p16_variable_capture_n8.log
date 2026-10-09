@@ -1,6 +1,6 @@
-# metric-autopsy probe p16 — git c542163, python 3.13.16, numpy 2.5.3
+# metric-autopsy probe p16 — git a895f8f, python 3.13.16, numpy 2.5.3
 # 160 datasets per condition on simulated B1 (pool of 24 pairs, in turn); S1 allows at most 29 false SUPPORTED of 790 datasets (3.7%) per key condition
-N1 null: engine {'INCONCLUSIVE': 68, 'NO DETECTABLE EFFECT': 43, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 47, 'SUPPORTED': 2}
-   false SUPPORTED by the engine 2/160 = 0.013 (within S1's 0.037); the oracle's effect analysis with the true correction: SUPPORTED 4/160 = 0.025, {'INCONCLUSIVE': 109, 'NO DETECTABLE EFFECT': 46, 'NOT SUPPORTED: opposite direction': 1, 'SUPPORTED': 4}; pairs by level {'high': 56, 'low': 48, 'medium': 56}
-N8 beta(2,2): engine {'INCONCLUSIVE': 56, 'NO DETECTABLE EFFECT': 19, 'NOT SUPPORTED: explained by depth': 3, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 50, 'NOT SUPPORTED: opposite direction': 14, 'SUPPORTED': 18}
-   false SUPPORTED by the engine 18/160 = 0.113 (above S1's 0.037); the oracle's effect analysis with the true correction: SUPPORTED 3/160 = 0.019, {'INCONCLUSIVE': 126, 'NO DETECTABLE EFFECT': 25, 'NOT SUPPORTED: opposite direction': 6, 'SUPPORTED': 3}; pairs by level {'high': 56, 'low': 48, 'medium': 56}
+N1 null: engine {'INCONCLUSIVE': 65, 'NO DETECTABLE EFFECT': 45, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 47, 'SUPPORTED': 3}
+   false SUPPORTED by the engine 3/160 = 0.019 (within S1's 0.037); the oracle's effect analysis with the true correction: SUPPORTED 3/160 = 0.019, {'INCONCLUSIVE': 112, 'NO DETECTABLE EFFECT': 45, 'SUPPORTED': 3}; pairs by level {'high': 56, 'low': 48, 'medium': 56}
+N8 beta(2,2): engine {'INCONCLUSIVE': 53, 'NO DETECTABLE EFFECT': 20, 'NOT SUPPORTED: explained by depth': 1, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 49, 'NOT SUPPORTED: opposite direction': 19, 'SUPPORTED': 18}
+   false SUPPORTED by the engine 18/160 = 0.113 (above S1's 0.037); the oracle's effect analysis with the true correction: SUPPORTED 5/160 = 0.031, {'INCONCLUSIVE': 130, 'NO DETECTABLE EFFECT': 23, 'NOT SUPPORTED: explained by depth': 1, 'NOT SUPPORTED: opposite direction': 1, 'SUPPORTED': 5}; pairs by level {'high': 56, 'low': 48, 'medium': 56}
