@@ -1,0 +1,1105 @@
+{
+  "meta": {
+    "census_version": "stable",
+    "census_summary": {
+      "census_schema_version": "2.4.0",
+      "census_build_date": "2025-11-08",
+      "dataset_schema_version": "7.0.0",
+      "total_cell_count": "217768036",
+      "unique_cell_count": "125463259"
+    },
+    "tms_dataset_ids": [
+      "524179b0-b406-4723-9c46-293ffa77ca81",
+      "de4e7a0c-91b2-44e4-b382-87da74c9efb6",
+      "e80d4e1c-672f-496a-8f32-37eab34f727d",
+      "ec6c52b8-3368-4f72-a416-1ade0dab97bf",
+      "4546e757-34d0-4d17-be06-538318925fcd",
+      "170ce19f-7a2f-4926-a1cc-adcad99e7474",
+      "3f4fe86f-aced-4d10-b174-ee35b9f46b9d",
+      "bf12f9c6-4211-4c91-9c71-22019f29f516",
+      "bc7466d7-ff13-4ff2-9c3d-7a1d208bd492",
+      "05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b",
+      "e3b8c485-7811-407e-99ed-c7d574be9d7c",
+      "c9096ac4-ea44-4cf9-82f4-af05cb83eb24",
+      "1d29fd10-c8b3-4611-b0ac-3c578125adbf",
+      "1efd4700-87dd-4b45-8762-11ba3fea7a65",
+      "c08f8441-4a10-4748-872a-e70c0bcccdba",
+      "db55b719-6102-493a-9251-404bc501d0de",
+      "98e5ea9f-16d6-47ec-a529-686e76515e39"
+    ],
+    "tms_dataset_titles": [
+      "Kidney - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Large intestine - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Spleen - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Limb muscle - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Liver - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Thymus - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Trachea - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Bladder lumen - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Mammary gland - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Lung - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Pancreas - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Tongue - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Skin of body - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Heart - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Brain myeloid cells - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "Bone marrow - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+      "All - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2"
+    ],
+    "census_var_n": 53384,
+    "census_var_ercc": 0,
+    "census_var_names_were_symbols": false,
+    "engine_version": "0.1.1",
+    "n_cells": 110824,
+    "provenance": {
+      "timestamp_utc": "2026-10-09T20:55:48+00:00",
+      "git_commit": "90a7718f77a46440ca11cd90150733a67f6b138d",
+      "git_dirty": true,
+      "script_sha256": "644e6ef5155f47ec62b2d65ccaa1af9f22336729dd9dc549ae51fec44e2845f7",
+      "download_module_sha256": "e1617f3bd14edab5649b29321a28d6c0d3946b21559234c826741a22f3112e66",
+      "data_sha256": "d921bc225bc963f970a6b5b0fe4d9f7605b252a2c5f662257f9a70e994100b06",
+      "data_hash_obs_columns": [
+        "donor_id",
+        "sex",
+        "development_stage",
+        "tissue",
+        "assay",
+        "age",
+        "n_genes_by_counts",
+        "total_counts"
+      ],
+      "cached_h5ad_sha256": "893c692a2a851787eaf0942983fdfdbb6208a34d07dcee44c06f763cc38f392e",
+      "params": {
+        "census_version": "stable",
+        "young": "3m",
+        "old": "20m",
+        "source_h5ad": false,
+        "dry_run_synthetic": false,
+        "allow_engine_version": false
+      },
+      "params_sha256": "bfeb72acffb9f8930eb710b46fd788b25963f59a0ac20b2bf49e4fb6fd00695b",
+      "versions": {
+        "python": "3.12.15",
+        "numpy": "2.5.3",
+        "pandas": "2.3.3",
+        "anndata": "0.13.4",
+        "scipy": "1.18.1",
+        "cellxgene_census": "1.18.0",
+        "metric_autopsy": "0.1.1"
+      }
+    }
+  },
+  "A": [
+    {
+      "development_stage": "18-month-old stage",
+      "sex": "female",
+      "n_cells": 19163,
+      "n_mice": 2
+    },
+    {
+      "development_stage": "18-month-old stage",
+      "sex": "male",
+      "n_cells": 14864,
+      "n_mice": 2
+    },
+    {
+      "development_stage": "20-month-old stage and over",
+      "sex": "female",
+      "n_cells": 728,
+      "n_mice": 3
+    },
+    {
+      "development_stage": "20-month-old stage and over",
+      "sex": "male",
+      "n_cells": 31551,
+      "n_mice": 4
+    },
+    {
+      "development_stage": "3-month-old stage",
+      "sex": "female",
+      "n_cells": 19315,
+      "n_mice": 5
+    },
+    {
+      "development_stage": "3-month-old stage",
+      "sex": "male",
+      "n_cells": 25203,
+      "n_mice": 5
+    }
+  ],
+  "B": {
+    "mapping": {
+      "18-month-old stage": "18m",
+      "20-month-old stage and over": "20m",
+      "3-month-old stage": "3m"
+    },
+    "collisions": {},
+    "donors": [
+      {
+        "donor_id": "18_45_M",
+        "sex": "male",
+        "age_token": "18m",
+        "stages": [
+          "18-month-old stage"
+        ],
+        "donor_age_months": 18,
+        "n_cells": 7850,
+        "n_tissues": 20,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "18_46_F",
+        "sex": "female",
+        "age_token": "18m",
+        "stages": [
+          "18-month-old stage"
+        ],
+        "donor_age_months": 18,
+        "n_cells": 9601,
+        "n_tissues": 18,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "18_47_F",
+        "sex": "female",
+        "age_token": "18m",
+        "stages": [
+          "18-month-old stage"
+        ],
+        "donor_age_months": 18,
+        "n_cells": 9562,
+        "n_tissues": 20,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "18_53_M",
+        "sex": "male",
+        "age_token": "18m",
+        "stages": [
+          "18-month-old stage"
+        ],
+        "donor_age_months": 18,
+        "n_cells": 7014,
+        "n_tissues": 18,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "21_48_F",
+        "sex": "female",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 21,
+        "n_cells": 222,
+        "n_tissues": 1,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "21_54_F",
+        "sex": "female",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 21,
+        "n_cells": 267,
+        "n_tissues": 1,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "21_55_F",
+        "sex": "female",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 21,
+        "n_cells": 239,
+        "n_tissues": 1,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "24_58_M",
+        "sex": "male",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 24,
+        "n_cells": 8031,
+        "n_tissues": 20,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "24_59_M",
+        "sex": "male",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 24,
+        "n_cells": 7897,
+        "n_tissues": 20,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "24_60_M",
+        "sex": "male",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 24,
+        "n_cells": 8353,
+        "n_tissues": 20,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "24_61_M",
+        "sex": "male",
+        "age_token": "20m",
+        "stages": [
+          "20-month-old stage and over"
+        ],
+        "donor_age_months": 24,
+        "n_cells": 7270,
+        "n_tissues": 18,
+        "token_matches_donor_age": false
+      },
+      {
+        "donor_id": "3_10_M",
+        "sex": "male",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 7244,
+        "n_tissues": 18,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_10_M/3_11_M",
+        "sex": "male",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 63,
+        "n_tissues": 1,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_11_M",
+        "sex": "male",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 3817,
+        "n_tissues": 16,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_38_F",
+        "sex": "female",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 7814,
+        "n_tissues": 21,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_38_F/3_39_F",
+        "sex": "female",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 75,
+        "n_tissues": 1,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_39_F",
+        "sex": "female",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 7985,
+        "n_tissues": 21,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_56_F",
+        "sex": "female",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 3041,
+        "n_tissues": 10,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_57_F",
+        "sex": "female",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 400,
+        "n_tissues": 2,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_8_M",
+        "sex": "male",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 7071,
+        "n_tissues": 19,
+        "token_matches_donor_age": true
+      },
+      {
+        "donor_id": "3_9_M",
+        "sex": "male",
+        "age_token": "3m",
+        "stages": [
+          "3-month-old stage"
+        ],
+        "donor_age_months": 3,
+        "n_cells": 7008,
+        "n_tissues": 19,
+        "token_matches_donor_age": true
+      }
+    ],
+    "groups": [
+      {
+        "sex": "female",
+        "age_token": "18m",
+        "n_mice": 2,
+        "n_cells": 19163,
+        "mice": [
+          "18_46_F",
+          "18_47_F"
+        ],
+        "donor_ages": [
+          18
+        ]
+      },
+      {
+        "sex": "female",
+        "age_token": "20m",
+        "n_mice": 3,
+        "n_cells": 728,
+        "mice": [
+          "21_48_F",
+          "21_54_F",
+          "21_55_F"
+        ],
+        "donor_ages": [
+          21
+        ]
+      },
+      {
+        "sex": "female",
+        "age_token": "3m",
+        "n_mice": 5,
+        "n_cells": 19315,
+        "mice": [
+          "3_38_F",
+          "3_38_F/3_39_F",
+          "3_39_F",
+          "3_56_F",
+          "3_57_F"
+        ],
+        "donor_ages": [
+          3
+        ]
+      },
+      {
+        "sex": "male",
+        "age_token": "18m",
+        "n_mice": 2,
+        "n_cells": 14864,
+        "mice": [
+          "18_45_M",
+          "18_53_M"
+        ],
+        "donor_ages": [
+          18
+        ]
+      },
+      {
+        "sex": "male",
+        "age_token": "20m",
+        "n_mice": 4,
+        "n_cells": 31551,
+        "mice": [
+          "24_58_M",
+          "24_59_M",
+          "24_60_M",
+          "24_61_M"
+        ],
+        "donor_ages": [
+          24
+        ]
+      },
+      {
+        "sex": "male",
+        "age_token": "3m",
+        "n_mice": 5,
+        "n_cells": 25203,
+        "mice": [
+          "3_10_M",
+          "3_10_M/3_11_M",
+          "3_11_M",
+          "3_8_M",
+          "3_9_M"
+        ],
+        "donor_ages": [
+          3
+        ]
+      }
+    ]
+  },
+  "C": {
+    "census_var_ercc": 0
+  },
+  "D": {
+    "verdict": "FAIL \u2014 died at GATE 0 (Mathematical independence)",
+    "gate0_dropout_rel": 0.43016952708443573,
+    "gate0_dropout_z": 54.72077558287852,
+    "gate1_table": [
+      {
+        "stratum": {
+          "sex": "female"
+        },
+        "n_a": 19315,
+        "n_b": 728,
+        "median_n_genes_a": 2495.0,
+        "median_n_genes_b": 3413.5,
+        "n_genes_ratio": 1.36813627254509,
+        "overlap": 1.0,
+        "ratio_breach": false,
+        "overlap_breach": false,
+        "flagged": false
+      },
+      {
+        "stratum": {
+          "sex": "male"
+        },
+        "n_a": 25203,
+        "n_b": 31551,
+        "median_n_genes_a": 2799.0,
+        "median_n_genes_b": 1701.0,
+        "n_genes_ratio": 1.6455026455026456,
+        "overlap": 0.7607296137339056,
+        "ratio_breach": true,
+        "overlap_breach": false,
+        "flagged": true
+      }
+    ],
+    "gate2_pooled": {
+      "unmatched_effect": 0.00678748382496171,
+      "matched_effect": -0.002932968564657909,
+      "overlap_range": [
+        1395.0,
+        3646.0
+      ],
+      "n_a": 27633,
+      "n_b": 17365,
+      "ks_p": 2.8869472425477898e-102,
+      "matched_ratio": 1.0907398790134946,
+      "min_effect": 0.002192907606680827,
+      "retained_frac": 0.4321142620538533
+    },
+    "gate2_pooled_message": "effect collapses under matching: 0.006787 -> -0.002933 (43% retained, need >= 50%) \u2014 likely a QC artifact",
+    "gate2_male": {
+      "unmatched_effect": 0.01185476423507813,
+      "matched_effect": -0.003555648502532348,
+      "overlap_range": [
+        1451.0,
+        3578.0
+      ],
+      "n_a": 14515,
+      "n_b": 15919,
+      "ks_p": 5.922435106750884e-102,
+      "matched_ratio": 1.1066295781177562,
+      "min_effect": 0.0028286918151017686,
+      "retained_frac": 0.29993413885965653
+    },
+    "gate2_male_message": "effect collapses under matching: 0.01185 -> -0.003556 (30% retained, need >= 50%) \u2014 likely a QC artifact",
+    "gate3_zero_frac": [
+      0.9173368075834494,
+      0.9709718392763097
+    ],
+    "neg_control_mi": 0.036246596571375855,
+    "median_nnz": {
+      "('female', '20m')": 3413.5,
+      "('female', '3m')": 2495.0,
+      "('male', '20m')": 1701.0,
+      "('male', '3m')": 2799.0
+    }
+  },
+  "E": {
+    "mice": [
+      {
+        "donor_id": "24_60_M",
+        "sex": "male",
+        "age": "20m",
+        "donor_age_months": 24,
+        "n_cells": 8353,
+        "n_tissues": 20,
+        "median_nnz": 1670.0,
+        "mi_3bin": 0.006265352010074675
+      },
+      {
+        "donor_id": "24_59_M",
+        "sex": "male",
+        "age": "20m",
+        "donor_age_months": 24,
+        "n_cells": 7897,
+        "n_tissues": 20,
+        "median_nnz": 1574.0,
+        "mi_3bin": 0.01112434189219214
+      },
+      {
+        "donor_id": "24_61_M",
+        "sex": "male",
+        "age": "20m",
+        "donor_age_months": 24,
+        "n_cells": 7270,
+        "n_tissues": 18,
+        "median_nnz": 1975.0,
+        "mi_3bin": 0.01074778295129472
+      },
+      {
+        "donor_id": "24_58_M",
+        "sex": "male",
+        "age": "20m",
+        "donor_age_months": 24,
+        "n_cells": 8031,
+        "n_tissues": 20,
+        "median_nnz": 1598.0,
+        "mi_3bin": 0.0072395731320595205
+      },
+      {
+        "donor_id": "3_39_F",
+        "sex": "female",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 7985,
+        "n_tissues": 21,
+        "median_nnz": 2626.0,
+        "mi_3bin": 0.0070049301437961845
+      },
+      {
+        "donor_id": "3_38_F",
+        "sex": "female",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 7814,
+        "n_tissues": 21,
+        "median_nnz": 2100.0,
+        "mi_3bin": 0.004896318558931145
+      },
+      {
+        "donor_id": "3_56_F",
+        "sex": "female",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 3041,
+        "n_tissues": 10,
+        "median_nnz": 3025.0,
+        "mi_3bin": 0.016362026898759423
+      },
+      {
+        "donor_id": "3_9_M",
+        "sex": "male",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 7008,
+        "n_tissues": 19,
+        "median_nnz": 2830.0,
+        "mi_3bin": 0.022069283318606848
+      },
+      {
+        "donor_id": "3_10_M",
+        "sex": "male",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 7244,
+        "n_tissues": 18,
+        "median_nnz": 2867.5,
+        "mi_3bin": 0.016562863987525704
+      },
+      {
+        "donor_id": "3_8_M",
+        "sex": "male",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 7071,
+        "n_tissues": 19,
+        "median_nnz": 3018.0,
+        "mi_3bin": 0.026035638404892772
+      },
+      {
+        "donor_id": "3_11_M",
+        "sex": "male",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 3817,
+        "n_tissues": 16,
+        "median_nnz": 2327.0,
+        "mi_3bin": 0.031368831094429686
+      },
+      {
+        "donor_id": "3_10_M/3_11_M",
+        "sex": "male",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 63,
+        "n_tissues": 1,
+        "median_nnz": 3970.0,
+        "mi_3bin": 0.04692125067323071
+      },
+      {
+        "donor_id": "3_57_F",
+        "sex": "female",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 400,
+        "n_tissues": 2,
+        "median_nnz": 3679.0,
+        "mi_3bin": 0.009046132313792527
+      },
+      {
+        "donor_id": "3_38_F/3_39_F",
+        "sex": "female",
+        "age": "3m",
+        "donor_age_months": 3,
+        "n_cells": 75,
+        "n_tissues": 1,
+        "median_nnz": 4239.0,
+        "mi_3bin": 0.022003085229320297
+      },
+      {
+        "donor_id": "21_55_F",
+        "sex": "female",
+        "age": "20m",
+        "donor_age_months": 21,
+        "n_cells": 239,
+        "n_tissues": 1,
+        "median_nnz": 3303.0,
+        "mi_3bin": 0.009630482431675701
+      },
+      {
+        "donor_id": "21_48_F",
+        "sex": "female",
+        "age": "20m",
+        "donor_age_months": 21,
+        "n_cells": 222,
+        "n_tissues": 1,
+        "median_nnz": 3367.5,
+        "mi_3bin": 0.02126603652114765
+      },
+      {
+        "donor_id": "21_54_F",
+        "sex": "female",
+        "age": "20m",
+        "donor_age_months": 21,
+        "n_cells": 267,
+        "n_tissues": 1,
+        "median_nnz": 3507.0,
+        "mi_3bin": 0.009891695696576226
+      }
+    ],
+    "tests": {
+      "female:median_nnz": {
+        "n_young": 5,
+        "n_old": 3,
+        "mean_young": 3133.8,
+        "mean_old": 3392.5,
+        "p_exact": 0.6428571428571429,
+        "min_attainable_p": 0.017857142857142856
+      },
+      "female:mi_3bin": {
+        "n_young": 5,
+        "n_old": 3,
+        "mean_young": 0.011862498628919915,
+        "mean_old": 0.01359607154979986,
+        "p_exact": 0.6785714285714286,
+        "min_attainable_p": 0.017857142857142856
+      },
+      "male:median_nnz": {
+        "n_young": 5,
+        "n_old": 4,
+        "mean_young": 3002.5,
+        "mean_old": 1704.25,
+        "p_exact": 0.015873015873015872,
+        "min_attainable_p": 0.007936507936507936
+      },
+      "male:mi_3bin": {
+        "n_young": 5,
+        "n_old": 4,
+        "mean_young": 0.028591573495737144,
+        "mean_old": 0.008844262496405264,
+        "p_exact": 0.015873015873015872,
+        "min_attainable_p": 0.007936507936507936
+      }
+    }
+  },
+  "F": {
+    "Xist": {
+      "verdict": "FAIL \u2014 died at GATE 1 (QC parity)",
+      "gate1_table": [
+        {
+          "stratum": {
+            "age": "18m"
+          },
+          "n_a": 19163,
+          "n_b": 14864,
+          "median_n_genes_a": 2291.0,
+          "median_n_genes_b": 1882.0,
+          "n_genes_ratio": 1.2173219978746015,
+          "overlap": 0.9474671669793621,
+          "ratio_breach": false,
+          "overlap_breach": false,
+          "flagged": false
+        },
+        {
+          "stratum": {
+            "age": "20m"
+          },
+          "n_a": 728,
+          "n_b": 31551,
+          "median_n_genes_a": 3413.5,
+          "median_n_genes_b": 1701.0,
+          "n_genes_ratio": 2.006760728982951,
+          "overlap": 0.49475757091915473,
+          "ratio_breach": true,
+          "overlap_breach": false,
+          "flagged": true
+        },
+        {
+          "stratum": {
+            "age": "3m"
+          },
+          "n_a": 19315,
+          "n_b": 25203,
+          "median_n_genes_a": 2495.0,
+          "median_n_genes_b": 2799.0,
+          "n_genes_ratio": 1.1218436873747495,
+          "overlap": 0.966006503103754,
+          "ratio_breach": false,
+          "overlap_breach": false,
+          "flagged": false
+        }
+      ],
+      "gate2": {
+        "unmatched_effect": 0.4199439781302986,
+        "matched_effect": 0.42162201013073025,
+        "overlap_range": [
+          1231.0,
+          4358.300000000003
+        ],
+        "n_a": 30465,
+        "n_b": 50467,
+        "ks_p": 2.6478873309359527e-52,
+        "matched_ratio": 1.050420168067227,
+        "min_effect": 0.003914112540923318,
+        "retained_frac": 1.0039958472720545
+      }
+    },
+    "Y_score": {
+      "verdict": "FAIL \u2014 died at GATE 1 (QC parity)",
+      "gate1_table": [
+        {
+          "stratum": {
+            "age": "18m"
+          },
+          "n_a": 19163,
+          "n_b": 14864,
+          "median_n_genes_a": 2291.0,
+          "median_n_genes_b": 1882.0,
+          "n_genes_ratio": 1.2173219978746015,
+          "overlap": 0.9474671669793621,
+          "ratio_breach": false,
+          "overlap_breach": false,
+          "flagged": false
+        },
+        {
+          "stratum": {
+            "age": "20m"
+          },
+          "n_a": 728,
+          "n_b": 31551,
+          "median_n_genes_a": 3413.5,
+          "median_n_genes_b": 1701.0,
+          "n_genes_ratio": 2.006760728982951,
+          "overlap": 0.49475757091915473,
+          "ratio_breach": true,
+          "overlap_breach": false,
+          "flagged": true
+        },
+        {
+          "stratum": {
+            "age": "3m"
+          },
+          "n_a": 19315,
+          "n_b": 25203,
+          "median_n_genes_a": 2495.0,
+          "median_n_genes_b": 2799.0,
+          "n_genes_ratio": 1.1218436873747495,
+          "overlap": 0.966006503103754,
+          "ratio_breach": false,
+          "overlap_breach": false,
+          "flagged": false
+        }
+      ],
+      "gate2": {
+        "unmatched_effect": -0.11937902633052028,
+        "matched_effect": -0.12470841088209289,
+        "overlap_range": [
+          1231.0,
+          4358.300000000003
+        ],
+        "n_a": 30465,
+        "n_b": 50467,
+        "ks_p": 2.6478873309359527e-52,
+        "matched_ratio": 1.050420168067227,
+        "min_effect": 0.001931132051472059,
+        "retained_frac": 1.0446425533390824
+      }
+    },
+    "mice": [
+      {
+        "donor_id": "18_53_M",
+        "sex": "male",
+        "age": "18m",
+        "n_cells": 7014,
+        "xist": 0.009416303621995319,
+        "y_score": 0.10357495485395936,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "18_45_M",
+        "sex": "male",
+        "age": "18m",
+        "n_cells": 7850,
+        "xist": 0.011331999555319407,
+        "y_score": 0.09643047688877956,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "18_47_F",
+        "sex": "female",
+        "age": "18m",
+        "n_cells": 9562,
+        "xist": 0.458228358914391,
+        "y_score": 0.0005749370462531415,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "18_46_F",
+        "sex": "female",
+        "age": "18m",
+        "n_cells": 9601,
+        "xist": 0.3942584263052568,
+        "y_score": 0.0006622573177566365,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "24_60_M",
+        "sex": "male",
+        "age": "20m",
+        "n_cells": 8353,
+        "xist": 0.0019102977730124353,
+        "y_score": 0.08896626495407411,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "24_59_M",
+        "sex": "male",
+        "age": "20m",
+        "n_cells": 7897,
+        "xist": 0.0018405241637111586,
+        "y_score": 0.08939109353378112,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "24_61_M",
+        "sex": "male",
+        "age": "20m",
+        "n_cells": 7270,
+        "xist": 0.002613271476845452,
+        "y_score": 0.09566778577757945,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "24_58_M",
+        "sex": "male",
+        "age": "20m",
+        "n_cells": 8031,
+        "xist": 0.003273279730597176,
+        "y_score": 0.10155800374891907,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_39_F",
+        "sex": "female",
+        "age": "3m",
+        "n_cells": 7985,
+        "xist": 0.5012102784011947,
+        "y_score": 9.248445718068333e-05,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_38_F",
+        "sex": "female",
+        "age": "3m",
+        "n_cells": 7814,
+        "xist": 0.3205585199608523,
+        "y_score": 0.0002224579293291415,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_56_F",
+        "sex": "female",
+        "age": "3m",
+        "n_cells": 3041,
+        "xist": 0.4926286753875004,
+        "y_score": 0.00014236451746803814,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_9_M",
+        "sex": "male",
+        "age": "3m",
+        "n_cells": 7008,
+        "xist": 0.003521010558845276,
+        "y_score": 0.17195390873742258,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_10_M",
+        "sex": "male",
+        "age": "3m",
+        "n_cells": 7244,
+        "xist": 0.0021192529003899794,
+        "y_score": 0.16360676318610762,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_8_M",
+        "sex": "male",
+        "age": "3m",
+        "n_cells": 7071,
+        "xist": 0.00364597846981136,
+        "y_score": 0.1767568230072025,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_11_M",
+        "sex": "male",
+        "age": "3m",
+        "n_cells": 3817,
+        "xist": 0.0013887286253886123,
+        "y_score": 0.12537583763168192,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_10_M/3_11_M",
+        "sex": "male",
+        "age": "3m",
+        "n_cells": 63,
+        "xist": 0.0001568973214210394,
+        "y_score": 0.23207541561342615,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_57_F",
+        "sex": "female",
+        "age": "3m",
+        "n_cells": 400,
+        "xist": 0.3763138640369377,
+        "y_score": 3.4095898261655804e-05,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "3_38_F/3_39_F",
+        "sex": "female",
+        "age": "3m",
+        "n_cells": 75,
+        "xist": 0.261736366004816,
+        "y_score": 0.001397932137450477,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "21_55_F",
+        "sex": "female",
+        "age": "20m",
+        "n_cells": 239,
+        "xist": 0.4291565410308725,
+        "y_score": 0.0,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "21_48_F",
+        "sex": "female",
+        "age": "20m",
+        "n_cells": 222,
+        "xist": 0.37241610723269014,
+        "y_score": 0.0,
+        "label_consistent": true
+      },
+      {
+        "donor_id": "21_54_F",
+        "sex": "female",
+        "age": "20m",
+        "n_cells": 267,
+        "xist": 0.3829399079642672,
+        "y_score": 0.0,
+        "label_consistent": true
+      }
+    ]
+  },
+  "paper": {
+    "n_cells": 110824,
+    "median_nnz": {
+      "('male', '3m')": 2799,
+      "('male', '18m')": 1882,
+      "('male', '20m')": 1701,
+      "('female', '3m')": 2495,
+      "('female', '18m')": 2291,
+      "('female', '20m')": 3413
+    },
+    "n_cells_female_20m": 728,
+    "gate1_male_ratio": 1.65,
+    "gate0_dropout_rel": 0.42,
+    "gate0_dropout_z": 63.2,
+    "gate2_pooled_retained": 0.43,
+    "gate2_male_retained": 0.3,
+    "neg_control_mi": 0.038,
+    "zero_frac_young_old": [
+      0.92,
+      0.97
+    ]
+  }
+}
