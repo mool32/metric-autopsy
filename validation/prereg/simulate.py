@@ -10,6 +10,10 @@ that select_backgrounds.py writes, so that the pilot and everything after it rea
 the real run:
 
     python simulate.py write --out-dir data --spec backgrounds.json --report selection.md
+
+The pilot's rehearsal (the fifth round: the full pilot before the tag) writes backgrounds of the
+panel's sizes instead (``--panel-size``: B1 at the selection's caps, B2 with twice N7's mice, and the
+sparse tail of weakly detected genes a Census extraction carries; `panel_backgrounds`).
 """
 from __future__ import annotations
 
@@ -28,7 +32,11 @@ DRY_RUN_KEY = "0123456789abcdef" * 4
 
 
 def simulated_background(name: str = "B1", donors: int = 20, cells: int = 220, n_genes: int = 420,
-                         seed: int = 0, coupled: int = 10, plan: bool = True) -> P.Background:
+                         seed: int = 0, coupled: int = 10, plan: bool = True, filler: int = 0,
+                         filler_per_cell: float = 1000.0) -> P.Background:
+    """`filler` > 0 appends that many weakly detected genes (about `filler_per_cell` detected per
+    cell, each a count of one, below the panel's detection rule) and keeps the counts sparse, as a
+    Census extraction's are; with 0 the counts are dense and the draws are as before."""
     rng = np.random.default_rng(seed)
     third = n_genes // 3
     mu = np.concatenate([rng.uniform(4, 8, third), rng.uniform(1.0, 1.6, third),
@@ -45,9 +53,23 @@ def simulated_background(name: str = "B1", donors: int = 20, cells: int = 220, n
             z = rng.normal(0, 1, cells)
             m[:, a] *= np.exp(0.5 * z)
             m[:, b] *= np.exp(0.5 * z)
-        X.append(rng.negative_binomial(3.0, 3.0 / (3.0 + m)))
+        block = rng.negative_binomial(3.0, 3.0 / (3.0 + m))
+        if filler:
+            from scipy import sparse
+            k = rng.poisson(filler_per_cell, cells)
+            tail = sparse.csr_matrix((np.ones(int(k.sum()), np.int32), (np.repeat(np.arange(cells), k),
+                                      rng.integers(0, filler, int(k.sum())))), shape=(cells, filler))
+            tail.data[:] = 1  # a gene drawn twice in a cell is one count
+            block = sparse.hstack([sparse.csr_matrix(block.astype(np.int32)), tail], format="csr")
+        X.append(block)
         donor += [f"{name}d{d}"] * cells
-    bg = P.Background(np.vstack(X).astype(float), genes, np.asarray(donor), name)
+    if filler:
+        from scipy import sparse
+        X = sparse.vstack(X, format="csr")
+        genes += [f"TAIL{i}" for i in range(filler)]
+    else:
+        X = np.vstack(X).astype(float)
+    bg = P.Background(X, genes, np.asarray(donor), name)
     if plan:
         P.plan_background(bg)
     return bg
@@ -57,6 +79,19 @@ def dry_backgrounds(n_genes: int = 2500, plan: bool = True) -> dict:
     """B1 and B2 of the planned sizes (B1: 24 donors; B2: 12 mice), for timing and the dry run."""
     return {"B1": simulated_background("B1", donors=24, cells=220, n_genes=n_genes, plan=plan),
             "B2": simulated_background("B2", donors=12, cells=220, n_genes=n_genes, seed=1, plan=plan)}
+
+
+PANEL_SIZES = dict(B1=(200, 400), B2=(48, 400))  # donors (mice) x cells: B1 at the selection's caps
+PANEL_TAIL = 30000  # weakly detected genes (a Census extraction carries every gene of the release)
+
+
+def panel_backgrounds(n_genes: int = 2500, plan: bool = True) -> dict:
+    """B1 and B2 of the panel's sizes, for the pilot's rehearsal: B1 at the selection's caps
+    (select_backgrounds.MAX_DONORS donors x MAX_CELLS cells), B2 with twice N7's largest draw of
+    mice (N7_MAX_MICE; section 3.1 takes all qualifying mice), both with the sparse tail."""
+    return {name: simulated_background(name, donors=d, cells=c, n_genes=n_genes, seed=i, plan=plan,
+                                       filler=PANEL_TAIL)
+            for i, (name, (d, c)) in enumerate(PANEL_SIZES.items())}
 
 
 def b3_stand_in(seed: int = 3, per_phase: int = 96, n_genes: int = 300, ercc: int = 100):
@@ -74,7 +109,7 @@ def b3_stand_in(seed: int = 3, per_phase: int = 96, n_genes: int = 300, ercc: in
 
 
 def write_backgrounds(out_dir: Path, spec_path: Path, report: Path | None = None,
-                      backgrounds: dict | None = None) -> dict:
+                      backgrounds: dict | None = None, origin: str = "simulate.dry_backgrounds") -> dict:
     """The dry run's selection: B1 and B2 (default: `dry_backgrounds`) as .npz files with the
     backgrounds.json entries select_backgrounds.py writes (file, sha256, donor column, counts),
     and B3 - the rehearsal's E-MTAB-2805 file where it left one in `out_dir`, else a simulated
@@ -86,7 +121,7 @@ def write_backgrounds(out_dir: Path, spec_path: Path, report: Path | None = None
         path = out_dir / f"{name}.npz"
         P.save_npz(path, bg.X, pd.DataFrame({"donor_id": bg.donor}), bg.genes)
         spec[name] = dict(file=path.name, sha256=P.sha256(path), donor="donor_id", counts="X",
-                          source=dict(simulated="simulate.dry_backgrounds", donors=len(set(bg.donor)),
+                          source=dict(simulated=origin, donors=len(set(bg.donor)),
                                       cells=int(bg.X.shape[0]), genes=len(bg.genes)))
         lines.append(f"{name}: simulated, {len(set(bg.donor))} donors, {bg.X.shape[0]} cells x {len(bg.genes)} genes")
     b3 = out_dir / "B3.npz"
@@ -138,8 +173,12 @@ def main(argv=None):
     w.add_argument("--out-dir", type=Path, required=True)
     w.add_argument("--spec", type=Path, required=True)
     w.add_argument("--report", type=Path)
+    w.add_argument("--panel-size", action="store_true",
+                   help="backgrounds of the panel's sizes (the pilot's rehearsal; panel_backgrounds)")
     args = p.parse_args(argv)
-    spec = write_backgrounds(args.out_dir, args.spec, args.report)
+    spec = (write_backgrounds(args.out_dir, args.spec, args.report, panel_backgrounds(plan=False),
+                              "simulate.panel_backgrounds") if args.panel_size
+            else write_backgrounds(args.out_dir, args.spec, args.report))
     print(json.dumps({k: dict(file=v["file"], sha256=v["sha256"]) for k, v in spec.items()}, indent=1))
 
 

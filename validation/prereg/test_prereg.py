@@ -77,8 +77,8 @@ def test_the_key_is_a_drand_randomness_of_64_hex():
 def test_assign_is_deterministic_complete_and_keyed():
     a, b, c = P.assign(KEY), P.assign(KEY), P.assign(OTHER_KEY)
     assert a == b and a != c
-    assert len(a) == P.n_datasets() == 6400
-    assert P.n_cards() == 6700 and P.n_cards(data="null") == 5800  # N4 has two cards
+    assert len(a) == P.n_datasets() == 9750
+    assert P.n_cards() == 10540 and P.n_cards(data="null") == 8740  # N4 has two cards
     assert len({e["id"] for e in a}) == len(a) and {e["id"] for e in a} == {e["id"] for e in c}
     counts = Counter((e["condition"], e["variant"]) for e in a)
     assert counts == {(cond.name, v): n for cond in P.CONDITIONS for v, n in cond.variants}
@@ -122,8 +122,8 @@ def test_the_gene_pair_is_drawn_independently_of_the_condition():
 
 def test_drops_follow_the_pre_registered_order_and_never_touch_key_conditions():
     full = P.n_datasets()
-    assert P.n_datasets(["N3:f=0.1", "N3:f=0.2", "N3:f=0.4"]) == full - 300
-    assert len(P.assign(KEY, ["N3:f=0.1"])) == full - 100
+    assert P.n_datasets(["N3:f=0.1", "N3:f=0.2", "N3:f=0.4"]) == full - 790
+    assert len(P.assign(KEY, ["N3:f=0.1"])) == full - 264
     for bad in (["N3:f=0.2"], ["N1:null"], ["E1:dose=key"], ["N3:f=0.1", "N2:c=0.5"]):
         with pytest.raises(ValueError):
             P.assign(KEY, bad)
@@ -583,7 +583,8 @@ def test_the_truth_about_the_metric_has_a_band_around_delta_min():
 
 def test_the_allowed_outcomes_follow_the_owners_table_in_every_condition(bgs):
     """Decided 2026-10-08, the same for N1-N8 and E1-E3: a blind or useless metric allows metric
-    invalid and INCONCLUSIVE (the constant also DEGENERATE METRIC); a valid metric on null data NO
+    invalid and INCONCLUSIVE (the constant also DEGENERATE METRIC; a blind one where an artifact is
+    planted also explained by depth, decided in the fifth round); a valid metric on null data NO
     DETECTABLE EFFECT, INCONCLUSIVE, NOT SUPPORTED for the opposite direction, and explained by
     depth only where an artifact is planted; on a real effect SUPPORTED and INCONCLUSIVE, and NO
     DETECTABLE EFFECT only below the SESOI; an ambiguous metric the union; a refusal by GATE 0
@@ -606,7 +607,7 @@ def test_the_allowed_outcomes_follow_the_owners_table_in_every_condition(bgs):
                 assert got == (null | {P.NS_DEPTH} if c.artifact else null)
                 assert P.NS_INVALID not in got and P.SUPPORTED not in got
             if c.metric == "norm_pearson":
-                assert P.allowed(c, v, lo, pilot) == blind
+                assert P.allowed(c, v, lo, pilot) == (blind | {P.NS_DEPTH} if c.artifact else blind)
                 assert P.allowed(c, v, med, pilot) == P.data_allowed(c, v, med, pilot) | blind
     # real effects: NO DETECTABLE EFFECT only where |Δ*| < SESOI (0.3 x factor against 0.15)
     for name, variant in (("E1", "dose=key"), ("E2", "against"), ("E3", "with")):
@@ -639,7 +640,7 @@ def test_the_truth_follows_the_data_of_the_condition(bgs):
     assert "truth_case" not in pilot and P.metric_truth(conds["E1"], "dose=key", 0, pilot) == "valid"
     pilot["truth_case"] = {"B1": {"E2:against": {str(k): {"class": "blind"} for k in range(24)}}}
     assert P.metric_truth(conds["E2"], "against", 0, pilot) == "blind"
-    assert P.allowed(conds["E2"], "against", 0, pilot) == P.INVALID_ALLOWED
+    assert P.allowed(conds["E2"], "against", 0, pilot) == P.INVALID_ALLOWED | {P.NS_DEPTH}  # an artifact: the fifth round
     with pytest.raises(ValueError, match="no truth for E1:dose=key"):
         P.metric_truth(conds["E1"], "dose=key", 0, pilot)
     assert P.metric_truth(conds["N1"], "null", 0, pilot) == "valid" and "N1" not in P.TRUTH_CASE_CONDITIONS
@@ -694,6 +695,43 @@ def test_the_panel_loads_only_its_own_backgrounds(tmp_path):
     assert X.shape == (288, 35) and set(obs["phase"]) == {"G1", "S", "G2M"}
 
 
+def test_the_split_pilot_is_the_pilot(tmp_path, monkeypatch):
+    """The fifth round: the pilot in one job came near the job's limit, so the workflow splits it over
+    parallel jobs - the base (every stage but establishability), the parts of establishability's jobs
+    and the merge - which must write the very pilot.json of one run; a merge refuses parts that are
+    not one split of that base."""
+    pytest.importorskip("scipy")
+    import oracle as O
+    import simulate
+    small = {"B1": simulated_background("B1", plan=False),
+             "B2": simulated_background("B2", donors=12, seed=1, plan=False)}
+    data, spec = tmp_path / "data", tmp_path / "backgrounds.json"
+    simulate.write_backgrounds(data, spec, None, backgrounds=small)
+    monkeypatch.setattr(O, "SMOKE_SIZES", dict(curve=(1, 2), truth=(2, 3), case=(1, 2), gate4=8, sesoi=4))
+    common = ["--backgrounds", str(spec), "--data-dir", str(data), "--workers", "2"]
+    O.main(common + ["--out", str(tmp_path / "one.json"), "--smoke", "--datasets", "2", "--draws", "10"])
+    O.main(common + ["--out", str(tmp_path / "base.json"), "--stage", "base", "--smoke", "--datasets", "2",
+                     "--draws", "10"])
+    for i in range(3):
+        O.main(common + ["--out", str(tmp_path / f"part{i}.json"), "--stage", "part", "--base",
+                         str(tmp_path / "base.json"), "--part", str(i), "--parts", "3"])
+    parts = [str(tmp_path / f"part{i}.json") for i in (2, 0, 1)]  # in any order
+    O.main(common + ["--out", str(tmp_path / "merged.json"), "--stage", "merge", "--base",
+                     str(tmp_path / "base.json"), "--part-files", *parts])
+    assert (tmp_path / "merged.json").read_text() == (tmp_path / "one.json").read_text()
+    with pytest.raises(ValueError, match="not one split"):
+        O.main(common + ["--out", str(tmp_path / "x.json"), "--stage", "merge", "--base",
+                         str(tmp_path / "base.json"), "--part-files", *parts[:2]])
+    other = json.loads((tmp_path / "part0.json").read_text())
+    (tmp_path / "part0.json").write_text(json.dumps(dict(other, base_sha256="0" * 64)))
+    with pytest.raises(ValueError, match="another base"):
+        O.main(common + ["--out", str(tmp_path / "x.json"), "--stage", "merge", "--base",
+                         str(tmp_path / "base.json"), "--part-files", *parts])
+    with pytest.raises(SystemExit):  # a part takes its sizes from the base
+        O.main(common + ["--out", str(tmp_path / "x.json"), "--stage", "part", "--base", str(tmp_path / "base.json"),
+                         "--part", "0", "--parts", "3", "--smoke"])
+
+
 def test_the_pilot_and_the_run_go_through_their_command_lines_on_files(tmp_path, monkeypatch, capsys):
     """The first review's V7 (the pilot had never run as the workflow runs it) and K1: on simulated
     files whose backgrounds.json also names the anchors' B3 (simulate.py write, the dry run's
@@ -735,7 +773,7 @@ def test_the_pilot_and_the_run_go_through_their_command_lines_on_files(tmp_path,
                 "--pilot", str(pilot_path), "--write-drops", "--refusals", "1"])
     timing_out = capsys.readouterr().out
     assert "gate0_refusals" in json.loads(pilot_path.read_text())  # written before the key (the fourth review)
-    # every card at its condition's time: (6700 - 790) x 30 s + 790 x 90 s over 20 shards x 4 workers
+    # every card at its condition's time: (10540 - 790) x 30 s + 790 x 90 s over 20 shards x 4 workers
     expected = ((P.n_cards() - 790) * 30.0 + 790 * 90.0) / 80 / 3600
     assert f"a shard's expected time {expected:.2f} h" in timing_out and "drops written" in timing_out
     assert "# memory: a worker's peak 500 MB x 4 workers = 2000 MB" in timing_out
@@ -854,6 +892,18 @@ def test_the_sound_validator_model_takes_every_open_route_at_its_measured_size(b
     assert oc.stratum(conds["E1"], "valid") == "effect" and oc.stratum(conds["N1"], "valid") == "null"
     assert oc.stratum(conds["N8"], "valid") is None and oc.stratum(conds["N3"], "blind") is None  # the oracle's
     assert oc.stratum(conds["N6c"], "useless") == "invalid" and oc.stratum(conds["N1"], "ambiguous") is None
+    # the fifth round: explained by depth is correct on a blind metric where an artifact is planted, as on a
+    # valid one; without an artifact it stays an error (S4 on the blind or useless metrics)
+    pilot = _pilot(bgs, truth={"low": "blind"})
+    for name, variant in (("N2", "c=0.5"), ("N3", "f=0.2"), ("N8", "beta(2,2)"), ("E2", "against"), ("E3", "with")):
+        assert P.allowed(conds[name], variant, 20, pilot) == P.INVALID_ALLOWED | {P.NS_DEPTH}, name
+        assert P.NS_DEPTH in P.definite(conds[name], variant, 20, pilot)
+        assert not oc.card_model(conds[name], variant, 20, pilot)["depth_error_possible"], name
+    for name, variant in (("N1", "null"), ("N5", "sham"), ("N7", "mice"), ("E1", "dose=key")):
+        assert P.allowed(conds[name], variant, 20, pilot) == P.INVALID_ALLOWED, name
+        assert oc.card_model(conds[name], variant, 20, pilot)["depth_error_possible"], name
+    for name, variant in (("N6a", "random"), ("N6c", "random-genes")):  # useless, no artifact
+        assert P.allowed(conds[name], variant, 20, pilot) == P.INVALID_ALLOWED, name
 
 
 def test_gate0s_measured_refusals_are_in_the_sound_validators_model(bgs, tmp_path, monkeypatch):
@@ -892,6 +942,34 @@ def test_gate0s_measured_refusals_are_in_the_sound_validators_model(bgs, tmp_pat
     rows = oc.expected_rows(pilot)
     null = [r for r in rows if r["stratum"] == "null" and r["establishable"]]
     assert null and all(r["refusal"] == 0.2 for r in null)
+    assert oc.refusal_bound_failures(pilot) == []  # at the bound: not above it
+
+
+def test_gate0_refusing_above_its_bound_on_a_valid_metric_fails_s3(bgs):
+    """The owner's fifth round: the model took GATE 0's refusal share from the engine itself, so a
+    GATE 0 refusing half the time halved the nominal and still passed S3. On the strata with a valid
+    metric the model takes the share at most oc.GATE0_BOUND (0.20, a usefulness bound set in advance),
+    and a stratum where the frozen engine refused more often before the key fails S3 whatever the run
+    gives; on the blind and useless metrics the measured share stands (a refusal there protects)."""
+    pytest.importorskip("scipy")
+    import oc
+    import score as S
+    conds = P.conditions()
+    pilot = _est_pilot(bgs, truth={"low": "blind"})
+    pilot["gate0_refusals"] = {"effect": dict(n=100, refused=10, share=0.1),
+                               "null": dict(n=100, refused=50, share=0.5),
+                               "invalid": dict(n=100, refused=60, share=0.6)}
+    assert oc.sound_model(conds["N1"], "null", 0, pilot)["refusal"] == oc.GATE0_BOUND == 0.2
+    assert oc.sound_model(conds["E1"], "dose=key", 0, pilot)["refusal"] == 0.1
+    low = next(k for k, pe in enumerate(pilot["pool"]["B1"]) if pe["level"] == "low")
+    assert oc.sound_model(conds["N1"], "null", low, pilot)["refusal"] == 0.6  # blind: as measured
+    assert oc.refusal_bound_failures(pilot) == ["null"]
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    res = S.score(entries, _reports(entries, _perfect(pilot)), pilot, sims=2000)
+    s3 = res["criteria"]["S3"]
+    assert _failed(res) == {"S3"} and s3["gate0_refusal_bound_failed"] == ["null"]
+    assert not s3["strata"]["null"]["passed"] and s3["strata"]["null"]["k"] >= s3["strata"]["null"]["min_required"]
+    assert s3["strata"]["effect"]["passed"] and s3["strata"]["invalid"]["passed"]
 
 
 def test_the_oracle_applies_the_planted_nuisance_to_the_side_that_lacks_it(bgs):
@@ -937,6 +1015,28 @@ def test_the_oracle_shows_blindness_where_the_metric_is_blind_and_useless(bgs):
     e = _entry("N6b", "constant", seed=1)
     X, obs, _, cards = P.build(e, bgs, pilot)
     assert O.oracle_outcome(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0)) == P.DEGENERATE
+
+
+def test_the_oracle_reaches_explained_by_depth_on_a_blind_metric_only_where_an_artifact_is_planted(bgs, monkeypatch):
+    """The fifth round: on a blind metric where an artifact is planted, NOT SUPPORTED explained by depth
+    is correct (panel.allowed), so the oracle reaches it where its effect analysis finds it and GATE
+    4's rule does not show blindness; without an artifact it stays INCONCLUSIVE there."""
+    import oracle as O
+    pilot = _pilot(bgs, sesoi=0.1, dose=2.25, truth={"low": "blind"})
+    low = next(pe["index"] for pe in bgs["B1"].plan["pool"] if pe["level"] == "low")
+    monkeypatch.setattr(O, "effect_outcome", lambda *a, **k: P.NS_DEPTH)
+    monkeypatch.setattr(O, "gate4_outcome", lambda *a, **k: "UNTESTED")
+    got = {}
+    for name, variant in (("N2", "c=0.5"), ("N1", "null")):
+        e = _entry(name, variant, seed=1, pair=low)
+        X, obs, _, cards = P.build(e, bgs, pilot)
+        got[name] = O.oracle_outcomes(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0))
+    assert got["N2"]["best"] == P.NS_DEPTH and got["N1"]["best"] == P.INCONCLUSIVE
+    assert O.engine_outcome(got["N2"]["effect"], got["N2"]["gate4"]) == P.NS_DEPTH  # what the engine's order gives
+    monkeypatch.setattr(O, "gate4_outcome", lambda *a, **k: "FAIL")
+    e = _entry("N2", "c=0.5", seed=1, pair=low)
+    X, obs, _, cards = P.build(e, bgs, pilot)
+    assert O.oracle_outcomes(e, X, obs, cards[0], bgs, pilot, np.random.default_rng(0))["best"] == P.NS_INVALID
 
 
 def test_the_saturation_dose_is_the_smallest_dose_reaching_95_percent_of_the_maximum():
@@ -1046,9 +1146,9 @@ def test_a_background_without_a_candidate_is_dropped_with_its_cases(small_bgs, m
     entries = P.assign(KEY, pilot["dropped"], pilot["pool_size"])
     assert {e["condition"] for e in entries} == {c.name for c in P.CONDITIONS} - {"N7"}
     n7 = sum(n for _, n in P.conditions()["N7"].variants)
-    assert len(entries) == P.n_datasets() - n7 == P.n_datasets(pilot["dropped"]) and n7 == 300
+    assert len(entries) == P.n_datasets() - n7 == P.n_datasets(pilot["dropped"]) and n7 == 790
     assert not any(r["condition"] == "N7" for r in oc.expected_rows(pilot, pilot["dropped"]))
-    slow = {c.name: 160.0 for c in P.CONDITIONS}  # slow enough that some of the order's drops are needed
+    slow = {c.name: 120.0 for c in P.CONDITIONS}  # slow enough that some of the order's drops are needed
     order = T.decide_drops(slow, dropped=pilot["dropped"])
     assert order and P.check_dropped(pilot["dropped"] + order) == ["B2:*"] + order
     assert T.shard_hours(slow, ["B2:*"] + order) <= T.BUDGET_HOURS
@@ -1162,11 +1262,11 @@ def _bad_validators(pilot):
              nde_on_unestablishable_blind, {"S6"}),
             ("NOT SUPPORTED against the direction where unsure (X1)", opposite_for_unsure, {"S4"}),
             ("NO DETECTABLE EFFECT where unsure (X4)", nde_for_unsure, {"S6"}),
-            ("pseudoreplication on N4 (X2b)", pseudoreplication, {"S7"}),
+            ("pseudoreplication on N4 (X2b)", pseudoreplication, {"S7a"}),
             ("SUPPORTED on a quarter of N7 (X3)", supported_on_n7, {"S2"}),
             ("NOT SUPPORTED against the direction on a sixth of the nulls (V1)", opposite_on_nulls, {"S4"}),
             ("SUPPORTED on an eighth of N6a (V2)", supported_on_n6a, {"S2"}),
-            ("SUPPORTED on a tenth of N4 without the replicate unit (V2)", pseudoreplication_tenth, {"S7"}))
+            ("SUPPORTED on a tenth of N4 without the replicate unit (V2)", pseudoreplication_tenth, {"S7a"}))
 
 
 UNSETTLED_ONLY = ("NO DETECTABLE EFFECT on a quarter", "NOT SUPPORTED against the direction where unsure",
@@ -1182,7 +1282,9 @@ def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
     """A validator that always gives a correct definite outcome passes; one that always rejects
     the metric, always says INCONCLUSIVE, always refuses, always says SUPPORTED or always NO
     DETECTABLE EFFECT fails, and so do the reviews' perfect-but validators (the reviewer's question:
-    no bad validator passes). An engine that fails on cards fails S7, however few."""
+    no bad validator passes). A verdict the engine's rules cannot give fails S7a, however rare; a
+    crash (an engine exception or no report) is counted in S7b at the nominal 0.1% (the owner's fifth
+    round): one passes, more than the threshold fail, and every one is listed with its traceback."""
     pytest.importorskip("scipy")
     import score as S
     pilot = _est_pilot(bgs, truth={"low": "blind"})
@@ -1198,13 +1300,28 @@ def test_score_passes_a_perfect_engine_and_fails_the_bad_validators(bgs):
         assert fails <= got, (name, got)
     got = S.score(entries, _reports(entries, _bad_validators(pilot)[5][1]), pilot, sims=2000)["criteria"]["S3"]["strata"]
     assert not got["effect"]["passed"] and got["null"]["passed"] and got["invalid"]["passed"]
-    nothing = S.score(entries, {}, pilot, sims=2000)                    # no reports: every card an error
-    assert nothing["pooled"]["errors"]["rate"] == 1.0 and nothing["criteria"]["S7"]["rate"] == 1.0
+    nothing = S.score(entries, {}, pilot, sims=2000)                    # no reports: every card a crash
+    assert nothing["pooled"]["errors"]["rate"] == 1.0 and nothing["criteria"]["S7b"]["rate"] == 1.0
+    assert nothing["criteria"]["S7a"]["k"] == 0 and len(nothing["crashes"]) == P.n_cards()
     reports = _reports(entries, perfect)
-    lost = [e["id"] for e in entries if e["condition"] == "N1"][0]
-    reports.pop(lost)                                     # one missing report among 6,700 cards
+    n1 = [e["id"] for e in entries if e["condition"] == "N1"]
+    reports.pop(n1[0])                                    # one missing report among 10,540 cards: no verdict
+    reports[n1[1]] = dict(error="ValueError('x')", traceback=["src/metric_autopsy/gates.py:1 in gate0: x",
+                                                              "ValueError: x"])  # one engine exception
     res = S.score(entries, reports, pilot, sims=2000)
-    assert _failed(res) == {"S7"} and res["criteria"]["S7"]["k"] == 1 and not res["passed"]
+    s7b = res["criteria"]["S7b"]
+    assert not _failed(res) and res["passed"] and s7b["k"] == 2 and s7b["max_allowed"] == 18
+    assert {c["card"] for c in res["crashes"]} == set(n1[:2])
+    assert {c["error"] for c in res["crashes"]} == {"no report", "ValueError('x')"}
+    assert any(c["traceback"] for c in res["crashes"])
+    for cid in n1[2:21]:                                  # 21 crashes: above the threshold
+        reports.pop(cid)
+    res = S.score(entries, reports, pilot, sims=2000)
+    assert _failed(res) == {"S7b"} and res["criteria"]["S7b"]["k"] == 21 and not res["passed"]
+    reports = _reports(entries, perfect)
+    reports[n1[0]] = ("SUPPORTED — replicated", "no_detectable_effect")  # one label that does not match its cause
+    res = S.score(entries, reports, pilot, sims=2000)
+    assert _failed(res) == {"S7a"} and res["criteria"]["S7a"]["k"] == 1 and not res["passed"]
 
 
 @pytest.mark.parametrize("scenario", [(True, 1.0, 0.25), (True, 0.5, 0.5)], ids=["C", "A"])
@@ -1216,7 +1333,7 @@ def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
     criterion; and in scenario A one that says NO DETECTABLE EFFECT on a quarter of the blind or
     useless cards it cannot settle, and an engine failing on half of N1's cards (V8). Every stratum is
     judged now (in C the real effects at the strictest tier the joint requirement allows on the key's
-    cards), S6 counts a false NO DETECTABLE EFFECT and S7 an engine error: they all fail, and a
+    cards), S6 counts a false NO DETECTABLE EFFECT and S7b crashes beyond its threshold: they all fail, and a
     perfect validator passes."""
     pytest.importorskip("scipy")
     import oc
@@ -1231,7 +1348,7 @@ def test_the_bad_validators_fail_where_the_real_effects_are_few(scenario):
         assert fails <= got, (name, got)
     half = set(sorted(e["id"] for e in entries if e["condition"] == "N1")[::2])
     reports = {cid: rec for cid, rec in _reports(entries, _perfect(pilot)).items() if cid not in half}
-    assert _failed(S.score(entries, reports, pilot, sims=4000)) == {"S7"}  # crashing on half of N1: S4 absorbed it
+    assert _failed(S.score(entries, reports, pilot, sims=4000)) == {"S7b"}  # crashing on half of N1: S4 absorbed it
 
 
 def test_s3_counts_only_correct_definite_outcomes_and_nde_on_a_large_effect_is_an_error(bgs):
@@ -1354,8 +1471,8 @@ def test_s3_judges_every_stratum_at_the_strictest_tier_the_joint_requirement_all
     (decided in the third round): that stratum is judged at the floor's tier (a validator half as
     decisive fails), the nulls and the blind cards at the principle's. Before the second review such
     a stratum was reported only. In oc.log's scenarios every stratum now takes the principle's tier:
-    scenario C's 81 real-effect cards, at the d = 0.786 their designed errors leave since the third
-    review, pass a sound validator there with 0.991."""
+    scenario C's 156 real-effect cards (81 before the fifth round doubled E1-E3), at the d = 0.786
+    their designed errors leave since the third review, pass a sound validator there with 1.000."""
     pytest.importorskip("scipy")
     import oc
     key = [r for c in P.CONDITIONS if c.key  # S1's cards, so that the joint holds S1 at its design
@@ -1370,7 +1487,7 @@ def test_s3_judges_every_stratum_at_the_strictest_tier_the_joint_requirement_all
     assert rules["S3"]["null"]["tier"] == rules["S3"]["invalid"]["tier"] == "principle" and rules["joint"] >= 0.90
     rules = oc.criteria_rules(oc.expected_rows(oc.scenario_pilot(True, 1.0, 0.25)), sims=4000)  # scenario C
     eff = rules["S3"]["effect"]
-    assert eff["n"] == 81 and eff["tier"] == "principle" and eff["tiers"]["principle"]["p_pass_sound"] > 0.99
+    assert eff["n"] == 156 and eff["tier"] == "principle" and eff["tiers"]["principle"]["p_pass_sound"] > 0.99
     assert all(r["tier"] == "principle" for r in rules["S3"].values()) and rules["joint"] >= 0.90
     rules = oc.criteria_rules(oc.expected_rows(oc.scenario_pilot(True, 0.5, 0.5)), sims=4000)    # scenario A
     assert all(r["tier"] == "principle" for r in rules["S3"].values())
@@ -1502,6 +1619,47 @@ def test_runner_runs_the_engine_on_the_fly(bgs, tmp_path):
                    for r in reports.values() if r)
         res = S.score(pick, reports, pilot, donors)
         assert res["n_cards"] == 3 and "gate4" in res["per_gate"] and "S5" in res["criteria"]
+
+
+def test_an_engine_exception_is_a_crash_with_a_portable_traceback(bgs, tmp_path, monkeypatch):
+    """The owner's fifth round: an engine exception or a missing report is a crash, counted in S7b at
+    the nominal 0.1% (not a rule violation), and every one goes to scores.json with its traceback. The
+    traceback's paths are relative to the repository, site-packages or the standard library, so the
+    report is the same on any machine (its sha256 is compared across runs); a dataset the panel cannot
+    build gives one on each of its cards (the fourth review's K13)."""
+    pytest.importorskip("scipy")
+    import run_panel as R
+    import score as S
+    pilot = _pilot(bgs, dose=2.0)
+    entries = P.assign(KEY, pool_sizes=_sizes(bgs))
+    pick = [next(e for e in entries if e["condition"] == c) for c in ("N1", "N4")]
+
+    def broken(*a, **k):
+        raise RuntimeError("the engine broke")
+    real_build = P.build
+
+    def build(entry, *a, **k):  # N4's dataset cannot be built; N1's reaches the broken engine
+        if entry["condition"] == "N4":
+            raise ValueError("unbuildable")
+        return real_build(entry, *a, **k)
+    monkeypatch.setattr("metric_autopsy.run_autopsy", broken)
+    monkeypatch.setattr(P, "build", build)
+    R.run(pick, bgs, pilot, tmp_path / "out", workers=1)
+    monkeypatch.setattr(P, "build", real_build)
+    rep = json.loads((tmp_path / "out" / "reports" / f"{pick[0]['id']}.json").read_text())
+    assert rep["error"] == "RuntimeError('the engine broke')" and rep["traceback"][-1] == "RuntimeError: the engine broke"
+    assert any(t.startswith("validation/prereg/run_panel.py:") for t in rep["traceback"])
+    assert not any(t.startswith("/") or str(R.REPO) in t for t in rep["traceback"])
+    for cid in P.card_ids(pick[1]):
+        rep = json.loads((tmp_path / "out" / "reports" / f"{cid}.json").read_text())
+        assert "could not build" in rep["error"] and rep["traceback"][-1] == "ValueError: unbuildable"
+    reports, _ = S.read_results(tmp_path / "out")
+    assert all(isinstance(reports[cid], dict) for e in pick for cid in P.card_ids(e))
+    rows = S.card_rows(pick, reports, pilot)
+    assert [r["outcome"] for r in rows] == [P.CRASH] * 3 and not any(r["rule_violation"] for r in rows)
+    res = S.score(pick, reports, pilot, sims=500)
+    assert len(res["crashes"]) == 3 and all(c["traceback"] for c in res["crashes"])
+    assert res["criteria"]["S7a"]["passed"] and not res["criteria"]["S7b"]["passed"]  # 3 cards: none allowed
 
 
 DETERMINISM = r"""

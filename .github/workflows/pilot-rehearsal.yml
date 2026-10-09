@@ -1,0 +1,309 @@
+# The pilot's rehearsal before the tag (the owner's fifth round, item 8): the pilot jobs of
+# validation.yml at their real sizes - oracle.py without --smoke, split as the real run splits it
+# (the base, establishability's jobs in four parallel parts, the merge), the timing pilot with its
+# drops and GATE 0's refusals, oc.py --pilot - on simulated backgrounds of the panel's sizes
+# (simulate.py write --panel-size: B1 at the selection's caps, B2 with twice N7's mice, a sparse tail
+# of weakly detected genes), on the runner image the real run uses, with every job's and step's time
+# and peak memory; and the select job's real extraction at its caps with the pool rule, of which only
+# the times and the peak memory are printed (select_backgrounds.py --rehearsal --time-full-extraction;
+# nothing is kept).
+#
+# Started by hand: adding the label "full-pilot-rehearsal" to the pull request (remove and add it
+# again for another run). It never runs on the tag and never on the real backgrounds: before the key
+# nobody sees the engine or the oracle on them.
+name: Pilot rehearsal
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pilot-rehearsal-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+# as validation.yml: one deterministic numerical path, the same pins
+env:
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_CORETYPE: Haswell
+  NPY_DISABLE_CPU_FEATURES: "X86_V4 AVX512_ICL AVX512_SPR"
+  PYTHONHASHSEED: "0"
+  PARTS: "4"         # validation.yml's real run (guard: n_pilot_parts)
+  BOUND_MINUTES: "170"  # the owner's bound for one pilot job (half its 340-minute limit)
+
+jobs:
+  backgrounds:
+    if: github.event.label.name == 'full-pilot-rehearsal'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+      - name: Simulated backgrounds of the panel's sizes (in the real run the select job's files)
+        run: |
+          start=$(date +%s)
+          python validation/prereg/simulate.py write --out-dir data --spec data/backgrounds.json \
+            --report data/selection.md --panel-size
+          echo "written in $(( $(date +%s) - start )) s"; cat data/selection.md; ls -la data
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rehearsal-backgrounds
+          path: data/
+          retention-days: 7
+
+  pilot_base:
+    needs: backgrounds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 358  # the real job's limit is 340; the rehearsal measures past it
+    env:
+      JOB_LABEL: pilot_base
+    steps:
+      - run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"; nproc; free -g
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit (as the pilot jobs)
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - name: A wrapper that records each step's time and the peak memory of its largest process
+        run: |
+          cat > "$RUNNER_TEMP/timed.py" <<'PY'
+          import resource, subprocess, sys, time
+          name, out, cmd = sys.argv[1], sys.argv[2], sys.argv[3:]
+          t0 = time.time()
+          with open(out, "w") as fh:  # the command's stdout; its stderr (the stages) goes to the log
+              rc = subprocess.call(cmd, stdout=fh)
+          peak = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024 ** 2
+          line = f"{name}: {(time.time() - t0) / 60:.1f} min, peak memory of its largest process {peak:.1f} GB, exit {rc}"
+          print(line, file=sys.stderr, flush=True)
+          with open(sys.argv[0] + ".log", "a") as fh:
+              fh.write(line + "\n")
+          sys.exit(rc)
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rehearsal-backgrounds
+          path: data
+      - name: The pilot's base (oracle.py --stage base, the real sizes)
+        run: |
+          python "$RUNNER_TEMP/timed.py" "oracle.py --stage base" "$RUNNER_TEMP/oracle.out" \
+            python validation/prereg/oracle.py --backgrounds data/backgrounds.json --data-dir data \
+            --stage base --out base.json --workers 4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rehearsal-pilot-base
+          path: base.json
+          retention-days: 7
+      - name: The job's time against the bound
+        if: always()
+        run: |
+          minutes=$(( ($(date +%s) - JOB_START) / 60 ))
+          cat "$RUNNER_TEMP/timed.py.log" 2>/dev/null || true
+          if [ "$minutes" -le "$BOUND_MINUTES" ]; then verdict="within it"; else verdict="OVER IT"; fi
+          echo "the job $JOB_LABEL: $minutes min in all; the bound $BOUND_MINUTES min, the real job's limit 340 min: $verdict" \
+            | tee "$RUNNER_TEMP/job-time.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: rehearsal-logs-${{ env.JOB_LABEL }}
+          path: |
+            ${{ runner.temp }}/*.log
+            ${{ runner.temp }}/*.out
+            ${{ runner.temp }}/pilot.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  pilot_part:
+    needs: pilot_base
+    runs-on: ubuntu-24.04
+    timeout-minutes: 358
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3]
+    env:
+      JOB_LABEL: pilot_part-${{ matrix.part }}
+    steps:
+      - run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"; nproc; free -g
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit (as the pilot jobs)
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - name: A wrapper that records each step's time and the peak memory of its largest process
+        run: |
+          cat > "$RUNNER_TEMP/timed.py" <<'PY'
+          import resource, subprocess, sys, time
+          name, out, cmd = sys.argv[1], sys.argv[2], sys.argv[3:]
+          t0 = time.time()
+          with open(out, "w") as fh:  # the command's stdout; its stderr (the stages) goes to the log
+              rc = subprocess.call(cmd, stdout=fh)
+          peak = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024 ** 2
+          line = f"{name}: {(time.time() - t0) / 60:.1f} min, peak memory of its largest process {peak:.1f} GB, exit {rc}"
+          print(line, file=sys.stderr, flush=True)
+          with open(sys.argv[0] + ".log", "a") as fh:
+              fh.write(line + "\n")
+          sys.exit(rc)
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rehearsal-backgrounds
+          path: data
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rehearsal-pilot-base
+          path: base
+      - name: A part of establishability's jobs (oracle.py --stage part)
+        run: |
+          python "$RUNNER_TEMP/timed.py" "oracle.py --stage part ${{ matrix.part }} of $PARTS" "$RUNNER_TEMP/oracle.out" \
+            python validation/prereg/oracle.py --backgrounds data/backgrounds.json --data-dir data \
+            --stage part --base base/base.json --part ${{ matrix.part }} --parts "$PARTS" \
+            --out "part-${{ matrix.part }}.json" --workers 4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rehearsal-pilot-part-${{ matrix.part }}
+          path: part-${{ matrix.part }}.json
+          retention-days: 7
+      - name: The job's time against the bound
+        if: always()
+        run: |
+          minutes=$(( ($(date +%s) - JOB_START) / 60 ))
+          cat "$RUNNER_TEMP/timed.py.log" 2>/dev/null || true
+          if [ "$minutes" -le "$BOUND_MINUTES" ]; then verdict="within it"; else verdict="OVER IT"; fi
+          echo "the job $JOB_LABEL: $minutes min in all; the bound $BOUND_MINUTES min, the real job's limit 340 min: $verdict" \
+            | tee "$RUNNER_TEMP/job-time.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: rehearsal-logs-${{ env.JOB_LABEL }}
+          path: |
+            ${{ runner.temp }}/*.log
+            ${{ runner.temp }}/*.out
+            ${{ runner.temp }}/pilot.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  pilot:
+    needs: pilot_part
+    runs-on: ubuntu-24.04
+    timeout-minutes: 358
+    env:
+      JOB_LABEL: pilot
+    steps:
+      - run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"; nproc; free -g
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit (as the pilot jobs)
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - name: A wrapper that records each step's time and the peak memory of its largest process
+        run: |
+          cat > "$RUNNER_TEMP/timed.py" <<'PY'
+          import resource, subprocess, sys, time
+          name, out, cmd = sys.argv[1], sys.argv[2], sys.argv[3:]
+          t0 = time.time()
+          with open(out, "w") as fh:  # the command's stdout; its stderr (the stages) goes to the log
+              rc = subprocess.call(cmd, stdout=fh)
+          peak = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024 ** 2
+          line = f"{name}: {(time.time() - t0) / 60:.1f} min, peak memory of its largest process {peak:.1f} GB, exit {rc}"
+          print(line, file=sys.stderr, flush=True)
+          with open(sys.argv[0] + ".log", "a") as fh:
+              fh.write(line + "\n")
+          sys.exit(rc)
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rehearsal-backgrounds
+          path: data
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rehearsal-pilot-base
+          path: base
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: rehearsal-pilot-part-*
+          path: parts
+          merge-multiple: true
+      - name: The merge, the timing pilot with its drops and GATE 0's refusals, oc.py (as the pilot job)
+        run: |
+          test "$(ls parts/part-*.json | wc -l)" = "$PARTS"
+          python "$RUNNER_TEMP/timed.py" "oracle.py --stage merge" "$RUNNER_TEMP/oracle.out" \
+            python validation/prereg/oracle.py --backgrounds data/backgrounds.json --data-dir data \
+            --stage merge --base base/base.json --part-files parts/part-*.json --out pilot.json --workers 4
+          python "$RUNNER_TEMP/timed.py" "timing.py (24 cards, the drops, 100 refusal cards per S3 stratum)" \
+            "$RUNNER_TEMP/timing_pilot.log" \
+            python validation/prereg/timing.py --workers 4 --cards 24 --backgrounds data/backgrounds.json \
+            --data-dir data --pilot pilot.json --write-drops --refusals 100
+          cat "$RUNNER_TEMP/timing_pilot.log"
+          python "$RUNNER_TEMP/timed.py" "oc.py --pilot --write-judged" "$RUNNER_TEMP/oc_pilot.log" \
+            python validation/prereg/oc.py --pilot pilot.json --write-judged
+          cat "$RUNNER_TEMP/oc_pilot.log"
+          cp pilot.json "$RUNNER_TEMP/"
+      - name: The job's time against the bound
+        if: always()
+        run: |
+          minutes=$(( ($(date +%s) - JOB_START) / 60 ))
+          cat "$RUNNER_TEMP/timed.py.log" 2>/dev/null || true
+          if [ "$minutes" -le "$BOUND_MINUTES" ]; then verdict="within it"; else verdict="OVER IT"; fi
+          echo "the job $JOB_LABEL: $minutes min in all; the bound $BOUND_MINUTES min, the real job's limit 340 min: $verdict" \
+            | tee "$RUNNER_TEMP/job-time.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: rehearsal-logs-${{ env.JOB_LABEL }}
+          path: |
+            ${{ runner.temp }}/*.log
+            ${{ runner.temp }}/*.out
+            ${{ runner.temp }}/pilot.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  select:
+    if: github.event.label.name == 'full-pilot-rehearsal'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the selection's environment (as the select job)
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-select.txt && pip check
+      - name: The real extraction at the caps and the pool rule, timed (no identities, nothing kept)
+        run: |
+          start=$(date +%s)
+          python validation/prereg/select_backgrounds.py --rehearsal --time-full-extraction --out-dir "$RUNNER_TEMP/data"
+          echo "the select step: $(( ($(date +%s) - start) / 60 )) min; the job's limit 300 min"

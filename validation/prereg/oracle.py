@@ -31,7 +31,9 @@ SESOI only where the corrected effect is shown smaller than it, as the engine si
 reversed sign, detected in or against the declared direction, equivalent, else INCONCLUSIVE). For a blind
 or useless metric the correct definite outcome is "metric invalid", which a validator can only
 reach by showing blindness: the oracle runs GATE 4's rule on the dataset (GATE4_REPS injections
-against shams, the upper 95% bound below delta_min). The oracle's power is the most a validator
+against shams, the upper 95% bound below delta_min); on a blind one where an artifact is planted
+an effect explained by depth is correct too (the fifth round), which the oracle reaches where its
+effect analysis finds it. The oracle's power is the most a validator
 could reach, and only it decides which cases are establishable: the engine never does.
 
 Independence: numpy and the t distribution of scipy.stats only; this file never imports
@@ -39,6 +41,13 @@ Independence: numpy and the t distribution of scipy.stats only; this file never 
 from the public PILOT_SEED, the panel's from the beacon's key).
 
     python validation/prereg/oracle.py --backgrounds backgrounds.json --data-dir DATA --out pilot.json --workers 4
+
+or split over parallel jobs, as the validation workflow runs it (the fifth round: the whole pilot in
+one job came near the job's limit), with the same pilot.json (test_the_split_pilot_is_the_pilot):
+
+    oracle.py ... --stage base --out base.json         # every stage but establishability
+    oracle.py ... --stage part --base base.json --part I --parts K --out part_I.json   # I = 0 .. K - 1
+    oracle.py ... --stage merge --base base.json --part-files part_*.json --out pilot.json
 """
 from __future__ import annotations
 
@@ -46,6 +55,8 @@ import argparse
 import itertools
 import json
 import math
+import sys
+import time
 from pathlib import Path
 
 import frozen  # standard library only
@@ -455,7 +466,8 @@ def _values_outcome(raw, card: dict, corr=None) -> str:
 def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng) -> dict:
     """On one dataset of known truth: ``best``, the outcome the oracle reaches (it knows the
     truth: for a valid metric its validity, for a blind or useless one only GATE 4's rule can show
-    it, for an ambiguous one either); ``effect``, the outcome of the effect's analysis taken as
+    it — or, on a blind one where an artifact is planted, an effect explained by depth —, for an
+    ambiguous one either); ``effect``, the outcome of the effect's analysis taken as
     valid (None where there is none); ``gate4``, GATE 4's outcome on the dataset where the oracle
     ran its rule (blind, ambiguous and useless metrics; None for a valid one, whose odds come from
     the case's response statistics). A sound validator that follows the engine's rules reaches
@@ -488,11 +500,12 @@ def oracle_outcomes(entry: dict, X, obs, card: dict, bgs: dict, pilot: dict, rng
     if truth == "valid":
         return dict(best=effect if effect is not None else P.INCONCLUSIVE, effect=effect, gate4=None)
     g4 = gate4_outcome(coupling_deltas(X, ia, ib, float(card["signal_test"]["strength"]), rng, reps), dmin)
-    if truth == "blind" or effect is None:
-        best = P.NS_INVALID if g4 == "FAIL" else P.INCONCLUSIVE
+    good = P.definite(cond, entry["variant"], entry["pair"], pilot)
+    if truth == "blind" or effect is None:  # blindness shown, else explained by depth where an artifact is
+        # planted (correct there since the fifth round: panel.allowed)
+        best = P.NS_INVALID if g4 == "FAIL" else (effect if effect in good else P.INCONCLUSIVE)
     else:  # ambiguous: either verdict is correct, so either route (the fourth review: an effect
            # outcome that is wrong was kept where GATE 4's FAIL reaches a correct one)
-        good = P.definite(cond, entry["variant"], entry["pair"], pilot)
         best = effect if effect in good else (P.NS_INVALID if g4 == "FAIL" else effect)
     return dict(best=best, effect=effect, gate4=g4)
 
@@ -797,14 +810,9 @@ def raw_difference_power(bgs: dict, level: str, pilot: dict, n: int = PILOT_DATA
     return float(np.mean(_map(_raw_job, [(pairs[i % len(pairs)], i) for i in range(n)], workers)))
 
 
-def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: int = 1) -> dict:
-    """Per condition, variant and pool pair: the share of pilot datasets on which the oracle's
-    outcome is a correct definite one (establishable where it is >= 0.90), and the measurements
-    the sound-validator model needs (oc.sound_model): the outcomes of the effect's analysis taken
-    as valid and, where the oracle ran GATE 4's rule, GATE 4's outcomes. N4 is never establishable
-    (no oracle); the useless metrics of N6 do not depend on the pair, only on its level's
-    delta_min, and are computed once per level."""
-    _STATE.update(bgs=bgs, pilot=pilot)
+def _establishability_plan(bgs: dict, n: int) -> tuple[dict, list, list]:
+    """What `establishability` computes, in its order: the records fixed without the oracle (N4),
+    the cases (key, condition, variant, the pair computed on) and the oracle's jobs (`_outcome_job`)."""
     out, jobs, cases = {}, [], []
     for cond in P.CONDITIONS:
         if cond.background not in bgs:  # dropped with its background (pilot.json "dropped")
@@ -825,7 +833,24 @@ def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: i
     todo = sorted({(c.name, v, k) for _, c, v, k in cases})
     for name, variant, k in todo:
         jobs += [(name, variant, k, i, 6) for i in range(n)]
-    outs = _map(_outcome_job, jobs, workers)
+    return out, cases, jobs
+
+
+def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: int = 1,
+                     outs: list | None = None) -> dict:
+    """Per condition, variant and pool pair: the share of pilot datasets on which the oracle's
+    outcome is a correct definite one (establishable where it is >= 0.90), and the measurements
+    the sound-validator model needs (oc.sound_model): the outcomes of the effect's analysis taken
+    as valid and, where the oracle ran GATE 4's rule, GATE 4's outcomes. N4 is never establishable
+    (no oracle); the useless metrics of N6 do not depend on the pair, only on its level's
+    delta_min, and are computed once per level. `outs`: the jobs' outcomes where they were computed
+    in parallel jobs (``establishability_part``; the fifth round), else they are computed here."""
+    _STATE.update(bgs=bgs, pilot=pilot)
+    out, cases, jobs = _establishability_plan(bgs, n)
+    if outs is None:
+        outs = _map(_outcome_job, jobs, workers)
+    if len(outs) != len(jobs):
+        raise ValueError(f"{len(outs)} outcomes for {len(jobs)} establishability jobs")
     by = {}
     for (name, variant, k, _, _), o in zip(jobs, outs):
         by.setdefault((name, variant, k), []).append(o)
@@ -848,6 +873,37 @@ def establishability(bgs: dict, pilot: dict, n: int = PILOT_DATASETS, workers: i
     return out
 
 
+def establishability_part(bgs: dict, pilot: dict, n: int, part: int, parts: int, workers: int = 1) -> list:
+    """The outcomes of the establishability jobs part, part + parts, part + 2 parts, ... (the pilot
+    split over parallel jobs: ``main --stage part``): the jobs and seeds of `establishability`."""
+    if not 0 <= part < parts:
+        raise ValueError(f"part {part} of {parts}")
+    _STATE.update(bgs=bgs, pilot=pilot)
+    jobs = _establishability_plan(bgs, n)[2]
+    return _map(_outcome_job, jobs[part::parts], workers)
+
+
+def merge_parts(bgs: dict, base: dict, base_sha256: str, parts: list[dict]) -> list:
+    """The establishability jobs' outcomes in their order, from the parts' files: every part of the
+    same split exactly once, each of the base given (its sha256), each with its jobs' outcomes."""
+    n = int(base["datasets_per_case"])
+    jobs = _establishability_plan(bgs, n)[2]
+    k = {int(p["parts"]) for p in parts}
+    if len(k) != 1 or sorted(int(p["part"]) for p in parts) != list(range(next(iter(k)))):
+        raise ValueError(f"the parts are not one split: {sorted((p['part'], p['parts']) for p in parts)}")
+    if any(p["base_sha256"] != base_sha256 for p in parts):
+        raise ValueError("a part was computed on another base")
+    k = next(iter(k))
+    outs = [None] * len(jobs)
+    for p in parts:
+        mine = range(int(p["part"]), len(jobs), k)
+        if len(p["outcomes"]) != len(mine):
+            raise ValueError(f"part {p['part']}: {len(p['outcomes'])} outcomes for {len(mine)} jobs")
+        for j, o in zip(mine, p["outcomes"]):
+            outs[j] = o
+    return outs
+
+
 # --------------------------------------------------------------------------- #
 # the pilot
 # --------------------------------------------------------------------------- #
@@ -863,7 +919,37 @@ def run_pilot(bgs: dict, n: int = PILOT_DATASETS, draws: int = DELTA_DRAWS, work
         _STATE.pop("sizes", None)  # a later call in the same process gets the default sizes
 
 
+class _Clock:
+    """The pilot's elapsed time per stage, printed to stderr as it goes (the rehearsal's measurement
+    and the real run's log; nothing of it enters pilot.json)."""
+
+    def __init__(self):
+        self.start = self.last = time.time()
+
+    def __call__(self, stage: str) -> None:
+        now = time.time()
+        print(f"pilot stage {stage}: {now - self.last:.0f} s (total {now - self.start:.0f} s)",
+              file=sys.stderr, flush=True)
+        self.last = now
+
+
 def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict:
+    return _finish(bgs, _run_base(bgs, n, draws, workers, sizes), n, workers)
+
+
+def _finish(bgs: dict, pilot: dict, n: int, workers: int, outs: list | None = None) -> dict:
+    """The pilot's last stage, establishability (its outcomes computed here or given: the parts),
+    and the backgrounds' hashes."""
+    clock = _Clock()
+    pilot["establishable"] = establishability(bgs, pilot, n, workers, outs)
+    clock("establishability" if outs is None else "establishability (merged from the parts)")
+    pilot["backgrounds"] = {k: P.background_sha256(b) for k, b in bgs.items()}
+    return pilot
+
+
+def _run_base(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict:
+    """Every stage of the pilot but establishability (the base, which the parts and the merge read)."""
+    clock = _Clock()
     dropped = P.check_dropped(P.background_drops(bgs))  # a background without a candidate, with its cases
     pilot = dict(pilot_seed=PILOT_SEED, datasets_per_case=n, delta_draws=draws, alpha=ALPHA,
                  power_threshold=POWER, sesoi_target=SESOI_TARGET, delta_margin=DELTA_MARGIN,
@@ -879,12 +965,19 @@ def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict
         for level in P.LEVELS:
             pilot["sesoi"][b][level], pilot["sesoi_found"][b][level] = choose_sesoi(
                 bgs, b, level, pilot, int(sizes["sesoi"]), workers)
+    clock("SESOI")
+    spent = dict(curves=0.0, truth=0.0)
     for b in bgs:
         for level in P.LEVELS:
+            t0 = time.time()
             curve = response_curve(bgs, b, level, pilot, workers)
+            spent["curves"] += time.time() - t0
             pilot["response_curve"][b][level] = curve
             pilot["saturation_dose"][b][level] = saturation_dose(curve)
+        t0 = time.time()
         pilot["truth"][b] = pair_truth(bgs, b, pilot, workers)
+        spent["truth"] += time.time() - t0
+    clock(f"response curves ({spent['curves']:.0f} s) and pair truth ({spent['truth']:.0f} s)")
     pilot.update(key_dose={}, key_dose_found={}, e_dose={}, dose_scan={}, delta={}, delta_level={},
                  n2_raw_power={})
     for level in P.LEVELS:
@@ -892,12 +985,14 @@ def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict
         pilot["key_dose"][level], pilot["key_dose_found"][level] = dose, dose is not None
         pilot["e_dose"][level] = dose if dose is not None else pilot["saturation_dose"]["B1"][level]
         pilot["dose_scan"][level] = scan
+    clock("key dose")
     bg = bgs["B1"]
     for k, pe in enumerate(bg.plan["pool"]):
         pilot["delta"][str(k)] = {f"{f:g}": delta_star(bg, k, f * pilot["e_dose"][pe["level"]], draws)
                                   for f in E1_FACTORS}
         pilot["delta"][str(k)][f"capture={P.E_CAPTURE:g}"] = delta_star(  # E2, E3 (panel.delta_of)
             bg, k, pilot["e_dose"][pe["level"]], draws, capture=P.E_CAPTURE)
+    clock("delta")
     for level in P.LEVELS:
         idx = [str(k) for k in level_pairs(bg, level)]
         pilot["delta_level"][level] = {
@@ -908,10 +1003,15 @@ def _run_pilot(bgs: dict, n: int, draws: int, workers: int, sizes: dict) -> dict
     # reported only (v1.md section 3.2): the levels where N2's capture loss is visible in the raw
     # difference with the oracle's power, so that N2 there tests the engine's correction of depth
     pilot["informative_levels"] = [lv for lv in P.LEVELS if pilot["n2_raw_power"][lv] >= POWER]
+    clock("N2 raw power")
     pilot["truth_case"] = case_truth(bgs, pilot, workers)
-    pilot["establishable"] = establishability(bgs, pilot, n, workers)
-    pilot["backgrounds"] = {k: P.background_sha256(b) for k, b in bgs.items()}
+    clock("case truth")
     return pilot
+
+
+def _sha256_bytes(data: bytes) -> str:
+    import hashlib
+    return hashlib.sha256(data).hexdigest()
 
 
 def main(argv=None):
@@ -925,13 +1025,48 @@ def main(argv=None):
     p.add_argument("--data-dir", help="the downloaded files of backgrounds.json (default: next to it)")
     p.add_argument("--smoke", action="store_true",
                    help="the dry run's smoke test: the same code with tiny simulations (not a pilot)")
+    p.add_argument("--stage", choices=("all", "base", "part", "merge"), default="all",
+                   help="the whole pilot (default), or split over parallel jobs (the fifth round): the base "
+                        "(every stage but establishability), a part of establishability's jobs, the merge")
+    p.add_argument("--base", help="--stage part / merge: the base stage's output")
+    p.add_argument("--part", type=int, help="--stage part: this part's number, 0 .. parts - 1")
+    p.add_argument("--parts", type=int, help="--stage part: the number of parts")
+    p.add_argument("--part-files", nargs="*", default=(), help="--stage merge: every part's output")
     args = p.parse_args(argv)
-    n = args.datasets or (SMOKE_DATASETS if args.smoke else PILOT_DATASETS)
-    draws = args.draws or (SMOKE_DRAWS if args.smoke else DELTA_DRAWS)
-    pilot = run_pilot(P.load_backgrounds(args.backgrounds, args.data_dir), n, draws, args.workers,
-                      SMOKE_SIZES if args.smoke else None)
-    if args.smoke:
-        pilot["smoke"] = True
+    if args.stage in ("part", "merge") and (args.smoke or args.datasets or args.draws):
+        p.error("a part and the merge take their sizes from the base")
+    t0 = time.time()
+    bgs = P.load_backgrounds(args.backgrounds, args.data_dir)
+    print(f"pilot stage loading and planning the backgrounds: {time.time() - t0:.0f} s", file=sys.stderr, flush=True)
+    if args.stage in ("part", "merge"):
+        raw = Path(args.base).read_bytes()
+        wrapper = json.loads(raw)
+        base, sha = wrapper["base"], _sha256_bytes(raw)
+        _STATE["sizes"] = base["sizes"]
+        n = int(base["datasets_per_case"])
+        if args.stage == "part":
+            clock = _Clock()
+            outs = establishability_part(bgs, base, n, args.part, args.parts, args.workers)
+            clock(f"establishability, part {args.part} of {args.parts}")
+            Path(args.out).write_text(json.dumps(dict(part=args.part, parts=args.parts, base_sha256=sha,
+                                                      outcomes=outs)))
+            return
+        parts = [json.loads(Path(f).read_text()) for f in args.part_files]
+        pilot = _finish(bgs, base, n, args.workers, merge_parts(bgs, base, sha, parts))
+        if wrapper.get("smoke"):
+            pilot["smoke"] = True
+    else:
+        n = args.datasets or (SMOKE_DATASETS if args.smoke else PILOT_DATASETS)
+        draws = args.draws or (SMOKE_DRAWS if args.smoke else DELTA_DRAWS)
+        sizes = dict(SIZES, **(SMOKE_SIZES if args.smoke else {}))
+        if args.stage == "base":
+            _STATE["sizes"] = sizes
+            base = _run_base(bgs, n, draws, args.workers, sizes)
+            Path(args.out).write_text(json.dumps(dict(base=base, smoke=args.smoke), indent=1))
+            return
+        pilot = run_pilot(bgs, n, draws, args.workers, SMOKE_SIZES if args.smoke else None)
+        if args.smoke:
+            pilot["smoke"] = True
     Path(args.out).write_text(json.dumps(pilot, indent=1))
     print(json.dumps({k: v for k, v in pilot.items() if k not in ("establishable", "response_curve", "pool")},
                      indent=1))

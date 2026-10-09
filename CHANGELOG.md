@@ -103,7 +103,7 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   to a known construct change planted by binomial thinning, measured against a matched sham
   (`inject.sham`: the same thinning without the signal).
 - `stats.clopper_pearson` / `fmt_rate`: exact binomial intervals for every reported rate.
-- `validation/prereg/`: the confirmatory validation's protocol (`v1.md`, third round) and its
+- `validation/prereg/`: the confirmatory validation's protocol (`v1.md`, fifth round) and its
   code — `select_backgrounds.py` (the mechanical choice of the backgrounds from the CELLxGENE
   Census and the named B3/B4 sources), `panel.py` (design, the assignment by a 256-bit key, a pool
   of up to 8 gene pairs per expression level drawn by the key independently of the condition,
@@ -116,19 +116,24 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   `run_panel.py` (datasets built on the fly, one engine run per claim card, deterministic
   reports), `blind.py` (guard, shards, collection, and `verify`: anyone re-runs datasets of a
   finished run, checks the datasets' sha256 and compares the reports by what they say),
-  `score.py` (S1-S7, per-level and per-truth rates, per-gate outcomes, design effects), `oc.py`
-  (thresholds by one principle with nominals by cause; every error criterion a set of cells — S2
-  per group of conditions, at least 300 cards each, S4-S6 per stratum and cause, NOT SUPPORTED
-  against the direction on null data bounded as a false detection — each of which must pass, with
-  its resolution printed; an effect verdict where the engine's rules give none is an unexpected
-  verdict (S7); S3 judged on every stratum at the principle's tier or the floor's, fixed before
-  the key, with GATE 0's refusals in the sound validator's model), `anchors.py`, `simulate.py`,
-  `timing.py` (with the drop rule, the memory rule and GATE 0's refusal shares measured before the
-  key), `frozen.py` (the frozen
+  `score.py` (S1-S7, per-level and per-truth rates, per-gate outcomes, design effects, every
+  crash with its traceback), `oc.py` (thresholds by one principle with nominals by cause; every
+  error criterion a set of cells — S2 per group of conditions, 790 cards each, S4-S6 per stratum
+  and cause, NOT SUPPORTED against the direction on null data bounded as a false detection — each
+  of which must pass, with its resolution printed; S7a, no violation of the engine's deterministic
+  rules (an effect verdict where they give none among them); S7b, crashes at a nominal of 0.1%; S3
+  judged on every stratum at the principle's tier or the floor's, fixed before the key, with GATE
+  0's refusals in the sound validator's model, at most 0.20 on a valid metric, above which the
+  stratum fails), `anchors.py`, `simulate.py` (also backgrounds of the panel's sizes for the
+  pilot's rehearsal), `timing.py` (with the drop rule, the memory rule and GATE 0's refusal shares
+  measured before the key), `frozen.py` (the frozen
   files, the workflow's records only, one attempt) and `test_prereg.py`; every environment pinned
   as its whole closure; `.github/workflows/validation.yml` runs everything from the tag
-  `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`), and
-  `.github/workflows/audit.yml` the flagship audit on v0.1.1.
+  `v0.3.0-prereg` to the scores (results committed to `results/panel-v1`; the pilot split over
+  parallel jobs, `oracle.py --stage base | part | merge`, with the same pilot.json),
+  `.github/workflows/pilot-rehearsal.yml` the full pilot before the tag on simulated backgrounds of
+  the panel's sizes and the selection's full extraction, timed, and `.github/workflows/audit.yml`
+  the flagship audit on v0.1.1.
 - `validation/probes/p14_gate4_by_expression_level.py` (now a dev-set regression of GATE 4's
   interval rule), `p15_gate5_weak_positive_control.py` (GATE 5's power rule against the
   response rule on weak but valid controls) and `p16_variable_capture_n8.py` (the whole engine on

@@ -30,6 +30,11 @@ MAX_RANKS candidates; the first that has them is chosen.
 
     python select_backgrounds.py --out-dir DATA --spec backgrounds.json --report selection.md
     python select_backgrounds.py --rehearsal      # before the tag: the code path, no identities printed
+    python select_backgrounds.py --rehearsal --time-full-extraction   # and the real extraction's time
+
+The second rehearsal (the fifth round: the select job's time before the tag) extracts at the real
+caps and applies the pool rule, as the real run does, and prints only the times and the peak
+memory; the files are deleted.
 """
 from __future__ import annotations
 
@@ -37,6 +42,7 @@ import argparse
 import gzip
 import io
 import json
+import resource
 import time
 import urllib.request
 from pathlib import Path
@@ -210,10 +216,15 @@ def _datasets(census) -> pd.DataFrame:
     return census["census_info"]["datasets"].read().concat().to_pandas()
 
 
-def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[str]]:
+def _peak_gb() -> float:
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024 ** 2  # kB on Linux
+
+
+def select_census(out_dir: Path, rehearsal: bool = False, full: bool = False) -> tuple[dict, list[str]]:
     """B1 and B2 from the Census stable release. Returns their backgrounds.json entries and the
-    report lines (in a rehearsal: only that each step ran, with a hash of the choice, and a small
-    extraction to exercise the code path; nothing is kept)."""
+    report lines (in a rehearsal: only that each step ran and a small extraction to exercise the
+    code path; with `full`, the real run's extractions and pool rule, of which only the times and
+    the peak memory are reported; nothing is kept)."""
     import cellxgene_census
     version = cellxgene_census.get_census_version_description("stable")
     release = version.get("release_build") or "stable"
@@ -243,21 +254,27 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
                                  + (f" {row['sexes']} |" if sexes else ""))
             # the raw-counts and pool criteria are checked on the extraction, in the order of the choice
             # rule (a rehearsal's test extraction is too small for the pool: it checks the counts only)
+            spent = dict(extraction=0.0, pool=0.0)
             for rank in range(1, min(len(cand), MAX_RANKS) + 1):
                 choice = cand.iloc[rank - 1].to_dict()
                 group = _census_group(census, organism, choice, keys)
-                if rehearsal:
+                if rehearsal and not full:
                     ids = sample_cells(group, choice, keys, max_donors=2, max_cells=50)
                     target = out_dir / f"{name}-rehearsal.npz"
                 else:
                     ids = sample_cells(group, choice, keys, max_donors, MAX_CELLS)
-                    target = out_dir / f"{name}.npz"
+                    target = out_dir / (f"{name}-rehearsal.npz" if rehearsal else f"{name}.npz")
+                t1 = time.time()
                 rec = extract(census, organism, ids, target, cols)
-                if rec["raw"] and not rehearsal:
+                spent["extraction"] += time.time() - t1
+                if rec["raw"] and (full or not rehearsal):
+                    t1 = time.time()
                     why = pool_rule(target, name)
+                    spent["pool"] += time.time() - t1
                     if why is not None:
                         target.unlink()
-                        lines.append(f"{name}: rank {rank} fails the pool rule ({why}): {choice['dataset_id']}")
+                        if not rehearsal:
+                            lines.append(f"{name}: rank {rank} fails the pool rule ({why}): {choice['dataset_id']}")
                         continue
                 if rec["raw"]:
                     break
@@ -266,6 +283,12 @@ def select_census(out_dir: Path, rehearsal: bool = False) -> tuple[dict, list[st
             else:
                 lines.append(f"{name}: none of the first {MAX_RANKS} candidates has raw counts and the pair pool: "
                              "dropped with the cases that need it")
+                continue
+            if full:  # the times only: no rank, size or count of the extraction
+                target.unlink()
+                lines.append(f"{name}: the real extraction at the caps and the pool rule: {spent['extraction']:.0f} s "
+                             f"extracting, {spent['pool']:.0f} s on the pool rule, {time.time() - t0:.0f} s in all; "
+                             f"peak memory so far {_peak_gb():.1f} GB")
                 continue
             if rehearsal:  # nothing that singles the choice out (the third review: a hash prefix and the
                 target.unlink()  # donor count did, by search over the public Census)
@@ -438,15 +461,23 @@ def main(argv=None):
     p.add_argument("--report", type=Path, default=Path("selection.md"))
     p.add_argument("--rehearsal", action="store_true",
                    help="run the Census rules and the B3/B4 downloads, print no identities, write nothing")
+    p.add_argument("--time-full-extraction", action="store_true",
+                   help="with --rehearsal: extract at the real caps and apply the pool rule; print only times and memory")
     args = p.parse_args(argv)
+    if args.time_full_extraction and not args.rehearsal:
+        p.error("--time-full-extraction is a rehearsal option")
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    spec, lines = select_census(args.out_dir, args.rehearsal)
+    t0 = time.time()
+    spec, lines = select_census(args.out_dir, args.rehearsal, args.time_full_extraction)
     for fetch in (fetch_b3, fetch_b4):
         s, more = fetch(args.out_dir)
         lines += more
         if s is not None and not args.rehearsal:
             spec[more[0].split(":")[0]] = s
     if args.rehearsal:
+        if args.time_full_extraction:
+            lines.append(f"select: {time.time() - t0:.0f} s in all (the job's limit: 300 minutes); "
+                         f"peak memory {_peak_gb():.1f} GB")
         print("\n".join(lines))
         return
     args.spec.write_text(json.dumps(spec, indent=1, sort_keys=True))

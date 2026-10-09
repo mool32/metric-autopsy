@@ -219,7 +219,7 @@ def collect(shards_dir: Path, out: Path, expected_datasets: int | None = None, r
     write_sums(out)
     (out / "summary.md").write_text(
         f"### Panel v1 blind run\n\n- datasets {summary['datasets']}, claim cards {summary['cards']}, "
-        f"engine errors {summary['errors']}\n- key: drand {m0['beacon'].get('chain', '?')} round "
+        f"crashes (engine exceptions; S7b) {summary['errors']}\n- key: drand {m0['beacon'].get('chain', '?')} round "
         f"{summary['beacon_round']}, randomness `{summary['key']}`\n- shards re-run after an "
         f"infrastructure failure: {summary['reruns']}\n- slowest shard {summary['slowest_shard_seconds']:.0f} s\n"
         f"- workflow runs and attempts of the shards and the collection: "

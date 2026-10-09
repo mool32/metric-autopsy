@@ -139,7 +139,7 @@ def refusal_sample(pilot: dict, n: int, rng) -> list:
 def measure_refusals(entries: list, bgs: dict, pilot: dict, out_dir: Path, workers: int) -> dict:
     """GATE 0's refusals on `refusal_sample`'s datasets, run by the frozen engine as in the blind
     run: per S3 stratum the number of cards, of refusals and their share, and every outcome's
-    count (an engine error included)."""
+    count (a crash included)."""
     R.run([{k: v for k, v in e.items() if k != "stratum"} for e in entries], bgs, pilot, out_dir, workers=workers)
     out = {}
     for e in entries:
@@ -147,7 +147,7 @@ def measure_refusals(entries: list, bgs: dict, pilot: dict, out_dir: Path, worke
         for cid in P.card_ids(e):
             path = out_dir / "reports" / f"{cid}.json"
             rep = json.loads(path.read_text()) if path.exists() else {}
-            o = P.ERROR if "error" in rep or not rep else P.outcome(rep.get("verdict"), rep.get("cause"))
+            o = P.CRASH if "error" in rep or not rep else P.outcome(rep.get("verdict"), rep.get("cause"))
             rec["n"] += 1
             rec["refused"] += o == P.REFUSAL
             rec["outcomes"][o] = rec["outcomes"].get(o, 0) + 1

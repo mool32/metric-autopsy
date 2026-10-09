@@ -35,6 +35,13 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 > validation will run on a frozen tag and a new, blind panel: its protocol is
 > [`validation/prereg/v1.md`](validation/prereg/v1.md), and the push of the tag
 > `v0.3.0-prereg` starts it in GitHub Actions.
+>
+> **v0.3 does not correct capture that varies from cell to cell.** Its depth correction
+> brings whole groups to one depth; per-cell variable capture is outside that family. On
+> the development set (probe [`p16`](validation/probes/p16_variable_capture_n8.log)) such
+> data gave a false SUPPORTED in 18 of 160 datasets, and the protocol records the
+> prediction that v0.3 fails its criterion S1 on this condition (N8). A correction is
+> planned for v0.4, with a new pre-registration.
 
 ---
 

@@ -230,7 +230,7 @@ weak control in 17, 8 and 0 of 20 datasets; the response rule (the metric's own 
 control's genes, FAIL only if its upper 95% bound is below delta_min) in none, and both failed
 the blind metric 20/20. By the owner's condition GATE 5 now uses the response rule (JOURNAL.md, D6).
 
-### Found by the second independent review: N8, per-cell variable capture (p16, open for the owner)
+### Found by the second independent review: N8, per-cell variable capture (p16; decided: unchanged in v0.3)
 
 `p16_variable_capture_n8.py` (log: `p16_variable_capture_n8.log`; not in `run_all.sh`, ~1 h on 4
 cores) runs the whole engine, as the blind run does (`validation/prereg/run_panel.py`), on 160
@@ -245,9 +245,11 @@ at most 29 of 790 (3.7%) per key condition. Re-run at a895f8f, after the fourth 
 dataset slightly): 18 of 160 on N8 again, 3 of 160 on N1 (1.9%, 0.4-5.4%); the oracle's analysis
 with the true correction gives 5 of 160 on N8 (3 at c542163). The engine also says NOT SUPPORTED
 against the direction on 19 of 160 N8 datasets (11.9%, 7.3-17.9%), which the pre-registration's
-new cell for that outcome on null data counts. No dev-set expectation changes: whether the engine
-should correct this family before the tag is the owner's decision (`validation/prereg/v1.md`,
-section 10).
+new cell for that outcome on null data counts. No dev-set expectation changes. Decided by the
+project owner (fifth round, 2026-10-09): v0.3 is not changed for it; the pre-registration records
+the prediction that v0.3 fails S1 on N8, with the wording of both outcomes (`validation/prereg/v1.md`,
+section 6), and a correction is planned for v0.4 with a pre-registration v2 whose out-of-family
+artifact is chosen by someone other than whoever writes the engine (section 10).
 
 ### Found by the first independent review: the SESOI's scale and "explained by depth" (journal D7)
 

@@ -12,14 +12,17 @@ its two-sided 95% Clopper-Pearson interval (exact: given the background every da
 independent draw, so the counts are binomial), and for every criterion the design effect of
 datasets that share donors (``overlap_interval``: how much the outcomes depend on the donors a
 dataset draws, so how far a rate carries beyond the background's donors); a design effect above
-1.5 is reported as the pre-registered limitation on that reading. A missing report, an engine
-error or an unexpected verdict (one the engine cannot give there: ``oc.S7_OUTCOMES``, DEGENERATE
-METRIC on a metric that varies, an effect verdict where its rules exclude one) counts as an error
-(P2) and fails S7. Every other wrong outcome is counted in its cell of S2, S4, S5 or S6
-(``oc.error_cells``). Thresholds are computed with the rules of ``oc.py`` on the realized cards;
-S3's strata are judged at the tiers pilot.json fixed before the key ("s3_rules"). A cell without
-cards holds (no card on which its error can occur); S1 and S7 always have cards; S3 fails unless
-every stratum is judged (what it shows is not shown).
+1.5 is reported as the pre-registered limitation on that reading. A verdict the engine's
+deterministic rules cannot give there (``oc.S7_OUTCOMES``: a label that does not match its cause,
+a cause the panel does not expect, UNIDENTIFIABLE; DEGENERATE METRIC on a metric that varies; an
+effect verdict where its rules exclude one) is a rule violation: an error (P2) that fails S7a, none
+allowed. An engine exception or a missing report is a crash (no verdict): counted in S7b, at most
+the principle's threshold at a nominal 0.1% (the fifth round), and every crash is listed with its
+traceback in scores.json ("crashes"). Every other wrong outcome is counted in its cell of S2, S4,
+S5 or S6 (``oc.error_cells``). Thresholds are computed with the rules of ``oc.py`` on the realized
+cards; S3's strata are judged at the tiers pilot.json fixed before the key ("s3_rules"). A cell
+without cards holds (no card on which its error can occur); S1, S7a and S7b always have cards; S3
+fails unless every stratum is judged (what it shows is not shown).
 """
 from __future__ import annotations
 
@@ -91,8 +94,9 @@ def overlap_interval(y, donor_sets: list, alpha: float = 0.05) -> dict:
 def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
     """One row per claim card: its condition, variant, level and truth, its outcome and how it is
     scored (with ``oc.card_model``: where each error can occur, the sound validator's rates and the
-    rule nominals). `reports`: {card id: (verdict text, cause[, gate record])} (None for a missing
-    report or an engine error)."""
+    rule nominals). `reports`: {card id: (verdict text, cause[, gate record])}; a card without one
+    (no report) or with a dict (the engine's exception: its error and traceback, ``read_results``)
+    is a crash."""
     conds = P.conditions()
     rows = []
     for e in entries:
@@ -105,10 +109,12 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
             ok = P.card_allowed(c, e["variant"], pair, pilot, k)  # without what the engine's rules exclude
             good = ok & P.DEFINITE
             kind = oc.card_kind(model, c, k)
-            rec = reports.get(cid) or (None, None)
-            verdict, cause = rec[0], rec[1]
-            gates = rec[2] if len(rec) > 2 else {}
-            o = P.outcome(verdict, cause)
+            rec = reports.get(cid)
+            if rec is None or isinstance(rec, dict):  # no report, or the engine's exception: no verdict
+                o, gates, crash = P.CRASH, {}, dict(rec or {"error": "no report", "traceback": []})
+            else:
+                gates, crash = (rec[2] if len(rec) > 2 else {}), None
+                o = P.outcome(rec[0], rec[1])
             rows.append(dict(kind, id=cid, dataset=e["id"], variant=e["variant"], level=level,
                              pair=pair, truth=truth, outcome=o,
                              sup_error=o == P.SUPPORTED and P.SUPPORTED not in ok,
@@ -117,8 +123,9 @@ def card_rows(entries: list[dict], reports: dict, pilot: dict) -> list[dict]:
                              opp_error=o == P.NS_OPPOSITE and P.NS_OPPOSITE not in ok,
                              opp_null=o == P.NS_OPPOSITE and kind["opp_null_counted"],
                              depth_error=o == P.NS_DEPTH and P.NS_DEPTH not in ok,
-                             engine_error=(o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok)
-                                           or o in P.excluded(c, k)),
+                             rule_violation=(o in oc.S7_OUTCOMES or (o == P.DEGENERATE and P.DEGENERATE not in ok)
+                                             or o in P.excluded(c, k)),
+                             crashed=o == P.CRASH, crash=crash,
                              error=o not in ok, correct_definite=o in good, definite=o in P.DEFINITE,
                              gates=gates))
     return rows
@@ -185,7 +192,8 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
                     false_opposite=rate(sum(r["opp_error"] for r in rs), sum(r["opp_error_possible"] for r in rs)),
                     false_depth=rate(sum(r["depth_error"] for r in rs), sum(r["depth_error_possible"] for r in rs)),
                     opposite_on_null=rate(sum(r["opp_null"] for r in rs), sum(r["opp_null_counted"] for r in rs)),
-                    engine_errors=rate(sum(r["engine_error"] for r in rs), len(rs)),
+                    rule_violations=rate(sum(r["rule_violation"] for r in rs), len(rs)),
+                    crashes=rate(sum(r["crashed"] for r in rs), len(rs)),
                     correct_definite=rate(sum(r["correct_definite"] for r in rs if r["establishable"]),
                                           sum(r["establishable"] for r in rs)),
                     outcomes={o: rate(sum(r["outcome"] == o for r in rs), len(rs)) for o in P.OUTCOMES})
@@ -235,22 +243,35 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
     # S3: correct definite outcomes on establishable cards, per stratum (real effects, nulls, blind
     # or useless metrics; not N3 and N8), each at its mean measured decisiveness (at most 0.85) and
     # at the tier fixed before the key (oc.criteria_rules). S3 holds if every stratum is judged and
-    # holds: a stratum without a tier is decisiveness not shown.
-    s3 = {}
+    # holds: a stratum without a tier is decisiveness not shown, and one with a valid metric where
+    # GATE 0 refused more often than oc.GATE0_BOUND before the key fails (the fifth round).
+    s3, over = {}, oc.refusal_bound_failures(pilot)  # GATE 0 above its bound before the key: S3 fails there
     for st in oc.STRATA:
         rs = [r for r in rows if r["establishable"] and r["stratum"] == st]
         k = sum(r["correct_definite"] for r in rs)
         rule = rules["S3"][st]
         need = rule["min_required"]
         s3[st] = dict(rate(k, len(rs)), nominal=rule["nominal"], measured=rule["measured"], tier=rule["tier"],
-                      min_required=need, judged=need is not None, passed=need is not None and k >= need,
+                      min_required=need, judged=need is not None,
+                      passed=need is not None and k >= need and st not in over,
+                      gate0_refusal_bound_failed=st in over,
                       tiers=rule["tiers"], definite_any=rate(sum(r["definite"] for r in rs), len(rs)))
         members[f"S3:{st}"] = (rs, "correct_definite")
-    crit["S3"] = dict(strata=s3, tiers_fixed_before_the_key=fixed is not None,
+    crit["S3"] = dict(strata=s3, tiers_fixed_before_the_key=fixed is not None, gate0_refusal_bound_failed=over,
                       passed=all(s3[st]["passed"] for st in oc.STRATA))
-    # S7: no engine error, missing report or unexpected verdict on any card
-    k = sum(r["engine_error"] for r in rows)
-    crit["S7"] = dict(rate(k, len(rows)), max_allowed=0, passed=bool(rows) and k == 0)
+    # S7a: no verdict the engine's deterministic rules cannot give, on any card
+    k = sum(r["rule_violation"] for r in rows)
+    crit["S7a"] = dict(rate(k, len(rows)), max_allowed=0, passed=bool(rows) and k == 0)
+    members["S7a"] = (rows, "rule_violation")
+    # S7b: crashes (an engine exception or no report) at most the threshold of the nominal 0.1%
+    k, rule = sum(r["crashed"] for r in rows), rules["S7b"]
+    crit["S7b"] = dict(rate(k, len(rows)), nominal=rule["nominal"], rule_nominal=rule["rule_nominal"],
+                       raised=rule["raised"], judged=rule["judged"], max_allowed=rule["max_allowed"],
+                       p_pass_sound=rule["p_pass_sound"], p_pass_doubled=rule["p_pass_doubled"],
+                       passed=bool(rows) and k <= rule["max_allowed"])
+    members["S7b"] = (rows, "crashed")
+    out["crashes"] = [dict(card=r["id"], dataset=r["dataset"], condition=r["condition"], variant=r["variant"],
+                           **r["crash"]) for r in rows if r["crashed"]]
     out["passed"] = all(crit[s]["passed"] for s in oc.CRITERIA)
     out["n_cards"] = len(rows)
     out["joint_pass_probability_sound"] = rules["joint"]
@@ -281,9 +302,10 @@ def score(entries: list[dict], reports: dict, pilot: dict, donors: dict | None =
 
 
 def read_results(results: Path, key: str | None = None) -> tuple[dict, dict]:
-    """(verdict, cause) by card id and donors by dataset id, from the blind run's merged results;
-    with `key`, the results must be the run of that key (the third review: the key given to the
-    scoring was never compared with the manifest's)."""
+    """(verdict, cause, gate record) by card id — for an engine exception its error and traceback
+    (a dict), for a missing report nothing — and donors by dataset id, from the blind run's merged
+    results; with `key`, the results must be the run of that key (the third review: the key given
+    to the scoring was never compared with the manifest's)."""
     manifest = json.loads((results / "manifest.json").read_text())
     if key is not None and manifest.get("key") != key:
         raise SystemExit("the key given is not the key of these results (manifest.json)")
@@ -292,8 +314,11 @@ def read_results(results: Path, key: str | None = None) -> tuple[dict, dict]:
         donors[d["id"]] = d.get("donors", [])
         for c in d["cards"]:
             rep_path = results / "reports" / f"{c['id']}.json"
-            rep = json.loads(rep_path.read_text()) if rep_path.exists() else {}
-            reports[c["id"]] = (None if "error" in rep or not rep else
+            if not rep_path.exists():
+                continue  # a crash: no report
+            rep = json.loads(rep_path.read_text())
+            reports[c["id"]] = (dict(error=rep.get("error") or "an empty report", traceback=rep.get("traceback") or [])
+                                if "error" in rep or not rep else
                                 (rep.get("verdict"), rep.get("cause"), gate_record(rep)))
     return reports, donors
 
@@ -321,7 +346,14 @@ def main(argv=None):
     for st, v in res["criteria"]["S3"]["strata"].items():
         print(f"  S3 {st}: {v['k']}/{v['n']} correct definite"
               + (f", at least {v['min_required']} required ({v['tier']} tier)" if v["judged"] else
-                 " — not judged: S3 fails"))
+                 " — not judged: S3 fails")
+              + (f"; GATE 0 refused above {oc.GATE0_BOUND:g} before the key: S3 fails" if v["gate0_refusal_bound_failed"] else ""))
+    v = res["criteria"]["S7b"]
+    print(f"  S7b: {v['k']} crashes of {v['n']} cards, at most {v['max_allowed']} allowed")
+    for c in res["crashes"]:
+        print(f"  crash {c['card']} ({c['condition']}:{c['variant']}): {c['error']}")
+        for line in c.get("traceback", []):
+            print(f"      {line}")
     for lim in res["limitations"]:
         print("limitation:", lim)
     print("validation", "PASSES" if res["passed"] else "FAILS")

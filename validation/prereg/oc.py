@@ -45,10 +45,18 @@ E_NDE = ALPHA                 # false NO DETECTABLE EFFECT: the TOST's size
 E_DEPTH = ALPHA               # false NOT SUPPORTED (explained by depth): the TOST's size as well (with a SESOI
                               # the engine calls depth only where the corrected effect is shown smaller than it)
 E_OPPOSITE = ALPHA / 2        # NOT SUPPORTED (opposite direction) where it is an error: one tail of the test
+E_CRASH = 0.001               # S7b: engine exceptions and missing reports (the owner's fifth round: a crash gives
+                              # no verdict and does not decide validity alone); a sound engine raises none
 D_NOMINAL = 0.85              # correct definite outcomes on establishable cards: where no pilot measures it,
                               # and the most S3's thresholds ask for (a measured rate near 1 leaves no doubled
                               # shortfall to tell apart, which would leave the stratum unjudged)
 STRATA = ("effect", "null", "invalid")  # S3's strata (decided after the first review)
+VALID_STRATA = ("effect", "null")       # S3's strata with a valid metric
+GATE0_BOUND = 0.20            # a usefulness bound set in advance (the owner's fifth round): on S3's strata with a
+                              # valid metric the sound validator's model takes GATE 0's refusal share at most this,
+                              # and a stratum where the frozen engine refuses more often before the key fails S3 (the
+                              # tool is silent too often on a good metric); the run goes on. On the blind and useless
+                              # metrics the measured share (a refusal there protects from a false conclusion)
 TIERS = ("principle", "floor")          # S3's thresholds, strictest first (the second review)
 # N3 and N8: the oracle undoes their planted nuisance with the true correction, which the engine
 # cannot have (it may refuse there, an allowed outcome), so their decisiveness is reported, not
@@ -60,16 +68,19 @@ EPS_CELL = 0.0005             # a sound validator fails an error cell with proba
 DATA_STRATA = ("effect", "null", "invalid")  # the strata of the error criteria: every card, by the truth
 S2_GROUPS = ("N2", "N3", "N4", "N6", "N7", "E")  # S2's groups: the cards outside S1, by condition
 # the error criteria's cells: (criterion, outcome counted, the strata or groups it is counted in);
-# every wrong outcome but an unexpected verdict (S7) is counted in exactly one cell of a card, and NOT
+# every wrong outcome but an unexpected verdict (S7a) is counted in exactly one cell of a card, and NOT
 # SUPPORTED against the direction on null data, allowed there, in its own (the fourth review)
 CAUSE_FIELD = {P.SUPPORTED: "sup", P.NS_INVALID: "inv", P.NDE: "nde", P.NS_OPPOSITE: "opp", P.NS_DEPTH: "depth"}
 FIELDS = (*CAUSE_FIELD.values(), "oppnull")  # "oppnull": NOT SUPPORTED against the direction on null data
 DESIGNED = {P.SUPPORTED: E_SUPPORTED, P.NS_INVALID: E_INVALID, P.NDE: E_NDE, P.NS_OPPOSITE: E_OPPOSITE,
             P.NS_DEPTH: E_DEPTH}
 ERROR_CRITERIA = ("S2", "S4", "S5", "S6")
-CRITERIA = ("S1", "S2", "S3", "S4", "S5", "S6", "S7")
-# S7: no report or an engine error, and the verdicts the engine cannot give here: these, DEGENERATE
-# METRIC on a metric that varies, and an effect verdict where its rules exclude one (panel.excluded)
+CRITERIA = ("S1", "S2", "S3", "S4", "S5", "S6", "S7a", "S7b")
+# S7 (split in the fifth round). S7a, the verdicts the engine's deterministic rules cannot give here:
+# these (a label that does not match its cause or a cause the engine does not have, a cause the panel
+# does not expect, UNIDENTIFIABLE), DEGENERATE METRIC on a metric that varies, and an effect verdict
+# where its rules exclude one (panel.excluded): none allowed. S7b, crashes (P.CRASH: an engine
+# exception or no report): at most the principle's threshold at E_CRASH
 S7_OUTCOMES = (P.ERROR, P.OTHER, P.UNIDENTIFIABLE)
 # the flag of a card's model that says where a wrong outcome can occur (``card_model``)
 POSSIBLE = {P.SUPPORTED: "sup_error_possible", P.NS_INVALID: "invalid_error_possible", P.NDE: "nde_error_possible",
@@ -96,7 +107,7 @@ def s2_group(cond: P.Condition, variant: str) -> str | None:
     condition, N4's pseudoreplication or N7, passed the pooled S2): N2's steps, N3, N4, the useless
     metrics N6a and N6b, N7, and the real effects (whose blind or useless cards can err). None for
     S1's cards. (N4's card without the replicate unit and N6b's constant give no effect verdict:
-    theirs is in S7, ``card_kind``.)"""
+    theirs is in S7a, ``card_kind``.)"""
     if cond.key and variant == cond.key_variant:
         return None
     if cond.data == "effect":
@@ -113,7 +124,7 @@ def error_cells(rows: list[dict]) -> dict:
     validator that said it on 16% of the null cards passed); S5: a false "metric invalid" on a valid
     metric per stratum (real effects, nulls); S6: a false NO DETECTABLE EFFECT per stratum (real
     effects at or above the SESOI, blind or useless metrics). An outcome the engine's rules exclude
-    on a card is in none (``card_kind``: S7)."""
+    on a card is in none (``card_kind``: S7a)."""
     cells = {}
 
     def add(name, outcome, field, member):
@@ -139,7 +150,7 @@ def card_kind(row: dict, cond: P.Condition, k: int) -> dict:
     """The row of a dataset's k-th claim card from its case's (``card_model``). The engine's rules
     exclude an effect verdict on some cards (``panel.excluded``: N4's first card, which has no
     replicate unit, and the constant metric): there a sound validator never gives one, so its rates
-    are 0, and one given is an unexpected verdict, counted in S7 (none allowed), not in the cells
+    are 0, and one given is an unexpected verdict, counted in S7a (none allowed), not in the cells
     (the fourth review: a validator that said SUPPORTED on 10% of N4's cards without the replicate
     unit passed the N4 cell, whose small n needed a raised nominal). The outcomes left are in the
     sound validator's other outcomes (INCONCLUSIVE: insufficient replication)."""
@@ -226,11 +237,22 @@ def outcome_distribution(cond: P.Condition, variant: str, pair: int, pilot: dict
 def refusal_share(cond: P.Condition, truth: str, pilot: dict) -> float:
     """GATE 0's refusal share on the card's S3 stratum, measured before the key with the frozen
     engine (pilot.json "gate0_refusals", ``timing.py --refusals``: the fourth review found a sound
-    engine failing S3 at a 15% share the model left out); 0 outside the strata and where nothing
-    was measured."""
+    engine failing S3 at a 15% share the model left out), at most GATE0_BOUND on the strata with a
+    valid metric (the fifth round: a GATE 0 that refused half the time halved the nominal and still
+    passed S3; above the bound the stratum fails, ``refusal_bound_failures``); 0 outside the strata
+    and where nothing was measured."""
     st = stratum(cond, truth)
     rec = (pilot.get("gate0_refusals") or {}).get(st) if st else None
-    return float(rec["share"]) if rec and rec.get("n") else 0.0
+    share = float(rec["share"]) if rec and rec.get("n") else 0.0
+    return min(share, GATE0_BOUND) if st in VALID_STRATA else share
+
+
+def refusal_bound_failures(pilot: dict) -> list[str]:
+    """S3's strata with a valid metric on which the frozen engine's GATE 0 refused more often than
+    GATE0_BOUND before the key (pilot.json "gate0_refusals"): S3 fails on each, whatever the run
+    gives (decided before the key; the run goes on, its other measurements are needed)."""
+    recs = pilot.get("gate0_refusals") or {}
+    return [st for st in VALID_STRATA if (recs.get(st) or {}).get("n") and float(recs[st]["share"]) > GATE0_BOUND]
 
 
 def sound_model(cond: P.Condition, variant: str, pair: int, pilot: dict) -> dict:
@@ -243,8 +265,9 @@ def sound_model(cond: P.Condition, variant: str, pair: int, pilot: dict) -> dict
     detection in the other tail: the fourth review). Without a measurement: the designed sizes of the
     routes the card's allowed outcomes leave open (``DESIGNED``, ``nominal_error``), alpha/2 for
     `p_oppnull`, and decisiveness D_NOMINAL, or what the errors leave of it. GATE 0 refuses first,
-    with its stratum's measured share (``refusal_share``, `refusal`), and every other outcome takes
-    the rest; the constant metric's DEGENERATE METRIC comes before it."""
+    with its stratum's measured share (``refusal_share``, `refusal`; at most GATE0_BOUND where the
+    metric is valid), and every other outcome takes the rest; the constant metric's DEGENERATE
+    METRIC comes before it."""
     ok = P.allowed(cond, variant, pair, pilot)
     good = P.definite(cond, variant, pair, pilot)
     truth = P.metric_truth(cond, variant, pair, pilot)
@@ -431,8 +454,11 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
       valid metric and NO DETECTABLE EFFECT, each per stratum), every cell at the mean of its cards'
       rule nominals for its outcome (``rule_nominals``; ``error_criterion``); a criterion holds if
       every cell holds;
-    * S7 (an engine error, a missing report or an unexpected verdict, all cards): none allowed —
-      a sound validator makes none, and any rate at which one makes them is told apart;
+    * S7a (a verdict the engine's deterministic rules cannot give, all cards): none allowed — a
+      sound validator makes none, and any rate at which one makes them is told apart;
+    * S7b (crashes: an engine exception or a missing report, all cards): at most the principle's
+      threshold at the nominal E_CRASH (raised as a cell's where the principle is not attainable at
+      it; where it is not attainable at all, none allowed); a sound engine crashes on none;
     * S3 per stratum at the mean measured decisiveness of its establishable cards, at most D_NOMINAL,
       at one of two tiers (``decisiveness_tiers``): the principle's, or the floor's (a validator half
       as decisive fails with probability >= 0.95). Every stratum is judged (the second review: a
@@ -458,7 +484,9 @@ def criteria_rules(rows: list[dict], sims: int = 20_000, seed: int = 0, s3_tiers
         members = [rows[i] for i in cell["members"]]
         rule = error_criterion(len(members), _mean(members, f"r_{field}"), _mean(members, f"p_{field}"))
         out["cells"][name] = dict(rule, outcome=cell["outcome"], field=field, members=cell["members"])
-    out["S7"] = dict(n=len(rows), nominal=0.0, max_allowed=0, judged=bool(rows))
+    out["S7a"] = dict(n=len(rows), nominal=0.0, max_allowed=0, judged=bool(rows))
+    crash = error_criterion(len(rows), E_CRASH, 0.0)
+    out["S7b"] = crash if crash["judged"] or not rows else dict(crash, max_allowed=0)
     for st in STRATA:
         rs = [r for r in rows if r["establishable"] and r["stratum"] == st]
         measured = _mean(rs, "decisive") if rs else float("nan")
@@ -494,8 +522,8 @@ def _at_design(rows: list[dict]) -> list[dict]:
 
 
 def _base(passes: dict) -> np.ndarray:
-    """S1, every cell of S2 and S4-S6, and S7, per simulation."""
-    ok = passes["S1"] & passes["S7"]
+    """S1, every cell of S2 and S4-S6, S7a and S7b, per simulation."""
+    ok = passes["S1"] & passes["S7a"] & passes["S7b"]
     for name, v in passes.items():
         if name.split(":")[0] in ERROR_CRITERIA:
             ok = ok & v
@@ -544,9 +572,9 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
     p_inv, p_nde, p_opp, p_depth), another outcome outside the allowed set with the rest of p_err,
     and on an establishable card otherwise a correct definite outcome with `decisive`, of which NOT
     SUPPORTED against the direction on null data with p_oppnull (allowed, its rate bounded); never
-    an engine error. The criteria share cards, so they are simulated on the same draws: returns, per
-    criterion (S1 as a whole, every cell of S2 and S4-S6, S7, every S3 stratum at every tier with a
-    threshold), whether it passes in each simulation."""
+    a rule violation or a crash (S7a, S7b). The criteria share cards, so they are simulated on the
+    same draws: returns, per criterion (S1 as a whole, every cell of S2 and S4-S6, S7a, S7b, every S3
+    stratum at every tier with a threshold), whether it passes in each simulation."""
     rng = np.random.default_rng(seed)
     n = len(rows)
     fields = list(CAUSE_FIELD.values())
@@ -565,7 +593,7 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
     s3 = {f"S3:{st}:{t}": (np.array([r["establishable"] and r["stratum"] == st for r in rows]), v["min_required"])
           for st in STRATA for t, v in rules["S3"][st]["tiers"].items() if v["min_required"] is not None}
     cells = rules.get("cells", {})
-    out = {name: [] for name in ("S1", "S7", *cells, *s3)}
+    out = {name: [] for name in ("S1", "S7a", "S7b", *cells, *s3)}
     col = {f: j for j, f in enumerate(fields)}
     chunk = 500
     for start in range(0, sims, chunk):
@@ -584,7 +612,8 @@ def _simulate_passes(rows: list[dict], rules: dict, sims: int, seed: int) -> dic
                 out[name].append(hit[rule["field"]][:, ix].sum(axis=1) <= rule["max_allowed"])
             else:
                 out[name].append(np.ones(m, bool))
-        out["S7"].append(np.ones(m, bool))
+        out["S7a"].append(np.ones(m, bool))
+        out["S7b"].append(np.ones(m, bool))
         for name, (member, k) in s3.items():
             out[name].append((good & member).sum(axis=1) >= k)
     return {k: np.concatenate(v) for k, v in out.items()}
@@ -761,8 +790,11 @@ def show_design(title: str, rows: list[dict], sims: int = 20_000, with_measured:
         elif crit in words:
             cause = {"opposite": " against the direction", "depth": " explained by depth"}.get(where[-1], "")
             show_criterion(f"{crit} {where[0]}: {words[crit]}{cause} where it is an error", rule)
-    print(f"  S7 engine errors, missing reports, unexpected verdicts (an effect verdict where the engine's rules "
-          f"exclude one: N4 without the replicate unit, the constant metric): n = {rules['S7']['n']}, none allowed")
+    print(f"  S7a verdicts the engine's deterministic rules cannot give (a label that does not match its cause, an "
+          f"unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict where the rules "
+          f"exclude one: N4 without the replicate unit, the constant metric): n = {rules['S7a']['n']}, none allowed")
+    show_criterion(f"S7b crashes (an engine exception or no report; a sound engine has none) at the nominal {E_CRASH:g}",
+                   rules["S7b"])
     judged = ", ".join(f"{st} ({rules['S3'][st]['tier']})" for st in STRATA if rules["S3"][st]["tier"])
     print(f"  P(S1-S7 all pass | sound), simulated, S1 at its design, S3 judged on {judged or 'no stratum'}: "
           f"{rules['joint']:.3f}" + ("" if rules["s3_feasible"] else
@@ -829,8 +861,15 @@ def main(argv=None):
         pilot = json.loads(open(args.pilot).read())
         rules = show_design("The expected cards of pilot.json (every pool pair equally often)",
                             expected_rows(pilot, pilot.get("dropped", ())), with_measured=True)
+        over = refusal_bound_failures(pilot)
+        for st, rec in sorted((pilot.get("gate0_refusals") or {}).items()):
+            bound = (f"at most {GATE0_BOUND:g} in the model" + ("; ABOVE THE BOUND: S3 FAILS on this stratum, "
+                     "decided before the key (the run goes on)" if st in over else "")) if st in VALID_STRATA \
+                else "as measured (a blind or useless metric)"
+            print(f"# GATE 0's refusal share before the key, S3 stratum {st}: {rec['refused']} of {rec['n']} "
+                  f"({rec['share']:.3f}); {bound}")
         if args.write_judged:
-            pilot["s3_rules"] = s3_rules_record(rules)
+            pilot["s3_rules"] = dict(s3_rules_record(rules), refusal_bound_failed=over)
             with open(args.pilot, "w") as fh:
                 fh.write(json.dumps(pilot, indent=1))
             print(f"# S3's tiers written to {args.pilot}: {pilot['s3_rules']['tiers']}")
@@ -848,7 +887,9 @@ def main(argv=None):
     print(f"  {E_GATE5:g}, GATE 4 at the odds measured on the case, then the effect's outcomes as the oracle found them")
     print("  on the case's datasets (after an UNTESTED GATE 4 its explained-by-depth share); a blind, ambiguous or")
     print("  useless metric in the engine's order on them; GATE 0 refuses first with its stratum's share measured")
-    print("  with the engine before the key (timing.py --refusals). Without a measurement (the scenarios below): the")
+    print(f"  with the engine before the key (timing.py --refusals), at most {GATE0_BOUND:g} on the strata with a valid")
+    print("  metric (a usefulness bound set in advance: a stratum above it fails S3, decided before the key). Without")
+    print("  a measurement (the scenarios below): the")
     print(f"  designed sizes of the routes open on the card and decisiveness {D_NOMINAL}. Every wrong outcome is counted")
     print("  in its own cell: S2 a false SUPPORTED per group of the cards outside S1 (N2's steps, N3, N4 with the")
     print("  replicate unit, N6a, N7, the real effects), S4 a false NOT SUPPORTED against the direction or explained")
@@ -857,8 +898,11 @@ def main(argv=None):
     print("  blind or useless metrics); a cell's threshold uses, per card, the larger of the rate and the designed")
     print("  size, and its resolution is the error rate it fails with probability >= 0.95. S3 is judged on every")
     print("  stratum (not N3 and N8), at the principle's tier or the floor's (a validator half as decisive fails);")
-    print("  S7 allows no engine error and no effect verdict where the engine's rules give none (N4 without the")
-    print("  replicate unit, the constant metric). The joint requirement is checked with S1 at its design.")
+    print("  S7a allows no verdict the engine's deterministic rules cannot give (a label that does not match its")
+    print("  cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict")
+    print("  where the rules give none: N4 without the replicate unit, the constant metric); S7b counts crashes (an")
+    print(f"  engine exception or no report, each listed with its traceback) at the nominal {E_CRASH:g} by the principle,")
+    print("  a sound engine crashing on none. The joint requirement is checked with S1 at its design.")
     print()
     print(f"## S1 as a whole: the number of datasets per key condition ({m} conditions)")
     first = next(n for n in range(400, 2001) if joint_error_rule(n, E_SUPPORTED, m)[1] >= P_PASS_SOUND)

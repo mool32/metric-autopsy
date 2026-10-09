@@ -137,8 +137,18 @@ turns that checklist into runnable behavior.
   refusal share measured with the frozen engine before the key and refusing first in the model;
   Δ* of E2/E3 at half capture; thirteen smaller items (v1.md section 10). p16 re-run at the fixes:
   N8 still 18 of 160 false SUPPORTED, and 19 of 160 against the direction, which the new null cell
-  counts. The fixes were not reviewed again (no critical finding); then the owner's «утверждаю».
-  No tag yet.
+  counts. The fixes were not reviewed again (no critical finding).
+- **Step 2j (the owner's fifth round, 2026-10-09; the fourth review's version was not approved):**
+  the seven open items decided — N8 unchanged, with the prediction from p16 (S1 fails on N8) and the
+  wording of both outcomes recorded in v1.md section 6, and v0.4's correction planned with a v2
+  pre-registration; S7 split into rule violations (S7a, none) and crashes (S7b, 0.1% by the
+  principle, each with its traceback); an unjudgeable S3 stratum still fails; E1–E3 doubled; explained
+  by depth allowed on a blind metric where an artifact is planted; the five S2 groups at 790 (9,750
+  datasets, 10,540 claim cards); GATE 0's refusal share in the model at most 0.20 on a valid metric,
+  a stratum above it failing S3. The full pilot was run before the tag on simulated backgrounds of
+  the panel's sizes on the Actions runner (`pilot-rehearsal.yml`): ⟦TBD:rehearsal-project⟧; it is
+  split over parallel jobs (base, four parts of establishability, merge), with the same pilot.json.
+  Then the fifth and last independent review. No tag yet.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

@@ -73,9 +73,10 @@ DEGENERATE = "DEGENERATE METRIC"
 REFUSAL = "REFUSAL: nuisance bias (GATE 0)"
 UNIDENTIFIABLE = "UNIDENTIFIABLE"
 OTHER = "OTHER"  # a label and cause the panel does not expect (e.g. not replicated: no GATE 6 here)
-ERROR = "ERROR"  # no report, an engine error, or a label that does not match its cause
+ERROR = "ERROR"  # a label that does not match its cause, or a cause the engine does not have
+CRASH = "CRASH"  # an engine exception or no report: no verdict (S7b; the fifth round)
 OUTCOMES = (SUPPORTED, NDE, INCONCLUSIVE, NS_INVALID, NS_DEPTH, NS_OPPOSITE, DEGENERATE, REFUSAL,
-            UNIDENTIFIABLE, OTHER, ERROR)
+            UNIDENTIFIABLE, OTHER, ERROR, CRASH)
 DEFINITE = frozenset({SUPPORTED, NDE, NS_INVALID, NS_DEPTH, NS_OPPOSITE, DEGENERATE, UNIDENTIFIABLE})
 LABELS = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE", "UNIDENTIFIABLE",
           "DEGENERATE METRIC")
@@ -134,21 +135,21 @@ class Condition:
 
 CONDITIONS = (
     Condition("N1", "B1", (("null", KEY_N),), "null", key=True, key_variant="null"),
-    Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 100), ("c=0.7", 100), ("c=0.3", 100)), "null",
+    Condition("N2", "B1", (("c=0.5", KEY_N), ("c=0.9", 264), ("c=0.7", 263), ("c=0.3", 263)), "null",
               artifact=True, key=True, key_variant="c=0.5"),
-    Condition("N3", "B1", (("f=0.1", 100), ("f=0.2", 100), ("f=0.4", 100)), "null", artifact=True),
-    Condition("N4", "B1", (("3v3", 300),), "null", cards=2, oracle=False),
+    Condition("N3", "B1", (("f=0.1", 264), ("f=0.2", 263), ("f=0.4", 263)), "null", artifact=True),
+    Condition("N4", "B1", (("3v3", 790),), "null", cards=2, oracle=False),
     Condition("N5", "B1", (("sham", KEY_N),), "null", key=True, key_variant="sham"),
-    Condition("N6a", "B1", (("random", 300),), "null", metric="random"),
+    Condition("N6a", "B1", (("random", 790),), "null", metric="random"),
     Condition("N6b", "B1", (("constant", 50),), "null", metric="constant"),
     Condition("N6c", "B1", (("random-genes", KEY_N),), "null", metric="score", key=True,
               key_variant="random-genes"),
-    Condition("N7", "B2", (("mice", 300),), "null"),
+    Condition("N7", "B2", (("mice", 790),), "null"),
     Condition("N8", "B1", (("beta(2,2)", KEY_N),), "null", artifact=True, key=True, key_variant="beta(2,2)"),
-    Condition("E1", "B1", (("dose=key", 200), ("dose=0.25", 100), ("dose=0.5", 100), ("dose=1.5", 100)),
+    Condition("E1", "B1", (("dose=key", 400), ("dose=0.25", 200), ("dose=0.5", 200), ("dose=1.5", 200)),
               "effect"),
-    Condition("E2", "B1", (("against", 200),), "effect", artifact=True),
-    Condition("E3", "B1", (("with", 200),), "effect", artifact=True),
+    Condition("E2", "B1", (("against", 400),), "effect", artifact=True),
+    Condition("E3", "B1", (("with", 400),), "effect", artifact=True),
 )
 BACKGROUNDS = ("B1", "B2")
 # Conditions whose data change the pair's counts (capture loss, dropout, variable capture, an
@@ -356,15 +357,18 @@ def data_allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) ->
 def allowed(cond: Condition, variant: str, pair_index: int, pilot: dict) -> frozenset:
     """The outcomes correct for this card (the same rule for every condition, decided
     2026-10-08): a blind or useless metric allows NOT SUPPORTED (metric invalid), INCONCLUSIVE
-    and a refusal, and the constant also DEGENERATE METRIC; a valid metric allows
-    `data_allowed`; an ambiguous one the union of both sets."""
+    and a refusal, the constant also DEGENERATE METRIC, and a blind metric where an artifact is
+    planted (N2, N3, N8, E2, E3) also NOT SUPPORTED explained by depth, as a valid one does there
+    (the owner's fifth round: a metric blind to the coupling still responds to depth, and that
+    diagnosis is correct); a valid metric allows `data_allowed`; an ambiguous one the union of both
+    sets."""
     truth = metric_truth(cond, variant, pair_index, pilot)
     if truth == "useless":
         return INVALID_ALLOWED
     if truth == "constant":
         return INVALID_ALLOWED | {DEGENERATE}
     if truth == "blind":
-        return INVALID_ALLOWED
+        return INVALID_ALLOWED | ({NS_DEPTH} if cond.artifact else frozenset())
     ok = data_allowed(cond, variant, pair_index, pilot)
     return ok if truth == "valid" else ok | INVALID_ALLOWED
 
@@ -377,7 +381,7 @@ def definite(cond: Condition, variant: str, pair_index: int, pilot: dict) -> fro
 # The effect verdicts, which the engine's rules exclude on some cards whatever the data (the fourth
 # review): without a replicate unit (N4's first card: effect.py gives no effect verdict without one)
 # and on the constant metric (DEGENERATE METRIC is decided first: report.decide_cause). There a
-# sound validator never gives them: one is an unexpected verdict, counted in S7 (none allowed).
+# sound validator never gives them: one is an unexpected verdict, counted in S7a (none allowed).
 EFFECT_VERDICTS = frozenset({SUPPORTED, NDE, NS_OPPOSITE, NS_DEPTH})
 
 

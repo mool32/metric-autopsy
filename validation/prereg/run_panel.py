@@ -4,8 +4,9 @@
 Every dataset is built from the key's entry by ``panel.build`` inside a worker process and never
 written: the manifest records its canonical sha256 (``panel.dataset_sha256``), its donors, and
 per claim card the card's and the report's sha256. A card whose report exists is not run again
-(one attempt per card); an engine exception is written as {"error": ...} and scored as an
-error.
+(one attempt per card); an engine exception is written as {"error": ..., "traceback": [...]} (the
+frames with their paths relative to the repository, site-packages or the standard library, so the
+report is the same on any machine) and scored as a crash (S7b).
 
 The run is a deterministic function of the key, the backgrounds and the pilot: the engine's seed
 comes from the card (``_seed``), one BLAS thread per worker, and a report holds only what the
@@ -21,7 +22,9 @@ import json
 import os
 import platform
 import shutil
+import sysconfig
 import time
+import traceback
 from functools import partial
 from pathlib import Path
 
@@ -38,6 +41,31 @@ import numpy as np  # noqa: E402
 import panel as P  # noqa: E402
 
 MODULE_FOLD, MODULE_FRAC = 2.0, 0.3
+REPO = Path(__file__).resolve().parents[2]
+
+
+def portable_traceback(exc: BaseException) -> list[str]:
+    """The exception's frames as "path:line in function: source", each path relative to the
+    repository, site-packages or the standard library (else its file name): what scores.json lists
+    for every crash, the same on any machine (the report's sha256 is compared across runs)."""
+    roots = [(REPO, "")]
+    for key, tag in (("purelib", "site-packages/"), ("platlib", "site-packages/"), ("stdlib", "stdlib/")):
+        try:
+            roots.append((Path(sysconfig.get_paths()[key]).resolve(), tag))
+        except (KeyError, OSError):
+            continue
+    out = []
+    for fr in traceback.extract_tb(exc.__traceback__):
+        path = Path(fr.filename)
+        name = path.name
+        for root, tag in sorted(roots, key=lambda r: -len(str(r[0]))):  # the most specific root first
+            try:
+                name = tag + path.resolve().relative_to(root).as_posix()
+                break
+            except (ValueError, OSError):
+                continue
+        out.append(f"{name}:{fr.lineno} in {fr.name}: {(fr.line or '').strip()}")
+    return out + [f"{type(exc).__name__}: {exc}"]
 
 
 def _seed(card_id: str) -> int:
@@ -176,8 +204,8 @@ def run_entry(entry: dict) -> tuple[dict, list[dict]]:
             full = a.to_dict()
             rep = dict(deterministic_report(full), id=card["id"])
             run_rec = {k: full.get("provenance", {}).get(k) for k in RUNTIME_FIELDS}
-        except Exception as exc:  # scored as an error
-            rep, run_rec = dict(id=card["id"], error=repr(exc)), {}
+        except Exception as exc:  # scored as a crash, its traceback in the report
+            rep, run_rec = dict(id=card["id"], error=repr(exc), traceback=portable_traceback(exc)), {}
         text = json.dumps(rep, allow_nan=False, default=str, sort_keys=True)
         out.write_text(text)
         rec.update(report_sha256=hashlib.sha256(text.encode()).hexdigest(), error="error" in rep)
@@ -191,7 +219,8 @@ def _unbuilt(entry: dict, out_dir: Path, exc: Exception) -> tuple[dict, list[dic
     """A dataset the panel could not build: an error report for each of its claim cards."""
     row = dict(id=entry["id"], data_sha256=None, donors=[], cards=[])
     for cid in P.card_ids(entry):
-        text = json.dumps(dict(id=cid, error=f"the panel could not build the dataset: {exc!r}"), sort_keys=True)
+        text = json.dumps(dict(id=cid, error=f"the panel could not build the dataset: {exc!r}",
+                               traceback=portable_traceback(exc)), sort_keys=True)
         (out_dir / "reports" / f"{cid}.json").write_text(text)
         row["cards"].append(dict(id=cid, card_sha256=None, report_sha256=hashlib.sha256(text.encode()).hexdigest(),
                                  error=True))
