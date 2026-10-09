@@ -1,12 +1,12 @@
-# timing pilot — git aecbc7f, python 3.13.16, numpy 2.5.3
+# timing pilot — git 080d2ad, python 3.13.16, numpy 2.5.3
 # machine: {"cpus": 4, "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz", "runner_image": null, "blas_threads_in_use": [1], "blas": [{"internal_api": "openblas", "version": "0.3.34.106.0", "architecture": "Haswell", "num_threads": 1}], "numpy_simd": {"baseline": ["X86_V2"], "dispatch": ["X86_V3"]}, "numeric_env": {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_CORETYPE": "Haswell", "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"}, "versions": {"python": "3.13.16", "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39", "numpy": "2.5.3", "scipy": "1.18.1", "pandas": "2.3.3", "metric_autopsy": "0.3.0.dev0"}}
 # backgrounds: simulated (validation/prereg/simulate.py, dry_backgrounds)
-# sample of 24 datasets: {'N1': 4, 'N5': 2, 'N4': 2, 'N3': 1, 'N6a': 1, 'N2': 3, 'N8': 2, 'E3': 1, 'E1': 3, 'N6c': 2, 'E2': 1, 'N6b': 1, 'N7': 1}; levels {'high': 4, 'low': 10, 'medium': 10}
+# sample of 24 datasets: {'E3': 2, 'N3': 1, 'N5': 1, 'E1': 2, 'N4': 2, 'N6a': 4, 'N1': 2, 'N2': 1, 'N8': 3, 'N6c': 2, 'E2': 1, 'N6b': 2, 'N7': 1}; levels {'low': 10, 'medium': 7, 'high': 7}
 # dataset shape (cells x genes): (3200, 2000)
-workers=1: 26 cards in 736 s wall; per card mean 28.2 s, median 27.0 s; errors 0; peak memory of a worker 793 MB
-  per condition (mean s): E1 29.9, E2 26.2, E3 31.1, N1 30.4, N2 27.0, N3 26.7, N4 8.1, N5 13.6, N6a 25.1, N6b 24.1, N6c 81.8, N7 17.8, N8 32.9
-workers=4: 26 cards in 207 s wall; per card mean 27.0 s, median 26.3 s; errors 0; peak memory of a worker 740 MB
-  per condition (mean s): E1 28.2, E2 23.5, E3 28.5, N1 28.9, N2 26.0, N3 26.4, N4 8.4, N5 13.5, N6a 23.9, N6b 22.5, N6c 80.8, N7 18.6, N8 29.6
-# whole panel: 6000 cards, each at its condition's mean time: 52.9 CPU-h at 4 workers (single-core 55.0 CPU-h)
-# blind run: 20 shards of 4 workers, a shard's expected time 0.66 h (budget 3.0 h per shard; a job may run 6 h)
-# memory: a worker's peak 740 MB x 4 workers = 2961 MB; the runner has 16095 MB (at most 75% may be used)
+workers=1: 26 cards in 755 s wall; per card mean 28.9 s, median 26.3 s; errors 0; peak memory of a worker 799 MB
+  per condition (mean s): E1 30.7, E2 29.8, E3 25.3, N1 33.6, N2 32.7, N3 24.4, N4 8.1, N5 11.4, N6a 28.0, N6b 24.3, N6c 82.8, N7 24.1, N8 30.3
+workers=4: 26 cards in 207 s wall; per card mean 29.5 s, median 27.2 s; errors 0; peak memory of a worker 736 MB
+  per condition (mean s): E1 31.7, E2 30.4, E3 27.2, N1 33.5, N2 33.6, N3 27.4, N4 8.9, N5 13.2, N6a 25.0, N6b 24.8, N6c 88.3, N7 24.4, N8 31.0
+# whole panel: 6700 cards, each at its condition's mean time: 62.4 CPU-h at 4 workers (single-core 60.0 CPU-h)
+# blind run: 20 shards of 4 workers, a shard's expected time 0.78 h (budget 3.0 h per shard; a job may run 6 h)
+# memory: a worker's peak 736 MB x 4 workers = 2944 MB; the runner has 16095 MB (at most 75% may be used)
