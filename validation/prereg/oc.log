@@ -43,6 +43,10 @@
     deff 1.5: P(all 5 pass | 0.025) = 0.800, P(a condition passes | 0.050 there) = 0.085
     the principle holds up to deff 1.044 (the doubled side up to 1.044, the sound side up to 1.065)
 
+## GATE 0's usefulness bound (the fifth round): a stratum with a valid metric fails S3 where the frozen engine
+## refused on more than 0.2 of its 100 establishable cards before the key
+  refusing on 10%: fails with 0.001, refusing on 15%: fails with 0.066, refusing on 20%: fails with 0.441, refusing on 25%: fails with 0.851, refusing on 30%: fails with 0.984
+
 ## S3's tiers on a stratum of n establishable cards
   at d = 0.85: the floor's tier passes a sound validator with >= 0.9835 (what S1 at its design leaves of 0.9) from n = 18, the principle's from n = 115
   at d = 0.80: the floor's tier passes a sound validator with >= 0.9835 (what S1 at its design leaves of 0.9) from n = 23, the principle's from n = 77

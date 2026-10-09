@@ -52,6 +52,8 @@ D_NOMINAL = 0.85              # correct definite outcomes on establishable cards
                               # shortfall to tell apart, which would leave the stratum unjudged)
 STRATA = ("effect", "null", "invalid")  # S3's strata (decided after the first review)
 VALID_STRATA = ("effect", "null")       # S3's strata with a valid metric
+REFUSAL_CARDS = 100           # GATE 0's refusals are measured on this many establishable cards per S3 stratum
+                              # before the key (validation.yml: timing.py --refusals 100)
 GATE0_BOUND = 0.20            # a usefulness bound set in advance (the owner's fifth round): on S3's strata with a
                               # valid metric the sound validator's model takes GATE 0's refusal share at most this,
                               # and a stratum where the frozen engine refuses more often before the key fails S3 (the
@@ -923,6 +925,12 @@ def main(argv=None):
           f"the sound side up to {sound:.3f})")
     print()
     budget = P_JOINT_SOUND / joint_error_rule(P.KEY_N, E_SUPPORTED, m)[1]
+    print(f"## GATE 0's usefulness bound (the fifth round): a stratum with a valid metric fails S3 where the frozen engine")
+    print(f"## refused on more than {GATE0_BOUND:g} of its {REFUSAL_CARDS} establishable cards before the key")
+    above = int(round(GATE0_BOUND * REFUSAL_CARDS)) + 1
+    print("  " + ", ".join(f"refusing on {p:.0%}: fails with {binom_sf(above, REFUSAL_CARDS, p):.3f}"
+                           for p in (0.10, 0.15, 0.20, 0.25, 0.30)))
+    print()
     print("## S3's tiers on a stratum of n establishable cards")
     for d0 in (0.85, 0.80, 0.70):
         need = {t: next(n for n in range(1, 1000) if all(decisiveness_tiers(k, d0)[t]["p_pass_sound"] >= budget
