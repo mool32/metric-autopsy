@@ -230,6 +230,20 @@ weak control in 17, 8 and 0 of 20 datasets; the response rule (the metric's own 
 control's genes, FAIL only if its upper 95% bound is below delta_min) in none, and both failed
 the blind metric 20/20. By the owner's condition GATE 5 now uses the response rule (JOURNAL.md, D6).
 
+### Found by the second independent review: N8, per-cell variable capture (p16, open for the owner)
+
+`p16_variable_capture_n8.py` (log: `p16_variable_capture_n8.log`; not in `run_all.sh`, ~1 h on 4
+cores) runs the whole engine, as the blind run does (`validation/prereg/run_panel.py`), on 160
+datasets each of the confirmatory panel's N1 and N8 on its simulated backgrounds
+(`validation/prereg/simulate.py`, pairs in turn over the pool of 24). N8 thins every cell of one side
+by its own Beta(2, 2) capture, outside the engine's correction family (one common thinning ratio per
+group). The second review predicted from the effect rule alone that S1 fails there; the third asked
+for a script of the repository behind the numbers. At c542163 the engine gives a false SUPPORTED on
+18 of 160 N8 datasets (11.3%, 95% CI 6.8-17.2%) against 2 of 160 on N1 (1.3%, 0.2-4.4%); S1 allows
+at most 29 of 790 (3.7%) per key condition. The oracle's analysis with the true correction gives 3
+of 160 on N8. No dev-set expectation changes: whether the engine should correct this family before
+the tag is the owner's decision (`validation/prereg/v1.md`, section 10).
+
 ### Found by the first independent review: the SESOI's scale and "explained by depth" (journal D7)
 
 The review of the pre-registration found that the engine's equivalence test used ±λ·SESOI (λ:
