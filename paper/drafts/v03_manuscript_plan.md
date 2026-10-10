@@ -115,8 +115,14 @@ numbers are exploratory, not a criterion (by-level):
 **The anchors** (secondary; `anchors.json`, v1-results 445c0dd):
 - R2a and R2b are INCONCLUSIVE and R2c is UNIDENTIFIABLE, each in its allowed set.
 - R3 was dropped with B4.
-- R1 did not run in v1. Its one run outside v1 (DEVIATIONS.md D1, branch `results/panel-v1-r1`)
-  is reported as such: after the results, outside v1.
+- R1 did not run in v1 (a loader bug). Its one run after the results, outside v1
+  (DEVIATIONS.md D1; workflow run 38033821978; `results/panel-v1-r1` at 36a04bf), gave:
+  - Xist: NOT SUPPORTED, metric invalid by GATE 4 (+0.163 against δ_min 0.25);
+  - Y genes: UNIDENTIFIABLE (B2's donor ids are partially crossed with sex);
+  - the sham: NO DETECTABLE EFFECT.
+
+  Two of the three claims are outside their allowed sets. The section reports this as a real
+  case where v0.3 does not deliver a known difference, with both causes.
 
 ## 5. The corrected TMS case
 

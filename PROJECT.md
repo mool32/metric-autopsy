@@ -200,6 +200,16 @@ turns that checklist into runnable behavior.
   - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
     accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
     with B4.
+  - R1, once more, after the results and outside v1 (DEVIATIONS.md D1, the loader only; workflow
+    run 38033821978; `results/panel-v1-r1` at 36a04bf). It ran, and two of its three claims are
+    outside their allowed sets:
+    - Xist: NOT SUPPORTED, metric invalid by GATE 4. The 2-fold Xist injection moves the metric
+      by +0.163, below delta_min 0.25.
+    - Y genes: UNIDENTIFIABLE. B2's donor ids are partially crossed with sex, so a donor id is
+      not one mouse.
+    - The sham: NO DETECTABLE EFFECT, which is allowed.
+
+    Nothing is changed without the owner's decision.
   - Checked after the run, on another CPU:
     - `score.py` reproduces every criterion.
     - `blind.py verify` on the first 20 datasets: 20 of 20 datasets identical; all 22 reports

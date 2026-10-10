@@ -73,3 +73,19 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  src/metric_aut
 c4ab62e88ffadc3eb15fdc32d2f1ebc6a87d88e3de1f84b962e28e7ee346ecff  src/metric_autopsy/report.py
 8e7b086124ecf435e223c4e65593c7ecfb4c4685449f7ef835ec88d268773a4b  src/metric_autopsy/stats.py
 ```
+
+**The outcome (written after the run, 2026-10-10).** R1 ran once: workflow run 38033821978,
+run commit b0ce92d, result on `results/panel-v1-r1` at 36a04bf (`r1/anchors_r1.json`). It did not
+crash. Two of its three claims are outside their allowed sets:
+
+| Claim | Verdict (cause) | Allowed | In the allowed set |
+|---|---|---|---|
+| R1 Xist | NOT SUPPORTED — metric invalid (GATE 4): the injected 2-fold Xist signal moves the metric by +0.1627 (95% CI +0.1626 to +0.1628), below delta_min 0.25 | SUPPORTED | no |
+| R1 Y genes | UNIDENTIFIABLE: B2's donor ids are partially crossed with sex (some hold cells of both sexes), so neither a nested nor a paired analysis is valid | SUPPORTED | no |
+| R1 sham (female vs female) | NO DETECTABLE EFFECT (TOST within ±0.5) | NO DETECTABLE EFFECT, INCONCLUSIVE | yes |
+
+- The design is UNIDENTIFIABLE for Xist too (its fields), but metric validity decides first.
+- The mice per age and sex that R1 counted add up to 56 over B2's 50 donor ids.
+- Nothing was changed after the run, and nothing will be without the owner's decision.
+- `test_anchors.py` gained a skip without scipy after the run, for CI's core-only jobs (a6d3e15).
+  The run used the version at 965cfc4.
