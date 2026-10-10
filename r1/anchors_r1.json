@@ -1,0 +1,54 @@
+[
+ {
+  "claim": "R1 Xist",
+  "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.1627 against the sham (95% CI [+0.1626, +0.1628], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters",
+  "cause": "metric_invalid_gate4",
+  "label": "NOT SUPPORTED",
+  "allowed": [
+   "SUPPORTED"
+  ],
+  "in_allowed": false,
+  "note": "mice per age and sex: {('2-month-old stage', 'male'): 15, ('2-week-old stage', 'female'): 3, ('2-week-old stage', 'male'): 3, ('20-month-old stage and over', 'female'): 3, ('20-month-old stage and over', 'male'): 3, ('3-month-old stage', 'female'): 6, ('4-month-old stage', 'male'): 12, ('5-week-old stage', 'female'): 3, ('6-month-old stage', 'male'): 7, ('8-week-old stage', 'female'): 1}",
+  "fields": {
+   "metric_validity": "FAIL",
+   "design_adequacy": "UNIDENTIFIABLE",
+   "effect": "NOT_RUN",
+   "replication": "NOT_RUN"
+  }
+ },
+ {
+  "claim": "R1 Y genes",
+  "verdict": "UNIDENTIFIABLE \u2014 replicates are partially crossed with groups (some contain both groups, some one) \u2014 neither a nested nor a paired analysis is valid",
+  "cause": "unidentifiable",
+  "label": "UNIDENTIFIABLE",
+  "allowed": [
+   "SUPPORTED"
+  ],
+  "in_allowed": false,
+  "note": "",
+  "fields": {
+   "metric_validity": "PASS",
+   "design_adequacy": "UNIDENTIFIABLE",
+   "effect": "NOT_ESTIMABLE",
+   "replication": "NOT_RUN"
+  }
+ },
+ {
+  "claim": "R1 sham (female vs female)",
+  "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.01909 [-0.07437, +0.1126]: the 90% interval lies within \u00b10.5 (SESOI 0.5 x attenuation 1.00; TOST)",
+  "cause": "no_detectable_effect",
+  "label": "NO DETECTABLE EFFECT",
+  "allowed": [
+   "NO DETECTABLE EFFECT",
+   "INCONCLUSIVE"
+  ],
+  "in_allowed": true,
+  "note": "",
+  "fields": {
+   "metric_validity": "PASS",
+   "design_adequacy": "ADEQUATE",
+   "effect": "NO_DETECTABLE_EFFECT",
+   "replication": "NOT_RUN"
+  }
+ }
+]
