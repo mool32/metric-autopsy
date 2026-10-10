@@ -4,9 +4,11 @@ Validation-plan step 1. The audit re-derives §4 **as computed**, before any cha
 verdict logic, and checks the data design under it: ages, mice per group, ERCC, and the
 mouse as the unit of analysis. It does not edit the manuscript.
 
-**Status (2026-10-07): script ready, not yet run on real data.** The cloud environment's
-network policy blocks every data host this audit needs. `--dry-run-synthetic` runs the
-full code path offline on fabricated TMS-shaped data, to check the code only.
+**Status (2026-10-10): run once on real data.** It ran on 2026-10-09, on the push of the tag
+`v0.3.0-prereg` (`.github/workflows/audit.yml`, workflow run 37990113298). Its outputs are on
+the branch `results/flagship-audit`. The step-1 report is [REPORT.md](REPORT.md).
+`--dry-run-synthetic` runs the full code path offline on fabricated TMS-shaped data, to check
+the code only.
 
 ## Run it
 

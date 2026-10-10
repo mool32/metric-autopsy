@@ -165,6 +165,15 @@ turns that checklist into runnable behavior.
   FROZEN_PATHS; v1.md's own: 41c6d8b55c6dc7573fe387eedad3601cf79a601f0e22fcd9f053bd17baa0886a). The
   agent's session cannot push tags (HTTP 403 from its proxy), so the owner pushes it: that push starts
   `validation.yml` and `audit.yml`, and from then on nobody decides anything.
+- **Step 1 done (the flagship audit, run 2026-10-09):** `audit.yml` ran once on the tag (workflow
+  run 37990113298; outputs on `results/flagship-audit`). The step-1 report,
+  `validation/flagship_audit/REPORT.md`, finds:
+  - v0.1.1's verdict on §4 reproduces: `mi_3bin` dies at GATE 0.
+  - The design §4 describes does not hold. Its "old (20 months)" group is 24-month males and
+    21-month females, all from the mammary gland. There are no spike-ins. The female arm and the
+    sex-by-age interaction are not established per mouse.
+  - v0.1.1 kills the same-data positive control (Xist, Y genes) at GATE 1.
+  The manuscript stays untouched until step 3; the report's edits are the author's to decide.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.

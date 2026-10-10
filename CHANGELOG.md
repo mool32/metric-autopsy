@@ -162,6 +162,9 @@ verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
   GATE 4/5, `decide`, API/CLI/MCP parity); the dev-set tests in `validation/probes/` are
   collected by `pytest`. The v0.1.1 tests were revised to the new semantics, each keeping the
   truth it checked.
+- `validation/flagship_audit/REPORT.md`: the step-1 report on the flagship audit's one run on
+  real data (workflow run 37990113298, outputs on `results/flagship-audit`). It decides which
+  claims of preprint §4 hold and lists the edits for the author; the manuscript is not edited.
 
 ### Fixed
 - **The module injection under pandas' copy-on-write.** `injected_signal.module` and its sham
