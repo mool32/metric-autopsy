@@ -218,7 +218,9 @@ turns that checklist into runnable behavior.
 - [x] `references/gates.md` reworked into the preprint methods (`paper/manuscript.md`).
 - [x] Public repo + `gh` metadata (description, homepage→DOI, topics incl. `tool`/`single-cell`).
 - [x] Release v0.1.0 → Zenodo DOI (concept + version) → DOI badge; CI green across Python 3.9–3.12.
-- [ ] Post preprint to bioRxiv (manuscript ready); then fill preprint DOI in README/CITATION/manuscript.
+- [ ] ~~Post preprint to bioRxiv (manuscript ready)~~ — superseded (2026-10-10): the v0.1.1
+  manuscript is not to be uploaded (`paper/ARXIV_SUBMISSION.md`). A new manuscript on v0.3 waits
+  for the owner's approval of its plan.
 - [ ] Portfolio: add to `mool32.github.io/_data/publications.yml` + `papers.bib`.
 - [ ] v1.1: turnkey GATE 6 second-platform replication, more example datasets.
 - [ ] Validation plan (2026-10-07):
@@ -228,3 +230,22 @@ turns that checklist into runnable behavior.
   3. confirmatory validation on frozen tag `v0.3.0-prereg` with a new, blind panel;
   4. external verdicts;
   5. paper untouched until step 3 is done.
+
+  Status, 2026-10-10: steps 0–3 are done (step 3: every criterion of v1 passed, within its
+  scope); step 4 is next.
+- [ ] Lessons for v2, from v1's result (2026-10-10; the numbers are exploratory, from
+  `validation/exploratory/v1_by_level.log`):
+  - **Criteria by level.** Count the criteria of false SUPPORTED per expression level, or only
+    on the cards whose metric is valid or ambiguous. Blind pairs dilute the denominator. On the
+    real backgrounds the low and medium levels are blind, and all 537 of N8's cards there were
+    answered "metric invalid", none SUPPORTED.
+  - **The targets of v0.4.**
+    - Per-cell variable capture (N8): at the high level, 11/253 = 4.3% false SUPPORTED at a
+      nominal 2.5%.
+    - Entry-level dropout (N3 f = 0.4): 7/83 = 8.4%, and 10/83 = 12.0% with the answers against
+      the direction.
+  - **Real development backgrounds.** The development probe on simulated data (p16, 11.3%) put
+    N8's rate 2.6 times above the real high-level rate (4.3%). So v2's development backgrounds
+    must be real. Under v1.md section 6, v1's datasets are now development data.
+  - **GATE 0's refusals on N7.** GATE 0 refused 26 of N7's 276 high-level cards (9.4%). Find out
+    whether random groups of mice really differ in depth, or whether GATE 0 is oversensitive.
