@@ -1,0 +1,17 @@
+S1 PASS
+S2 PASS
+S3 PASS
+S4 PASS
+S5 PASS
+S6 PASS
+S7a PASS
+S7b PASS
+  S3 effect: 181/189 correct definite, at least 144 required (principle tier)
+  S3 null: 986/1075 correct definite, at least 778 required (principle tier)
+  S3 invalid: 4674/4685 correct definite, at least 3332 required (principle tier)
+  S7b: 0 crashes of 10540 cards, at most 18 allowed
+limitation: S5:null: design effect 5.28 > 1.5 (shared donors: the rate is read beyond the background's donors with care)
+limitation: S3:null: design effect 4.74 > 1.5 (shared donors: the rate is read beyond the background's donors with care)
+limitation: S3:invalid: design effect 5.62 > 1.5 (shared donors: the rate is read beyond the background's donors with care)
+limitation: S3c:effect:E1: design effect 1.54 > 1.5 (shared donors: the rate is read beyond the background's donors with care)
+validation PASSES
