@@ -1,0 +1,10 @@
+# Flagship audit, section E without the composite donor ids
+# audit_results.json sha256 bf30fa864a44fd0b830a94d29bc6f43658a812f93fcb430618e44415cf705ccf; the audit's data_sha256 d921bc225bc963f970a6b5b0fe4d9f7605b252a2c5f662257f9a70e994100b06, script_sha256 644e6ef5155f47ec62b2d65ccaa1af9f22336729dd9dc549ae51fec44e2845f7
+dropped: 3_10_M/3_11_M, 3_38_F/3_39_F (each names two mice that are also counted on their own)
+
+female: young 3_39_F, 3_38_F, 3_56_F, 3_57_F; old 21_55_F, 21_48_F, 21_54_F
+  median_nnz: 4 young against 3 old; means 2858 against 3392; exact two-sided p = 0.2571 (9/35), smallest attainable 0.0286; complete separation: no
+  mi_3bin: 4 young against 3 old; means 0.009327 against 0.0136; exact two-sided p = 0.4000 (14/35), smallest attainable 0.0286; complete separation: no
+male: young 3_9_M, 3_10_M, 3_8_M, 3_11_M; old 24_60_M, 24_59_M, 24_61_M, 24_58_M
+  median_nnz: 4 young against 4 old; means 2761 against 1704; exact two-sided p = 0.0286 (2/70), smallest attainable 0.0286; complete separation: yes
+  mi_3bin: 4 young against 4 old; means 0.02401 against 0.008844; exact two-sided p = 0.0286 (2/70), smallest attainable 0.0286; complete separation: yes

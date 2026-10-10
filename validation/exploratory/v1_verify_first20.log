@@ -1,0 +1,29 @@
+# blind.py verify on the first 20 datasets of validation v1's results (exploratory check, not a criterion)
+# results: branch results/panel-v1 at 445c0dd (reports.tar.gz, compact.tar parts, manifest.json, key.json, pilot.json)
+# code: the run tag panel-v1-run (7782254); engine: src/ of v0.3.0-prereg
+# machine: Intel(R) Xeon(R) Processor @ 2.10GHz, 4 workers (the run's shards: Intel Xeon Platinum 8370C)
+# command: python validation/prereg/blind.py verify --results . --compact compact --pilot pilot.json --datasets 20 --workers 4 --out rerun
+
+D0001  published d8c02967bc6a56b8198e3d79f46db24f6e68154118e9901bbcce686f3d7f128b  re-run d8c02967bc6a56b8198e3d79f46db24f6e68154118e9901bbcce686f3d7f128b  identical
+D0002  published 3666f30b9c1cd2e3feaf4d7ed8c67e65c52c6781c0243a06da7a450f95e7496e  re-run 3666f30b9c1cd2e3feaf4d7ed8c67e65c52c6781c0243a06da7a450f95e7496e  identical
+D0003  published 4d1d761fac68594bc6cb7c152db4ae7ad7b775e4fd3b29c4eb6720284b2d7430  re-run 4d1d761fac68594bc6cb7c152db4ae7ad7b775e4fd3b29c4eb6720284b2d7430  identical
+D0004  published f42c75569ac90f9d9244e511bbcaec7fd6149b46b6a05c6fb7fb1b26d61c3170  re-run 1ef7287cb622db4684bb6134c343294e8d70a9c834ffe37342332202f62657cd  the same within 1e-09
+D0005  published b47fc6a060545610cb72c5100e595bbfa1fe81bb9d04012bc8e26a4a6311626d  re-run b47fc6a060545610cb72c5100e595bbfa1fe81bb9d04012bc8e26a4a6311626d  identical
+D0006  published 0885bbc701c48ad4188767d73ff2ab5aea8331c3ba09a02ef003de6fb600b347  re-run e02c1001b3242da37ae1995f6fe381651a296c32decffa645377bc5c92dab158  the same within 1e-09
+D0007  published fa6f987e718745a58689fef87b7ce69f72cd9964d979a8bbe466ffe1c99a0916  re-run fa6f987e718745a58689fef87b7ce69f72cd9964d979a8bbe466ffe1c99a0916  identical
+D0008a  published 8b49bfc828b66e5ac6dd810bb7b99ef2f016faec6b58e16c73897a6231db975f  re-run 8b49bfc828b66e5ac6dd810bb7b99ef2f016faec6b58e16c73897a6231db975f  identical
+D0008b  published bbc6917dd9ea03353c91c75ea5a2379f5282141d4a27666f3e77f846f0d2e85c  re-run bbc6917dd9ea03353c91c75ea5a2379f5282141d4a27666f3e77f846f0d2e85c  identical
+D0009  published c2de9edadb38564e718f234ca480da5af5e70fa566891d819044da35b92198b8  re-run c2de9edadb38564e718f234ca480da5af5e70fa566891d819044da35b92198b8  identical
+D0010  published 92deca0a020d7c0ae705cb87eb2312bcabecb9020f414c9caf20b9fc8563af61  re-run 92deca0a020d7c0ae705cb87eb2312bcabecb9020f414c9caf20b9fc8563af61  identical
+D0011  published a0f6cd4e48e69d6870596e87806e0ffa88b437a129a09992f5b10132839069e5  re-run a0f6cd4e48e69d6870596e87806e0ffa88b437a129a09992f5b10132839069e5  identical
+D0012  published 783a72b67bf7b7a035f2447f49253861bf85afe803aae61e558a2b09298583f0  re-run 783a72b67bf7b7a035f2447f49253861bf85afe803aae61e558a2b09298583f0  identical
+D0013a  published 6830d471227999e6c58ebedef8121b5aaa27f23192733f760e6894099f1d7f73  re-run 85daae1f06e55a7d6a6c37f9ed5bac8d1d9951934e7582b9bde63aff21d30656  the same within 1e-09
+D0013b  published 7b868b087efdd0ffdeee6e1add3bb7872caa17c5ff56499a36119d8896b08792  re-run 5e30db3dd1d8befde1c2ad339b9a23f8ec78541bbd6485de7e48d1b86c4cd0cf  the same within 1e-09
+D0014  published 5327b9b1455f789c638184db3d49a6a641cb6cf20aa8e3cbe6e2331d6432d930  re-run 5327b9b1455f789c638184db3d49a6a641cb6cf20aa8e3cbe6e2331d6432d930  identical
+D0015  published 5b5d8511de892d7abbd453df9dafa4cc73efccf74f72dd63c09d835b318887e2  re-run 5b5d8511de892d7abbd453df9dafa4cc73efccf74f72dd63c09d835b318887e2  identical
+D0016  published b7e4b856a7a9612d2e82dfa0456533bbd189c55088e8d165d73b3586649f75e4  re-run b7e4b856a7a9612d2e82dfa0456533bbd189c55088e8d165d73b3586649f75e4  identical
+D0017  published d6eb9eac5a5f88a6ebb15dbb7abfcbd9925f4d8f76517c09521fb86bf5de89a4  re-run d6eb9eac5a5f88a6ebb15dbb7abfcbd9925f4d8f76517c09521fb86bf5de89a4  identical
+D0018  published b43e3aa3f4ac9b3ed9a188aebaf3876feb72af5b7fcb4e4623396c8c9dd3e395  re-run 5bf089725830a7b317ee216653beafd836b6c42bdb7e3d780a858ca1d4a5d5e6  the same within 1e-09
+D0019  published 57927e3b40e14b0580f5069e5bf06ec85076131e4059a5942111fe2a99162628  re-run 57927e3b40e14b0580f5069e5bf06ec85076131e4059a5942111fe2a99162628  identical
+D0020  published 50367a04fbf01abac1c45c3b6c63bc036c3df1d583f3a6e39837325dea70b51c  re-run 3fe728ae43222497ed8bc13ed931bc678b2625e191a366baf53d4a36baf02a40  the same within 1e-09
+20 of 20 datasets identical; 16 of 22 reports identical, 22 the same (verdicts, causes, numbers within 1e-09), 0 different (key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b)
