@@ -18,6 +18,8 @@ same way on both backends instead of passing on SimpleData and breaking on AnnDa
 """
 from __future__ import annotations
 
+import os
+import warnings
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Sequence
@@ -29,11 +31,13 @@ import pandas as pd
 class GateStatus(str, Enum):
     """Outcome of a single gate."""
 
-    PASS = "PASS"          # gate cleared
-    FAIL = "FAIL"          # gate failed — the claimed signal is (partly) an artifact
-    STOP = "STOP"          # analysis is impossible as posed (e.g. groups incomparable)
-    JUDGMENT = "JUDGMENT"  # not auto-decidable; the analyst must rule
-    SKIP = "SKIP"          # not run (e.g. no second dataset, or too few cells to test)
+    PASS = "PASS"              # gate cleared
+    FAIL = "FAIL"              # gate failed — the claimed signal is (partly) an artifact
+    STOP = "STOP"              # analysis is impossible as posed (e.g. groups incomparable)
+    WARN = "WARN"              # non-blocking diagnostic flag (e.g. QC imbalance to correct)
+    DEGENERATE = "DEGENERATE"  # the metric does not vary at all (constant output)
+    JUDGMENT = "JUDGMENT"      # not auto-decidable; the analyst must rule
+    SKIP = "SKIP"              # not run (e.g. no second dataset, or too few cells to test)
 
 
 @dataclass
@@ -49,10 +53,61 @@ class GateResult:
     @property
     def blocking(self) -> bool:
         """A blocking result halts the sequence: you may not proceed past it."""
-        return self.status in (GateStatus.FAIL, GateStatus.STOP)
+        return self.status in (GateStatus.FAIL, GateStatus.STOP, GateStatus.DEGENERATE)
 
     def __str__(self) -> str:
         return f"GATE {self.gate} [{self.status.value}] {self.name}: {self.message}"
+
+
+@dataclass
+class Assessment:
+    """One of the four independent fields of a verdict.
+
+    ``status`` is the field's outcome (e.g. ``PASS`` / ``UNTESTED`` for metric validity),
+    ``reason`` the one-line justification with the number behind it, ``flags`` qualifiers
+    that do not change the status (``PARAMETRIC_ONLY``, ``UNDERPOWERED`` …), and ``detail``
+    the numbers.
+    """
+
+    status: str
+    reason: str
+    flags: list[str] = field(default_factory=list)
+    detail: dict[str, Any] = field(default_factory=dict)
+
+    def __str__(self) -> str:
+        flags = f" [{', '.join(self.flags)}]" if self.flags else ""
+        return f"{self.status}{flags}: {self.reason}"
+
+
+class DenseMemoryWarning(UserWarning):
+    """Emitted before the engine densifies a matrix larger than the configured budget."""
+
+
+def dense_budget_gb() -> float:
+    """Dense-copy budget in GB (env ``METRIC_AUTOPSY_DENSE_WARN_GB``, default 2)."""
+    try:
+        return float(os.environ.get("METRIC_AUTOPSY_DENSE_WARN_GB", "2"))
+    except ValueError:
+        return 2.0
+
+
+def warn_if_dense_too_large(shape, context: str) -> None:
+    """Warn (``DenseMemoryWarning``) if a dense float64 copy of ``shape`` exceeds the budget.
+
+    The engine works on dense copies of X; at atlas scale (e.g. 110k cells x 23k genes ~
+    20 GB per copy) that silently exhausts memory. This says so *before* allocating.
+    """
+    n_obs, n_vars = int(shape[0]), int(shape[1])
+    gb = n_obs * n_vars * 8 / 1e9
+    budget = dense_budget_gb()
+    if gb > budget:
+        warnings.warn(
+            f"densifying a {n_obs} x {n_vars} matrix for {context} needs ~{gb:.2f} GB dense "
+            f"(budget {budget:g} GB, METRIC_AUTOPSY_DENSE_WARN_GB). Subset genes first: a pairwise "
+            "metric only needs its bound genes; precompute QC (n_genes_by_counts, total_counts) "
+            "in obs.",
+            DenseMemoryWarning, stacklevel=3,
+        )
 
 
 class SimpleData:

@@ -1,0 +1,19 @@
+# Validation v1: false SUPPORTED on the pure nulls and on N8, by the metric's truth and level
+# Exploratory, not a criterion; rows rebuilt as score.py builds them (score.card_rows)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; 10540 cards
+
+the pure nulls N1, N5 and N7: 2370 cards
+  valid     high  : false SUPPORTED 18/812 = 2.2% (95% CI 1.3-3.5%)
+  ambiguous medium: false SUPPORTED 0/55 = 0.0% (95% CI 0.0-6.5%)
+  blind     medium: false SUPPORTED 0/762 = 0.0% (95% CI 0.0-0.5%)
+  blind     low   : false SUPPORTED 0/741 = 0.0% (95% CI 0.0-0.5%)
+  every card with a valid metric: false SUPPORTED 18/812 = 2.2% (95% CI 1.3-3.5%)
+
+N8: 790 cards
+  valid     high  : false SUPPORTED 8/221 = 3.6% (95% CI 1.6-7.0%)
+  ambiguous high  : false SUPPORTED 3/32 = 9.4% (95% CI 2.0-25.0%)
+  blind     medium: false SUPPORTED 0/271 = 0.0% (95% CI 0.0-1.4%)
+  blind     low   : false SUPPORTED 0/266 = 0.0% (95% CI 0.0-1.4%)
+  every card with a valid metric: false SUPPORTED 8/221 = 3.6% (95% CI 1.6-7.0%)
+
+useless metrics (N6a-c, the constant included): SUPPORTED on 0 of 1630 cards

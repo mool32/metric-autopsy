@@ -1,0 +1,22 @@
+# p13 GATE 0 on norm_pearson at scale — git ac8f1a8, python 3.13.16, numpy 2.5.3
+# per dataset: GATE 0 status / depth_downsample class (z of the metric's shift; null shift as a share of the signal above the null)
+  2000 genes x 3200 cells: null centre +0.031, signal above null 0.106 (seed 0)
+  2000 genes, 200 cells/donor: GATE 0 FAIL 0/4 — PASS/none (z 3.7; null not tested); PASS/none (z 1.0; null not tested); PASS/none (z 3.3; null not tested); PASS/attenuation (z 4.2; null +32%)
+  2000 genes x 6400 cells: null centre +0.035, signal above null 0.135 (seed 0)
+  2000 genes, 400 cells/donor: GATE 0 FAIL 1/4 — FAIL/bias (z 4.7; null +32%); PASS/none (z 3.5; null not tested); PASS/none (z 1.5; null not tested); PASS/none (z 2.6; null not tested)
+  2000 genes x 12800 cells: null centre +0.020, signal above null 0.128 (seed 0)
+  2000 genes, 800 cells/donor: GATE 0 FAIL 4/4 — FAIL/bias (z 12.0; null +50%); FAIL/bias (z 10.8; null +38%); FAIL/bias (z 4.6; null +31%); FAIL/bias (z 6.0; null +44%)
+  5000 genes x 3200 cells: null centre +0.020, signal above null 0.109 (seed 0)
+  5000 genes, 200 cells/donor: GATE 0 FAIL 1/4 — FAIL/bias (z 6.1; null +64%); PASS/attenuation (z 6.4; null +70%); PASS/attenuation (z 6.8; null +42%); PASS/none (z 2.1; null not tested)
+# part 2: capture 0.5 in group B, identical biology, 2000 genes, 8 vs 8 donors x 400 cells; effect field only (composition estimand, SESOI 0.1)
+  dataset 0: raw -0.0529 (p=0.068) -> at equal depth -0.0236: NO_DETECTABLE_EFFECT
+  dataset 1: raw -0.0198 (p=0.408) -> at equal depth -0.0097: NO_DETECTABLE_EFFECT
+  dataset 2: raw -0.0177 (p=0.598) -> at equal depth -0.0069: NO_DETECTABLE_EFFECT
+  dataset 3: raw -0.0434 (p=0.197) -> at equal depth -0.0240: NO_DETECTABLE_EFFECT
+  dataset 4: raw +0.0123 (p=0.770) -> at equal depth +0.0012: NO_DETECTABLE_EFFECT
+  dataset 5: raw -0.0195 (p=0.545) -> at equal depth -0.0179: NO_DETECTABLE_EFFECT
+  dataset 6: raw -0.0111 (p=0.738) -> at equal depth -0.0062: NO_DETECTABLE_EFFECT
+  dataset 7: raw -0.0446 (p=0.446) -> at equal depth -0.0422: INCONCLUSIVE
+  dataset 8: raw +0.0422 (p=0.330) -> at equal depth +0.0326: INCONCLUSIVE
+  dataset 9: raw +0.0148 (p=0.631) -> at equal depth +0.0029: NO_DETECTABLE_EFFECT
+  explained by depth 0/10 = 0% [0%, 31%]; corrected effect DETECTED 0/10 = 0% [0%, 31%]

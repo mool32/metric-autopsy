@@ -1,0 +1,105 @@
+# B2 by sex and GATE 4's probe for anchor R1's Xist claim (validation/exploratory/b2_sex_structure.py):
+# exploratory, after R1's result. It reads the original B2 (the backgrounds-data artifact of v1's
+# workflow run 37990113304, checked by the run tag's backgrounds.json) and the compact B2 of
+# results/panel-v1, with the frozen engine (src/ the tag's byte for byte), and prints the log with
+# its sha256. Read-only: it re-runs no anchor, changes no verdict and commits nothing.
+# A pull request's path filter matches its whole diff, so the workflow starts on every push: once
+# validation/exploratory/b2_sex_structure.log is committed, it only checks that the log is there.
+# Delete the log to run it again.
+name: B2 by sex (exploratory, after R1)
+
+on:
+  pull_request:
+    paths:
+      - "validation/exploratory/b2_sex_structure.py"
+      - ".github/workflows/b2-sex-structure.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  FROZEN_TAG: v0.3.0-prereg
+  RUN_TAG: panel-v1-run
+  V1_RUN_ID: "37990113304"
+  SRC_TREE: 97cbab3c437c9ddb118a0690e6e0d24f8a16069f
+  # the numerical environment of v1's jobs (validation.yml)
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_CORETYPE: Haswell
+  NPY_DISABLE_CPU_FEATURES: "X86_V4 AVX512_ICL AVX512_SPR"
+  PYTHONHASHSEED: "0"
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.need.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run only while the log is not committed
+        id: need
+        run: |
+          if [ -f validation/exploratory/b2_sex_structure.log ]; then
+            echo "validation/exploratory/b2_sex_structure.log is committed: nothing to run"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  structure:
+    needs: check
+    if: needs.check.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: src/ is the tag's; the run tag's backgrounds.json; the compact B2 of results/panel-v1
+        run: |
+          git fetch -q origin "refs/tags/$FROZEN_TAG:refs/tags/$FROZEN_TAG" "refs/tags/$RUN_TAG:refs/tags/$RUN_TAG" \
+            "refs/heads/results/panel-v1:refs/remotes/origin/results/panel-v1"
+          git diff --quiet "$FROZEN_TAG" HEAD -- src
+          test "$(git rev-parse HEAD:src)" = "$SRC_TREE"
+          git show "$RUN_TAG:validation/prereg/backgrounds.json" > "$RUNNER_TEMP/backgrounds.json"
+          mkdir -p "$RUNNER_TEMP/results"
+          for part in $(git ls-tree --name-only origin/results/panel-v1 | grep '^compact\.tar\.part-' | LC_ALL=C sort); do
+            git show "origin/results/panel-v1:$part"
+          done > "$RUNNER_TEMP/results/compact.tar"
+          tar -xf "$RUNNER_TEMP/results/compact.tar" -C "$RUNNER_TEMP/results"
+          want=$(git show origin/results/panel-v1:manifest.json | python3 -c "import json, sys; print(json.load(sys.stdin)['backgrounds']['B2']['sha256'])")
+          test "$(sha256sum "$RUNNER_TEMP/results/compact/B2.npz" | cut -d' ' -f1)" = "$want"  # the run's manifest
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's pinned environment and the engine
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+          run-id: ${{ env.V1_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: B2 by sex and GATE 4's probe
+        run: |
+          python validation/exploratory/b2_sex_structure.py --backgrounds "$RUNNER_TEMP/backgrounds.json" --data-dir data \
+            --compact "$RUNNER_TEMP/results/compact/B2.npz" > "$RUNNER_TEMP/b2_sex_structure.log"
+          echo "----- b2_sex_structure.log -----"
+          cat "$RUNNER_TEMP/b2_sex_structure.log"
+          echo "----- end -----"
+          echo "b2_sex_structure.log sha256 $(sha256sum "$RUNNER_TEMP/b2_sex_structure.log" | cut -d' ' -f1)"
+          cp "$RUNNER_TEMP/b2_sex_structure.log" b2_sex_structure.log
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: b2-sex-structure-log
+          path: b2_sex_structure.log
+          if-no-files-found: error

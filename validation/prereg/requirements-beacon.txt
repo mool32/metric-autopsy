@@ -1,0 +1,12 @@
+# The beacon's environment (beacon.py: BLS verification of the drand round), frozen with the tag.
+py_ecc==8.0.0
+eth-utils==6.0.0
+eth-typing==6.0.0
+eth-hash==0.8.0
+cytoolz==1.1.0
+toolz==1.2.0
+pydantic==2.13.5
+pydantic-core==2.46.5
+annotated-types==0.8.0
+typing-extensions==4.16.0
+typing-inspection==0.4.4

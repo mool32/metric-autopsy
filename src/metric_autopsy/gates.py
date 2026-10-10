@@ -1,12 +1,18 @@
 """The gates as metric-agnostic functions.
 
 Each ``gateN_*`` takes your metric (or the raw data) as a black box and returns a
-``GateResult``. Run them in order; a result whose ``.blocking`` is True halts the sequence.
+``GateResult``. ``report.run_autopsy`` combines them into four independent verdict fields
+(metric validity, design adequacy, effect, replication); see ``report.decide``.
 
-Auto gates:  0 (independence), 1 (QC parity), 2 (n_genes matching), 3 (raw visibility),
-             5 (controls), 6 (replication, if a 2nd dataset is supplied).
-Judgment gates 4 and 7 are not computable from data alone; the skill elicits them and
-`report.autopsy` records them. See references/gates.md for the full rationale.
+Auto gates:  0 (nuisance invariance: bias vs attenuation), 1 (QC parity — a design
+             diagnostic, not a blocking gate), 3 (raw visibility), 4 (response to an injected
+             signal, when supplied), 5 (controls against an empirical null),
+             6 (replication, if a 2nd dataset is supplied).
+GATE 2 is now the estimand-dependent correction inside ``effect.estimate_effect``;
+``gate2_ngenes_matching`` is kept only for backward compatibility (it conditions on a
+variable that biology moves, so ``run_autopsy`` no longer uses it).
+Judgment gates 4 (beyond the injected-signal check) and 7 remain the analyst's.
+See references/gates.md for the full rationale.
 """
 from __future__ import annotations
 
@@ -15,8 +21,9 @@ from typing import Callable, Sequence
 import numpy as np
 import pandas as pd
 
-from .core import GateResult, GateStatus, SimpleData, as_dense
+from .core import GateResult, GateStatus, SimpleData, as_dense, warn_if_dense_too_large
 from . import qc as _qc
+from .stats import extend_null, t_ppf
 
 Metric = Callable[[object], float]
 # PairMetric: fn(data, *, gene_a, gene_b) -> float  (used by GATES 3 & 5)
@@ -26,6 +33,8 @@ def _as_simple(data) -> SimpleData:
     """Materialize any duck-typed data object as a mutable SimpleData copy."""
     if isinstance(data, SimpleData):
         return SimpleData(data.X.copy(), data.obs.copy(), data.var_names)
+    warn_if_dense_too_large(getattr(data.X, "shape", (len(data.obs), len(data.var_names))),
+                            "the gates (dense working copy)")
     return SimpleData(as_dense(data.X).copy(), data.obs.copy(), list(data.var_names))
 
 
@@ -41,12 +50,19 @@ def _safe_call(fn):
         v = fn()
     except Exception:
         return None
-    return v if (v is not None and np.isfinite(v)) else None
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None
+    return v if np.isfinite(v) else None
 
 
 # --------------------------------------------------------------------------- #
-# GATE 0 — mathematical independence
+# GATE 0 — mathematical independence: bias vs attenuation
 # --------------------------------------------------------------------------- #
+NULL_DEPTH_BINS = 10
+
+
 def _looks_like_counts(X: np.ndarray) -> bool:
     return bool(np.all(X >= 0) and np.allclose(X, np.round(X)))
 
@@ -87,6 +103,40 @@ def _perturb(data: SimpleData, kind: str, rng: np.random.Generator,
     return SimpleData(X, data.obs, data.var_names), note
 
 
+MIN_CELLS_PER_DEPTH_BIN = 10
+BIAS_TOLERANCE = 0.5  # in SESOI units: a nuisance bias blocks only above this (and its 95% lower bound)
+
+
+def _depth_bins(sd: SimpleData, n_bins: int = NULL_DEPTH_BINS) -> np.ndarray:
+    """Depth-quantile bins with at least MIN_CELLS_PER_DEPTH_BIN cells each (fewer bins for
+    small data: a bin of one cell cannot be shuffled, which made the null equal the data)."""
+    tot = np.asarray(_qc.per_cell_qc(sd)["total_counts"], dtype=float)
+    n_bins = max(1, min(n_bins, len(tot) // MIN_CELLS_PER_DEPTH_BIN))
+    ranks = np.argsort(np.argsort(tot, kind="mergesort"), kind="mergesort")
+    return (ranks * n_bins // max(len(tot), 1)).astype(int)
+
+
+def _shuffle_null(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) -> SimpleData:
+    """Permute every gene independently across cells *within depth bins*.
+
+    Keeps each gene's distribution and the depth structure; destroys gene-gene co-variation.
+    The metric's value on this data is its 'no biology, same technology' reference.
+    """
+    X = sd.X.copy()
+    for b in np.unique(bins):
+        idx = np.where(bins == b)[0]
+        if len(idx) < 2:
+            continue
+        order = np.argsort(rng.random((len(idx), X.shape[1])), axis=0)
+        X[idx] = np.take_along_axis(X[idx], order, axis=0)
+    return SimpleData(X, sd.obs, sd.var_names)
+
+
+def _mean_sd(vals):
+    vals = np.asarray(vals, float)
+    return float(vals.mean()), (float(vals.std(ddof=1)) if len(vals) > 1 else 0.0)
+
+
 def gate0_independence(
     metric: Metric,
     data,
@@ -98,23 +148,49 @@ def gate0_independence(
     protect_genes: Sequence[str] = (),
     include_matrix_perturbations: bool = False,
     seed: int = 0,
+    effect_scale: float | None = None,
+    n_null: int = 10,
+    sesoi: float | None = None,
+    corrected: Sequence[str] = (),
+    bias_tolerance: float | None = None,
 ) -> GateResult:
-    """Does the metric's EXPECTATION move when a nuisance statistic changes but biology does not?
+    """Does a nuisance *create or inflate* signal (bias), or only *shrink* it (attenuation)?
 
-    Separates confounding (a real shift of the metric's expectation) from estimator noise:
-    a bootstrap baseline gives the metric's own sampling spread, and each nuisance is
-    flagged only if the perturbed mean is both (a) meaningfully large relative to the metric's
-    scale (rel > `tol`, with the denominator floored at `abs_tol` so a near-zero baseline does
-    not explode) and (b) statistically separated from the baseline (z > `z_thresh`). This
-    stops noisy-but-unbiased metrics and near-null pairs from wrongly failing.
+    Three references are measured on the user's own data: a bootstrap baseline (the metric's
+    sampling spread), an automatic null (no gene-gene biology, same technology: for counts every
+    gene takes, independently, the count of a random neighbouring cell at least as deep, thinned
+    to the cell's depth, as in GATE 5; otherwise genes are permuted within depth bins), and each
+    nuisance perturbation. Every shift is classified:
+
+    * **bias** — the nuisance moves the null, reverses the signal, or inflates it. It can
+      create a false effect. It blocks (GATE 0 FAILs) only where nothing else handles it and it
+      is material for the claim: a bias in a nuisance that the declared correction removes
+      between groups (`corrected`, e.g. depth under thinning) is reported, not failed; any
+      other bias blocks only if its size exceeds `bias_tolerance` x `sesoi` and so does the
+      lower bound of its 95% interval. Without a SESOI a bias cannot be sized for the claim:
+      it is reported as unsized (and ``report.decide`` then withholds SUPPORTED);
+    * **attenuation** — the signal shrinks toward the null while the null stays put. This
+      is reliability, not confounding: uniform attenuation pulls toward zero and cannot
+      create an effect. It is reported (``detail["attenuation"]``, fraction of signal lost)
+      and passed to ``design_adequacy`` as a power check against the SESOI;
+    * **level_shift** — no gene-gene structure to reference (e.g. a mean score), so
+      attenuation and bias cannot be told apart. A shift larger than `tol` x the effect
+      scale is flagged and reported, not failed. A between-group version is removed by the
+      effect field's equalization.
+
+    Structure metrics are sized in units of their signal above the null. Level metrics — and
+    metrics whose signal above the null is smaller than `tol` x the effect scale — are sized
+    in units of the effect (``effect_scale``: the observed difference or the SESOI, as passed
+    by ``run_autopsy``), else of the null SD. Every rule is invariant to affine
+    re-expressions ``a·m + b`` of the metric (v0.1 divided by |baseline|, so adding a
+    constant passed a confounded metric). A metric that never varies is DEGENERATE.
+    ``abs_tol`` is accepted for backward compatibility and ignored.
     """
     sd = _as_simple(data)
     rng = np.random.default_rng(seed)
     protect = frozenset(protect_genes)
     n = sd.n_obs
 
-    # Bootstrap baseline: resample cells with replacement (biology preserved) to get the
-    # metric's own sampling mean/spread.
     base_vals = []
     for _ in range(n_baseline):
         idx = rng.integers(0, n, size=n)
@@ -126,21 +202,68 @@ def gate0_independence(
             0, "Mathematical independence", GateStatus.SKIP,
             "metric could not be evaluated on bootstrap resamples", dict(),
         )
-    base_vals = np.array(base_vals)
-    base_mean = float(base_vals.mean())
-    base_sd = float(base_vals.std(ddof=1)) if len(base_vals) > 1 else 0.0
-    scale = max(abs(base_mean), base_sd, abs_tol)
+    base_mean, base_sd = _mean_sd(base_vals)
+
+    bins = _depth_bins(sd)
+    mode = _null_mode(sd)
+    null_vals = [v for v in (_safe_call(lambda: metric(_gene_null(sd, rng, bins, mode)))
+                             for _ in range(n_null)) if v is not None]
+    if len(null_vals) >= 2:
+        null_center, null_sd = _mean_sd(null_vals)
+        signal = base_mean - null_center
+        signal_se = float(np.sqrt(base_sd ** 2 / len(base_vals) + null_sd ** 2 / len(null_vals)))
+        has_signal = abs(signal) > max(3.0 * signal_se, 1e-12 * max(1.0, abs(base_mean)))
+    else:
+        null_center = null_sd = signal = None
+        has_signal = False
+
+    # Structure metrics are judged against their own signal above the null (scale-free and
+    # independent of the comparison). Level metrics (no structure in the null) are sized
+    # against the effect scale (observed difference or SESOI), else the null SD. A signal
+    # that is detectable but immaterial next to the effect under test (e.g. a mean log
+    # total moved by the shuffle's loss of cell-size covariance) does not make a metric a
+    # structure metric: sizing nuisance shifts in its units would fail any level metric.
+    has_effect_scale = effect_scale is not None and np.isfinite(effect_scale) and effect_scale > 0
+    if has_signal and has_effect_scale and abs(signal) < tol * float(effect_scale):
+        has_signal = False
+        immaterial_signal = True
+    else:
+        immaterial_signal = False
+    if has_signal:
+        scale, scale_source = abs(signal), "signal above null"
+    elif has_effect_scale:
+        scale, scale_source = float(effect_scale), "effect"
+    elif base_sd > 0:
+        scale, scale_source = base_sd, "null SD (size not judged)"
+    else:
+        scale, scale_source = None, "none"
+
+    if bias_tolerance is None:
+        bias_tolerance = BIAS_TOLERANCE
+    tol_abs = (float(bias_tolerance) * abs(float(sesoi))
+               if sesoi is not None and np.isfinite(sesoi) and sesoi != 0 else None)
+    corrected = set(corrected)
+    # reference nulls by construction: a perturbation that leaves the counts non-integer
+    # (library_scale) gets the depth-bin null, and is compared with the depth-bin null of the
+    # unperturbed data, never with the depth-matched one
+    refs = {mode: (null_center, null_sd, len(null_vals))} if null_center is not None else {}
+
+    def _ref(m):
+        if m not in refs:
+            vals = [v for v in (_safe_call(lambda: metric(_gene_null(sd, rng, bins, m)))
+                                for _ in range(n_null)) if v is not None]
+            refs[m] = (*_mean_sd(vals), len(vals)) if len(vals) >= 2 else (None, None, 0)
+        return refs[m]
 
     kinds = ["extra_dropout", "depth_downsample", "library_scale"]
     if include_matrix_perturbations:
         # gene_subsample is a whole-matrix perturbation (changes dimensionality): meaningful
         # only for metrics that read the whole matrix, so run_autopsy auto-enables it for
-        # metrics with no bound gene pair. (A variance-inflation perturbation was removed: the
-        # only whole-matrix reference metric is correlation-based and thus scale-invariant, so
-        # inflating per-gene variance was a measured no-op — a false probe, not a real one.)
+        # metrics with no bound gene pair.
         kinds += ["gene_subsample"]
 
-    responses = {}
+    all_vals = list(base_vals) + list(null_vals)
+    responses, attenuation, level_shifts = {}, {}, {}
     for kind in kinds:
         vals, note = [], {}
         for _ in range(n_perturb):
@@ -149,41 +272,146 @@ def gate0_independence(
             if v is not None:
                 vals.append(v)
         if len(vals) < 3:
-            responses[kind] = dict(skipped=True, rel_change=0.0, z=0.0,
-                                   confounded=False, **note)
+            responses[kind] = dict(skipped=True, rel_change=0.0, z=0.0, shift_std=0.0,
+                                   classification="none", confounded=False, **note)
             continue
-        vals = np.array(vals)
-        pert_mean = float(vals.mean())
-        pert_sd = float(vals.std(ddof=1)) if len(vals) > 1 else 0.0
-        shift = abs(pert_mean - base_mean)
-        rel = shift / scale
-        se = np.sqrt(base_sd ** 2 / len(base_vals) + pert_sd ** 2 / len(vals))
-        z = shift / se if se > 0 else (float("inf") if shift > 0 else 0.0)
-        confounded = bool(rel > tol and z > z_thresh)
-        responses[kind] = dict(mean_perturbed=pert_mean, rel_change=float(rel),
-                               z=float(z), shift=float(shift), confounded=confounded, **note)
+        all_vals += vals
+        pert_mean, pert_sd = _mean_sd(vals)
+        shift = pert_mean - base_mean
+        se = float(np.sqrt(base_sd ** 2 / len(base_vals) + pert_sd ** 2 / len(vals)))
+        z = abs(shift) / se if se > 0 else (float("inf") if shift != 0 else 0.0)
+        shift_std = shift / scale if scale else float("nan")
+        r = dict(mean_perturbed=pert_mean, shift=float(shift), z=float(z),
+                 shift_std=float(shift_std), rel_change=float(abs(shift_std)) if scale else 0.0,
+                 **note)
+
+        if z <= z_thresh:
+            cls = "none"
+        elif has_signal:
+            nvals, pmode = [], None
+            for _ in range(min(5, n_null)):
+                pdata, _ = _perturb(sd, kind, rng, protect)
+                pmode = pmode or _null_mode(pdata)
+                pbins = bins if pdata.n_obs == len(bins) else _depth_bins(pdata)
+                v = _safe_call(lambda: metric(_gene_null(pdata, rng, pbins, pmode)))
+                if v is not None:
+                    nvals.append(v)
+            ref_center, ref_sd, ref_n = _ref(pmode) if pmode else (None, None, 0)
+            if len(nvals) >= 2 and ref_center is not None:
+                ref_signal = base_mean - ref_center
+                null_pert, null_pert_sd = _mean_sd(nvals)
+                null_shift = null_pert - ref_center
+                null_se = float(np.sqrt(ref_sd ** 2 / ref_n + null_pert_sd ** 2 / len(nvals)))
+                null_z = abs(null_shift) / null_se if null_se > 0 else (float("inf") if null_shift else 0.0)
+                signal_pert = pert_mean - null_pert
+                r.update(null_perturbed=null_pert, null_shift=float(null_shift),
+                         null_shift_std=float(null_shift / scale), null_shift_z=float(null_z),
+                         signal=float(ref_signal), signal_perturbed=float(signal_pert),
+                         null_construction=pmode)
+                material = (lambda x, rel: abs(x) > rel or (tol_abs is not None and abs(x) > tol_abs))
+                null_moves = null_z > z_thresh and material(null_shift, tol * scale)
+                reverses = (np.sign(signal_pert) != np.sign(ref_signal)
+                            and abs(signal_pert) > tol * abs(ref_signal))
+                gain = abs(signal_pert) - abs(ref_signal)
+                change = gain / abs(ref_signal) if ref_signal else float("inf")
+                r["signal_change"] = float(change)
+                if null_moves or reverses or material(max(gain, 0.0), tol * abs(ref_signal)):
+                    cls = "bias"
+                    r["bias_kind"] = ("null moves" if null_moves else
+                                      "signal reverses" if reverses else "signal inflated")
+                    size, size_se = ((abs(null_shift), null_se) if null_moves else (abs(shift), se))
+                    r.update(bias_size=float(size), bias_se=float(size_se),
+                             bias_ci_low=float(size - 1.96 * size_se))
+                    if kind in corrected:
+                        r["handling"] = "corrected"
+                    elif tol_abs is None:
+                        r["handling"] = "unsized"
+                    else:
+                        r["bias_tolerance"] = tol_abs
+                        r["handling"] = ("blocking" if size > tol_abs and size - 1.96 * size_se > tol_abs
+                                         else "below tolerance")
+                elif change < 0:
+                    cls = "attenuation"
+                    r["signal_loss"] = float(-change)
+                    attenuation[kind] = float(-change)
+                else:
+                    cls = "none"
+            else:
+                cls = "unclassified"
+        elif scale_source == "effect":
+            # No gene-gene structure to tell attenuation from bias (e.g. a mean score pulled
+            # toward its no-signal level by dropout). Reported as a flag, not failed: a
+            # between-group version is removed by the effect field's equalization.
+            cls = "level_shift" if abs(shift_std) > tol else "none"
+            if cls == "level_shift":
+                level_shifts[kind] = float(shift_std)
+        else:
+            cls = "unscaled"
+        r["classification"] = cls
+        r["confounded"] = cls == "bias" and r.get("handling") == "blocking"
+        responses[kind] = r
+
+    detail = dict(baseline=base_mean, baseline_sd=base_sd, null_center=null_center,
+                  null_sd=null_sd, signal=signal, has_signal=bool(has_signal),
+                  immaterial_signal=immaterial_signal, scale=scale,
+                  scale_source=scale_source, effect_scale=effect_scale, responses=responses,
+                  attenuation=attenuation, level_shifts=level_shifts, tol=tol, z_thresh=z_thresh,
+                  null_construction=mode, sesoi=sesoi, bias_tolerance=float(bias_tolerance),
+                  bias_tolerance_abs=tol_abs, corrected=sorted(corrected),
+                  bias_handling={k: r["handling"] for k, r in responses.items() if r.get("handling")})
+
+    spread = float(np.ptp(all_vals)) if all_vals else 0.0
+    if spread <= 1e-12 * max(1.0, abs(base_mean)):
+        detail["degenerate"] = True
+        return GateResult(
+            0, "Mathematical independence", GateStatus.DEGENERATE,
+            f"the metric returned the same value ({base_mean:.6g}) on every resample, null and "
+            "perturbation — it carries no information about the data", detail)
 
     flagged = {k: r for k, r in responses.items() if r.get("confounded")}
-    detail = dict(baseline=base_mean, baseline_sd=base_sd, scale=scale,
-                  responses=responses, tol=tol, z_thresh=z_thresh)
     if flagged:
-        worst_kind = max(flagged, key=lambda k: flagged[k]["rel_change"])
-        w = flagged[worst_kind]
+        worst = max(flagged, key=lambda k: flagged[k]["bias_size"] / flagged[k]["bias_tolerance"])
+        w = flagged[worst]
         return GateResult(
             0, "Mathematical independence", GateStatus.FAIL,
-            f"metric's expectation shifts {w['rel_change']:.0%} (z={w['z']:.1f}) under "
-            f"'{worst_kind}' — confounded by that nuisance",
+            f"'{worst}' biases the metric ({w['bias_kind']}): {w['bias_size']:.4g} "
+            f"(95% lower bound {w['bias_ci_low']:.4g}) against a tolerance of {w['bias_tolerance']:.4g} "
+            f"({float(bias_tolerance):g} x SESOI; z={w['z']:.1f}) — the nuisance can create a "
+            "difference with no biology",
             detail,
         )
-    return GateResult(
-        0, "Mathematical independence", GateStatus.PASS,
-        "expectation stable under all nuisance perturbations (no shift beyond estimator noise)",
-        detail,
-    )
+    handled = {k: r for k, r in responses.items() if r.get("classification") == "bias"}
+    notes = []
+    for k, r in handled.items():
+        if r["handling"] == "corrected":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); the declared "
+                         "correction removes it between groups")
+        elif r["handling"] == "below tolerance":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, 95% lower "
+                         f"bound {r['bias_ci_low']:.4g}) within the tolerance {r['bias_tolerance']:.4g}")
+        else:
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); without a "
+                         "SESOI it cannot be sized against the claim: declare a SESOI (the smallest "
+                         "effect that matters, on the metric's scale) in the pre-registration, and the "
+                         "bias is judged against bias_tolerance x SESOI")
+    parts = []
+    if attenuation:
+        parts.append("attenuation " + ", ".join(f"{k} −{v:.0%}" for k, v in attenuation.items())
+                     + " of the signal (passed to design adequacy as a power check)")
+    if level_shifts:
+        parts.append("level shift " + ", ".join(f"{k} {v:+.0%}" for k, v in level_shifts.items())
+                     + " of the effect scale (no structure to classify it; the effect field equalizes "
+                     "depth between groups)")
+    if notes:
+        msg = "; ".join(notes + parts) + " — reported, not failed"
+        return GateResult(0, "Mathematical independence", GateStatus.WARN, msg, detail)
+    msg = ("no bias; " + "; ".join(parts) + " — reported, not failed") if parts else \
+        "no bias or attenuation beyond estimator noise under any nuisance perturbation"
+    return GateResult(0, "Mathematical independence", GateStatus.PASS, msg, detail)
 
 
 # --------------------------------------------------------------------------- #
-# GATE 1 — QC parity across factorial strata
+# GATE 1 — QC parity across factorial strata (a design diagnostic)
 # --------------------------------------------------------------------------- #
 def gate1_qc_parity(
     data,
@@ -191,14 +419,30 @@ def gate1_qc_parity(
     groups: tuple,
     within: Sequence[str] = (),
     thresh: float = 1.5,
+    alpha: float = 0.05,
+    min_cells: int = 10,
+    seed: int = 0,
 ) -> GateResult:
-    """Do the compared groups have equivalent QC in *every* stratum of `within`?"""
-    res = _qc.qc_parity(data, group_col, groups, within=within, thresh=thresh)
+    """Do the compared groups have equivalent QC in *every* stratum of `within`?
+
+    A design diagnostic, not a blocking gate. A confident imbalance (see ``qc.qc_parity``:
+    bootstrap intervals, Bonferroni across strata, ``min_cells``) returns WARN. The effect
+    field then removes it in an estimand-appropriate way, or declares the comparison
+    unidentifiable. STOP means no stratum contains both groups.
+    """
+    res = _qc.qc_parity(data, group_col, groups, within=within, thresh=thresh,
+                        alpha=alpha, min_cells=min_cells, seed=seed)
     if res["n_compared"] == 0:
         return GateResult(
             1, "QC parity", GateStatus.STOP,
             f"no stratum of {list(within)} contains both groups {groups} — groups are "
-            "confounded with the stratifier and cannot be compared; do not proceed",
+            "confounded with the stratifier and cannot be compared",
+            res,
+        )
+    if res["n_assessable"] == 0:
+        return GateResult(
+            1, "QC parity", GateStatus.SKIP,
+            f"no stratum has >= {min_cells} cells in both groups — QC parity not assessable",
             res,
         )
     flagged = res["flagged"]
@@ -208,27 +452,28 @@ def gate1_qc_parity(
         parts = []
         if ratio_breaches:
             wr = max(ratio_breaches, key=lambda r: r["n_genes_ratio"])
-            parts.append(f"{len(ratio_breaches)} exceed {thresh}x QC ratio "
+            parts.append(f"{len(ratio_breaches)} confidently beyond {thresh}x QC ratio "
                          f"(worst {wr['n_genes_ratio']:.2f}x at {wr['stratum']})")
         if overlap_breaches:
             wo = min(overlap_breaches, key=lambda r: r["overlap"])
-            parts.append(f"{len(overlap_breaches)} have n_genes overlap < {res['overlap_min']} "
+            parts.append(f"{len(overlap_breaches)} with n_genes overlap confidently < {res['overlap_min']} "
                          f"(worst {wo['overlap']:.2f} at {wo['stratum']})")
         return GateResult(
-            1, "QC parity", GateStatus.FAIL,
-            f"{len(flagged)}/{res['n_compared']} strata fail QC parity: " + "; ".join(parts)
-            + " — unusable without n_genes matching (GATE 2)",
+            1, "QC parity", GateStatus.WARN,
+            f"{len(flagged)}/{res['n_assessable']} assessable strata are QC-imbalanced: "
+            + "; ".join(parts) + " — handled by the estimand-dependent correction (effect field)",
             res,
         )
     return GateResult(
         1, "QC parity", GateStatus.PASS,
-        f"all {res['n_compared']} strata within {thresh}x QC (worst {res['worst_ratio']:.2f}x)",
+        f"no confident QC imbalance in {res['n_assessable']} assessable strata "
+        f"(worst point ratio {res['worst_ratio']:.2f}x; alpha {alpha} Bonferroni)",
         res,
     )
 
 
 # --------------------------------------------------------------------------- #
-# GATE 2 — n_genes matching preserves the signal
+# GATE 2 (deprecated) — n_genes matching
 # --------------------------------------------------------------------------- #
 def _group_effect(metric: Metric, data, group_col: str, groups: tuple) -> float:
     """Effect = metric(group A) - metric(group B)."""
@@ -284,7 +529,14 @@ def gate2_ngenes_matching(
     n_perm: int = 20,
     seed: int = 0,
 ) -> GateResult:
-    """Does the between-group effect survive equalizing cell quality (n_genes)?
+    """DEPRECATED (v0.1 GATE 2): does the effect survive restricting cells to a shared n_genes range?
+
+    run_autopsy no longer calls this. n_genes is downstream of biology (cell size,
+    cycling, RNA content), so selecting cells on it is a bad control that can delete real
+    effects. Use the estimand-dependent correction in effect.estimate_effect instead.
+    Kept for backward compatibility.
+
+    Does the between-group effect survive equalizing cell quality (n_genes)?
 
     Guards: (a) if the unmatched effect is below a permutation-null floor there is nothing
     to preserve; (b) the matched effect must keep its sign and stay within
@@ -408,9 +660,376 @@ def gate3_raw_visibility(
     return GateResult(3, "Raw visibility", GateStatus.JUDGMENT, msg, detail)
 
 
+
+
 # --------------------------------------------------------------------------- #
-# GATE 5 — controls behave in all strata
+# GATE 4 (automatable part) — does the metric respond to an injected signal?
 # --------------------------------------------------------------------------- #
+GATE4_N_REP = 200    # injections (each against its own sham) per GATE 4 run
+DELTA_MIN_FRACTION = 0.5  # default delta_min = 0.5 x SESOI (decided 2026-10-08)
+
+
+def response_interval(deltas, direction: str = "increase", alpha: float = 0.05) -> dict:
+    """Mean of the paired responses (injected minus sham) with its two-sided (1 - alpha) t
+    interval, and both bounds signed so that the declared direction is positive."""
+    if direction not in ("increase", "decrease"):
+        raise ValueError(f"the signal direction is 'increase' or 'decrease', not {direction!r}")
+    d = np.asarray(deltas, float)
+    n = len(d)
+    mean = float(d.mean())
+    sd_ = float(d.std(ddof=1)) if n > 1 else float("nan")
+    se = sd_ / np.sqrt(n)
+    half = t_ppf(1.0 - alpha / 2.0, n - 1) * se if se > 0 else 0.0
+    lo, hi = mean - half, mean + half
+    sign = 1.0 if direction == "increase" else -1.0
+    s_lo, s_hi = sorted((sign * lo, sign * hi))
+    return dict(mean_response=mean, sd_response=sd_, n_rep=n, ci=(lo, hi), ci_level=1.0 - alpha,
+                signed_lower=s_lo, signed_upper=s_hi, z=float(mean / se) if se > 0 else
+                (float("inf") * np.sign(mean) if mean else 0.0))
+
+
+def judge_response(iv: dict, delta_min: float | None) -> str:
+    """FAIL when blindness is shown: the whole interval lies below delta_min in the declared
+    direction (also when it lies above 0: a response smaller than the smallest response that
+    matters is blindness by the definition of delta_min). PASS when a response is shown: the
+    lower bound in the declared direction is above 0. Otherwise UNTESTED: absence of evidence,
+    as INCONCLUSIVE is to NO DETECTABLE EFFECT."""
+    if delta_min is not None and iv["signed_upper"] < delta_min:
+        return "FAIL"
+    if iv["signed_lower"] > 0:
+        return "PASS"
+    return "UNTESTED"
+
+
+def _check_delta_min(delta_min):
+    if delta_min is None:
+        return None
+    delta_min = float(delta_min)
+    if not (np.isfinite(delta_min) and delta_min > 0):
+        raise ValueError(f"delta_min must be a positive number on the metric's scale, not {delta_min!r}")
+    return delta_min
+
+
+def _column_local(inject) -> bool:
+    sham = getattr(inject, "sham", None)
+    return (getattr(inject, "genes", None) is not None and callable(getattr(inject, "columns", None))
+            and sham is not None and callable(getattr(sham, "columns", None)))
+
+
+def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
+    """`n_rep` paired responses: the metric on injected data minus the metric on the injector's
+    sham (or on the untouched data if the injector has no sham). Raises ValueError if the signal
+    cannot be injected (e.g. non-count input).
+
+    A column-local injector (``injected_signal.coupling``: ``inject.genes`` and
+    ``inject.columns``) rewrites the two genes of one private copy of the data and restores them
+    after every evaluation, with the same random draws as injecting into copies: the metric sees
+    exactly the data a copy would hold, without copying the matrix twice per injection.
+    `decouple` names the gene replaced, before every injection, by a depth-matched draw from
+    neighbouring cells (``_depth_matched_draw``): GATE 5 injects into the positive control's
+    genes with their own coupling removed. It needs a column-local injector.
+    """
+    from .core import unique_col_index
+
+    sham = getattr(inject, "sham", None)
+    if not _column_local(inject):
+        if decouple is not None:
+            raise ValueError("decoupling needs a column-local injector")
+        sd = _as_simple(data)
+        base = None if sham is not None else _safe_call(lambda: metric(sd))
+        out = []
+        for _ in range(n_rep):
+            injected = inject(sd, rng)
+            reference = sham(sd, rng) if sham is not None else None
+            v = _safe_call(lambda: metric(injected))
+            ref = base if reference is None else _safe_call(lambda: metric(reference))
+            if v is not None and ref is not None and np.isfinite(v - ref):
+                out.append(v - ref)
+        return out
+    work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    X, obs = work.X, work.obs
+    cols = [unique_col_index(work.var_names, g) for g in inject.genes]
+    original = X[:, cols].copy()
+    if not _looks_like_counts(original):
+        raise ValueError("the injection needs raw counts (non-negative integers)")
+    tot = np.asarray(obs["total_counts"], dtype=float).copy() if "total_counts" in obs else None
+    if decouple is not None:
+        kb = list(inject.genes).index(decouple)
+        depth = X.sum(axis=1) - original.sum(axis=1)
+    out = []
+    try:
+        for _ in range(n_rep):
+            before = original.copy()
+            if decouple is not None:
+                before[:, kb] = _depth_matched_draw(original[:, kb], depth, rng)
+            vals = []
+            for fn in (inject.columns, sham.columns):
+                after = fn(before, rng)
+                X[:, cols] = after
+                if tot is not None:
+                    obs["total_counts"] = tot - (original - after).sum(axis=1)
+                vals.append(_safe_call(lambda: metric(work)))
+            v, ref = vals
+            if v is not None and ref is not None and np.isfinite(v - ref):
+                out.append(v - ref)
+    finally:
+        X[:, cols] = original
+        if tot is not None:
+            obs["total_counts"] = tot
+    return out
+
+
+def gate4_signal_response(
+    metric: Metric,
+    data,
+    inject: Callable,
+    direction: str = "increase",
+    delta_min: float | None = None,
+    n_rep: int = GATE4_N_REP,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> GateResult:
+    """Inject a known construct change (``injected_signal``) and judge the metric's response.
+
+    The response is the metric on injected data minus the metric on the injector's matched
+    *sham* (``inject.sham``: the same thinning without the signal), over `n_rep` injections,
+    with its two-sided (1 - `alpha`) t interval (``response_interval``). Against the untouched
+    data the thinning noise is confounded with the signal: a valid correlation metric on an
+    already strongly coupled pair fell (z = -2.6) and failed.
+
+    * FAIL — the metric is shown blind: the upper bound in the declared direction is below
+      `delta_min`, the smallest response that matters (pre-registered ``delta_min``, default
+      0.5 x SESOI). This holds also when the interval lies above 0: a response below
+      delta_min is blindness by its definition.
+    * PASS — a response is shown: the lower bound in the declared direction is above 0.
+    * WARN (UNTESTED) — neither: absence of evidence, not invalidity. Without a delta_min
+      blindness cannot be shown, so the gate cannot FAIL.
+
+    Decided 2026-10-08 (validation/probes/JOURNAL.md, D5): the former rule, z >= 3 over 10
+    injections, failed the valid metric where its response is real but weak (probe p14).
+    """
+    from .injected_signal import describe
+
+    name = "Construct response (injected signal)"
+    delta_min = _check_delta_min(delta_min)
+    sd = _as_simple(data)
+    rng = np.random.default_rng(seed)
+    base = _safe_call(lambda: metric(sd))
+    if base is None:
+        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on the data", {})
+    sham = getattr(inject, "sham", None)
+    try:
+        deltas = injected_deltas(metric, sd, inject, n_rep, rng)
+    except Exception as e:  # e.g. non-count input
+        return GateResult(4, name, GateStatus.SKIP, f"signal could not be injected: {e}", {})
+    if len(deltas) < 3:
+        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", {})
+    iv = response_interval(deltas, direction, alpha)
+    outcome = judge_response(iv, delta_min)
+    detail = dict(injection=describe(inject), direction=direction, base=base,
+                  reference="sham" if sham is not None else "untouched data", delta_min=delta_min,
+                  alpha=alpha, outcome=outcome, **iv)
+    lo, hi = iv["ci"]
+    resp = (f"{iv['mean_response']:+.4g} against the {detail['reference']} "
+            f"({100 * (1 - alpha):g}% CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected "
+            f"{direction})")
+    if outcome == "FAIL":
+        shown = ("responds, but less than delta_min" if iv["signed_lower"] > 0 else "blind")
+        return GateResult(4, name, GateStatus.FAIL,
+                          f"{shown} to {describe(inject)}: {resp}; the bound in the declared direction "
+                          f"is below delta_min {delta_min:.4g}, the smallest response that matters", detail)
+    if outcome == "PASS":
+        return GateResult(4, name, GateStatus.PASS, f"responds to {describe(inject)}: {resp}", detail)
+    why = (f"the interval includes 0 and reaches delta_min {delta_min:.4g}" if delta_min is not None else
+           "the interval includes 0, and without a delta_min (declare a SESOI, or delta_min) "
+           "blindness cannot be shown")
+    return GateResult(4, name, GateStatus.WARN,
+                      f"response to {describe(inject)} not established: {resp}; {why} — untested, "
+                      "not invalid", detail)
+
+
+# --------------------------------------------------------------------------- #
+# GATE 5 — controls against an empirical null, in every stratum
+# --------------------------------------------------------------------------- #
+MATCHED_NEIGHBOURS_MIN = 20
+
+
+def _neighbourhood(means: np.ndarray, names: list, target: str, exclude: set,
+                   k_min: int = MATCHED_NEIGHBOURS_MIN, frac: float = 0.05) -> list:
+    """The genes closest to `target` in mean expression (at least `k_min`, or `frac` of all)."""
+    pos = names.index(target)
+    k = max(k_min, int(np.ceil(frac * len(names))))
+    dist = np.abs(means - means[pos])
+    order = [j for j in np.argsort(dist, kind="mergesort") if names[j] not in exclude and j != pos]
+    return [names[j] for j in order[:k]]
+
+
+def _matched_pool(sub, pair, exclude, rng) -> list:
+    """Distinct unrelated gene pairs from the expression neighbourhoods of `pair`, shuffled.
+
+    Pairs are unordered and never repeated: the null's resolution is limited by the number of
+    distinct pairs, and drawing the same pair twice would overstate it (a small panel offers
+    only a few hundred)."""
+    X = as_dense(sub.X)
+    names = [str(g) for g in sub.var_names]
+    means = X.mean(axis=0)
+    na = _neighbourhood(means, names, str(pair[0]), exclude)
+    nb = _neighbourhood(means, names, str(pair[1]), exclude)
+    pool = sorted({tuple(sorted((a, b))) for a in na for b in nb if a != b})
+    return [pool[i] for i in rng.permutation(len(pool))]
+
+
+def _matched_null_draw(pair_metric, sub, pool: list):
+    """`draw(k)` for ``stats.extend_null``: the metric on the next `k` pairs of the pool
+    (without replacement; fewer when the pool runs out)."""
+    state = dict(next=0)
+
+    def draw(k):
+        i = state["next"]
+        state["next"] = i + int(k)
+        vals = []
+        for a, b in pool[i:i + int(k)]:
+            v = _safe_call(lambda: pair_metric(sub, gene_a=a, gene_b=b))
+            if v is not None:
+                vals.append(v)
+        return np.asarray(vals)
+    return draw
+
+
+DEPTH_SWAP_WINDOW = 20
+
+
+def _depth_matched_draw(b: np.ndarray, depth: np.ndarray, rng, window: int = DEPTH_SWAP_WINDOW) -> np.ndarray:
+    """Gene b's counts with its link to every other gene destroyed and its depth dependence kept.
+
+    Each cell receives the count of a random cell among the next `window` cells at least as
+    deep, binomially thinned to its own depth (``Binomial(b_j, depth_i / depth_j)``). Thinning
+    a count to a lower depth is exact for sampling, so the draw follows b's depth dependence
+    cell by cell, not just per bin. A shuffle *within depth bins* leaves the depth variation
+    inside each bin, and a pair coupled only through depth then passed as a positive control
+    (p = 0.005 in 5 of 5 null datasets with a log-depth SD of 0.8). The deepest cell has no
+    deeper neighbour and keeps its own count (conservative: one cell keeps its coupling).
+    """
+    n = len(b)
+    depth = np.asarray(depth, float)
+    order = np.argsort(depth, kind="mergesort")
+    rank = np.empty(n, dtype=int)
+    rank[order] = np.arange(n)
+    width_up = np.minimum(window, n - 1 - rank)
+    u = rng.random(n)
+    partner = np.where(width_up > 0, rank + 1 + np.floor(u * np.maximum(width_up, 1)).astype(int), rank)
+    j = order[np.clip(partner, 0, n - 1)]
+    ratio = np.where(depth[j] > 0, depth / np.where(depth[j] > 0, depth[j], 1.0), 1.0)
+    return rng.binomial(np.round(np.asarray(b, float)[j]).astype(np.int64),
+                        np.clip(ratio, 0.0, 1.0)).astype(float)
+
+
+def _depth_matched_matrix(X: np.ndarray, depth: np.ndarray, rng, window: int = DEPTH_SWAP_WINDOW,
+                          chunk: int = 256) -> np.ndarray:
+    """`_depth_matched_draw` for every column of a count matrix, independently per gene.
+
+    Cell i takes gene g's count from a random cell among the next `window` cells at least as
+    deep (a fresh draw for each gene, so no cell's genes travel together), thinned to cell i's
+    depth. Every gene keeps its dependence on depth; every gene-gene link is destroyed.
+    """
+    n, n_genes = X.shape
+    depth = np.asarray(depth, float)
+    order = np.argsort(depth, kind="mergesort")
+    rank = np.empty(n, dtype=np.int64)
+    rank[order] = np.arange(n)
+    width_up = np.minimum(window, n - 1 - rank)
+    up = (width_up > 0)[:, None]
+    width = np.maximum(width_up, 1)[:, None]
+    safe = np.where(depth > 0, depth, 1.0)
+    out = np.empty((n, n_genes), dtype=float)
+    for c0 in range(0, n_genes, chunk):
+        c1 = min(n_genes, c0 + chunk)
+        u = rng.random((n, c1 - c0))
+        partner = np.where(up, rank[:, None] + 1 + np.floor(u * width).astype(np.int64), rank[:, None])
+        j = order[np.clip(partner, 0, n - 1)]
+        counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
+        ratio = np.where(depth[j] > 0, depth[:, None] / safe[j], 1.0)
+        out[:, c0:c1] = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+    return out
+
+
+def _null_mode(sd: SimpleData) -> str:
+    return "depth-matched" if _looks_like_counts(sd.X) else "depth bins"
+
+
+def _gene_null(sd: SimpleData, rng, bins: np.ndarray | None = None, mode: str | None = None) -> SimpleData:
+    """GATE 0's 'no biology, same technology' reference.
+
+    Counts: every gene replaced by a depth-matched draw (`_depth_matched_matrix`, depth = the
+    cell's total). A shuffle within depth bins leaves the depth variation inside each bin, so
+    genes coupled only through cell size looked coupled above the null (the same flaw let a
+    depth-only pair pass as GATE 5's positive control). Non-count input: genes permuted within
+    depth bins.
+    """
+    if (mode or _null_mode(sd)) == "depth-matched":
+        X = np.asarray(sd.X, float)
+        return SimpleData(_depth_matched_matrix(X, X.sum(axis=1), rng), sd.obs, sd.var_names)
+    return _shuffle_null(sd, bins if bins is not None else _depth_bins(sd), rng)
+
+
+def _pair_depth(X: np.ndarray, ia: int, ib: int) -> np.ndarray:
+    """Per-cell depth for the pair's null: total counts of all *other* genes."""
+    return X.sum(axis=1) - X[:, ia] - X[:, ib]
+
+
+def _shuffled_null(pair_metric, sub, pair, n_null, rng):
+    """Self null: the same two genes, with gene b replaced by a depth-matched draw from
+    neighbouring cells (``_depth_matched_draw``).
+
+    Destroys the pair's biological coupling while keeping both genes' distributions and their
+    dependence on depth. This is the reference for a positive control: does the metric register
+    the known coupling above its technical baseline? An expression-matched pair null is
+    unsuitable here, because other truly coupled genes contaminate it. Non-count input falls
+    back to a shuffle within depth bins.
+    """
+    sd = _as_simple(sub)
+    names = list(map(str, sd.var_names))
+    ia, jb = names.index(str(pair[0])), names.index(str(pair[1]))
+    original = sd.X[:, jb].copy()
+    counts = _looks_like_counts(sd.X[:, [ia, jb]])
+    depth = _pair_depth(sd.X, ia, jb)
+    groups = None
+    if not counts:
+        bins = _depth_bins(sd)
+        groups = [np.where(bins == k)[0] for k in np.unique(bins)]
+    vals = []
+    for _ in range(n_null):
+        sd.X[:, jb] = (_depth_matched_draw(original, depth, rng) if counts
+                       else _shuffle_within(original, groups, rng))
+        v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
+        if v is not None:
+            vals.append(v)
+    sd.X[:, jb] = original
+    return np.asarray(vals)
+
+
+POSITIVE_CONTROL_DOSE = 2.0  # induces a Spearman correlation of ~0.34 between genes with ~7 counts per cell
+
+
+def _shuffle_within(col: np.ndarray, groups: list, rng) -> np.ndarray:
+    out = col.copy()
+    for idx in groups:
+        if len(idx) > 1:
+            out[idx] = col[rng.permutation(idx)]
+    return out
+
+
+def _control_response(pair_metric, sub, pair, dose: float, n_rep: int, rng) -> list:
+    """The metric's own response to a coupling of `dose` injected into the control pair with its
+    own coupling removed: gene b replaced by a depth-matched draw before every injection
+    (``injected_deltas(decouple=...)``), injected against the sham, as GATE 4 measures it."""
+    from .injected_signal import coupling
+
+    metric = (lambda d: pair_metric(d, gene_a=pair[0], gene_b=pair[1]))
+    return injected_deltas(metric, sub, coupling(str(pair[0]), str(pair[1]), strength=dose), n_rep, rng,
+                           decouple=str(pair[1]))
+
+
 def gate5_controls(
     pair_metric: Callable,
     data,
@@ -420,75 +1039,207 @@ def gate5_controls(
     pos_min: float | None = None,
     neg_max: float | None = None,
     min_cells: int = 10,
+    n_null: int = 200,
+    alpha: float = 0.05,
+    exclude: Sequence[str] = (),
+    seed: int = 0,
+    pos_dose: float = POSITIVE_CONTROL_DOSE,
+    delta_min: float | None = None,
+    direction: str = "increase",
+    n_rep: int = GATE4_N_REP,
 ) -> GateResult:
-    """Positive control must fire and negative control must stay null — in every stratum.
+    """Positive control must fire and negative control must stay null — in every stratum —
+    judged against **empirical nulls** instead of a fixed band.
 
-    `pair_metric(data, *, gene_a, gene_b) -> float`. The null band is anchored to the
-    POSITIVE control's magnitude (not the negative control's own value, which is the very
-    quantity under test): by default the negative must be < 20% of the positive signal, and
-    the positive must clear that band. Magnitudes are used so signed metrics with strong
-    negative-going controls still pass.
+    v0.1 used one negative pair and a band of 20% of the positive control, with no sampling
+    noise. Library-size normalization alone makes unrelated genes correlate (closure), so the
+    "robust" reference metric failed its own negative control on null data.
+
+    * Negative control: compared with `n_null` distinct unrelated pairs from the same
+      expression neighbourhoods (the 20 genes closest in mean, or 5% of genes). It must not
+      stand out (two-sided p >= alpha/K, K = assessable strata, Bonferroni). The null centre
+      is reported: a centre far from zero means the metric reports association between
+      unrelated genes. With few genes the pool of distinct pairs bounds the resolution; when
+      alpha/K is below it, the negative control cannot fail and the message says so.
+    * Positive control: compared with `n_null` self-nulls of the *same* pair, gene b replaced
+      by a depth-matched draw from neighbouring cells (thinned to each cell's depth). Coupling
+      is destroyed, the dependence on depth kept exactly. It must stand out (p < alpha/K).
+    * A silent positive control is judged as GATE 4 judges a response (decided 2026-10-08,
+      validation/probes/JOURNAL.md D6, probe p15): a coupling of dose `pos_dose` (pre-registered
+      ``positive_control_dose``, default 2.0) is injected `n_rep` times into the control pair
+      with its own coupling removed, and the metric's own response gets its two-sided
+      (1 - alpha/K) interval (``response_interval``). The metric is shown blind to the coupling
+      when the bound in the declared `direction` is below `delta_min` (``judge_response``);
+      otherwise the silence says that the control is not coupled here, or nothing.
+
+    p values are rank-based Monte Carlo p values. When a control lies in the extreme tail of
+    the first `n_null` draws and alpha/K is below their resolution, the null is extended to
+    ``2K/alpha`` draws (at most 5000; ``stats.extend_null``) instead of assuming a normal tail.
+
+    Status:
+
+    * FAIL when the negative control stands out in any stratum (the metric reports
+      association where there is none), or when the positive control is silent in a stratum
+      where the metric is shown blind to an injected coupling of its genes.
+    * WARN when the positive control is silent somewhere without that proof: absence of
+      evidence (and without a delta_min blindness cannot be shown). If it fires nowhere,
+      ``detail["pos_demonstrated"]`` is False and the metric's response stays undemonstrated
+      (UNTESTED) unless an injected signal shows it.
+    * PASS when both controls behave in every stratum.
+
+    The former rule (2026-10-07) failed a silent control wherever a reference detector had
+    power >= 0.8 for the dose: it failed a valid metric whose control was coupled, but weakly
+    (p15). Passing explicit `pos_min` / `neg_max` selects the legacy fixed band (not the
+    default), where a silent positive control FAILs without an injection.
     """
     import itertools
 
     obs = data.obs
     within = list(within)
+    delta_min = _check_delta_min(delta_min)
     if within:
         levels = [sorted(pd.unique(obs[f].dropna())) for f in within]
         combos = list(itertools.product(*levels))
     else:
         combos = [()]
+    legacy = pos_min is not None or neg_max is not None
+    rng = np.random.default_rng(seed)
+    excl = set(map(str, pos_pair)) | set(map(str, neg_pair)) | set(map(str, exclude))
 
     def _val(sub, pair):
         return float(pair_metric(sub, gene_a=pair[0], gene_b=pair[1]))
 
-    pos_pooled = abs(_val(data, pos_pair))
-    if neg_max is None:
-        neg_max = 0.2 * pos_pooled + 1e-6           # independent of the neg control itself
-    if pos_min is None:
-        pos_min = neg_max                           # positive must clear the null band
-
-    rows, failures = [], []
+    strata = []
     for combo in combos:
         mask = np.ones(len(obs), dtype=bool)
         for f, v in zip(within, combo):
             mask &= (np.asarray(obs[f]) == v)
-        if mask.sum() < min_cells:
-            continue
-        sub = data[mask]
-        pos, neg = _val(sub, pos_pair), _val(sub, neg_pair)
-        ok = abs(pos) > pos_min and abs(neg) <= neg_max
-        row = dict(stratum=dict(zip(within, combo)) if within else "pooled",
-                   pos=pos, neg=neg, ok=ok)
-        rows.append(row)
-        if not ok:
-            failures.append(row)
-
-    detail = dict(rows=rows, pos_min=pos_min, neg_max=neg_max, pos_pooled=pos_pooled)
-    if not rows:
+        if mask.sum() >= min_cells:
+            strata.append((dict(zip(within, combo)) if within else "pooled", mask))
+    if not strata:
         return GateResult(
             5, "Controls", GateStatus.SKIP,
             f"no stratum had >= {min_cells} cells (checked {len(combos)}) — controls not evaluable",
-            detail,
+            dict(rows=[]),
         )
-    if failures:
-        f0 = failures[0]
+    alpha_s = alpha / len(strata)
+
+    rows, failures = [], []
+    for label, mask in strata:
+        sub = data[mask]
+        pos, neg = _val(sub, pos_pair), _val(sub, neg_pair)
+        row = dict(stratum=label, n_cells=int(mask.sum()), pos=pos, neg=neg)
+        if legacy:
+            pm = pos_min if pos_min is not None else 0.0
+            nm = neg_max if neg_max is not None else float("inf")
+            row.update(pos_fires=abs(pos) > pm, neg_ok=abs(neg) <= nm, method="fixed band")
+        else:
+            pool = _matched_pool(sub, neg_pair, excl, rng)
+            null_neg, p_neg, m_neg = extend_null(neg, _matched_null_draw(pair_metric, sub, pool),
+                                                 n_null, alpha_s)
+            null_pos, p_pos, m_pos = extend_null(
+                pos, lambda k, sub=sub: _shuffled_null(pair_metric, sub, pos_pair, k, rng),
+                n_null, alpha_s)
+            row.update(
+                null_center=float(np.median(null_neg)) if len(null_neg) else float("nan"),
+                null_sd=float(np.std(null_neg, ddof=1)) if len(null_neg) > 1 else float("nan"),
+                pos_null_center=float(np.median(null_pos)) if len(null_pos) else float("nan"),
+                n_null=(int(len(null_neg)), int(len(null_pos))), n_pairs_available=len(pool),
+                p_neg=p_neg, p_pos=p_pos, method=f"{m_neg}/{m_pos}",
+                pos_fires=bool(np.isfinite(p_pos) and p_pos < alpha_s),
+                neg_ok=bool(not np.isfinite(p_neg) or p_neg >= alpha_s),
+            )
+        if not legacy and not row["pos_fires"]:
+            try:
+                deltas = _control_response(pair_metric, _as_simple(sub), pos_pair, pos_dose, n_rep, rng)
+            except ValueError as e:  # the injection needs counts
+                deltas, row["pos_response_note"] = [], str(e)
+            if len(deltas) >= 3:
+                iv = response_interval(deltas, direction, alpha_s)
+                outcome = judge_response(iv, delta_min)
+                row.update(pos_response=iv["mean_response"], pos_response_ci=iv["ci"],
+                           pos_response_reps=iv["n_rep"], pos_response_outcome=outcome)
+            else:
+                outcome = "UNTESTED"
+                row.update(pos_response_outcome=outcome)
+            row["pos_blind"] = outcome == "FAIL"
+        row["ok"] = bool(row["pos_fires"] and row["neg_ok"])
+        rows.append(row)
+        if not row["ok"]:
+            failures.append(row)
+
+    n_pos = sum(r["pos_fires"] for r in rows)
+    detail = dict(rows=rows, alpha=alpha, alpha_per_stratum=alpha_s, n_null=n_null,
+                  legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
+                  pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
+                  pos_dose=pos_dose, delta_min=delta_min, direction=direction, n_rep=n_rep)
+    centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
+    centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
+                   if centres and not legacy else "")
+    weak_neg = [r for r in rows if "unattainable" in str(r.get("method", "")).split("/")[0]]
+    detail["neg_test_unattainable"] = [r["stratum"] for r in weak_neg]
+    if weak_neg:
+        centre_note += (f"; in {len(weak_neg)}/{len(rows)} strata the negative-control test "
+                        f"cannot reach alpha {alpha_s:.3g} (only {min(r['n_null'][0] for r in weak_neg)} "
+                        "distinct unrelated pairs)")
+    neg_bad = [r for r in rows if not r["neg_ok"]]
+    pos_miss = [r for r in rows if not r["pos_fires"]]
+    blind = [r for r in pos_miss if r.get("pos_blind")]
+    if neg_bad or blind or (legacy and pos_miss):
+        f0 = (neg_bad or blind or pos_miss)[0]
+        why = []
+        if not f0["neg_ok"]:
+            why.append(f"negative control {f0['neg']:.3g} outside the null"
+                       + (f" (p={f0['p_neg']:.3g}, null centre {f0['null_center']:.3g})" if not legacy else ""))
+        if f0.get("pos_blind"):
+            lo, hi = f0["pos_response_ci"]
+            why.append(f"positive control {f0['pos']:.3g} inside its null (p={f0['p_pos']:.3g}) and the "
+                       f"metric is blind to a coupling of dose {pos_dose:g} injected into its genes: "
+                       f"response {f0['pos_response']:+.4g} ({100 * (1 - alpha_s):g}% CI [{lo:+.4g}, "
+                       f"{hi:+.4g}]), the bound in the declared direction below delta_min {delta_min:.4g}")
+        if legacy and not f0["pos_fires"]:
+            why.append(f"positive control {f0['pos']:.3g} below the band")
+        n_bad = (len(failures) if legacy else
+                 sum(1 for r in rows if not r["neg_ok"] or r.get("pos_blind")))
         return GateResult(
             5, "Controls", GateStatus.FAIL,
-            f"{len(failures)}/{len(rows)} strata fail controls "
-            f"(e.g. {f0['stratum']}: pos={f0['pos']:.3g}, neg={f0['neg']:.3g}; "
-            f"need |pos|>{pos_min:.3g}, |neg|<={neg_max:.3g})",
+            f"{n_bad}/{len(rows)} strata fail controls (e.g. {f0['stratum']}: "
+            + "; ".join(why) + ")",
+            detail,
+        )
+    if pos_miss:
+        def _where(r):
+            resp = ""
+            if "pos_response" in r:
+                lo, hi = r["pos_response_ci"]
+                what = ("the metric responds to it, so the control is not coupled here"
+                        if r["pos_response_outcome"] == "PASS" else "neither a response nor blindness shown")
+                resp = (f"; a coupling of dose {pos_dose:g} injected into its genes: {r['pos_response']:+.3g} "
+                        f"[{lo:+.3g}, {hi:+.3g}], {what}")
+            return f"{r['stratum']} (n={r['n_cells']}, p={r['p_pos']:.3g}{resp})"
+        where = ", ".join(_where(r) for r in pos_miss[:3])
+        lead = (f"positive control beats its null in {n_pos}/{len(rows)} strata; not demonstrated in "
+                if n_pos else "positive control not demonstrated in any stratum — ")
+        tail = ("" if delta_min is not None else
+                "; without a delta_min (declare a SESOI, or delta_min) blindness cannot be shown")
+        return GateResult(
+            5, "Controls", GateStatus.WARN,
+            lead + where + ("…" if len(pos_miss) > 3 else "")
+            + " (the metric is not shown blind to an injected coupling of the control's genes: "
+            f"absence of evidence, not a failure{tail}); negative control inside the null in all "
+            f"strata{centre_note}",
             detail,
         )
     return GateResult(
         5, "Controls", GateStatus.PASS,
-        f"positive fires and negative null in all {len(rows)} strata",
+        f"positive fires and negative stays inside the empirical null in all {len(rows)} strata"
+        + centre_note,
         detail,
     )
 
 
 # --------------------------------------------------------------------------- #
-# GATE 6 — cross-platform / cross-species replication
+# GATE 6 — replication of the effect on an independent dataset
 # --------------------------------------------------------------------------- #
 def gate6_replication(
     metric: Metric,
@@ -497,37 +1248,54 @@ def gate6_replication(
     groups: tuple,
     within: Sequence[str] = (),
     thresh: float = 1.5,
+    *,
+    replicate_col: str | None = None,
+    estimand: str | None = None,
+    sesoi: float | None = None,
+    primary_effect: float | None = None,
+    alpha: float = 0.05,
+    min_replicates: int = 3,
+    n_perm: int = 1000,
+    attenuation_half: float | None = None,
+    seed: int = 0,
+    sesoi_scale: str = "construct",
 ) -> GateResult:
-    """Re-run QC parity (stratified by `within`) + n_genes matching on an independent dataset.
-
-    Replication is PASS only if BOTH hold on the independent data: QC parity does not fail or
-    STOP (otherwise the "replication" is itself confounded — a QC artifact, not biology), AND
-    the matched effect survives (GATE 2 PASS). GATE 1 is run with the same `within` factors as
-    the primary analysis, so an interaction confound on the replication set is not hidden by
-    pooling — the exact trap that motivated the whole tool.
+    """Re-estimate the effect on an independent dataset with the same estimand, correction,
+    replicate rule, strata and SESOI scale. REPLICATED (PASS) = effect detected with the primary sign;
+    NOT_REPLICATED (FAIL) = equivalent to zero within the SESOI, or detected with the opposite
+    sign; anything else is INCONCLUSIVE (WARN). QC parity on the replication set is reported.
     """
+    from .effect import estimate_effect
+
     if data2 is None:
         return GateResult(
             6, "Replication", GateStatus.SKIP,
             "no second dataset supplied — supply an independent AnnData to run this gate",
-            {},
+            dict(replication="NOT_RUN"),
         )
-    g1 = gate1_qc_parity(data2, group_col, groups, within=within, thresh=thresh)
-    g2 = gate2_ngenes_matching(metric, data2, group_col, groups)
-    qc_ok = g1.status not in (GateStatus.STOP, GateStatus.FAIL)
-    replicated = qc_ok and g2.status == GateStatus.PASS
-    status = GateStatus.PASS if replicated else GateStatus.FAIL
-    if not qc_ok:
-        note = (f" — QC parity does not hold on the independent data ({g1.status.value}); a "
-                "pooled matched effect is not trustworthy until you stratify")
-    elif g2.status != GateStatus.PASS:
-        note = " — matched effect does not survive on the independent data"
+    g1 = gate1_qc_parity(data2, group_col, groups, within=within, thresh=thresh, seed=seed)
+    eff, design = estimate_effect(
+        metric, data2, group_col=group_col, groups=groups, within=within,
+        replicate_col=replicate_col, estimand=estimand, sesoi=sesoi, alpha=alpha,
+        min_replicates=min_replicates, n_perm=n_perm,
+        qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=attenuation_half,
+        sesoi_scale=sesoi_scale, seed=seed,
+    )
+    est = eff.detail.get("effect")
+    same_sign = (primary_effect is None or est is None or not np.isfinite(est)
+                 or np.sign(est) == np.sign(primary_effect))
+    if g1.status == GateStatus.STOP or not design.get("identifiable", False):
+        rep, status = "INCONCLUSIVE", GateStatus.WARN
+        note = design.get("reason") or g1.message
+    elif eff.status == "DETECTED" and same_sign:
+        rep, status, note = "REPLICATED", GateStatus.PASS, eff.reason
+    elif eff.status == "NO_DETECTABLE_EFFECT" or (eff.status == "DETECTED" and not same_sign):
+        rep, status, note = "NOT_REPLICATED", GateStatus.FAIL, eff.reason
     else:
-        note = ""
+        rep, status, note = "INCONCLUSIVE", GateStatus.WARN, eff.reason
     return GateResult(
         6, "Replication", status,
-        f"independent dataset: QC parity {g1.status.value}"
-        + (" (stratified)" if within else "")
-        + f", matched effect {g2.status.value}{note}",
-        dict(qc_parity=g1.detail, matching=g2.detail, within=list(within), qc_ok=qc_ok),
+        f"independent dataset: {rep} — {note} (QC parity {g1.status.value})",
+        dict(replication=rep, effect=eff.detail, effect_status=eff.status, effect_flags=eff.flags,
+             design=design, qc_parity=g1.detail, qc_status=g1.status.value, within=list(within)),
     )

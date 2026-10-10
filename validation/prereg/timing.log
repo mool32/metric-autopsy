@@ -1,0 +1,12 @@
+# timing pilot — git 9ce9417, python 3.13.16, numpy 2.5.3
+# machine: {"cpus": 4, "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz", "runner_image": null, "blas_threads_in_use": [1], "blas": [{"internal_api": "openblas", "version": "0.3.34.106.0", "architecture": "Haswell", "num_threads": 1}], "numpy_simd": {"baseline": ["X86_V2"], "dispatch": ["X86_V3"]}, "numeric_env": {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_CORETYPE": "Haswell", "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"}, "versions": {"python": "3.13.16", "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39", "numpy": "2.5.3", "scipy": "1.18.1", "pandas": "2.3.3", "metric_autopsy": "0.3.0.dev0"}}
+# backgrounds: simulated (validation/prereg/simulate.py, dry_backgrounds)
+# sample of 24 datasets: {'N6a': 2, 'N5': 2, 'N8': 2, 'N3': 1, 'N4': 5, 'N1': 2, 'N2': 2, 'E3': 1, 'N7': 2, 'E1': 2, 'E2': 1, 'N6c': 1, 'N6b': 1}; levels {'medium': 10, 'high': 10, 'low': 4}
+# dataset shape (cells x genes): (3200, 2000)
+workers=1: 29 cards in 799 s wall; per card mean 27.4 s, median 29.2 s; errors 0; peak memory of a worker 773 MB
+  per condition (mean s): E1 37.4, E2 33.0, E3 33.6, N1 37.2, N2 38.2, N3 30.9, N4 12.0, N5 15.9, N6a 31.2, N6b 29.2, N6c 98.1, N7 29.9, N8 35.7
+workers=4: 29 cards in 201 s wall; per card mean 25.9 s, median 27.1 s; errors 0; peak memory of a worker 716 MB
+  per condition (mean s): E1 37.2, E2 27.8, E3 30.3, N1 35.6, N2 35.5, N3 26.5, N4 12.0, N5 15.8, N6a 27.9, N6b 29.1, N6c 93.7, N7 27.3, N8 33.1
+# whole panel: 10540 cards, each at its condition's mean time: 95.1 CPU-h at 4 workers (single-core 101.4 CPU-h)
+# blind run: 20 shards of 4 workers, a shard's expected time 1.19 h (budget 3.0 h per shard; a job may run 6 h)
+# memory: a worker's peak 716 MB x 4 workers = 2864 MB; the runner has 16095 MB (at most 75% may be used)

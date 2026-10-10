@@ -16,6 +16,66 @@ Simplest non-biological explanation: ___
 What would disprove it:         ___
 ```
 
+## Commitments the engine enforces
+
+These fields change what the engine computes, so they must be fixed before any outcome is
+seen. Pass them as JSON (`--prereg prereg.json`, or `run_autopsy(prereg=...)`); explicit CLI
+flags override the file. The engine hashes the whole object (`prereg_sha256`) into the report
+and the run log.
+
+```
+Estimand:            composition | content     ← required; no estimand = UNIDENTIFIABLE
+  composition = relative expression (correlations, module scores, MI of normalized counts):
+                the deeper group is thinned to equal sequencing depth.
+  content     = amount of RNA (total counts, genes detected, CytoTRACE-like scores):
+                thinning to equal depth would delete the signal, so groups are thinned to
+                equal spike-in (ERCC) capture; without spike-ins the comparison is
+                UNIDENTIFIABLE.
+Direction:           increase | decrease | two-sided   ← required for SUPPORTED
+  the claimed change of the metric from groups[0] to groups[1] (groups = young, old and
+  "increase" = higher in old). SUPPORTED needs the effect in this direction; a detected effect
+  the other way is NOT SUPPORTED. "two-sided" is a non-directional claim, marked in the verdict.
+Replicate unit (obs column):  ___  (mouse, donor, plate — the unit of inference, never the cell)
+Minimum replicates per group: ___  (default 3; the graded rule below applies on top)
+SESOI:               ___  smallest effect size of interest (needed for "no detectable effect",
+                          for the power check, for "explained by depth", and to size GATE 0's
+                          nuisance biases: without it a bias cannot block, and SUPPORTED is
+                          withheld while one is unsized)
+SESOI scale:         construct | observed  (default construct: the SESOI is about the construct
+                          and is attenuated by GATE 0's lambda before the equivalence test and
+                          the power check; observed: it is on the metric's observed scale)
+Bias tolerance:      ___  (default 0.5 SESOI: a dropout or library-size bias blocks only if
+                          it and the lower bound of its 95% interval exceed this; a depth bias
+                          the declared correction removes between groups never blocks)
+Alpha / power:       ___ / ___  (defaults 0.05 / 0.8)
+Signal direction:    increase | decrease   (for an injected-signal test)
+Positive control pair: ___   Negative control pair: ___
+delta_min:           ___  (default 0.5 SESOI: the smallest response to an injected signal
+                          that matters; GATE 4 and GATE 5 call the metric invalid only when its
+                          response is shown below it, by the upper bound of its 95% interval)
+Positive-control dose: ___  (default 2.0: a coupling of this dose is injected into a silent
+                          positive control's genes; the control FAILs GATE 5 only if the metric
+                          is shown blind to it)
+Spike-in prefix:     ___  (default "ERCC-")
+```
+
+Graded replicate rule (fixed in the engine, not chosen per analysis):
+- **>= 4 per group** (or pairs): an exact permutation over replicates is the test; the t
+  interval estimates the effect.
+- **3 per group**: the t interval on replicate-level values is the test and the verdict is
+  marked *parametric only*; the permutation p is reported with the note that alpha is
+  unattainable by construction.
+- **<= 2 per group**, or no replicate unit: no effect verdict
+  (`design_adequacy = INSUFFICIENT_REPLICATION`).
+
+```json
+{"estimand": "composition", "direction": "decrease", "min_replicates": 3, "sesoi": 0.1, "sesoi_scale": "construct",
+ "bias_tolerance": 0.5, "alpha": 0.05, "power": 0.8, "signal_direction": "increase",
+ "delta_min": 0.05, "positive_control_dose": 2.0,
+ "hypothesis": "Smad3-Col1a1 coupling declines with age in fibroblasts",
+ "simplest_non_biological_explanation": "old cells are sequenced shallower"}
+```
+
 ---
 
 ## GATE 0 — Mathematical independence
@@ -25,22 +85,22 @@ Which are confounded by QC (sparsity, library size, variance, n)? ___
 Simulation result (metric on nuisance-perturbed synthetic data):  ___
 ```
 
-## GATE 1 — QC parity
+## GATE 1 — QC parity (a diagnostic)
 ```
 Factorial obs columns to check (must include age × sex × batch × tissue × cell_type as available): ___
-Max QC ratio found across combinations:  ___
-Unusable combinations (> 1.5×):          ___
+Strata confidently beyond 1.5× (bootstrap CI, Bonferroni):  ___
+Strata with < min_cells per group (not assessable):         ___
 ```
 
-## GATE 2 — n_genes matching
+## GATE 2 — Estimand-dependent correction
 ```
-Overlap range (10th–90th pct):                          ___
-Matched sample sizes:                                   ___
-Effect with matching ___  vs without ___
-Effect preserved (retained >= 50% of unmatched)?        ___
-Effect not amplified (retained <= 300% / 3x)?           ___
-Matched subset balanced (median n_genes ratio <= 1.1x)? ___
+Estimand (from the commitments above):           ___
+Correction applied (depth / spike-in capture):   ___
+Raw effect ___  vs corrected effect ___  (retained ___ %)
+Explained by depth/capture? (raw detected across replicates, corrected not): ___
 ```
+(The v0.1 n_genes matching is deprecated: n_genes is moved by biology — cell size, cycling,
+RNA content — so matching on it can delete a real effect.)
 
 ## GATE 3 — Visible in raw data
 ```
@@ -49,8 +109,9 @@ Still visible after stratifying by sex?  ___
 Still visible after coloring by n_genes? ___
 ```
 
-## GATE 4 — Alternative explanations (judgment)
+## GATE 4 — Alternative explanations (judgment) and construct response (auto)
 ```
+Injected signal (e.g. coupling of the gene pair) and the response it must produce: ___
 Non-biological scenarios that fit this result:
   1. ___
   2. ___
@@ -58,17 +119,18 @@ Non-biological scenarios that fit this result:
 Tests that separate them from the biological explanation: ___
 ```
 
-## GATE 5 — Controls
+## GATE 5 — Controls (against empirical nulls)
 ```
-Positive control pair ___   result ___
-Negative control pair ___   result ___
+Positive control pair ___   beats its depth-matched self-null in every stratum? ___
+Negative control pair ___   inside its expression-matched pair null?       ___
 Checked per factorial combination?       ___
 ```
 
 ## GATE 6 — Replication
 ```
 Independent dataset (platform / species): ___
-Result after QC matching:                 ___
+Same estimand, correction, replicate unit and strata?  ___
+Replicate-level result (REPLICATED / NOT_REPLICATED / INCONCLUSIVE): ___
 ```
 
 ## GATE 7 — Effect size (judgment)
@@ -81,4 +143,8 @@ Larger than test–retest variability?      ___
 ---
 
 *Record the hash of the filled form in `PROJECT.md` before you look at any outcome. A pre-reg you
-edit after seeing results is not a pre-reg.*
+edit after seeing results is not a pre-reg. The engine helps: every report carries
+`prereg_sha256`, and every run with a pre-registration — Python API, CLI or MCP — is appended
+to the run log (`metric_autopsy_runs.jsonl`, or `$METRIC_AUTOPSY_LOG`), which counts how many
+times the same claim — same data, pre-registration and comparison — has been run, so "re-run
+until it passes" is visible.*

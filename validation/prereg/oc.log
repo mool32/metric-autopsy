@@ -1,0 +1,232 @@
+# operating characteristics of the v1 success criteria (two-sided 95% Clopper-Pearson)
+# principle: P(pass | sound) >= 0.9, P(pass | doubled nominal error) <= 0.05;
+# S1, a conjunction over the key null conditions, meets it as a whole; P(S1-S7 together | sound) >= 0.9
+
+## Nominal rates (errors by cause, decided 2026-10-08; a sound validator's model after the first review,
+## the rule nominals after the second, the cells after the third, GATE 0 and the null's other tail after
+## the fourth)
+  Designed sizes: false SUPPORTED 0.025 (alpha/2: the effect test is two-sided at alpha, the
+  direction checked afterwards); false NOT SUPPORTED (metric invalid) on a valid metric 0.1 (2 alpha:
+  GATE 4's upper bound below delta_min alpha/2, GATE 5's negative control alpha, a silent positive
+  control shown blind alpha/2); false NO DETECTABLE EFFECT 0.05 and explained by depth 0.05 (alpha, the
+  TOST's size); NOT SUPPORTED against the direction where it is an error 0.025 (one tail). With pilot.json a card's
+  rates are a sound validator's on its case, in the engine's verdict order (sound_model): GATE 5 at
+  0.075, GATE 4 at the odds measured on the case, then the effect's outcomes as the oracle found them
+  on the case's datasets (after an UNTESTED GATE 4 its explained-by-depth share); a blind, ambiguous or
+  useless metric in the engine's order on them; GATE 0 refuses first with its stratum's share measured
+  with the engine before the key (timing.py --refusals), at most 0.2 on the strata with a valid
+  metric (a usefulness bound set in advance: a stratum above it fails S3, decided before the key). Without
+  a measurement (the scenarios below): the
+  designed sizes of the routes open on the card and decisiveness 0.85. Every wrong outcome is counted
+  in its own cell: S2 a false SUPPORTED per group of the cards outside S1 (N2's steps, N3, N4 with the
+  replicate unit, N6a, N7, the real effects), S4 a false NOT SUPPORTED against the direction or explained
+  by depth, and against the direction on null data (allowed there, bounded as a false detection), S5
+  metric invalid on a valid metric and S6 NO DETECTABLE EFFECT, each per stratum (real effects, nulls,
+  blind or useless metrics); a cell's threshold uses, per card, the larger of the rate and the designed
+  size, and its resolution is the error rate it fails with probability >= 0.95. S3 is judged on every
+  stratum (not N3 and N8), at the principle's tier or the floor's (a validator half as decisive fails),
+  and on every condition of a stratum (a sound validator fails each with <= 0.0001, one deciding none of
+  its cards fails: the fifth review);
+  S7a allows no verdict the engine's deterministic rules cannot give (a label that does not match its
+  cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict
+  where the rules give none: N4 without the replicate unit, the constant metric); S7b counts crashes (an
+  engine exception or no report, each listed with its traceback) at the nominal 0.001 by the principle,
+  a sound engine crashing on none. The joint requirement is checked with S1 at its design.
+
+## S1 as a whole: the number of datasets per key condition (5 conditions)
+  the rule first holds at n = 763; k* moves in steps, so it fails again at n = 769-785, 802-808 (up to 1000); the plan's 790 meets it
+  S1 false SUPPORTED, key null conditions: 5 conditions x n = 790, each passes with at most 29/790 false SUPPORTED (upper 95% CP bound <= 0.0523); P(one passes | 0.025) = 0.9824, P(all 5 pass | 0.025) = 0.9151, P(a condition passes | 0.050 there) = 0.0465 — meets the principle
+  given the background every dataset is an independent draw, so the counts are binomial and the above is
+  exact; read beyond the background's donors (their shared donors as a random sample: beta-binomial, design
+  effect deff; the run reports the realized deff of every primary criterion, above 1.5 a limitation):
+    deff 1.0: P(all 5 pass | 0.025) = 0.915, P(a condition passes | 0.050 there) = 0.046
+    deff 1.1: P(all 5 pass | 0.025) = 0.892, P(a condition passes | 0.050 there) = 0.054
+    deff 1.2: P(all 5 pass | 0.025) = 0.868, P(a condition passes | 0.050 there) = 0.062
+    deff 1.5: P(all 5 pass | 0.025) = 0.800, P(a condition passes | 0.050 there) = 0.085
+    the principle holds up to deff 1.044 (the doubled side up to 1.044, the sound side up to 1.065)
+
+## GATE 0's usefulness bound (the fifth round): a stratum with a valid metric fails S3 where the frozen engine
+## refused on more than 0.2 of its 100 establishable cards before the key
+  refusing on 10%: fails with 0.001, refusing on 15%: fails with 0.066, refusing on 20%: fails with 0.441, refusing on 25%: fails with 0.851, refusing on 30%: fails with 0.984
+
+## S3's tiers on a stratum of n establishable cards
+  at d = 0.85: the floor's tier passes a sound validator with >= 0.9835 (what S1 at its design leaves of 0.9) from n = 18, the principle's from n = 115
+  at d = 0.80: the floor's tier passes a sound validator with >= 0.9835 (what S1 at its design leaves of 0.9) from n = 23, the principle's from n = 77
+  at d = 0.70: the floor's tier passes a sound validator with >= 0.9835 (what S1 at its design leaves of 0.9) from n = 31, the principle's from n = 42
+
+## Scenario A: the low level blind, half the medium pairs blind, half the cases establishable
+  cards 10540: valid metric on 4488, establishable 4482; rates measured by the pilot on 50
+  S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S2 N2: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N3: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N4: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N6: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N7: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 E: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.02902: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 876, pass with at most 39 errors (upper 95% CP bound <= 0.0604); P(pass | 0.0290) = 0.996, P(pass | 0.0580) = 0.046 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05775 or more with probability >= 0.95
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.786, at most 0.85), principle tier [JUDGED]: n = 462, pass with at least 283 correct definite outcomes (lower 95% CP bound >= 0.5664); P(pass | 0.786) = 1.000, P(pass | 0.573) = 0.045 — meets the principle
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.786, at most 0.85), floor tier [attainable, not judged]: n = 462, pass with at least 200 correct definite outcomes (lower 95% CP bound >= 0.3872); P(pass | 0.786) = 1.000, P(pass | 0.393) = 0.045 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), principle tier [JUDGED]: n = 990, pass with at least 689 correct definite outcomes (lower 95% CP bound >= 0.6662); P(pass | 0.835) = 1.000, P(pass | 0.670) = 0.044 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), floor tier [attainable, not judged]: n = 990, pass with at least 440 correct definite outcomes (lower 95% CP bound >= 0.4132); P(pass | 0.835) = 1.000, P(pass | 0.417) = 0.046 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.852, at most 0.85), principle tier [JUDGED]: n = 2239, pass with at least 1604 correct definite outcomes (lower 95% CP bound >= 0.6972); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.047 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.852, at most 0.85), floor tier [attainable, not judged]: n = 2239, pass with at least 991 correct definite outcomes (lower 95% CP bound >= 0.4219); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.048 — meets the principle
+  S3 effect per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): E1 180/258, E2 62/102, E3 62/102; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S3 null per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): N1 142/198, N2 309/396, N5 142/198, N7 142/198; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S3 invalid per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): E1 184/242, E2 69/98, E3 69/98, N1 147/197, N2 308/395, N5 147/197, N6a 308/395, N6b 14/25, N6c 308/395, N7 147/197; a validator half as decisive on a condition fails it with >= 0.95 except on N6b
+  S4 effect: false NOT SUPPORTED against the direction where it is an error (the cards' mean rule nominal 0.0250, raised to 0.02817: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 924, pass with at most 40 errors (upper 95% CP bound <= 0.0585); P(pass | 0.0282) = 0.996, P(pass | 0.0563) = 0.045 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9996; it fails an error rate of 0.05598 or more with probability >= 0.95
+  S4 effect: false NOT SUPPORTED explained by depth where it is an error: n = 924, pass with at most 77 errors (upper 95% CP bound <= 0.1031); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09984 or more with probability >= 0.95
+  S4 null: NOT SUPPORTED against the direction on null data (allowed: its rate bounded as a false detection's): n = 3168, pass with at most 137 errors (upper 95% CP bound <= 0.0509); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.042 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04967 or more with probability >= 0.95
+  S4 null: false NOT SUPPORTED explained by depth where it is an error: n = 1584, pass with at most 138 errors (upper 95% CP bound <= 0.1021); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.046 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09967 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED against the direction where it is an error: n = 5608, pass with at most 253 errors (upper 95% CP bound <= 0.0509); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04994 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED explained by depth where it is an error: n = 3640, pass with at most 333 errors (upper 95% CP bound <= 0.1013); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.045 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09973 or more with probability >= 0.95
+  S5 effect: false metric invalid where it is an error: n = 924, pass with at most 164 errors (upper 95% CP bound <= 0.2037); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.046 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.1995 or more with probability >= 0.95
+  S5 null: false metric invalid where it is an error: n = 3564, pass with at most 673 errors (upper 95% CP bound <= 0.2021); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.1999 or more with probability >= 0.95
+  S6 effect: false NO DETECTABLE EFFECT where it is an error: n = 716, pass with at most 58 errors (upper 95% CP bound <= 0.1035); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 0.9998; it fails an error rate of 0.09979 or more with probability >= 0.95
+  S6 invalid: false NO DETECTABLE EFFECT where it is an error: n = 5608, pass with at most 523 errors (upper 95% CP bound <= 0.1012); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.047 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09989 or more with probability >= 0.95
+  S7a verdicts the engine's deterministic rules cannot give (a label that does not match its cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict where the rules exclude one: N4 without the replicate unit, the constant metric): n = 10540, none allowed
+  S7b crashes (an engine exception or no report; a sound engine has none) at the nominal 0.001 (the cards' mean rule nominal 0.0010, raised to 0.00127: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 10540, pass with at most 18 errors (upper 95% CP bound <= 0.0027); P(pass | 0.0013) = 0.914, P(pass | 0.0025) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0000) passes it with 1.0000; it fails an error rate of 0.002531 or more with probability >= 0.95
+  P(S1-S7 all pass | sound), simulated (100,000 times, standard error 0.0009), S1 at its design, S3 judged on effect (principle), null (principle), invalid (principle): 0.912
+
+## Scenario B: every pair valid, every case establishable
+  cards 10540: valid metric on 8910, establishable 8960; rates measured by the pilot on 50
+  S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S2 N2: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N3: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N4: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N6: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N7: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 E: false SUPPORTED where it is an error, the cards outside S1: no card on which the error can occur — holds
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.786, at most 0.85), principle tier [JUDGED]: n = 1800, pass with at least 1065 correct definite outcomes (lower 95% CP bound >= 0.5685); P(pass | 0.786) = 1.000, P(pass | 0.572) = 0.050 — meets the principle
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.786, at most 0.85), floor tier [attainable, not judged]: n = 1800, pass with at least 743 correct definite outcomes (lower 95% CP bound >= 0.3899); P(pass | 0.786) = 1.000, P(pass | 0.393) = 0.046 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), principle tier [JUDGED]: n = 3950, pass with at least 2696 correct definite outcomes (lower 95% CP bound >= 0.6678); P(pass | 0.835) = 1.000, P(pass | 0.670) = 0.048 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), floor tier [attainable, not judged]: n = 3950, pass with at least 1701 correct definite outcomes (lower 95% CP bound >= 0.4151); P(pass | 0.835) = 1.000, P(pass | 0.417) = 0.049 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.855, at most 0.85), principle tier [JUDGED]: n = 1630, pass with at least 1172 correct definite outcomes (lower 95% CP bound >= 0.6965); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.049 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.855, at most 0.85), floor tier [attainable, not judged]: n = 1630, pass with at least 727 correct definite outcomes (lower 95% CP bound >= 0.4217); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.046 — meets the principle
+  S3 effect per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): E1 746/1000, E2 278/400, E3 278/400; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S3 null per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): N1 611/790, N2 1289/1580, N5 611/790, N7 611/790; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S3 invalid per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): N6a 633/790, N6b 32/50, N6c 633/790; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S4 effect: false NOT SUPPORTED against the direction where it is an error: n = 1800, pass with at most 74 errors (upper 95% CP bound <= 0.0513); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.044 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04966 or more with probability >= 0.95
+  S4 effect: false NOT SUPPORTED explained by depth where it is an error: n = 1800, pass with at most 158 errors (upper 95% CP bound <= 0.1018); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.044 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09953 or more with probability >= 0.95
+  S4 null: NOT SUPPORTED against the direction on null data (allowed: its rate bounded as a false detection's): n = 6320, pass with at most 287 errors (upper 95% CP bound <= 0.0508); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04996 or more with probability >= 0.95
+  S4 null: false NOT SUPPORTED explained by depth where it is an error: n = 3160, pass with at most 287 errors (upper 95% CP bound <= 0.1014); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.044 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09967 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED against the direction where it is an error: n = 1580, pass with at most 64 errors (upper 95% CP bound <= 0.0514); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.044 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9999; it fails an error rate of 0.04964 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED explained by depth where it is an error: n = 1580, pass with at most 138 errors (upper 95% CP bound <= 0.1024); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09992 or more with probability >= 0.95
+  S5 effect: false metric invalid where it is an error: n = 1800, pass with at most 331 errors (upper 95% CP bound <= 0.2026); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.045 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.1996 or more with probability >= 0.95
+  S5 null: false metric invalid where it is an error: n = 7110, pass with at most 1366 errors (upper 95% CP bound <= 0.2015); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.2 or more with probability >= 0.95
+  S6 effect: false NO DETECTABLE EFFECT where it is an error: n = 1400, pass with at most 121 errors (upper 95% CP bound <= 0.1024); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.047 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09979 or more with probability >= 0.95
+  S6 invalid: false NO DETECTABLE EFFECT where it is an error: n = 1580, pass with at most 138 errors (upper 95% CP bound <= 0.1024); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09992 or more with probability >= 0.95
+  S7a verdicts the engine's deterministic rules cannot give (a label that does not match its cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict where the rules exclude one: N4 without the replicate unit, the constant metric): n = 10540, none allowed
+  S7b crashes (an engine exception or no report; a sound engine has none) at the nominal 0.001 (the cards' mean rule nominal 0.0010, raised to 0.00127: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 10540, pass with at most 18 errors (upper 95% CP bound <= 0.0027); P(pass | 0.0013) = 0.914, P(pass | 0.0025) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0000) passes it with 1.0000; it fails an error rate of 0.002531 or more with probability >= 0.95
+  P(S1-S7 all pass | sound), simulated (100,000 times, standard error 0.0009), S1 at its design, S3 judged on effect (principle), null (principle), invalid (principle): 0.913
+
+## Scenario C: the low level blind, every medium pair blind, a quarter of the cases establishable
+  cards 10540: valid metric on 3000, establishable 2245; rates measured by the pilot on 50
+  S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+  S2 N2: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N3: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N4: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N6: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 N7: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.05974 or more with probability >= 0.95
+  S2 E: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.02602: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 1176, pass with at most 48 errors (upper 95% CP bound <= 0.0538); P(pass | 0.0260) = 0.999, P(pass | 0.0520) = 0.044 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9995; it fails an error rate of 0.05163 or more with probability >= 0.95
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.787, at most 0.85), principle tier [JUDGED]: n = 156, pass with at least 101 correct definite outcomes (lower 95% CP bound >= 0.5670); P(pass | 0.787) = 1.000, P(pass | 0.573) = 0.035 — meets the principle
+  S3 effect: correct definite outcomes, establishable cards (the measured 0.787, at most 0.85), floor tier [attainable, not judged]: n = 156, pass with at least 72 correct definite outcomes (lower 95% CP bound >= 0.3815); P(pass | 0.787) = 1.000, P(pass | 0.393) = 0.049 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), principle tier [JUDGED]: n = 330, pass with at least 236 correct definite outcomes (lower 95% CP bound >= 0.6632); P(pass | 0.835) = 1.000, P(pass | 0.670) = 0.045 — meets the principle
+  S3 null: correct definite outcomes, establishable cards (the measured 0.835, at most 0.85), floor tier [attainable, not judged]: n = 330, pass with at least 154 correct definite outcomes (lower 95% CP bound >= 0.4118); P(pass | 0.835) = 1.000, P(pass | 0.417) = 0.040 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.851, at most 0.85), principle tier [JUDGED]: n = 1363, pass with at least 983 correct definite outcomes (lower 95% CP bound >= 0.6966); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.046 — meets the principle
+  S3 invalid: correct definite outcomes, establishable cards (the measured 0.851, at most 0.85), floor tier [attainable, not judged]: n = 1363, pass with at least 610 correct definite outcomes (lower 95% CP bound >= 0.4209); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.049 — meets the principle
+  S3 effect per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): E1 55/88, E2 16/34, E3 16/34; a validator half as decisive on a condition fails it with >= 0.95 except on E2, E3
+  S3 null per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): N1 42/66, N2 96/132, N5 42/66, N7 42/66; a validator half as decisive on a condition fails it with >= 0.95 on every one
+  S3 invalid per condition, at least k of its n establishable cards (a sound validator fails each with <= 0.0001; one deciding none of them fails): E1 119/162, E2 44/66, E3 44/66, N1 96/132, N2 201/264, N5 96/132, N6a 148/198, N6b 5/13, N6c 148/198, N7 96/132; a validator half as decisive on a condition fails it with >= 0.95 except on N6b
+  S4 effect: false NOT SUPPORTED against the direction where it is an error (the cards' mean rule nominal 0.0250, raised to 0.03238: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 624, pass with at most 30 errors (upper 95% CP bound <= 0.0679); P(pass | 0.0324) = 0.986, P(pass | 0.0648) = 0.049 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.06465 or more with probability >= 0.95
+  S4 effect: false NOT SUPPORTED explained by depth where it is an error (the cards' mean rule nominal 0.0500, raised to 0.0505: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 624, pass with at most 50 errors (upper 95% CP bound <= 0.1043); P(pass | 0.0505) = 0.999, P(pass | 0.1010) = 0.045 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 0.9995; it fails an error rate of 0.1003 or more with probability >= 0.95
+  S4 null: NOT SUPPORTED against the direction on null data (allowed: its rate bounded as a false detection's): n = 2112, pass with at most 88 errors (upper 95% CP bound <= 0.0511); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.041 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04954 or more with probability >= 0.95
+  S4 null: false NOT SUPPORTED explained by depth where it is an error: n = 1056, pass with at most 89 errors (upper 95% CP bound <= 0.1027); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.047 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09969 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED against the direction where it is an error: n = 6964, pass with at most 318 errors (upper 95% CP bound <= 0.0508); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.050 — meets the principle
+    a sound validator (the cards' mean rate 0.0250) passes it with 1.0000; it fails an error rate of 0.04999 or more with probability >= 0.95
+  S4 invalid: false NOT SUPPORTED explained by depth where it is an error: n = 4332, pass with at most 400 errors (upper 95% CP bound <= 0.1013); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09989 or more with probability >= 0.95
+  S5 effect: false metric invalid where it is an error: n = 624, pass with at most 108 errors (upper 95% CP bound <= 0.2051); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.050 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.1999 or more with probability >= 0.95
+  S5 null: false metric invalid where it is an error: n = 2376, pass with at most 442 errors (upper 95% CP bound <= 0.2023); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.046 — meets the principle
+    a sound validator (the cards' mean rate 0.1000) passes it with 1.0000; it fails an error rate of 0.1997 or more with probability >= 0.95
+  S6 effect: false NO DETECTABLE EFFECT where it is an error (the cards' mean rule nominal 0.0500, raised to 0.05523: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 480, pass with at most 41 errors (upper 95% CP bound <= 0.1141); P(pass | 0.0552) = 0.997, P(pass | 0.1105) = 0.043 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 0.9996; it fails an error rate of 0.1094 or more with probability >= 0.95
+  S6 invalid: false NO DETECTABLE EFFECT where it is an error: n = 6964, pass with at most 654 errors (upper 95% CP bound <= 0.1010); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.046 — meets the principle
+    a sound validator (the cards' mean rate 0.0500) passes it with 1.0000; it fails an error rate of 0.09986 or more with probability >= 0.95
+  S7a verdicts the engine's deterministic rules cannot give (a label that does not match its cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict where the rules exclude one: N4 without the replicate unit, the constant metric): n = 10540, none allowed
+  S7b crashes (an engine exception or no report; a sound engine has none) at the nominal 0.001 (the cards' mean rule nominal 0.0010, raised to 0.00127: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 10540, pass with at most 18 errors (upper 95% CP bound <= 0.0027); P(pass | 0.0013) = 0.914, P(pass | 0.0025) = 0.048 — meets the principle
+    a sound validator (the cards' mean rate 0.0000) passes it with 1.0000; it fails an error rate of 0.002531 or more with probability >= 0.95
+  P(S1-S7 all pass | sound), simulated (100,000 times, standard error 0.0009), S1 at its design, S3 judged on effect (principle), null (principle), invalid (principle): 0.912
+
+## Resolution of an error cell by its number of cards (the fourth review): at the nominal alpha/2 and a
+## sound validator at it, the cell's raised nominal and threshold, and the error rate it fails with >= 0.95
+  n= 100: nominal 0.1112, at most 15, resolution 0.2215
+  n= 200: nominal 0.0600, at most 16, resolution 0.1190
+  n= 300: nominal 0.0441, at most 18, resolution 0.0877
+  n= 500: nominal 0.0347, at most 25, resolution 0.0691
+  n= 790: nominal 0.0299, at most 36, resolution 0.0597
+  n=1000: nominal 0.0276, at most 43, resolution 0.0551
+  n=1500: nominal 0.0250, at most 60, resolution 0.0494
+  n=2000: nominal 0.0250, at most 83, resolution 0.0496
+
+## Precision of a rate from n cards (half-width of the 95% CP interval)
+  n= 100: p=0.025: ±0.034, p=0.100: ±0.064, p=0.500: ±0.102
+  n= 200: p=0.025: ±0.025, p=0.100: ±0.044, p=0.500: ±0.071
+  n= 400: p=0.025: ±0.017, p=0.100: ±0.031, p=0.500: ±0.050
+  n= 790: p=0.025: ±0.012, p=0.100: ±0.022, p=0.500: ±0.035
+  n=1000: p=0.025: ±0.010, p=0.100: ±0.019, p=0.500: ±0.031
+  n=4000: p=0.025: ±0.005, p=0.100: ±0.009, p=0.500: ±0.016

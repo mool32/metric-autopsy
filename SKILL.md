@@ -13,7 +13,14 @@ information) each survived months of work before a 45-second QC check killed the
 
 Your job when this skill runs is **not** to compute a number and report it. It is to run
 the metric through a gauntlet of gates, each designed to catch one way a metric fakes
-biology, and to stop at the first one it fails.
+biology, and to report the verdict the engine decides from four fields — metric validity,
+design adequacy, effect, replication — with the numbers behind each.
+
+> **Status: validated only within the scope of the pre-registered validation v1** (README,
+> Status: scRNA-seq counts, `norm_pearson` on a gene pair, two backgrounds, the binomial-thinning
+> family and N8). Do not call a verdict validated outside that scope. Inside it, cite the error
+> rates from `scores.json` (branch `results/panel-v1`). Never write "validated" or "reliable"
+> without the scope next to it.
 
 ## Input contract
 
@@ -26,6 +33,8 @@ You need, from the user (elicit anything missing — do not guess):
   `norm_pearson`, `spectral_entropy`) **or** a user callable `metric(data) -> float`.
 - **Genes / groups:** the gene pair (for pairwise metrics), the group column and the two
   levels to compare, and positive/negative control gene pairs.
+- **Replicates:** the `obs` column of the biological replicate (mouse, donor, plate). Without
+  it there is no effect verdict — cells are not independent replicates.
 
 ## Protocol — follow in order
 
@@ -33,13 +42,31 @@ You need, from the user (elicit anything missing — do not guess):
 
 Walk the user through `references/prereg_template.md`. Fill every field: the one-sentence
 hypothesis, the biological process, the formula, **the simplest non-biological explanation**,
-and what would disprove the claim. An empty field is not "TBD" — it is the reason the
-analysis will fail. Record the filled form; it becomes the header of the autopsy report and
-supplies the answers to the judgment gates (4 and 7).
+and what would disprove the claim. Then the commitments the engine enforces:
+
+- **estimand** — `composition` (relative expression) or `content` (amount of RNA). It decides
+  the correction: thinning to equal depth, or to equal spike-in capture. No estimand, or a
+  content estimand without spike-ins, is UNIDENTIFIABLE;
+- **direction** — the claimed change of the metric from the first group to the second
+  (`increase`, `decrease`, or `two-sided` for a non-directional claim, which the verdict marks).
+  SUPPORTED needs the effect in this direction; a detected effect the other way is NOT SUPPORTED;
+- **replicate unit** and **minimum replicates** per group;
+- **SESOI** — the smallest effect size of interest (needed to claim "no detectable effect",
+  for the power check, for "explained by depth", and to size nuisance biases: a dropout or
+  library-size bias blocks only above `bias_tolerance` × SESOI, default 0.5; without a SESOI
+  SUPPORTED is withheld while a bias is unsized), and its scale (`sesoi_scale`: `construct`, the
+  default, attenuated by GATE 0's λ, or `observed`, the metric's own scale);
+- **delta_min** — the smallest response to an injected signal that matters (default 0.5 ×
+  SESOI): GATE 4 and GATE 5 call the metric invalid only when its response is shown below it;
+- alpha, power, controls (or an injected signal and its direction).
+
+An empty field is not "TBD" — it is the reason the analysis will fail. Save the commitments as
+JSON for `--prereg`; the engine hashes them into the report. The form supplies the answers to
+the judgment gates (4 and 7).
 
 Do not proceed to computation until the pre-reg is filled. This step is the whole point.
 
-### 2. Run the auto gates in order, stopping at the first blocking failure
+### 2. Run the gates
 
 Invoke the engine — the thin wrapper is `scripts/run_gates.py`:
 
@@ -47,43 +74,51 @@ Invoke the engine — the thin wrapper is `scripts/run_gates.py`:
 python scripts/run_gates.py --h5ad <data.h5ad> \
     --metric <name> --gene-a <A> --gene-b <B> \
     --group-col <col> --groups <g1> <g2> --within <factor...> \
-    --pos-pair <A> <B> --neg-pair <A> <B> [--data2 <replicate.h5ad>]
+    --replicate-col <mouse> --prereg <prereg.json> \
+    --pos-pair <A> <B> --neg-pair <A> <B> [--inject-signal coupling] \
+    [--data2 <replicate.h5ad>] --json autopsy.json
 ```
 
 or drive `metric_autopsy.run_autopsy(...)` directly for a bring-your-own callable. Try
-`python scripts/run_gates.py --demo` to watch the reference `mi_3bin` die at GATE 0 (add
-`--no-stop` to run every gate rather than halting at the first blocking failure).
+`python scripts/run_gates.py --demo --no-stop` to see the four fields on the bundled
+synthetic confound.
 
 The gates, and what each catches (full detail in `references/gates.md`):
 
-| Gate | Catches | Auto? |
+| Gate | Catches | Feeds |
 |---|---|---|
-| **0 Mathematical independence** | metric moves under a nuisance stat (dropout, depth, variance) with no biology change | yes |
-| **1 QC parity** | groups differ in technical quality — *in any factorial stratum*, not just the main axis | yes · **crown jewel** |
-| **2 n_genes matching** | effect vanishes once cell quality is equalized; the "groups don't even overlap → STOP" verdict fires only when GATE 2 is run *within* a flagged stratum | yes · **crown jewel** |
+| **0 Mathematical independence** | a nuisance (dropout, depth, library size) that *biases* the metric — FAIL beyond the SESOI tolerance; a depth bias the declared correction removes is reported; attenuation is reported, not failed | metric validity; attenuation → power |
+| **1 QC parity** | groups differ in technical quality — *in any factorial stratum*; a diagnostic (WARN), not a kill switch | design adequacy |
+| **2 Estimand-dependent correction** | the raw difference is depth or capture: thinning to equal depth (composition) or spike-in capture (content), then replicate-level inference | effect |
 | **3 Raw visibility** | effect isn't visible in the raw scatter; a "shape change" is really dropout | export + judgment |
-| **4 Measures what you think** | more than one non-biological scenario explains the result | judgment — you ask |
-| **5 Controls** | positive control silent or negative control fires, in any stratum | yes |
-| **6 Replication** | effect doesn't survive an independent platform/species after QC matching | yes, if 2nd dataset |
-| **7 Effect size** | statistically real but biologically negligible | judgment — you ask |
+| **4 Measures what you think** | the metric does not respond to an injected signal (auto); more than one non-biological scenario explains the result (judgment — you ask) | metric validity |
+| **5 Controls** | negative control fires, or positive control silent where the design had the power to show it (FAIL); positive control silent where it had not (WARN); per stratum, against empirical nulls; the controls must run the metric under judgment | metric validity |
+| **6 Replication** | the corrected, replicate-level effect does not hold on independent data | replication |
+| **7 Effect size** | statistically real but biologically negligible — declare it as the SESOI | judgment — you ask |
 
-A `FAIL` or `STOP` is **blocking**: do not let a later gate rescue it. Report the death and
-stop. GATE 1 is the highest-yield check — always run it first, stratified by every factor.
+An invalid metric (GATE 0 bias, a failed negative control, no response to an injected
+signal) is **blocking**: by default the effect is not even estimated. Do not let a later gate
+rescue it. GATE 1 is the highest-yield look at the data — always stratify by every factor.
 
 ### 3. Resolve the judgment gates (4, 7) with the user
 
 These are not computable from data. Ask directly, using the pre-reg answers: *Which
 non-biological scenarios in the GATE 4 table fit your result, and what test separates them?*
 and *Is the effect larger than test–retest variability and in range for a real regulatory
-interaction?* If the user cannot rule the alternatives out, the verdict is INCONCLUSIVE, not
-PASS.
+interaction?* Only when the user rules the alternatives out, re-run with
+`--resolve-judgment` (or `prereg["judgment_pending"] = False`). Otherwise the verdict stays
+INCONCLUSIVE.
 
 ### 4. Emit the autopsy — numbers and a verdict, no rescue language
 
-Print the gate-by-gate table (`Autopsy.to_markdown()`) with the actual numbers, then a
-single verdict decided by the first blocking gate. Follow the research-flow rule: a failed
-metric is recorded as **killed**, plainly, with the number that killed it — never softened.
-Cleared gates yield a *provisional* PASS ("real until replicated"), not a victory lap.
+Print `Autopsy.to_markdown()`: the verdict, the four fields with their reasons, the
+gate-by-gate table, and the provenance hashes. Keep the JSON report (`--json`) with the data
+and pre-registration hashes. The verdict is one of SUPPORTED (provisional until replicated) ·
+SUPPORTED — replicated · NOT SUPPORTED · NO DETECTABLE EFFECT · INCONCLUSIVE · UNIDENTIFIABLE ·
+DEGENERATE METRIC, with its qualifiers (*parametric only*, *underpowered*). Follow the
+research-flow rule: a failed metric is recorded as **killed**, plainly, with the number that
+killed it — never softened. SUPPORTED is provisional ("real until replicated"), not a victory
+lap. If the run log shows earlier attempts at the same claim, say so.
 
 ## Progressive disclosure
 
@@ -94,11 +129,11 @@ Keep this file thin. Load depth on demand:
 
 ## What "good" looks like
 
-The reference failure: `mi_3bin` on SMAD→ECM dies at GATE 0 (expectation shifts ~60% under
-dropout) and GATE 1 (male stratum 1.9× QC gap). GATE 1's per-stratum flag is the cue to act:
-run pooled, GATE 2 finds nothing (the apparent effect is ~0 — pooling old = male+female dilutes
-the male-only confound away), so the automated run reports GATE 2 PASS. Re-run GATE 2 *within*
-the flagged male stratum and it STOPs — young/old n_genes don't even overlap there, so the
-groups are incomparable. The confound is invisible pooled and lethal stratified: **stratify, or
-the artifact hides in the interaction** — GATE 2 is only decisive once you restrict it to the
-stratum GATE 1 flags.
+The reference case, on the bundled demo (`--demo --no-stop`): `mi_3bin` on SMAD→ECM, biology
+identical everywhere, male-old capture degraded. GATE 0 finds no bias but heavy attenuation
+(dropout −61%, depth halving −24%), which goes to the power check. GATE 1 flags the male
+stratum (1.94× QC ratio, n_genes overlap 0.00) and the correction thins young males to the old
+males' depth. Across 16 mice the raw MI difference (+0.026) is not detected (p = 0.52) and
+shrinks to −13% of itself at equal depth: **INCONCLUSIVE — not supported**. Pooled, the male-only
+confound is invisible; stratified, it is found and removed. **Stratify, or the artifact hides in
+the interaction.**

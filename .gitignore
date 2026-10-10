@@ -16,6 +16,9 @@ dist/
 *.egg-info/
 .eggs/
 
+# metric-autopsy run logs (default CLI / MCP log; see provenance.py)
+metric_autopsy_runs.jsonl
+
 # Python
 __pycache__/
 *.pyc

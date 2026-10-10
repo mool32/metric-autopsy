@@ -1,0 +1,28 @@
+# The Census metadata of validation v1's backgrounds (suspension type and assay), which the README
+# states (validation/exploratory/census_metadata.py). Read-only: it prints and commits nothing.
+name: Census metadata of the v1 backgrounds
+
+on:
+  pull_request:
+    paths:
+      - "validation/exploratory/census_metadata.py"
+      - ".github/workflows/census-metadata.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The selection's environment
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-select.txt && pip check
+      - name: Suspension type and assay of B1 and B2
+        run: python validation/exploratory/census_metadata.py

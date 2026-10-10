@@ -1,0 +1,59 @@
+# metric-autopsy probe p14 — git 446cd57, python 3.13.16, numpy 2.5.3
+# pool  0 high   ['GENE5', 'GENE4'] mean 9.18/8.95 detected 0.96/0.96
+# pool  1 high   ['GENE16', 'GENE17'] mean 9.08/7.40 detected 0.96/0.94
+# pool  2 high   ['GENE10', 'GENE11'] mean 8.81/4.83 detected 0.96/0.89
+# pool  3 high   ['GENE9', 'GENE8'] mean 9.33/7.32 detected 0.96/0.94
+# pool  4 high   ['GENE14', 'GENE15'] mean 8.03/5.58 detected 0.96/0.91
+# pool  5 high   ['GENE2', 'GENE3'] mean 5.04/4.96 detected 0.90/0.90
+# pool  6 high   ['GENE19', 'GENE18'] mean 6.95/6.35 detected 0.94/0.93
+# pool  7 high   ['GENE0', 'GENE1'] mean 7.88/6.15 detected 0.95/0.93
+# pool  8 medium ['GENE843', 'GENE844'] mean 1.50/1.20 detected 0.64/0.57
+# pool  9 medium ['GENE852', 'GENE851'] mean 1.81/1.68 detected 0.69/0.67
+# pool 10 medium ['GENE846', 'GENE845'] mean 1.86/1.79 detected 0.70/0.69
+# pool 11 medium ['GENE849', 'GENE850'] mean 1.80/1.22 detected 0.69/0.58
+# pool 12 medium ['GENE837', 'GENE838'] mean 1.61/1.36 detected 0.66/0.61
+# pool 13 medium ['GENE835', 'GENE836'] mean 1.75/1.21 detected 0.67/0.58
+# pool 14 medium ['GENE839', 'GENE840'] mean 1.76/1.58 detected 0.68/0.65
+# pool 15 medium ['GENE847', 'GENE848'] mean 1.77/1.57 detected 0.67/0.64
+# pool 16 low    ['GENE1668', 'GENE1669'] mean 0.54/0.53 detected 0.36/0.35
+# pool 17 low    ['GENE1674', 'GENE1675'] mean 0.43/0.38 detected 0.32/0.28
+# pool 18 low    ['GENE1680', 'GENE1681'] mean 0.35/0.32 detected 0.27/0.25
+# pool 19 low    ['GENE1666', 'GENE1667'] mean 0.46/0.29 detected 0.32/0.22
+# pool 20 low    ['GENE2478', 'GENE1811'] mean 0.27/0.25 detected 0.22/0.21
+# pool 21 low    ['GENE1980', 'GENE1739'] mean 0.31/0.19 detected 0.25/0.16
+# pool 22 low    ['GENE1878', 'GENE1678'] mean 0.48/0.20 detected 0.35/0.17
+# pool 23 low    ['GENE1682', 'GENE1683'] mean 0.37/0.19 detected 0.27/0.16
+# delta_min 0.05 (0.5 x SESOI 0.1); GATE 4 with 200 injections, 95% CI
+1. response by dose (level mean over its pairs and datasets) and the saturation dose
+  high  : 0.25:+0.014 0.5:+0.052 0.75:+0.098 1:+0.143 1.25:+0.174 1.5:+0.203 1.75:+0.224 2:+0.238 2.25:+0.247 2.5:+0.251 2.75:+0.255 3:+0.256 3.25:+0.255 3.5:+0.253 3.75:+0.251 4:+0.250  -> dose 2.25
+  medium: 0.25:+0.010 0.5:+0.017 0.75:+0.039 1:+0.055 1.25:+0.072 1.5:+0.074 1.75:+0.068 2:+0.082 2.25:+0.079 2.5:+0.087 2.75:+0.085 3:+0.084 3.25:+0.081 3.5:+0.076 3.75:+0.075 4:+0.068  -> dose 2.5
+  low   : 0.25:-0.000 0.5:+0.003 0.75:+0.001 1:-0.006 1.25:+0.003 1.5:-0.005 1.75:+0.000 2:-0.007 2.25:+0.011 2.5:+0.009 2.75:-0.009 3:-0.001 3.25:-0.013 3.5:-0.003 3.75:+0.006 4:-0.002  -> dose 2.25
+2. population response per pair at the level's dose, against delta_min
+  pool  0 high  : +0.2783 (SE 0.0020, between-dataset SD 0.0099) -> valid
+  pool  1 high  : +0.2657 (SE 0.0022, between-dataset SD 0.0110) -> valid
+  pool  2 high  : +0.2329 (SE 0.0018, between-dataset SD 0.0086) -> valid
+  pool  3 high  : +0.2729 (SE 0.0018, between-dataset SD 0.0086) -> valid
+  pool  4 high  : +0.2301 (SE 0.0022, between-dataset SD 0.0109) -> valid
+  pool  5 high  : +0.2013 (SE 0.0016, between-dataset SD 0.0079) -> valid
+  pool  6 high  : +0.2420 (SE 0.0025, between-dataset SD 0.0123) -> valid
+  pool  7 high  : +0.2392 (SE 0.0017, between-dataset SD 0.0084) -> valid
+  pool  8 medium: +0.0753 (SE 0.0041, between-dataset SD 0.0199) -> valid
+  pool  9 medium: +0.0849 (SE 0.0029, between-dataset SD 0.0142) -> valid
+  pool 10 medium: +0.0851 (SE 0.0034, between-dataset SD 0.0165) -> valid
+  pool 11 medium: +0.0842 (SE 0.0030, between-dataset SD 0.0149) -> valid
+  pool 12 medium: +0.0753 (SE 0.0036, between-dataset SD 0.0176) -> valid
+  pool 13 medium: +0.0660 (SE 0.0036, between-dataset SD 0.0177) -> valid
+  pool 14 medium: +0.0817 (SE 0.0035, between-dataset SD 0.0172) -> valid
+  pool 15 medium: +0.0905 (SE 0.0029, between-dataset SD 0.0143) -> valid
+  pool 16 low   : +0.0133 (SE 0.0051, between-dataset SD 0.0249) -> blind
+  pool 17 low   : +0.0094 (SE 0.0061, between-dataset SD 0.0297) -> blind
+  pool 18 low   : +0.0036 (SE 0.0077, between-dataset SD 0.0379) -> blind
+  pool 19 low   : +0.0033 (SE 0.0079, between-dataset SD 0.0386) -> blind
+  pool 20 low   : -0.0084 (SE 0.0080, between-dataset SD 0.0392) -> blind
+  pool 21 low   : -0.0227 (SE 0.0115, between-dataset SD 0.0561) -> blind
+  pool 22 low   : -0.0206 (SE 0.0086, between-dataset SD 0.0421) -> blind
+  pool 23 low   : +0.0185 (SE 0.0103, between-dataset SD 0.0506) -> blind
+3. GATE 4 on 40 null datasets per level at its dose
+  high   (dose 2.25): PASS 40/40, FAIL 0/40, UNTESTED 0/40; on the valid pairs FAIL 0/40; response median +0.2413, upper bound median +0.2452
+  medium (dose 2.5): PASS 40/40, FAIL 0/40, UNTESTED 0/40; on the valid pairs FAIL 0/40; response median +0.0811, upper bound median +0.0881
+  low    (dose 2.25): PASS 1/40, FAIL 39/40, UNTESTED 0/40; on the valid pairs FAIL 0/0; response median -0.0012, upper bound median +0.0149

@@ -78,9 +78,13 @@ def test_gate1_stop_when_no_common_stratum():
 
 
 # --- #6 / #7 : GATE 0 noise-vs-bias and near-zero baseline -----------------
-def test_gate0_passes_invariant_constant_metric():
+def test_gate0_constant_metric_is_degenerate_not_confounded():
+    # #7 locked in that a zero baseline is not a false 'confounded' FAIL. v0.3 keeps that and
+    # names the real problem: a metric that never varies is DEGENERATE (v0.1.1 said PASS).
     d = make_clean()
-    assert gate0_independence(lambda data: 0.0, d).status == GateStatus.PASS
+    res = gate0_independence(lambda data: 0.0, d)
+    assert res.status == GateStatus.DEGENERATE
+    assert not any(r.get("confounded") for r in res.detail["responses"].values())
 
 
 def test_gate0_scale_invariant_response_not_flagged():
@@ -154,15 +158,19 @@ def test_markdown_cell_escapes_pipe_and_newline():
 
 # --- #21 : stop_on_first_fail honored for pairwise gates -------------------
 def test_stop_halts_before_gate6_after_gate5_fail():
+    # v0.3: the controls must test the judged metric (pair_metric was mi_3bin under a bound
+    # norm_pearson, which now skips GATE 5), so both are norm_pearson; the coupled pair offered
+    # as the negative control still fails GATE 5.
     d = make_clean()
     m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
     autopsy = run_autopsy(
         m, d, group_col="age", groups=("young", "old"), within=["sex"],
         gene_pair=("Smad3", "Col1a1"),
-        pair_metric=metrics.mi_3bin, pos_pair=("Actb", "Gapdh"), neg_pair=("Actb", "Gapdh"),
+        pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Actb", "Gapdh"),
         data2=d, stop_on_first_fail=True,
     )
     gates_run = {r.gate for r in autopsy.results}
+    assert next(r for r in autopsy.results if r.gate == 5).status == GateStatus.FAIL
     assert 5 in gates_run and 6 not in gates_run  # GATE 5 blocked -> GATE 6 never ran
 
 
@@ -177,20 +185,64 @@ def test_metric_name_unwraps_partial():
     assert _metric_name(partial(metrics.mi_3bin, gene_a="x", gene_b="y")) == "mi_3bin"
 
 
+def _verdict_line(markdown: str) -> str:
+    """The verdict sentence printed under '## Verdict' (bold markers stripped)."""
+    lines = markdown.splitlines()
+    i = lines.index("## Verdict")
+    return next(line for line in lines[i + 1:] if line.strip()).strip("* ")
+
+
+VERDICT_PREFIXES = ("SUPPORTED", "NOT SUPPORTED", "NO DETECTABLE EFFECT", "INCONCLUSIVE",
+                    "UNIDENTIFIABLE", "DEGENERATE METRIC")
+
+
 # --- #12 : spectral_entropy (no-genes metric) does not crash via CLI -------
 def test_spectral_entropy_cli_no_crash(capsys):
-    cli.main(["--demo", "--metric", "spectral_entropy", "--no-stop"])
+    cli.main(["--demo", "--metric", "spectral_entropy", "--no-stop", "--no-log"])
     out = capsys.readouterr().out
-    assert "spectral_entropy" in out and "Verdict" in out
+    assert "spectral_entropy" in out
+    assert _verdict_line(out).startswith(VERDICT_PREFIXES)
 
 
-# --- #20 : CLI can reach a provisional PASS via --resolve-judgment ---------
-def test_cli_resolve_judgment_enables_pass(capsys):
-    cli.main(["--demo", "--metric", "norm_pearson", "--resolve-judgment", "--no-stop"])
-    out = capsys.readouterr().out
-    # norm_pearson clears the auto gates on the demo's non-degraded strata;
-    # with judgment resolved the verdict is reachable as PASS (not INCONCLUSIVE).
-    assert "Verdict" in out
+# --- #20 : --resolve-judgment is plumbed through, and CLI == API -----------
+def test_cli_verdict_matches_api_with_resolve_judgment(capsys):
+    """The CLI must print exactly the verdict the Python API gives for the same inputs."""
+    cli.main(["--demo", "--metric", "norm_pearson", "--resolve-judgment", "--no-stop", "--no-log"])
+    cli_verdict = _verdict_line(capsys.readouterr().out)
+    api = run_autopsy(
+        partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1"), cli.demo_data(),
+        group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"),
+        pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
+        replicate_col="mouse", prereg={"estimand": "composition", "judgment_pending": False},
+        stop_on_first_fail=False, log_path="off",
+    )
+    assert cli_verdict == api.verdict
+
+
+def test_resolving_judgment_is_necessary_but_not_sufficient_for_supported():
+    """v0.3 meaning: resolving the judgment gates is the last step to SUPPORTED, never a way
+    around the other three requirements. With a valid metric (positive control), a declared
+    estimand and a replicate-level DETECTED effect, pending judgment holds the verdict at
+    INCONCLUSIVE and resolving it — only that — gives the provisional SUPPORTED. Without
+    replicates or without a control, resolving it changes nothing. (v0.1.1: resolving the
+    judgment turned INCONCLUSIVE into PASS on a cell-level comparison with no control.)"""
+    from test_gates import CONTROLS, NPR, add_mice
+    d = add_mice(make_clean())
+    kw = dict(group_col="age", groups=("young", "old"), within=["sex"], gene_pair=("Smad3", "Col1a1"))
+    full = dict(kw, replicate_col="mouse", **CONTROLS)
+    claim = {"estimand": "composition", "direction": "decrease"}  # young couples more than old
+    pending = run_autopsy(NPR, d, prereg=claim, **full)
+    resolved = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False}, **full)
+    assert pending.verdict.startswith("INCONCLUSIVE") and "judgment" in pending.verdict
+    assert resolved.verdict == "SUPPORTED (provisional until replicated)"
+    assert ({k: v.status for k, v in pending.fields().items()}
+            == {k: v.status for k, v in resolved.fields().items()})  # only the judgment differs
+    no_reps = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False},
+                          **dict(kw, **CONTROLS))
+    no_control = run_autopsy(NPR, d, prereg={**claim, "judgment_pending": False},
+                             **dict(kw, replicate_col="mouse"))
+    for a in (no_reps, no_control):
+        assert a.verdict.startswith("INCONCLUSIVE"), a.verdict
 
 
 if __name__ == "__main__":
