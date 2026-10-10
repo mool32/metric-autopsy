@@ -24,9 +24,10 @@ was developed on had erred in both directions.
    metric and blocked a known sex difference. We rebuilt the logic (v0.3) and froze it before a
    blind test.
 4. In a pre-registered blind validation on two real CELLxGENE backgrounds with planted truth
-   (9,750 datasets, 10,540 claim cards), v0.3 met every error criterion within its scope. The
-   prediction that it would fail on per-cell variable capture was not confirmed; at high
-   expression its false-SUPPORTED rate there was 4.3% at a nominal 2.5% (exploratory).
+   (9,750 datasets, 10,540 claim cards), v0.3 met every error criterion within its scope. We
+   had predicted that it would fail on per-cell variable capture; the prediction was not
+   confirmed. At high expression its false-SUPPORTED rate there was 4.3% at a nominal 2.5%
+   (exploratory).
 5. It did not deliver its only real positive control, the sex difference in Xist and the Y genes
    in mouse islets. The background let the sexes be compared only inside pooled samples, which
    the protocol had missed, and GATE 4 measured an injected Xist signal over all cells, three

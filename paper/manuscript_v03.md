@@ -18,17 +18,17 @@ it passed a metric that returns random numbers and blocked a known sex differenc
 the logic (v0.3) and froze it before a blind test. In a pre-registered blind validation on two
 real CELLxGENE backgrounds with planted truth (9,750 datasets, 10,540 claim cards), v0.3 met
 every error criterion within its scope: one metric, two backgrounds, the binomial-thinning
-family of artifacts and per-cell variable capture. Our prediction that it would fail on per-cell
-variable capture was not confirmed. In an exploratory reading by expression level, its rate of
-false support there was 4.3% at high expression, against a nominal 2.5%. v0.3 did not deliver
-its only real positive control, the sex difference in Xist and the Y genes in mouse islets.
-The background allowed the sexes to be compared only inside pooled samples, which the protocol
-had missed. GATE 4 measured an injected Xist signal over all cells, three quarters of which
-lack Xist, and so called a valid metric invalid. The development data had erred in both
-directions: they overstated one error rate 2.6-fold and hid the GATE 4 defect. A validator must
-therefore be tested blind, on real backgrounds, with real positive controls and with the
-settings a user would choose. We report the scope, the failures and the targets of the next
-version.
+family of artifacts and per-cell variable capture. We had predicted that it would fail on
+per-cell variable capture; the prediction was not confirmed. In an exploratory reading by
+expression level, its rate of false support there was 4.3% at high expression, against a
+nominal 2.5%. v0.3 did not deliver its only real positive control, the sex difference in Xist
+and the Y genes in mouse islets. The background allowed the sexes to be compared only inside
+pooled samples, which the protocol had missed. GATE 4 measured an injected Xist signal over all
+cells, three quarters of which lack Xist, and so called a valid metric invalid. The development
+data had erred in both directions: they overstated one error rate 2.6-fold and hid the GATE 4
+defect. A validator must therefore be tested blind, on real backgrounds, with real positive
+controls and with the settings a user would choose. We report the scope, the failures and the
+targets of the next version.
 
 ## 4. A blind, pre-registered validation of v0.3
 
