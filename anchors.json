@@ -1,0 +1,61 @@
+[
+ {
+  "claim": "R1",
+  "error": "ValueError('setting an array element with a sequence.')"
+ },
+ {
+  "claim": "R2a G2M score",
+  "verdict": "INCONCLUSIVE \u2014 insufficient replication: 1 replicate(s) per group (need >= 3): no effect verdict",
+  "cause": "insufficient_replication",
+  "label": "INCONCLUSIVE",
+  "allowed": [
+   "INCONCLUSIVE"
+  ],
+  "in_allowed": true,
+  "note": "52 G2M genes matched",
+  "fields": {
+   "metric_validity": "PASS",
+   "design_adequacy": "INSUFFICIENT_REPLICATION",
+   "effect": "INCONCLUSIVE",
+   "replication": "NOT_RUN"
+  }
+ },
+ {
+  "claim": "R2b total RNA, ERCC present",
+  "verdict": "INCONCLUSIVE \u2014 insufficient replication: 1 replicate(s) per group (need >= 3): no effect verdict",
+  "cause": "insufficient_replication",
+  "label": "INCONCLUSIVE",
+  "allowed": [
+   "INCONCLUSIVE"
+  ],
+  "in_allowed": true,
+  "note": "",
+  "fields": {
+   "metric_validity": "UNTESTED",
+   "design_adequacy": "INSUFFICIENT_REPLICATION",
+   "effect": "INCONCLUSIVE",
+   "replication": "NOT_RUN"
+  }
+ },
+ {
+  "claim": "R2c total RNA, ERCC removed",
+  "verdict": "UNIDENTIFIABLE \u2014 a content estimand (total RNA, genes detected) needs an external standard; no spike-ins with prefix 'ERCC' were found, so capture cannot be separated from content",
+  "cause": "unidentifiable",
+  "label": "UNIDENTIFIABLE",
+  "allowed": [
+   "UNIDENTIFIABLE"
+  ],
+  "in_allowed": true,
+  "note": "",
+  "fields": {
+   "metric_validity": "UNTESTED",
+   "design_adequacy": "UNIDENTIFIABLE",
+   "effect": "NOT_ESTIMABLE",
+   "replication": "NOT_RUN"
+  }
+ },
+ {
+  "claim": "R3",
+  "skipped": "B4 was dropped (section 3.1)"
+ }
+]
