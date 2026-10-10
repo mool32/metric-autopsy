@@ -1,0 +1,125 @@
+{
+ "shards": [
+  {
+   "shard": 0,
+   "datasets": 4,
+   "cards": 5,
+   "run": 5,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 20.16034984588623,
+   "mean_seconds": 12.84307804107666,
+   "median_seconds": 11.932220220565796,
+   "peak_rss_mb": 627.2890625,
+   "logged_twice": []
+  },
+  {
+   "shard": 1,
+   "datasets": 4,
+   "cards": 5,
+   "run": 5,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 22.47232151031494,
+   "mean_seconds": 16.69413924217224,
+   "median_seconds": 21.041947841644287,
+   "peak_rss_mb": 626.7109375,
+   "logged_twice": []
+  }
+ ],
+ "reruns": [
+  {
+   "shard": 1,
+   "reason": "no artifact from the first attempt (a lost runner or an infrastructure failure)",
+   "rerun_job": "rerun",
+   "run_id": 38070771737,
+   "run_attempt": 1
+  }
+ ]
+}
