@@ -13,7 +13,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from scipy import sparse
+
+sparse = pytest.importorskip("scipy.sparse")  # the sparse path needs scipy (CI's core-only jobs skip)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import anchors  # noqa: E402
