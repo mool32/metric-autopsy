@@ -15,27 +15,35 @@ was developed on had erred in both directions.
 
 ## Abstract skeleton
 
+With the owner's edits of 2026-10-10 (round 3), written out in `paper/manuscript_v03.md`:
 1. A metric that differs between single-cell conditions is often read as biology, although
    depth, dropout and the design can make the same difference.
 2. metric-autopsy runs a pre-registered claim through gates aimed at named artifacts and decides
    one verdict from four fields: metric validity, design adequacy, an effect over biological
    replicates at equal depth, and replication.
 3. Its first release, v0.1.1, erred in both directions on its own probes: it passed a random
-   metric and blocked a known sex difference. We rebuilt the logic (v0.3) and froze it before a
+   metric and blocked a known sex difference. I rebuilt the logic (v0.3) and froze it before a
    blind test.
-4. In a pre-registered blind validation on two real CELLxGENE backgrounds with planted truth
-   (9,750 datasets, 10,540 claim cards), v0.3 met every error criterion within its scope. We
-   had predicted that it would fail on per-cell variable capture; the prediction was not
-   confirmed. At high expression its false-SUPPORTED rate there was 4.3% at a nominal 2.5%
-   (exploratory).
-5. It did not deliver its only real positive control, the sex difference in Xist and the Y genes
-   in mouse islets. The background let the sexes be compared only inside pooled samples, which
-   the protocol had missed, and GATE 4 measured an injected Xist signal over all cells, three
-   quarters of which lack Xist, and so called a valid metric invalid.
-6. The development data had erred in both directions: they overstated one error rate 2.6-fold
-   and hid the GATE 4 defect. So a validator has to be tested blind, on real backgrounds, with
-   real positive controls and with the settings a user would choose. We report the scope, the
-   failures and the targets of v0.4.
+4. In a pre-registered blind validation with planted truth on two real CELLxGENE backgrounds
+   (9,750 datasets, 10,540 claim cards), v0.3 met all eight pre-registered criteria within its
+   scope. What works, with numbers: useless metrics never received SUPPORTED (0 of 1,630 cards),
+   and on the pure nulls with a valid metric a false SUPPORTED came on 2.2% at a nominal 2.5%.
+5. I had predicted that it would fail on per-cell variable capture; the prediction was not
+   confirmed. Why (exploratory): the metric is blind at medium and low expression, where no
+   false SUPPORTED occurred; at high expression under per-cell capture the rate was 4.3% (95% CI
+   2.2–7.6%) at a nominal 2.5%.
+6. The only real positive control expected to be confirmed was not confirmed (R2 is a real
+   positive control too, without replicates by design): the background allowed the sexes to be
+   compared only inside pooled samples, and GATE 4 measured an injected Xist signal over all
+   cells, three quarters of which lack Xist.
+7. The development data erred in both directions: they overstated one error rate 2.6-fold and did
+   not reveal the GATE 4 defect. So a validator has to be tested blind, on real backgrounds, with
+   real positive controls and with the settings a user would choose: on the panel the dose and
+   the SESOI came from the pilot, that is, the oracle (kept because item 4 of round 3 confirmed
+   that the module probe's default fails a valid mean-expression metric at SESOI 0.5; that
+   finding itself is in §4.4, §4.7 and §7, not in the abstract).
+8. Reproducibility: the protocol, the code, the drand key and every verdict are open; any dataset
+   can be rebuilt from the tag and run again.
 
 ## Title options
 
@@ -60,6 +68,9 @@ was developed on had erred in both directions.
 | **audit** | the flagship audit | branch `results/flagship-audit` at d2a5420 (data_sha256 d921bc22…, script_sha256 644e6ef5…) |
 | **step1** | the audit's report | `validation/flagship_audit/REPORT.md` (c7d073d) |
 | **mice** | section E without composite ids | `validation/flagship_audit/mouse_level.log` (7feadc2) |
+| **by-truth** | false SUPPORTED on the pure nulls and N8 by the metric's truth; the useless metrics | `validation/exploratory/v1_nulls_by_truth.log` (rows rebuilt as `score.py` builds them) |
+| **dilution** | GATE 4's module probe against frac and the share of cells with the marker | `validation/exploratory/gate4_module_dilution.log` (synthetic counts and B2's Xist cells) |
+| **figures** | the five figures | `paper/figures_v03/make_figures.py` and its PNGs |
 
 ## 1. The problem
 
@@ -154,6 +165,12 @@ numbers are exploratory, not a criterion (by-level):
 - GATE 4's module probe measures the response over all cells, so for a marker present in only
   some cells it can call a valid metric invalid (§4.7). v1's panel used the module probe only on
   the useless metric N6c, so v1 did not test this path.
+- The SESOI and GATE 4's dose of every card came from the pilot, that is, from the oracle; a user
+  sets them without one.
+- With the module probe's default (2-fold in 30% of cells), a valid mean-expression metric of a
+  gene fails GATE 4 at SESOI 0.5 at B2's depth even with the marker in every cell: largest upper
+  bound +0.206 on synthetic counts, +0.191 on B2's Xist cells (dilution). The CLI and the MCP
+  server offer only the coupling probe; the module probe is in the Python API.
 
 **Checks after the run.**
 - `score.py` on the published reports reproduces every criterion (PROJECT.md, e765f24).
@@ -184,9 +201,12 @@ ran once, after the results and outside v1.
   - 6 pools of both sexes, 53.0–80.0% and 33.8–45.8% (Fltp_P16 at 2 weeks, Fltp_2y at 20 months
     and over), each with 227–267 cells annotated female and 133–173 male of its 400.
 - The atlas confirms both: its sample table lists the six as "mixed" and all twelve of its NOD
-  samples as female (B2 holds ten). In the pools each cell's sex was assigned from a score of the
-  Y-chromosome genes (the "data-driven" sex annotation; `2_annotate_Fltp_P16.py`,
-  `2_annotate_Fltp_2y.py`).
+  samples as female (B2 holds ten). Its CELLxGENE submission calls `donor_id` "ID of a sample and
+  not donor" ([lines 643–644](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L643-L644)). In the pools each cell's sex was set by a
+  threshold on a Y-chromosome score (`2_annotate_Fltp_2y.py` [414–436](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_2y.py#L414-L436),
+  [474](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_2y.py#L474); `2_annotate_Fltp_P16.py` [398–420](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_P16.py#L398-L420), [458](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_P16.py#L458)),
+  marked "data-driven"
+  ([`25-1_prepare_cellxgene.py` 419–431](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L419-L431), [640–641](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L640-L641)).
 - No development stage holds a single male and a single female. Within a stage the sexes meet
   only inside the pools (table from b2).
 
@@ -204,7 +224,8 @@ ran once, after the results and outside v1.
   a pool counts for both), and checked neither that an id is one animal of one sex nor that both
   sexes share a stratum. By the engine's own design rules the allowed set was UNIDENTIFIABLE,
   with the pools and without them (b2). Inside the pools a Y-gene comparison would be circular:
-  the cells' sex there was assigned from the Y genes (atlas).
+  the cells' sex there was assigned from the Y genes (atlas). An Xist comparison by that sex
+  inside the pools would not be circular, but it would compare cells, not mice.
 - **Xist: a false "metric invalid", an engine defect.** GATE 4's module probe raises Xist 2-fold
   in every cell and measures the metric over all cells. 74.2% of B2's cells have no Xist, where
   the probe changes nothing (b2):
@@ -216,7 +237,9 @@ ran once, after the results and outside v1.
   | female (R1's sham; 4,976 cells) | 96.1% | +0.6149 (+0.6144 to +0.6154) | PASS |
 
   The all-cell response is close to the share of cells with Xist times the response there:
-  0.258 × 0.631 = 0.163.
+  0.258 × 0.631 = 0.163. R1's probe needs about 40% of cells with Xist (39.8% on B2's cells,
+  dilution), more for a weaker marker. The SESOI 0.5 and the probe were constants of `anchors.py`
+  at the tag, not chosen after the result.
 
   v1 never tested this path. In the anchors the probe ran on four valid metrics and passed on
   three: R2a's G2M score, R1's Y-gene score and R1's sham, the same Xist metric on the female
@@ -224,8 +247,9 @@ ran once, after the results and outside v1.
 - **The sham: correct.**
 
 **v0.1.1 and v0.3 on their real positive controls.** v0.1.1 did not confirm Xist because of
-GATE 1, on TMS (step1, section F). v0.3 did not either, because of GATE 4 and the design, on B2.
-The manuscript does not say that v0.3 fixed v0.1.1's Xist error: it did not.
+GATE 1, on TMS (step1, section F). v0.3 removed that failure (GATE 1 is now a diagnostic), but
+the control was still not confirmed: another gate, GATE 4, failed it, and the design could not
+have confirmed it.
 
 ## 5. The corrected TMS case
 
@@ -259,7 +283,9 @@ The audit pinned to v0.1.1 (audit, step1). Its seven edits are accepted, with tw
 
 Short; four paragraphs. The references were checked on 2026-10-10 against the publisher's or
 PubMed's record through web search, since Crossref and PubMed could not be read directly from
-this environment. Items marked «проверить» need a look at the record before submission.
+this environment. The rule (the owner, 2026-10-10): a reference is checked when the text first
+needs it, and an unchecked one does not enter the text. The owner checks the whole list
+independently before publication.
 
 - **Pseudoreplication.** Cells of one animal are not independent replicates (Hurlbert 1984;
   Lazic 2010). In single-cell differential expression, tests over cells give false discoveries
@@ -293,8 +319,8 @@ References (verified as written unless marked):
   *Nat Biotechnol* 33:155–160. doi:10.1038/nbt.3102 (B3)
 - CZI Cell Science Program, Abdulla S, Aevermann B, Assis P, et al. (2025). CZ CELLxGENE
   Discover: a single-cell data platform for scalable exploration, analysis and modeling of
-  aggregated data. *Nucleic Acids Res* 53(D1):D886–D900. doi:10.1093/nar/gkae1142 — «проверить»
-  the group byline (seen only in search snippets).
+  aggregated data. *Nucleic Acids Res* 53(D1):D886–D900. doi:10.1093/nar/gkae1142 (PMC11701654;
+  online 28 Nov 2024)
 - Crowell HL, Soneson C, Germain P-L, et al. (2020). muscat detects subpopulation-specific state
   transitions from multi-sample multi-condition single-cell transcriptomics data. *Nat Commun*
   11:6077. doi:10.1038/s41467-020-19894-4
@@ -308,7 +334,7 @@ References (verified as written unless marked):
   doi:10.1186/s13059-019-1874-1
 - Hicks SC, Townes FW, Teng M, Irizarry RA (2018). Missing data and technical variability in
   single-cell RNA-sequencing experiments. *Biostatistics* 19(4):562–578.
-  doi:10.1093/biostatistics/kxx053 — «проверить» the end page (from citing records).
+  doi:10.1093/biostatistics/kxx053 (PMC6215955)
 - Hrovatin K, Bastidas-Ponce A, Bakhti M, et al. (2023). Delineating mouse β-cell identity during
   lifetime and in diabetes with a single cell atlas. *Nat Metab* 5:1615–1637.
   doi:10.1038/s42255-023-00876-x (B2)
@@ -352,10 +378,8 @@ References (verified as written unless marked):
 - Zimmerman KD, Espeland MA, Langefeld CD (2021). A practical solution to pseudoreplication bias
   in single-cell studies. *Nat Commun* 12:738. doi:10.1038/s41467-021-21038-1
 
-The other references of `validation_not_benchmarking.md` (Campbell & Fiske 1959, Cinelli et al.
-2022, Cronbach & Meehl 1955, Gagnon-Bartsch & Speed 2012, ICH Q2(R2), Messick 1995, Platt 1964,
-Schuemie et al. 2014, Shadish et al. 2002, Spearman 1904, Stevens 1946, Stuart 2010) are not
-checked yet: «проверить» each before it is cited.
+The other references of `validation_not_benchmarking.md` are not used (the owner, 2026-10-10):
+none of them is checked, so none enters the text.
 
 ## 7. Discussion
 
@@ -377,7 +401,15 @@ checked yet: «проверить» each before it is cited.
 - GATE 0's refusals on N7 need explaining (PROJECT.md).
 - Step 4, external verdicts, is next.
 
-## Figures (each from a script, written after approval)
+## 8. Methods and 9. Data and code availability
+
+Written in `paper/manuscript_v03.md`: the engine, the panel, the criteria, the key and the run,
+the analyses after the run, the roles and the use of AI (the author decides and approved the
+protocol; Claude is a conceptual partner; Claude Code agents wrote the code, ran the runs and did
+the five independent reviews), then the repository, the result branches, the data and how to
+reproduce.
+
+## Figures (each from `paper/figures_v03/make_figures.py`)
 
 1. The design of v1: conditions, cards, the key, the criteria.
 2. The criteria against their limits (scores.json).
