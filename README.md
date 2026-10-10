@@ -9,7 +9,7 @@
 
 Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) | tspiro@vaika.org
 
-📄 **Preprint (v0.1.1, superseded; do not upload):** [`paper/main.pdf`](paper/main.pdf); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). A new manuscript on v0.3 is planned.
+📄 **Preprint (v0.1.1, superseded; do not upload):** [`paper/main.pdf`](paper/main.pdf); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). A full draft of the new manuscript on v0.3, [`paper/manuscript_v03.md`](paper/manuscript_v03.md), is under the owner's review; it is not a preprint yet.
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
@@ -60,6 +60,15 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     Xist. The probe's 2-fold Xist signal moved the metric by +0.163 over all cells, below
 >     delta_min 0.25, and by +0.631 over the cells with Xist. This is outside v1's scope (v1's
 >     panel used the module probe only on the useless metric N6c) and a target of v0.4.
+>   - **With the module probe's default, a valid mean-expression metric of a gene does not pass
+>     GATE 4 at a SESOI of 0.5.** `injected_signal.module` raises the marker 2-fold in a random 30%
+>     of cells, so the response over all cells is about 0.3 × the share of cells with the marker ×
+>     the response in those cells, which for a well-detected marker is at most log 2 ≈ 0.69. At the
+>     depth of B2's cells it stayed below delta_min 0.25 even with the marker in every cell
+>     (largest upper bound +0.206 on synthetic counts, +0.191 on B2's Xist cells;
+>     [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). The module
+>     probe is reached through the Python API only: the CLI and the MCP server offer the coupling
+>     probe.
 > - **The error rates by expression level** (exploratory, not a criterion;
 >   [`v1_by_level.log`](validation/exploratory/v1_by_level.log), from `scores.json`):
 >   - All 2,458 cards with a valid metric are at the high expression level. At the medium and

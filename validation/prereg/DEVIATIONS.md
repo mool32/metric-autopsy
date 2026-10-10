@@ -103,10 +103,16 @@ headline stands: two of R1's three claims are outside their allowed sets. Their 
   that both sexes share a stratum. By the engine's own design rules R1's allowed set was
   UNIDENTIFIABLE: with the pools the ids are partially crossed with sex
   (`effect._replicate_design`), and without them no stage holds both sexes (GATE 1 stops). The
-  source atlas lists the six pools as "mixed", and in them each cell's sex was assigned from a
-  score of the Y-chromosome genes (theislab/mouse_cross-condition_pancreatic_islet_atlas at
-  3af65e4: `2_annotate_Fltp_P16.py`, `2_annotate_Fltp_2y.py`), so a Y-gene comparison inside the
-  pools would be circular.
+  source atlas (theislab/mouse_cross-condition_pancreatic_islet_atlas at 3af65e4) lists the six
+  pools as "mixed". Its CELLxGENE submission calls `donor_id` "ID of a sample and not donor"
+  ([`25-1_prepare_cellxgene.py` lines 643–644](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L643-L644)). In the pools each cell's sex was
+  set by a threshold on a Y-chromosome score (`2_annotate_Fltp_2y.py` lines
+  [414–436](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_2y.py#L414-L436) and [474](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_2y.py#L474); `2_annotate_Fltp_P16.py` lines
+  [398–420](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_P16.py#L398-L420) and [458](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/preprocessing/2_annotate_Fltp_P16.py#L458)), which
+  the submission marks "data-driven" ([`25-1_prepare_cellxgene.py` lines 419–431](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L419-L431)
+  and [640–641](https://github.com/theislab/mouse_cross-condition_pancreatic_islet_atlas/blob/3af65e46dd530c5faa0e8efa65004ef50fcc0309/reproducibility/code/prepare_submit/25-1_prepare_cellxgene.py#L640-L641)). So a Y-gene comparison inside the pools would be circular. A
+  comparison of Xist by that sex inside the pools would not be circular, but it would compare
+  cells, not mice.
 - **Xist: "metric invalid" by GATE 4, which is false: an engine defect.** GATE 4's module probe
   raises Xist 2-fold in every cell (the other genes thinned to half, against a sham that thins
   every gene) and measures the metric over all cells. 74.2% of B2's cells have no Xist, where

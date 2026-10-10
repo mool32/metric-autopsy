@@ -4,13 +4,13 @@
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
 **Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive  ← current
-*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only; see the validation plan below. The new manuscript waits for the owner's approval of its plan.)*
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only; see the validation plan below. A full draft of the new manuscript, `paper/manuscript_v03.md`, waits for the owner's review.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
 **Started:** 2026-07-04   **Last update:** 2026-10-10
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
-- Preprint: none yet — manuscript ready in `paper/manuscript.md`; bioRxiv posting pending
+- Preprint: none yet. `paper/manuscript.md` is the superseded v0.1.1 text (not to be uploaded); the v0.3 draft, `paper/manuscript_v03.md`, is under the owner's review
 - Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.1.1 pending release
 - Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
@@ -241,8 +241,8 @@ turns that checklist into runnable behavior.
 - [x] Public repo + `gh` metadata (description, homepage→DOI, topics incl. `tool`/`single-cell`).
 - [x] Release v0.1.0 → Zenodo DOI (concept + version) → DOI badge; CI green across Python 3.9–3.12.
 - [ ] ~~Post preprint to bioRxiv (manuscript ready)~~ — superseded (2026-10-10): the v0.1.1
-  manuscript is not to be uploaded (`paper/ARXIV_SUBMISSION.md`). A new manuscript on v0.3 waits
-  for the owner's approval of its plan.
+  manuscript is not to be uploaded (`paper/ARXIV_SUBMISSION.md`). A full draft on v0.3,
+  `paper/manuscript_v03.md`, waits for the owner's review.
 - [ ] Portfolio: add to `mool32.github.io/_data/publications.yml` + `papers.bib`.
 - [ ] v1.1: turnkey GATE 6 second-platform replication, more example datasets.
 - [ ] Validation plan (2026-10-07):
@@ -282,6 +282,13 @@ turns that checklist into runnable behavior.
     by +0.163 over all cells, against delta_min 0.25, and by +0.631 over the cells with Xist.
   - **Panel v2 includes valid metrics with the module probe,** among them markers present in only
     some cells. In v1 the module probe ran only on the useless metric N6c.
+  - **The module probe's default cannot pass a mean-expression metric at SESOI 0.5.** With frac
+    0.3 the response over all cells is 0.3 × (share of cells with the marker) × (the response in
+    them): at B2's depth the largest upper bound was +0.206 with the marker in every cell, against
+    delta_min 0.25 (`validation/exploratory/gate4_module_dilution.log`). R1's probe (frac 1.0)
+    needs about 40% of cells with Xist (39.8% on B2's cells), more for a weaker marker (55% at
+    CP10k 1). At a low depth single-count markers pass on the sham's dropout, not on the 2-fold
+    change.
   - **The probe's dose and the SESOI.** In v1 both came from the pilot, that is, from the oracle.
     A user sets them, so v2 must test the engine with the defaults, or with the rule by which a
     user picks them.
