@@ -166,16 +166,19 @@ def fig3_by_level(scores: dict, p16_log: Path, out: Path):
 
 
 def fig4_tms(audit: dict, out: Path):
-    """TMS: per-mouse median genes detected against mi_3bin, young (3 months) and old (20 months), by sex."""
+    """TMS: per-mouse median genes detected against mi_3bin, young and old, by sex. The Census's stages are "3m"
+    and "20m" ("20-month-old stage and over"); the legend gives each group's age from its mouse ids (24_60_M is 24
+    months)."""
     mice = [m for m in audit["E"]["mice"] if "/" not in m["donor_id"] and m["age"] in ("3m", "20m")]
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.4), sharey=True)
     for ax, sex in zip(axes, ("male", "female")):
         sub = [m for m in mice if m["sex"] == sex]
         young = [m for m in sub if m["age"] == "3m"]
         old = [m for m in sub if m["age"] == "20m"]
-        for grp, col, lab in ((young, BLUE, "3 months"), (old, ORANGE, "20 months")):
+        for grp, col in ((young, BLUE), (old, ORANGE)):
+            ages = "/".join(str(a) for a in sorted({int(m["donor_id"].split("_")[0]) for m in grp}))
             ax.scatter([m["median_nnz"] for m in grp], [m["mi_3bin"] for m in grp], s=56, color=col,
-                       edgecolor=SURFACE, linewidth=1.5, zorder=3, label=f"{lab} ({len(grp)} mice)")
+                       edgecolor=SURFACE, linewidth=1.5, zorder=3, label=f"{ages} months ({len(grp)} mice)")
         p_nnz, _ = exact_permutation_p([m["median_nnz"] for m in young], [m["median_nnz"] for m in old])
         p_mi, _ = exact_permutation_p([m["mi_3bin"] for m in young], [m["mi_3bin"] for m in old])
         ax.set_title(f"{sex}s: exact p = {p_nnz:.3f} (genes), {p_mi:.3f} (MI)", fontsize=9)

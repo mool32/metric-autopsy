@@ -712,8 +712,8 @@ its docstring; every number drawn is also in the text.
 
 **Fig. 1. The design of validation v1.** Claim cards per condition, grouped by what the data
 are. N2 and N3 hold several steps of their artifact; N4 has two cards per dataset, without and
-with the replicate unit; E1 has five doses. The key, drand quicknet round 32929913, drew every
-dataset's gene pair after the run's records were fixed.
+with the replicate unit; E1 has four doses, the key dose, 0.25, 0.5 and 1.5. The key, drand
+quicknet round 32929913, drew every dataset's gene pair after the run's records were fixed.
 
 ![Fig. 2](figures_v03/fig2_criteria.png)
 
