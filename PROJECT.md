@@ -174,6 +174,26 @@ turns that checklist into runnable behavior.
     sex-by-age interaction are not established per mouse.
   - v0.1.1 kills the same-data positive control (Xist, Y genes) at GATE 1.
   The manuscript stays untouched until step 3; the report's edits are the author's to decide.
+- **Step 3 done (validation v1, run 2026-10-09/10):** `validation.yml` ran once from the tag
+  (workflow run 37990113304, attempt 1; the key is drand quicknet round 32929913). The results,
+  scores and anchors are on `results/panel-v1` (commits 3cb3c21, adc7d65, 445c0dd).
+  - `scores.txt`: every criterion S1–S7b passes ("validation PASSES"). 9,750 datasets and
+    10,540 cards, with 0 crashes and 0 rule violations.
+  - The pre-registered prediction for N8 was not confirmed: 11 false SUPPORTED of 790, where S1
+    allows 29. All 11 are on high-expression pairs (11 of 253). On the real backgrounds the low-
+    and medium-expression pairs are blind metrics (`per_level`, `per_truth`).
+  - Design effects above 1.5 in S5:null, S3:null, S3:invalid and S3c:effect:E1 (`limitations`).
+  - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
+    accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
+    with B4.
+  - Checked after the run, on another CPU:
+    - `score.py` reproduces every criterion.
+    - `blind.py verify` on the first 20 datasets: 20 of 20 datasets identical; all 22 reports
+      the same (16 byte-identical, 6 within 1e-9).
+  - One secondary number is fragile across CPUs. `oc.error_rule_deff` switches to a
+    beta-binomial for a design effect even 2e-16 above 1, and there scipy overflows. On the
+    other CPU, S1 at N8's realized design effect read 1.0 / 1.0; the run's 0.982 / 0.046 are
+    right.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
