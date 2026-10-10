@@ -46,17 +46,30 @@ SESOI = 0.5  # on the log1p-CP10k scale
 MODULE_FOLD, MODULE_FRAC = 2.0, 1.0  # GATE 4's signal: the claimed genes 2-fold in every cell
 
 
-def _load(spec_path: Path, name: str, data_dir: Path):
+def _load(spec_path: Path, name: str, data_dir: Path, named=()):
+    """A background's counts (dense), unique gene symbols and obs. A sparse file is cut to the
+    panel's N_GENES genes by the panel's rule, `named` first (DEVIATIONS.md, D1): SimpleData takes
+    a dense matrix, and B2's 53,384 genes dense in float64 would take about 8 GB."""
     spec = json.loads(Path(spec_path).read_text())
     if name not in spec:
         return None
     rec = P.resolve_background(spec_path, name, spec[name], data_dir)
     z = np.load(rec["path"], allow_pickle=False)
     from scipy import sparse
-    X = (sparse.csr_matrix((z["X_data"], z["X_indices"], z["X_indptr"]), shape=tuple(z["X_shape"]))
-         if "X_data" in z.files else z["X"])
+    genes = P.unique_names(z["genes"])  # unique symbols, as the panel's backgrounds
     obs = pd.DataFrame({k[4:]: z[k] for k in z.files if k.startswith("obs_")})
-    return X, P.unique_names(z["genes"]), obs  # unique symbols, as the panel's backgrounds
+    if "X_data" not in z.files:
+        return z["X"], genes, obs
+    X = sparse.csr_matrix((z["X_data"], z["X_indices"], z["X_indptr"]), shape=tuple(z["X_shape"]))
+    # the panel's rule (panel.py, where it plans a background): the named genes, then the most
+    # expressed by mean count over the cells (ties by column), N_GENES in all, in column order
+    want = {str(g).upper() for g in named}
+    first = sorted(j for j, g in enumerate(genes) if g.upper() in want)
+    mean, _ = P._col_stats(X)
+    order = np.argsort(-mean, kind="mergesort")
+    keep = list(dict.fromkeys([*first, *[int(j) for j in order if j not in set(first)]]))
+    keep = sorted(keep[:max(P.N_GENES, len(first))])
+    return X[:, keep].toarray(), [genes[j] for j in keep], obs
 
 
 def _cols(genes, wanted):
@@ -114,7 +127,7 @@ def r2_allowed(obs) -> tuple:
 
 def r1(spec, data_dir) -> list[dict]:
     from metric_autopsy import SimpleData
-    got = _load(spec, "B2", data_dir)
+    got = _load(spec, "B2", data_dir, named=("Xist", *Y_GENES))
     if got is None:
         return [dict(claim="R1", skipped="B2 was dropped")]
     X, genes, obs = got
