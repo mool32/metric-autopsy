@@ -3,6 +3,9 @@
 # workflow run 37990113304, checked by the run tag's backgrounds.json) and the compact B2 of
 # results/panel-v1, with the frozen engine (src/ the tag's byte for byte), and prints the log with
 # its sha256. Read-only: it re-runs no anchor, changes no verdict and commits nothing.
+# A pull request's path filter matches its whole diff, so the workflow starts on every push: once
+# validation/exploratory/b2_sex_structure.log is committed, it only checks that the log is there.
+# Delete the log to run it again.
 name: B2 by sex (exploratory, after R1)
 
 on:
@@ -29,7 +32,28 @@ env:
   PYTHONHASHSEED: "0"
 
 jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.need.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run only while the log is not committed
+        id: need
+        run: |
+          if [ -f validation/exploratory/b2_sex_structure.log ]; then
+            echo "validation/exploratory/b2_sex_structure.log is committed: nothing to run"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   structure:
+    needs: check
+    if: needs.check.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:

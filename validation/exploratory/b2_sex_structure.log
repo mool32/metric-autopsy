@@ -1,0 +1,165 @@
+# B2 by sex: donor ids, development stages, and GATE 4's probe for R1's Xist claim
+# Exploratory, after R1's result (DEVIATIONS.md D1): R1 is not re-run, and no verdict changes.
+# metric_autopsy 0.3.0.dev0; src/ sha256 of its files' sha256 list 17e9a04f6fdd82e98606da89ad98cdce9a7f22fc35c1b31235efcb0637b132e8 (DEVIATIONS.md D1 records the tag's)
+# script sha256 796ee791934b12b3822b8bed4cf814f675ce9b8571d2f7b90256f4556669b590; anchors.py sha256 b66cb5e2823457781856ba121e01f2bcc8d804859f2c8a60091a8d538f474597
+# the original B2: B2.npz sha256 abc0e04d7618ed0262bfc1e47e15a4da448ba6b748a65adc147c767ce0f8cad5 (the run tag's backgrounds.json; Mouse pancreatic islet scRNA-seq atlas across sexes, ages, and stress conditions including diabetes, Census 2025-11-08, dataset 49e4ffcc-5444-406d-bdee-577127404ba8)
+
+## The original B2, loaded as R1 loads it
+
+19475 cells, 50 donor ids, 2000 genes (Y genes kept: Ddx3y, Eif2s3y, Kdm5d, Uty)
+
+per donor id (the id's study group and sample, as the id names them):
+  group            sample         cells  Xist>0    Y>0  annotated F/M cells  development stage               class
+  Fltp_2y          MUC13974         400   80.0%  33.8%              266/134  20-month-old stage and over     both sexes
+  Fltp_2y          MUC13975         400   72.0%  34.0%              267/133  20-month-old stage and over     both sexes
+  Fltp_2y          MUC13976         400   67.8%  45.8%              227/173  20-month-old stage and over     both sexes
+  Fltp_P16         145_mGFP         400   56.0%  38.0%              251/149  2-week-old stage                both sexes
+  Fltp_P16         146_mRFP         400   55.0%  41.5%              234/166  2-week-old stage                both sexes
+  Fltp_P16         147_mTmG         400   53.0%  38.8%              256/144  2-week-old stage                both sexes
+  NOD              SRR10985097      400   98.2%   0.5%                400/0  5-week-old stage                one female
+  NOD              SRR10985098      306   98.0%   0.7%                306/0  5-week-old stage                one female
+  NOD              SRR10985099      400   99.8%   0.2%                400/0  5-week-old stage                one female
+  NOD_elimination  SRR7610297       231   99.6%   0.4%                231/0  8-week-old stage                one female
+  NOD_elimination  SRR7610298       400  100.0%   0.0%                400/0  3-month-old stage               one female
+  NOD_elimination  SRR7610299       400  100.0%   0.0%                400/0  3-month-old stage               one female
+  NOD_elimination  SRR7610300       233   99.1%   0.0%                233/0  3-month-old stage               one female
+  NOD_elimination  SRR7610301       305   99.0%   0.0%                305/0  3-month-old stage               one female
+  NOD_elimination  SRR7610302       400  100.0%   0.0%                400/0  3-month-old stage               one female
+  NOD_elimination  SRR7610303       400   99.8%   0.0%                400/0  3-month-old stage               one female
+  Fltp_adult       mouse1           400    1.0%  84.0%                0/400  4-month-old stage               one male
+  Fltp_adult       mouse2           400    0.8%  89.2%                0/400  4-month-old stage               one male
+  Fltp_adult       mouse3           400    0.0%  90.8%                0/400  4-month-old stage               one male
+  Fltp_adult       mouse4           400    0.0%  86.2%                0/400  4-month-old stage               one male
+  STZ              G1               400    0.0%  71.2%                0/400  6-month-old stage               one male
+  STZ              G2               400    0.8%  85.5%                0/400  6-month-old stage               one male
+  STZ              G3               400    0.5%  82.8%                0/400  6-month-old stage               one male
+  STZ              G4               400    0.0%  69.0%                0/400  6-month-old stage               one male
+  STZ              G5               400    0.2%  73.0%                0/400  6-month-old stage               one male
+  STZ              G6               400    0.0%  80.8%                0/400  6-month-old stage               one male
+  STZ              G8               400    0.0%  68.0%                0/400  6-month-old stage               one male
+  VSG              MUC13631         400    0.5%  94.2%                0/400  4-month-old stage               one male
+  VSG              MUC13632         400    0.0%  83.0%                0/400  4-month-old stage               one male
+  VSG              MUC13633         400    0.0%  90.5%                0/400  4-month-old stage               one male
+  VSG              MUC13634         400    0.2%  91.2%                0/400  4-month-old stage               one male
+  VSG              MUC13639         400    0.0%  89.8%                0/400  4-month-old stage               one male
+  VSG              MUC13640         400    0.5%  86.8%                0/400  4-month-old stage               one male
+  VSG              MUC13641         400    1.5%  94.0%                0/400  4-month-old stage               one male
+  VSG              MUC13642         400    1.0%  91.8%                0/400  4-month-old stage               one male
+  spikein_drug     SRR10751502      400    0.0%  76.0%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751503      400    0.2%  91.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751504      400    0.2%  70.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751505      400    0.2%  79.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751506      400    0.0%  72.0%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751507      400    0.0%  82.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751508      400    0.2%  72.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751509      400    0.5%  75.2%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751510      400    0.0%  72.0%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751511      400    0.0%  75.2%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751512      400    0.5%  82.2%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751513      400    0.0%  88.5%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751514      400    0.5%  75.2%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751515      400    0.0%  79.8%                0/400  2-month-old stage               one male
+  spikein_drug     SRR10751516      400    0.0%  83.8%                0/400  2-month-old stage               one male
+
+cells with Xist > 0: 5027 of 19475 (25.81%)
+
+classes by the share of an id's cells with Xist > 0 (one male <= 5.0%, one female >= 95.0%, both sexes in between):
+  one male: 34 ids, Xist > 0 in 0.0%-1.5% of their cells, a Y gene > 0 in 68.0%-94.2%; groups: Fltp_adult 4, STZ 7, VSG 8, spikein_drug 15
+  one female: 10 ids, Xist > 0 in 98.0%-100.0% of their cells, a Y gene > 0 in 0.0%-0.7%; groups: NOD 3, NOD_elimination 7
+  both sexes: 6 ids, Xist > 0 in 53.0%-80.0% of their cells, a Y gene > 0 in 33.8%-45.8%; groups: Fltp_2y 3, Fltp_P16 3
+  the same classes for a male bound in [1.5%, 53.0%) and a female bound in (80.0%, 98.0%]
+
+development stages (each id lies in one stage):
+  stage                          one male one female both sexes   ids with cells annotated female / male
+  2-week-old stage                      0          0          3   3 / 3
+  5-week-old stage                      0          3          0   3 / 0
+  8-week-old stage                      0          1          0   1 / 0
+  2-month-old stage                    15          0          0   0 / 15
+  3-month-old stage                     0          6          0   6 / 0
+  4-month-old stage                    12          0          0   0 / 12
+  6-month-old stage                     7          0          0   0 / 7
+  20-month-old stage and over           0          0          3   3 / 3
+  stages where an id of one male and an id of one female meet: none
+  stages with cells of both annotated sexes: 2-week-old stage (Fltp_P16__145_mGFP both sexes, Fltp_P16__146_mRFP both sexes, Fltp_P16__147_mTmG both sexes); 20-month-old stage and over (Fltp_2y__MUC13974 both sexes, Fltp_2y__MUC13975 both sexes, Fltp_2y__MUC13976 both sexes)
+
+R1's allowed set (anchors.r1_allowed): ids per annotated sex over all stages: female 16, male 40 -> SUPPORTED; an id with cells of both annotated sexes counts for each
+  ids per (stage, annotated sex), as R1's note counts them: 56 over 50 ids
+run_autopsy's design rule (effect._replicate_design) on R1's obs, sex within stage: mixed: replicates are partially crossed with groups (some contain both groups, some one) — neither a nested nor a paired analysis is valid
+  the same rule without the 6 ids of both sexes: nested; stages holding both sexes: none, so no stratum gives a contrast (stats.stratum_weights counts only strata holding both groups)
+
+## The compact B2 (B2.npz, sha256 2aad19a98e3f2b12bc2277edb6b31d17e3830c9a571e32f69654581916741e32): Xist only
+
+19475 cells, 50 donor ids, 2000 genes (Y genes kept: none)
+
+per donor id (the id's study group and sample, as the id names them):
+  group            sample         cells  Xist>0  class
+  Fltp_2y          MUC13974         400   80.0%  both sexes
+  Fltp_2y          MUC13975         400   72.0%  both sexes
+  Fltp_2y          MUC13976         400   67.8%  both sexes
+  Fltp_P16         145_mGFP         400   56.0%  both sexes
+  Fltp_P16         146_mRFP         400   55.0%  both sexes
+  Fltp_P16         147_mTmG         400   53.0%  both sexes
+  NOD              SRR10985097      400   98.2%  one female
+  NOD              SRR10985098      306   98.0%  one female
+  NOD              SRR10985099      400   99.8%  one female
+  NOD_elimination  SRR7610297       231   99.6%  one female
+  NOD_elimination  SRR7610298       400  100.0%  one female
+  NOD_elimination  SRR7610299       400  100.0%  one female
+  NOD_elimination  SRR7610300       233   99.1%  one female
+  NOD_elimination  SRR7610301       305   99.0%  one female
+  NOD_elimination  SRR7610302       400  100.0%  one female
+  NOD_elimination  SRR7610303       400   99.8%  one female
+  Fltp_adult       mouse1           400    1.0%  one male
+  Fltp_adult       mouse2           400    0.8%  one male
+  Fltp_adult       mouse3           400    0.0%  one male
+  Fltp_adult       mouse4           400    0.0%  one male
+  STZ              G1               400    0.0%  one male
+  STZ              G2               400    0.8%  one male
+  STZ              G3               400    0.5%  one male
+  STZ              G4               400    0.0%  one male
+  STZ              G5               400    0.2%  one male
+  STZ              G6               400    0.0%  one male
+  STZ              G8               400    0.0%  one male
+  VSG              MUC13631         400    0.5%  one male
+  VSG              MUC13632         400    0.0%  one male
+  VSG              MUC13633         400    0.0%  one male
+  VSG              MUC13634         400    0.2%  one male
+  VSG              MUC13639         400    0.0%  one male
+  VSG              MUC13640         400    0.5%  one male
+  VSG              MUC13641         400    1.5%  one male
+  VSG              MUC13642         400    1.0%  one male
+  spikein_drug     SRR10751502      400    0.0%  one male
+  spikein_drug     SRR10751503      400    0.2%  one male
+  spikein_drug     SRR10751504      400    0.2%  one male
+  spikein_drug     SRR10751505      400    0.2%  one male
+  spikein_drug     SRR10751506      400    0.0%  one male
+  spikein_drug     SRR10751507      400    0.0%  one male
+  spikein_drug     SRR10751508      400    0.2%  one male
+  spikein_drug     SRR10751509      400    0.5%  one male
+  spikein_drug     SRR10751510      400    0.0%  one male
+  spikein_drug     SRR10751511      400    0.0%  one male
+  spikein_drug     SRR10751512      400    0.5%  one male
+  spikein_drug     SRR10751513      400    0.0%  one male
+  spikein_drug     SRR10751514      400    0.5%  one male
+  spikein_drug     SRR10751515      400    0.0%  one male
+  spikein_drug     SRR10751516      400    0.0%  one male
+
+cells with Xist > 0: 5027 of 19475 (25.81%)
+
+classes by the share of an id's cells with Xist > 0 (one male <= 5.0%, one female >= 95.0%, both sexes in between):
+  one male: 34 ids, Xist > 0 in 0.0%-1.5% of their cells; groups: Fltp_adult 4, STZ 7, VSG 8, spikein_drug 15
+  one female: 10 ids, Xist > 0 in 98.0%-100.0% of their cells; groups: NOD 3, NOD_elimination 7
+  both sexes: 6 ids, Xist > 0 in 53.0%-80.0% of their cells; groups: Fltp_2y 3, Fltp_P16 3
+  the same classes for a male bound in [1.5%, 53.0%) and a female bound in (80.0%, 98.0%]
+  the same ids, cells and Xist > 0 shares as the original B2: yes
+
+## GATE 4 (the original B2)
+
+GATE 4's probe for R1's Xist claim: module(1 genes, fold=2.0, frac=1.0) against its sham, 200 injections, seed 0, delta_min 0.25, declared direction an increase (gates.gate4_signal_response, as run_autopsy calls it)
+  cells                                   n  Xist>0                  response (95% CI)  outcome  without thinning
+  all cells                           19475   25.8%       +0.1627 (+0.1626 to +0.1628)  FAIL              +0.1544
+    FAIL: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.1627 against the sham (95% CI [+0.1626, +0.1628], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters
+  cells with Xist > 0                  5027  100.0%       +0.6310 (+0.6304 to +0.6315)  PASS              +0.5981
+    PASS: responds to module(1 genes, fold=2.0, frac=1.0): +0.631 against the sham (95% CI [+0.6304, +0.6315], 200 injections, expected increase)
+  female cells (R1's sham claim)       4976   96.1%       +0.6149 (+0.6144 to +0.6154)  PASS              +0.5841
+    PASS: responds to module(1 genes, fold=2.0, frac=1.0): +0.6149 against the sham (95% CI [+0.6144, +0.6154], 200 injections, expected increase)
