@@ -1,0 +1,1125 @@
+{
+ "shards": [
+  {
+   "shard": 0,
+   "datasets": 488,
+   "cards": 530,
+   "run": 530,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 4523.338312387466,
+   "mean_seconds": 33.606610043993534,
+   "median_seconds": 30.67042887210846,
+   "peak_rss_mb": 1743.77734375,
+   "logged_twice": []
+  },
+  {
+   "shard": 1,
+   "datasets": 488,
+   "cards": 530,
+   "run": 530,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3754.408977508545,
+   "mean_seconds": 28.15836121091303,
+   "median_seconds": 24.83470380306244,
+   "peak_rss_mb": 1645.4296875,
+   "logged_twice": []
+  },
+  {
+   "shard": 10,
+   "datasets": 487,
+   "cards": 528,
+   "run": 528,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3763.5157582759857,
+   "mean_seconds": 28.31746462845441,
+   "median_seconds": 25.629425287246704,
+   "peak_rss_mb": 1671.37890625,
+   "logged_twice": []
+  },
+  {
+   "shard": 11,
+   "datasets": 487,
+   "cards": 517,
+   "run": 517,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3681.8256738185883,
+   "mean_seconds": 28.264629402289767,
+   "median_seconds": 23.684751510620117,
+   "peak_rss_mb": 1665.83203125,
+   "logged_twice": []
+  },
+  {
+   "shard": 12,
+   "datasets": 487,
+   "cards": 537,
+   "run": 537,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3083.446458339691,
+   "mean_seconds": 22.711263655284263,
+   "median_seconds": 19.812376022338867,
+   "peak_rss_mb": 1690.54296875,
+   "logged_twice": []
+  },
+  {
+   "shard": 13,
+   "datasets": 487,
+   "cards": 525,
+   "run": 525,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3739.6856632232666,
+   "mean_seconds": 28.290040124711535,
+   "median_seconds": 24.024189472198486,
+   "peak_rss_mb": 1743.79296875,
+   "logged_twice": []
+  },
+  {
+   "shard": 14,
+   "datasets": 487,
+   "cards": 521,
+   "run": 521,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3777.837404489517,
+   "mean_seconds": 28.664042736426882,
+   "median_seconds": 23.951942682266235,
+   "peak_rss_mb": 1739.16015625,
+   "logged_twice": []
+  },
+  {
+   "shard": 15,
+   "datasets": 487,
+   "cards": 532,
+   "run": 532,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3672.8625979423523,
+   "mean_seconds": 27.339471527508326,
+   "median_seconds": 24.38895285129547,
+   "peak_rss_mb": 1743.8359375,
+   "logged_twice": []
+  },
+  {
+   "shard": 16,
+   "datasets": 487,
+   "cards": 523,
+   "run": 523,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3655.249985218048,
+   "mean_seconds": 27.75740935241743,
+   "median_seconds": 24.072211742401123,
+   "peak_rss_mb": 1638.90234375,
+   "logged_twice": []
+  },
+  {
+   "shard": 17,
+   "datasets": 487,
+   "cards": 523,
+   "run": 523,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 2660.83141374588,
+   "mean_seconds": 20.216533720151418,
+   "median_seconds": 17.668585300445557,
+   "peak_rss_mb": 1769.078125,
+   "logged_twice": []
+  },
+  {
+   "shard": 18,
+   "datasets": 487,
+   "cards": 517,
+   "run": 517,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3627.955728292465,
+   "mean_seconds": 27.746107197822408,
+   "median_seconds": 23.073405981063843,
+   "peak_rss_mb": 1644.73046875,
+   "logged_twice": []
+  },
+  {
+   "shard": 19,
+   "datasets": 487,
+   "cards": 522,
+   "run": 522,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3094.639342546463,
+   "mean_seconds": 23.473397963805215,
+   "median_seconds": 20.020270824432373,
+   "peak_rss_mb": 1647.46484375,
+   "logged_twice": []
+  },
+  {
+   "shard": 2,
+   "datasets": 488,
+   "cards": 531,
+   "run": 531,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3564.5822401046753,
+   "mean_seconds": 26.42043025884251,
+   "median_seconds": 22.763182640075684,
+   "peak_rss_mb": 1641.0625,
+   "logged_twice": []
+  },
+  {
+   "shard": 3,
+   "datasets": 488,
+   "cards": 529,
+   "run": 529,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3083.4684875011444,
+   "mean_seconds": 23.099890166735154,
+   "median_seconds": 19.83589816093445,
+   "peak_rss_mb": 1721.75390625,
+   "logged_twice": []
+  },
+  {
+   "shard": 4,
+   "datasets": 488,
+   "cards": 526,
+   "run": 526,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3697.6431922912598,
+   "mean_seconds": 27.918171522281924,
+   "median_seconds": 23.44435226917267,
+   "peak_rss_mb": 1677.18359375,
+   "logged_twice": []
+  },
+  {
+   "shard": 5,
+   "datasets": 488,
+   "cards": 523,
+   "run": 523,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 2949.1221952438354,
+   "mean_seconds": 22.221474662109724,
+   "median_seconds": 19.442152500152588,
+   "peak_rss_mb": 1643.0078125,
+   "logged_twice": []
+  },
+  {
+   "shard": 6,
+   "datasets": 488,
+   "cards": 533,
+   "run": 533,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3920.608755350113,
+   "mean_seconds": 29.23676723968692,
+   "median_seconds": 25.171478986740112,
+   "peak_rss_mb": 1737.2265625,
+   "logged_twice": []
+  },
+  {
+   "shard": 7,
+   "datasets": 488,
+   "cards": 535,
+   "run": 535,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3726.611108779907,
+   "mean_seconds": 27.65518891209754,
+   "median_seconds": 24.20423197746277,
+   "peak_rss_mb": 1645.5234375,
+   "logged_twice": []
+  },
+  {
+   "shard": 8,
+   "datasets": 488,
+   "cards": 521,
+   "run": 521,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3763.5936830043793,
+   "mean_seconds": 28.68585683608467,
+   "median_seconds": 23.62283968925476,
+   "peak_rss_mb": 1744.07421875,
+   "logged_twice": []
+  },
+  {
+   "shard": 9,
+   "datasets": 488,
+   "cards": 537,
+   "run": 537,
+   "skipped": 0,
+   "errors": 0,
+   "workers": 4,
+   "machine": {
+    "cpus": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "runner_image": {
+     "ImageOS": "ubuntu24",
+     "ImageVersion": "20261004.327.1"
+    },
+    "blas_threads_in_use": [
+     1
+    ],
+    "blas": [
+     {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "architecture": "Haswell",
+      "num_threads": 1
+     }
+    ],
+    "numpy_simd": {
+     "baseline": [
+      "X86_V2"
+     ],
+     "dispatch": [
+      "X86_V3"
+     ]
+    },
+    "numeric_env": {
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1",
+     "MKL_NUM_THREADS": "1",
+     "OPENBLAS_CORETYPE": "Haswell",
+     "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+    },
+    "versions": {
+     "python": "3.13.16",
+     "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+     "numpy": "2.5.3",
+     "scipy": "1.18.1",
+     "pandas": "2.3.3",
+     "metric_autopsy": "0.3.0.dev0"
+    }
+   },
+   "wall_seconds": 3682.7348794937134,
+   "mean_seconds": 27.131017006087347,
+   "median_seconds": 23.567256212234497,
+   "peak_rss_mb": 1639.75390625,
+   "logged_twice": []
+  }
+ ],
+ "reruns": []
+}
