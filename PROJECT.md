@@ -183,7 +183,8 @@ turns that checklist into runnable behavior.
     allows 29.
   - Scope: scRNA-seq counts; one metric, `norm_pearson` on a gene pair; B1 (human
     oligodendrocytes, MSSM cohort, nuclei, 10x 3' v3) and B2 (mouse islet beta cells, cells, 10x
-    3' v2 and v3; Census metadata, workflow run 38033204255); the binomial-thinning family and
+    3' v2 and v3; Census metadata, workflow run 38033204255; 50 donor ids (samples), 6 of them
+    pools of both sexes; all single females are the NOD strain); the binomial-thinning family and
     N8. Nothing else is validated, `mi_3bin` included.
   - By expression level (exploratory, not a criterion; `validation/exploratory/v1_by_level.log`):
     - All 2,458 cards with a valid metric are at the high level. At the medium and low levels
@@ -193,7 +194,8 @@ turns that checklist into runnable behavior.
       2.5%; SUPPORTED or against the direction on 22/253 = 8.7% at a nominal 5%.
     - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
     - N1, N5 and N7 at the high level: SUPPORTED or against the direction on 5.9%, 3.8% and
-      4.0%; a false SUPPORTED on the pure nulls on 18/812 = 2.2%.
+      4.0%; a false SUPPORTED on the pure nulls on 18/812 = 2.2%. N7 permutes the labels over
+      B2's donor ids: a null at the level of the id, not of the mouse.
     - Had N8 kept its high-level rate on all 790 cards, about 34 false SUPPORTED would be
       expected against S1's 29 (S1 passes with probability ≈ 0.20). The dev probe p16 gave 11.3%.
   - Design effects above 1.5 in S5:null, S3:null, S3:invalid and S3c:effect:E1 (`limitations`).
@@ -202,14 +204,24 @@ turns that checklist into runnable behavior.
     with B4.
   - R1, once more, after the results and outside v1 (DEVIATIONS.md D1, the loader only; workflow
     run 38033821978; `results/panel-v1-r1` at 36a04bf). It ran, and two of its three claims are
-    outside their allowed sets:
-    - Xist: NOT SUPPORTED, metric invalid by GATE 4. The 2-fold Xist injection moves the metric
-      by +0.163, below delta_min 0.25.
-    - Y genes: UNIDENTIFIABLE. B2's donor ids are partially crossed with sex, so a donor id is
-      not one mouse.
-    - The sham: NO DETECTABLE EFFECT, which is allowed.
+    outside their allowed sets. The causes differ (`validation/exploratory/b2_sex_structure.log`,
+    after the result):
+    - Y genes (and the design of the Xist claim): UNIDENTIFIABLE, a correct reading of B2. Its 50
+      donor ids are 34 single males, 10 single females (all NOD) and 6 pools of both sexes, and
+      within a development stage the sexes meet only inside the pools (2 weeks; 20 months and
+      over). The protocol erred: `r1_allowed` counted the ids of each sex over all stages, and
+      checked neither that an id is one animal of one sex nor that both sexes share a stratum.
+    - Xist: NOT SUPPORTED, "metric invalid" by GATE 4, which is false: an engine defect. GATE 4's
+      module probe raises Xist 2-fold in every cell and measures the metric over all cells. 74.2%
+      of B2's cells have no Xist, so the response is +0.163 over all cells, below delta_min 0.25,
+      and +0.631 over the cells with Xist. v1 never tested this path: its panel used the module
+      probe only on the useless metric N6c. In the anchors it ran on four valid metrics and passed
+      on three: R2a's G2M score, R1's Y-gene score, and R1's sham, which is the same Xist metric on
+      the female cells only.
+    - The sham, female against female: NO DETECTABLE EFFECT, which is correct.
 
-    Nothing is changed without the owner's decision.
+    v0.1.1 did not confirm Xist because of GATE 1, on TMS; v0.3 did not either, because of GATE 4
+    and the design, on B2. Nothing is changed without the owner's decision.
   - Checked after the run, on another CPU:
     - `score.py` reproduces every criterion.
     - `blind.py verify` on the first 20 datasets: 20 of 20 datasets identical; all 22 reports
@@ -243,19 +255,39 @@ turns that checklist into runnable behavior.
 
   Status, 2026-10-10: steps 0–3 are done (step 3: every criterion of v1 passed, within its
   scope); step 4 is next.
-- [ ] Lessons for v2, from v1's result (2026-10-10; the numbers are exploratory, from
-  `validation/exploratory/v1_by_level.log`):
+- [ ] Lessons for v2, from v1's result and R1's (2026-10-10; the numbers are exploratory, from
+  `validation/exploratory/v1_by_level.log` and `validation/exploratory/b2_sex_structure.log`):
   - **Criteria by level.** Count the criteria of false SUPPORTED per expression level, or only
     on the cards whose metric is valid or ambiguous. Blind pairs dilute the denominator. On the
     real backgrounds the low and medium levels are blind, and all 537 of N8's cards there were
     answered "metric invalid", none SUPPORTED.
-  - **The targets of v0.4.**
+  - **The targets of v0.4: N8, N3 f = 0.4 and GATE 4.**
     - Per-cell variable capture (N8): at the high level, 11/253 = 4.3% false SUPPORTED at a
       nominal 2.5%.
     - Entry-level dropout (N3 f = 0.4): 7/83 = 8.4%, and 10/83 = 12.0% with the answers against
       the direction.
-  - **Real development backgrounds.** The development probe on simulated data (p16, 11.3%) put
-    N8's rate 2.6 times above the real high-level rate (4.3%). So v2's development backgrounds
-    must be real. Under v1.md section 6, v1's datasets are now development data.
+    - GATE 4 must measure the response where the signal is claimed (within a group, or over the
+      replicates), not over all cells.
+  - **The development data erred in both directions.** The development probe on simulated data
+    (p16, 11.3%) put N8's rate 2.6 times above the real high-level rate (4.3%), and the
+    development data did not show GATE 4's failure on a marker present in only some cells. So
+    v2's development backgrounds must be real. Under v1.md section 6, v1's datasets are now
+    development data.
   - **GATE 0's refusals on N7.** GATE 0 refused 26 of N7's 276 high-level cards (9.4%). Find out
-    whether random groups of mice really differ in depth, or whether GATE 0 is oversensitive.
+    whether random groups of donor ids really differ in depth, or whether GATE 0 is oversensitive.
+  - **A donor id must be checked as one mouse of one sex** before the allowed outcomes are fixed.
+    In B2, 6 of the 50 ids are pools of both sexes.
+  - **delta_min for a metric averaged over the cells of both sexes.** GATE 4's response to a sex
+    marker, measured over all cells, is diluted by the cells without the marker: R1's Xist moved
+    by +0.163 over all cells, against delta_min 0.25, and by +0.631 over the cells with Xist.
+  - **Panel v2 includes valid metrics with the module probe,** among them markers present in only
+    some cells. In v1 the module probe ran only on the useless metric N6c.
+  - **The probe's dose and the SESOI.** In v1 both came from the pilot, that is, from the oracle.
+    A user sets them, so v2 must test the engine with the defaults, or with the rule by which a
+    user picks them.
+  - **Backgrounds for a sex control.** Each id is one animal of one sex, checked by Xist and the Y
+    genes, and both sexes share a stratum. The allowed set is computed by the engine's own design
+    rules: replicates nested in the groups or paired within them, each in one stratum
+    (`effect._replicate_design`), and a stratum that holds both groups (GATE 1 stops otherwise).
+    By these rules R1's allowed set on B2 was UNIDENTIFIABLE, with the pools (ids partially
+    crossed with sex) and without them (no stage holds both sexes).

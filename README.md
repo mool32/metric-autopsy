@@ -29,7 +29,8 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >   - Backgrounds, from the CELLxGENE Census
 >     ([metadata](validation/exploratory/census_metadata.py), workflow run 38033204255):
 >     - B1: human oligodendrocytes of the MSSM cohort; nuclei, 10x 3' v3.
->     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 and v3.
+>     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 and v3; 50 donor ids (samples),
+>       6 of them pools of both sexes; all single females are the NOD strain.
 >   - Artifacts: the binomial-thinning family, plus N8's per-cell variable capture.
 >
 >   Everything else is not validated: other metrics (`mi_3bin` included), other data and
@@ -40,6 +41,25 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >   - On these backgrounds the metric is valid only at high expression (numbers below).
 >   - The design effects reach 5.62 (datasets share donors), so on other donors the error rates
 >     are known less precisely.
+>   - **Anchor R1, the only real positive control, did not give the known sex difference.** It
+>     ran once, after the results and outside v1 ([D1](validation/prereg/DEVIATIONS.md);
+>     [`results/panel-v1-r1`](https://github.com/mool32/metric-autopsy/tree/results/panel-v1-r1);
+>     [`b2_sex_structure.log`](validation/exploratory/b2_sex_structure.log)). Two of its three
+>     claims are outside their allowed sets, for different causes:
+>     - Y genes (and the design of the Xist claim): UNIDENTIFIABLE. That reads B2 correctly:
+>       within a development stage the sexes meet only inside the 6 pooled ids. The protocol
+>       erred: R1's allowed set counted the ids of each sex over all stages, and checked neither
+>       that an id is one animal nor that both sexes share a stratum.
+>     - Xist: "metric invalid", which is false: a defect of GATE 4 (next point).
+>     - The sham, female against female: NO DETECTABLE EFFECT, which is correct.
+>
+>     v0.1.1 did not confirm Xist because of GATE 1, on TMS. v0.3 did not either, because of
+>     GATE 4 and the design, on B2.
+>   - **GATE 4's module probe measures the response over all cells.** So for a marker present in
+>     only some cells it can call a valid metric invalid. In R1, 74.2% of B2's cells have no
+>     Xist. The probe's 2-fold Xist signal moved the metric by +0.163 over all cells, below
+>     delta_min 0.25, and by +0.631 over the cells with Xist. This is outside v1's scope (v1's
+>     panel used the module probe only on the useless metric N6c) and a target of v0.4.
 > - **The error rates by expression level** (exploratory, not a criterion;
 >   [`v1_by_level.log`](validation/exploratory/v1_by_level.log), from `scores.json`):
 >   - All 2,458 cards with a valid metric are at the high expression level. At the medium and
@@ -50,7 +70,9 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     - SUPPORTED or against the direction on 22/253 = 8.7%, at a nominal 5%.
 >   - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
 >   - For comparison, at the high level:
->     - N1, N5 and N7 gave SUPPORTED or against the direction on 5.9%, 3.8% and 4.0%;
+>     - N1, N5 and N7 gave SUPPORTED or against the direction on 5.9%, 3.8% and 4.0%. N7
+>       permutes the group labels over B2's donor ids: a null at the level of the id, not
+>       of the mouse;
 >     - the pure nulls N1, N5 and N7 together gave a false SUPPORTED on 18/812 = 2.2%.
 >   - Had N8 kept its high-level rate of 4.3% on all 790 cards, about 34 false SUPPORTED would
 >     be expected, against S1's 29: S1 would pass with probability ≈ 0.20. The development

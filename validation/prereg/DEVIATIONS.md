@@ -89,3 +89,34 @@ crash. Two of its three claims are outside their allowed sets:
 - Nothing was changed after the run, and nothing will be without the owner's decision.
 - `test_anchors.py` gained a skip without scipy after the run, for CI's core-only jobs (a6d3e15).
   The run used the version at 965cfc4.
+
+**The causes (an analysis after the outcome, 2026-10-10).** It re-runs no claim and changes no
+verdict (`validation/exploratory/b2_sex_structure.py` and `.log`, workflow run 38045140802). The
+headline stands: two of R1's three claims are outside their allowed sets. Their causes differ.
+- **The Y genes, and the design of the Xist claim: UNIDENTIFIABLE, which reads B2 correctly.**
+  B2's 50 donor ids are samples. By the share of their cells with Xist, 34 are single males
+  (Fltp_adult, STZ, VSG, spikein_drug), 10 single females (NOD, NOD_elimination) and 6 pools of
+  both sexes (Fltp_P16 at 2 weeks, Fltp_2y at 20 months and over). No development stage holds a
+  single male and a single female, so within a stage the sexes can be compared only inside the
+  pools. The protocol erred: `r1_allowed` counted the ids of each sex over all stages (16 female,
+  40 male: a pool counts for both), and checked neither that an id is one animal of one sex nor
+  that both sexes share a stratum. By the engine's own design rules R1's allowed set was
+  UNIDENTIFIABLE: with the pools the ids are partially crossed with sex
+  (`effect._replicate_design`), and without them no stage holds both sexes (GATE 1 stops). The
+  source atlas lists the six pools as "mixed", and in them each cell's sex was assigned from a
+  score of the Y-chromosome genes (theislab/mouse_cross-condition_pancreatic_islet_atlas at
+  3af65e4: `2_annotate_Fltp_P16.py`, `2_annotate_Fltp_2y.py`), so a Y-gene comparison inside the
+  pools would be circular.
+- **Xist: "metric invalid" by GATE 4, which is false: an engine defect.** GATE 4's module probe
+  raises Xist 2-fold in every cell (the other genes thinned to half, against a sham that thins
+  every gene) and measures the metric over all cells. 74.2% of B2's cells have no Xist, where
+  the probe changes nothing, so the response is +0.1627 over all cells, below delta_min 0.25, and
+  +0.6310 over the 5,027 cells with Xist. v1 never tested this path: its panel used the module probe
+  only on the useless metric N6c. In the anchors the probe ran on four valid metrics and passed on
+  three: R2a's G2M score, R1's Y-gene score, and R1's sham, which is the same Xist metric on the
+  female cells only (+0.6149 in the log).
+- **The sham, female against female: NO DETECTABLE EFFECT, which is correct.**
+
+v0.1.1 did not confirm Xist because of GATE 1, on TMS (`validation/flagship_audit/REPORT.md`);
+v0.3 did not either, because of GATE 4 and the design, on B2. v0.3 did not fix v0.1.1's Xist
+error.
