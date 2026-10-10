@@ -24,4 +24,4 @@ the pure nulls N1, N5 and N7, high level: false SUPPORTED 18/812 = 2.2% (95% CI 
 
 N8 at its high-level rate 4.35% on all 790 cards: 34.3 false SUPPORTED expected, S1 allows 29; P(S1 passes on N8) = 0.20
 GATE 0's refusals, N7 high level: 26/276 = 9.4% (95% CI 6.2-13.5%)
-dev probe p16 (simulated B1, informative pairs at every level): N8 false SUPPORTED 18/160 = 11.3% (95% CI 6.8-17.2%); 2.6 times the real high-level rate
+dev probe p16 (simulated B1, pairs at every level; its stand-in truth: valid at the high and medium levels, blind at the low): N8 false SUPPORTED 18/160 = 11.3% (95% CI 6.8-17.2%); 2.6 times the real high-level rate

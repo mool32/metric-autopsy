@@ -112,7 +112,8 @@ def main(argv=None) -> int:
         m = re.search(r"N8 beta\(2,2\).*?\n\s*false SUPPORTED by the engine (\d+)/(\d+)", args.p16_log.read_text())
         if m:
             k16, n16 = int(m.group(1)), int(m.group(2))
-            out.append(f"dev probe p16 (simulated B1, informative pairs at every level): N8 false SUPPORTED "
+            out.append(f"dev probe p16 (simulated B1, pairs at every level; its stand-in truth: valid at the high and "
+                       f"medium levels, blind at the low): N8 false SUPPORTED "
                        f"{fmt(k16, n16)}; {(k16 / n16) / p:.1f} times the real high-level rate")
     print("\n".join(out))
     return 0
