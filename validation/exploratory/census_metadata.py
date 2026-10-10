@@ -29,7 +29,8 @@ def main() -> int:
             obs = (census["census_data"][organism].obs
                    .read(value_filter=f"{CENSUS_FILTER} and {flt}", column_names=["suspension_type", "assay"])
                    .concat().to_pandas())
-            counts = {f"{s} / {a}": int(n) for (s, a), n in obs.value_counts().sort_index().items()}
+            cols = ["suspension_type", "assay"]  # the read also returns soma_joinid
+            counts = {f"{s} / {a}": int(n) for (s, a), n in obs[cols].value_counts().sort_index().items()}
             print(f"{name} ({organism}): {len(obs)} primary droplet-3' cells of the chosen group; "
                   f"suspension type / assay: {counts}")
     return 0
