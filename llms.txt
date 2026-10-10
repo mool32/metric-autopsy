@@ -10,8 +10,9 @@ biological replicate column and a pre-registration (estimand, SESOI). Eight gate
 data and the metric's response to controlled perturbations; one rule (`report.decide`) turns
 four fields — metric validity, design adequacy, effect (replicate-level, at equal depth or
 spike-in capture), replication — into the verdict. GATE 4 (alternative explanations) and
-GATE 7 (effect size) are judgment a human/agent resolves. Status: v0.x under validation
-(see validation/probes/README.md); do not present a verdict as validated.
+GATE 7 (effect size) are judgment a human/agent resolves. Status: v0.3.0-prereg passed the
+pre-registered blind validation v1, within its scope only (README, Status); do not call a verdict
+validated outside that scope, and inside it cite the error rates from scores.json.
 
 ## Start here
 - [README.md](README.md): pitch, quickstart, the reference `--demo` failure, install.

@@ -16,8 +16,11 @@ the metric through a gauntlet of gates, each designed to catch one way a metric 
 biology, and to report the verdict the engine decides from four fields — metric validity,
 design adequacy, effect, replication — with the numbers behind each.
 
-> **Status: v0.x under validation.** The validator has known failures in both directions
-> (`validation/probes/README.md`). Never present a verdict from this version as validated.
+> **Status: validated only within the scope of the pre-registered validation v1** (README,
+> Status: scRNA-seq counts, `norm_pearson` on a gene pair, two backgrounds, the binomial-thinning
+> family and N8). Do not call a verdict validated outside that scope. Inside it, cite the error
+> rates from `scores.json` (branch `results/panel-v1`). Never write "validated" or "reliable"
+> without the scope next to it.
 
 ## Input contract
 

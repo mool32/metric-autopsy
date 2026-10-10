@@ -2,17 +2,20 @@
 
 *Progressive-disclosure reference for the `metric-autopsy` skill. Loaded on demand;
 the thin protocol lives in `../SKILL.md`. This file describes the engine in this checkout
-(v0.3.0.dev0, under validation). The preprint's methods (`paper/manuscript.md`) still describe
-v0.1.1 and will be rewritten after the confirmatory freeze.*
+(v0.3.0.dev0, frozen as the tag `v0.3.0-prereg`, which passed the pre-registered validation v1
+within its scope only). The preprint's methods (`paper/manuscript.md`) still describe v0.1.1; a
+new manuscript on v0.3 is planned.*
 
 The gates are **metric-agnostic**. You supply a callable `metric(data) -> float` and the
 names of your factorial `obs` columns; the gates treat the metric as a black box and probe
 the *data* and the metric's *response to controlled perturbations of the data*. The harness
 knows single-cell QC, not your metric.
 
-> **Status: v0.x under validation.** The probes in `validation/probes/` are a development
-> set: the fixes described here were developed against them, so passing them proves nothing
-> about the validator's operating characteristics. Do not present a verdict as validated.
+> **Status: validated only within the scope of the pre-registered validation v1** (README,
+> Status). The probes in `validation/probes/` are a development set: the fixes described here
+> were developed against them, so passing them proves nothing about the validator's operating
+> characteristics. Validation v1 measured those characteristics, within its scope. Do not call a
+> verdict validated outside that scope; inside it, cite the error rates from `scores.json`.
 
 ---
 

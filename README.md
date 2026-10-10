@@ -9,39 +9,66 @@
 
 Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) | tspiro@vaika.org
 
-📄 **Preprint:** [`paper/main.pdf`](paper/main.pdf) — arXiv-ready (`q-bio.QM`); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md)
+📄 **Preprint (v0.1.1, superseded; do not upload):** [`paper/main.pdf`](paper/main.pdf); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). A new manuscript on v0.3 is planned.
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
 
-> **Status: v0.x under validation. Do not treat a verdict as validated.** Probing the
-> validator itself (exploratory dev set: [`validation/probes/`](validation/probes/))
-> showed that the released v0.1.1 errs in both directions:
+> **Status (2026-10-10): v0.3.0-prereg passed the pre-registered blind validation v1, within
+> its scope only.**
+> - **Result.** Every criterion S1–S7b passed ([`scores.txt`](https://github.com/mool32/metric-autopsy/blob/results/panel-v1/scores.txt)).
+>   - Protocol: [`validation/prereg/v1.md`](validation/prereg/v1.md).
+>   - Frozen tag `v0.3.0-prereg`; one attempt, [workflow run 37990113304](https://github.com/mool32/metric-autopsy/actions/runs/37990113304).
+>   - Key: drand quicknet round 32929913.
+>
+>   The pre-registered prediction that v0.3 fails S1 on N8 was not confirmed: 11 false
+>   SUPPORTED of 790 datasets, where S1 allows 29.
+> - **Scope.**
+>   - Data: scRNA-seq counts only.
+>   - Metric: one, the log-normalized Pearson correlation of a gene pair (`norm_pearson`).
+>   - Backgrounds, from the CELLxGENE Census
+>     ([metadata](validation/exploratory/census_metadata.py), workflow run 38033204255):
+>     - B1: human oligodendrocytes of the MSSM cohort; nuclei, 10x 3' v3.
+>     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 and v3.
+>   - Artifacts: the binomial-thinning family, plus N8's per-cell variable capture.
+>
+>   Everything else is not validated: other metrics (`mi_3bin` included), other data and
+>   other artifacts.
+> - **Limitations.**
+>   - **v0.3 does not correct capture that varies from cell to cell.** Its depth correction
+>     brings whole groups to one depth, and per-cell variable capture is outside that family.
+>   - On these backgrounds the metric is valid only at high expression (numbers below).
+>   - The design effects reach 5.62 (datasets share donors), so on other donors the error rates
+>     are known less precisely.
+> - **The error rates by expression level** (exploratory, not a criterion;
+>   [`v1_by_level.log`](validation/exploratory/v1_by_level.log), from `scores.json`):
+>   - All 2,458 cards with a valid metric are at the high expression level. At the medium and
+>     low levels the metric is blind (55 medium-level cards are ambiguous), and no card there
+>     was SUPPORTED. So only 253 of N8's 790 cards were at risk.
+>   - N8 at the high level:
+>     - false SUPPORTED on 11/253 = 4.3% (95% CI 2.2–7.6%), at a nominal 2.5%;
+>     - SUPPORTED or against the direction on 22/253 = 8.7%, at a nominal 5%.
+>   - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
+>   - For comparison, at the high level:
+>     - N1, N5 and N7 gave SUPPORTED or against the direction on 5.9%, 3.8% and 4.0%;
+>     - the pure nulls N1, N5 and N7 together gave a false SUPPORTED on 18/812 = 2.2%.
+>   - Had N8 kept its high-level rate of 4.3% on all 790 cards, about 34 false SUPPORTED would
+>     be expected, against S1's 29: S1 would pass with probability ≈ 0.20. The development
+>     probe p16 gave 11.3%.
+>
+>   A correction for per-cell capture is planned for v0.4, with a new pre-registration.
+> - **Next.** Step 4 of the validation plan, external verdicts, is ahead.
+> - **What a verdict is.** A statement about one dataset under the declared assumptions, not
+>   about biology.
+>
+> The released v0.1.1 errs in both directions on its own probes (exploratory dev set:
+> [`validation/probes/`](validation/probes/)):
 > - **It passes useless metrics.** A metric that returns random numbers receives
 >   "PASS — cleared 3 auto gates".
-> - **GATE 1 blocks real biology.** "Xist is higher in female cells" dies at GATE 1
->   on the demo data because one stratum has a QC gap, even though GATE 2 retains 100% of
->   the effect. A sorted G1-vs-G2M cell-cycle control and a proliferation shift die the
->   same way once cycling cells carry ~2× more RNA.
+> - **GATE 1 blocks real biology.** "Xist is higher in female cells" dies at GATE 1 on the
+>   demo data because one stratum has a QC gap, even though GATE 2 retains 100% of the effect.
 > - **Permutations run over cells, not biological replicates.** With 3 vs 3 mice and no
 >   age effect, 22 of 40 null runs report a QC-robust "effect".
->
-> This branch (v0.3.0.dev0) reworks the engine: a four-field verdict (metric validity,
-> design adequacy, effect, replication), replicate-level inference with a graded rule,
-> depth or spike-in correction chosen by the pre-registered estimand, empirical nulls for
-> the controls, and data/pre-registration hashes in every report. All 18 failures found by
-> the probes now pass their regression tests — but the fixes were developed against those
-> probes, so that is a development result with no confirmatory weight. Confirmatory
-> validation will run on a frozen tag and a new, blind panel: its protocol is
-> [`validation/prereg/v1.md`](validation/prereg/v1.md), and the push of the tag
-> `v0.3.0-prereg` starts it in GitHub Actions.
->
-> **v0.3 does not correct capture that varies from cell to cell.** Its depth correction
-> brings whole groups to one depth; per-cell variable capture is outside that family. On
-> the development set (probe [`p16`](validation/probes/p16_variable_capture_n8.log)) such
-> data gave a false SUPPORTED in 18 of 160 datasets, and the protocol records the
-> prediction that v0.3 fails its criterion S1 on this condition (N8). A correction is
-> planned for v0.4, with a new pre-registration.
 
 ---
 
@@ -51,9 +78,9 @@ A metric that changes between conditions is not a finding — it might be dropou
 
 1. **Born from three real failures.** Entropy anticorrelation (ρ = −0.54, vanished on 10x, *reversed* at low depth), cardiac β (a conduction-geometry constant read as biology), and SMAD→ECM mutual information (a detection-rate confound hiding in a sex×age interaction, male-old cells detecting 2.4× fewer genes) — each survived weeks before a 45-second QC check killed it.
 2. **Eight gates, four fields, one rule.** GATE 0 separates nuisance *bias* (FAIL) from *attenuation* (reported, and used as a power check); GATE 4 checks that the metric responds to an injected signal; GATE 5 judges positive and negative controls against empirical nulls — together they decide **metric validity**, which needs a demonstrated response, not just invariance. GATE 1 (stratified QC parity) is a diagnostic; GATE 2 removes the technical difference the way the pre-registered **estimand** allows (thinning to equal depth for composition, to equal spike-in capture for content, otherwise UNIDENTIFIABLE) and infers the **effect** across biological replicates (exact permutation at ≥ 4 per group, *parametric only* at 3, no verdict at ≤ 2). GATE 6 re-estimates it on independent data (**replication**). GATE 3 exports the raw scatter; GATES 4 (alternative explanations) and 7 (effect size, declared as the SESOI) are judgment the skill elicits.
-3. **The reference metric is diagnosed, not just killed.** On the bundled demo (`mi_3bin`, biology identical, male-old capture degraded) GATE 0 measures attenuation (dropout −61%, depth halving −24%), GATE 1 flags the male stratum (1.94× QC ratio, 0.00 n_genes overlap), and at equal depth the raw MI difference shrinks to −13% of itself and is not detected across 16 mice: INCONCLUSIVE, not supported. The real-data run of the preprint (§4) used v0.1.1 and is under audit ([`validation/flagship_audit/`](validation/flagship_audit/)).
+3. **The reference metric is diagnosed, not just killed.** On the bundled demo (`mi_3bin`, biology identical, male-old capture degraded) GATE 0 measures attenuation (dropout −61%, depth halving −24%), GATE 1 flags the male stratum (1.94× QC ratio, 0.00 n_genes overlap), and at equal depth the raw MI difference shrinks to −13% of itself and is not detected across 16 mice: INCONCLUSIVE, not supported. The real-data run of the preprint (§4) used v0.1.1. Its audit ([`validation/flagship_audit/REPORT.md`](validation/flagship_audit/REPORT.md)) found that v0.1.1's verdict reproduces, but the design §4 describes does not hold.
 4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq (RNA only in v1).
-5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's own operating characteristics are not established yet (see Status).
+5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's operating characteristics are established only within the scope of validation v1 (see Status): one metric, two backgrounds, the binomial-thinning family and N8.
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 

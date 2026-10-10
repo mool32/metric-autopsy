@@ -6,9 +6,12 @@ and mathematical artifacts. Its thesis is that metric validation should be *agen
 so driving it is exactly what you're for. Default posture: **state commitments → red-team →
 then believe**, never "compute → believe."
 
-> **Status: v0.x under validation.** The validator has known failures in both directions:
-> it can pass useless metrics and block real biology. They are listed in
-> `validation/probes/README.md`. Never present a verdict from this version as validated.
+> **Status: v0.3.0-prereg passed the pre-registered blind validation v1, within its scope only**
+> (README, Status: scRNA-seq counts, the log-normalized Pearson of a gene pair, two backgrounds,
+> the binomial-thinning family and N8). The released v0.1.1 errs in both directions
+> (`validation/probes/README.md`). **Do not call a verdict validated outside the scope of v1.
+> Inside it, cite the error rates from `scores.json` (branch `results/panel-v1`). Never write
+> "validated" or "reliable" without the scope next to it.**
 
 ## Three ways to drive it
 

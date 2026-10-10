@@ -3,10 +3,10 @@
 > The single source of truth for where this project is. Update it at every stage transition.
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
-**Stage:** 0 Seed · 1 Pre-reg · **2 Execute** · 3 Verdict · 4 Write-up · 5 Publish · 6 Archive  ← current
-*(Moved back from 5 Publish on 2026-10-07: the validator is under validation. See the validation plan below.)*
+**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive  ← current
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only; see the validation plan below. The new manuscript waits for the owner's approval of its plan.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
-**Started:** 2026-07-04   **Last update:** 2026-10-07
+**Started:** 2026-07-04   **Last update:** 2026-10-10
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
@@ -180,8 +180,22 @@ turns that checklist into runnable behavior.
   - `scores.txt`: every criterion S1–S7b passes ("validation PASSES"). 9,750 datasets and
     10,540 cards, with 0 crashes and 0 rule violations.
   - The pre-registered prediction for N8 was not confirmed: 11 false SUPPORTED of 790, where S1
-    allows 29. All 11 are on high-expression pairs (11 of 253). On the real backgrounds the low-
-    and medium-expression pairs are blind metrics (`per_level`, `per_truth`).
+    allows 29.
+  - Scope: scRNA-seq counts; one metric, `norm_pearson` on a gene pair; B1 (human
+    oligodendrocytes, MSSM cohort, nuclei, 10x 3' v3) and B2 (mouse islet beta cells, cells, 10x
+    3' v2 and v3; Census metadata, workflow run 38033204255); the binomial-thinning family and
+    N8. Nothing else is validated, `mi_3bin` included.
+  - By expression level (exploratory, not a criterion; `validation/exploratory/v1_by_level.log`):
+    - All 2,458 cards with a valid metric are at the high level. At the medium and low levels
+      the metric is blind (55 medium-level cards ambiguous), and no card there was SUPPORTED, so
+      253 of N8's 790 cards were at risk.
+    - N8 at the high level: a false SUPPORTED on 11/253 = 4.3% (95% CI 2.2–7.6%) at a nominal
+      2.5%; SUPPORTED or against the direction on 22/253 = 8.7% at a nominal 5%.
+    - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
+    - N1, N5 and N7 at the high level: SUPPORTED or against the direction on 5.9%, 3.8% and
+      4.0%; a false SUPPORTED on the pure nulls on 18/812 = 2.2%.
+    - Had N8 kept its high-level rate on all 790 cards, about 34 false SUPPORTED would be
+      expected against S1's 29 (S1 passes with probability ≈ 0.20). The dev probe p16 gave 11.3%.
   - Design effects above 1.5 in S5:null, S3:null, S3:invalid and S3c:effect:E1 (`limitations`).
   - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
     accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
