@@ -1,7 +1,7 @@
 # Validation v2: requirements (draft for the owner)
 
 A draft, not a pre-registration. It makes operational the requirements collected in `PROJECT.md`
-("Requirements for v2", items 1–19, each with its source) and the owner's list of 2026-10-11. The
+("Requirements for v2", items 1–20, each with its source) and the owner's list of 2026-10-11. The
 engine v2 tests is v0.4 (`validation/plans/v0.4_spec.md`); each of its changes names its test here.
 Numbers come from the logs named, each from a script in this repository. v1's datasets are
 development data now (v1.md section 6), so v2's panel is drawn afresh, from backgrounds v1 did not
@@ -100,6 +100,14 @@ Requirements 13–15.
 What the gates add has to be measured, not argued (requirement 18). Every card of v2 is also run
 through the three analyzers of the decisive experiment on v1's data (`v1_analyzers_plan.md`): (a) a
 test over cells, (b) a test over donors without gates, (c) the engine with GATE 0, 2, 4 and 5 off.
+
+On v1's data (exploratory, `v1_analyzers.log`) a careful donor-level test already did most of the
+work where the metric works: false "effect" on the pure nulls at risk 2.9% for (b) against 2.1% for
+the full engine (18.6% for (a)), and sensitivity on the valid cards with |Δ\*| ≥ SESOI 99.2% against
+97.5%. The gates' gain was on blind and useless metrics (where (b) stays silent on 87.6% of the real
+effects with a blind metric and (c) claims NO DETECTABLE EFFECT on 44.7%, while the engine flags
+99.8%) and on depth artifacts; their cost was sensitivity on ambiguous metrics (57.0% against 28.5%)
+and false effects made by the depth correction (section 8).
 v2 pre-registers, as secondary outcomes with their intervals, the differences between (b) and the
 engine in false "effect" on the cards at risk and on the blind and useless ones, in sensitivity on
 the valid cards with |Δ\*| ≥ SESOI, and in how often each says "no effect" where the metric is blind
@@ -120,3 +128,9 @@ to a real effect.
   so that what the criteria predict for an out-of-family artifact is explicit (requirement 5).
 - The establishable cards reported per stratum, and the cards at risk next to every rate
   (requirement 19).
+- **The errors a correction makes are counted** (requirement 20): on every artifact condition, a cell
+  for the cards whose corrected effect is detected while the raw one is not, and for those where the
+  correction removed a raw false effect. On v1's null cards at risk the gates removed 41 of the
+  donor-level test's 74 false effects and added 21, 15 of them made by a correction that enlarged an
+  undetected raw difference; all 7 false SUPPORTED of N3 at f = 0.4 on the high level are such cards
+  (`v1_analyzers.log`, section 5; v0.4 change 6).

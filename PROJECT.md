@@ -319,7 +319,9 @@ turns that checklist into runnable behavior.
     - Per-cell variable capture (N8): at the high level, 11/253 = 4.3% false SUPPORTED at a
       nominal 2.5%.
     - Entry-level dropout (N3 f = 0.4): 7/83 = 8.4%, and 10/83 = 12.0% with the answers against
-      the direction.
+      the direction. Found after the results by the decisive experiment (`v1_analyzers.log`,
+      section 5): all 7 were made by the depth correction, which enlarged a raw difference that the
+      replicate-level test did not detect; a test over donors without the correction gives 0 of 83.
     - GATE 4 must measure the response where the signal is claimed (within a group, or over the
       replicates), not over all cells.
     - Housekeeping with the next engine edits (src/ is frozen at the tag): the docstring of
@@ -360,8 +362,8 @@ turns that checklist into runnable behavior.
 Collected on 2026-10-11 from the two reviews of the v0.3 draft, the lessons of v1 (above, with
 their logs) and D1 (`validation/prereg/DEVIATIONS.md`). Review 1 is the independent review of
 the full draft and Review 2 its re-check of 0ed504c, both 2026-10-11; until their texts are in
-`paper/reviews/`, they are cited by the owner's item numbers in the decisions of that day. A
-draft that makes each requirement operational follows the decisive experiment on v1's data.
+`paper/reviews/`, they are cited by the owner's item numbers in the decisions of that day. The
+operational draft is `validation/plans/v2_requirements.md`.
 
 **The criteria**
 1. **Size the criteria of false SUPPORTED on the cards at risk** (a valid or ambiguous metric),
@@ -430,3 +432,11 @@ draft that makes each requirement operational follows the decisive experiment on
     gates add over a careful donor-level test. *Source:* owner, 2026-10-11.
 19. **Report the establishable cards per stratum, and the cards at risk next to every rate.**
     *Source:* Review 2 A1; Review 1 A1.
+20. **Count the errors a correction makes**: on every artifact condition, the cards whose corrected
+    effect is detected while the raw one is not. *Source:* the decisive experiment
+    (`validation/exploratory/v1_analyzers.log`, section 5: 15 of the 21 false effects the gates
+    added on v1's null cards at risk; all 7 of N3's at f = 0.4 on the high level).
+
+The operational drafts: `validation/plans/v2_requirements.md` (v2) and
+`validation/plans/v0.4_spec.md` (the engine changes, each with its v2 test; no code before the
+owner approves it).

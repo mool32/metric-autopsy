@@ -177,6 +177,7 @@ The cards of N3 at f = 0.4 (high level) that (d) SUPPORTED:
   D7013 pair 6: (b) p 0.068; (d) raw -0.1299 (p 0.068), corrected -0.1813 (p 0.0078), retained 1.40
   D7563 pair 6: (b) p 0.131; (d) raw -0.0894 (p 0.131), corrected -0.1265 (p 0.0434), retained 1.42
   D8801 pair 3: (b) p 0.335; (d) raw -0.0323 (p 0.335), corrected -0.0853 (p 0.0365), retained 2.64
+Real effects SUPPORTED by (d) whose raw replicate-level difference was not detected (the correction made them detectable): E1 1 of 195, E2 2 of 23, E3 0 of 57
 N8 at risk, the false 'effects' of (b) by gene pair: pair 7 6/32, pair 4 5/32, pair 1 5/32, pair 0 1/35, pair 3 1/29
 N8 at risk, the false 'effects' of (d) by gene pair: pair 7 6/32, pair 4 3/32, pair 1 1/32, pair 3 1/29
 

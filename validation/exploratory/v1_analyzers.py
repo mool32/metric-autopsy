@@ -563,6 +563,16 @@ def report(args) -> int:
         det = json.loads((args.results / "reports" / f"{r['card']}.json").read_text())["fields"]["effect"]["detail"]
         out.append(f"  {r['card']} pair {r['pair']}: (b) p {r['b_p']:.3f}; (d) raw {det['raw_effect']:+.4f} (p {det['p_raw']:.3f}), "
                    f"corrected {det['effect']:+.4f} (p {det['p_perm']:.4f}), retained {det['retained']:.2f}")
+    parts = []
+    for c in P.CONDITIONS:
+        if c.data != "effect":
+            continue
+        sup = [r for r in eff if r["condition"] == c.name and r["d_outcome"] == P.SUPPORTED]
+        made = sum(not json.loads((args.results / "reports" / f"{r['card']}.json").read_text())
+                   ["fields"]["effect"]["detail"].get("raw_detected") for r in sup)
+        parts.append(f"{c.name} {made} of {len(sup)}")
+    out.append("Real effects SUPPORTED by (d) whose raw replicate-level difference was not detected (the correction made "
+               "them detectable): " + ", ".join(parts))
     n8 = [r for r in nulls if r["condition"] == "N8" and r["truth"] in risk]
     for an in ("b", "d"):
         cnt = Counter(r["pair"] for r in n8 if effect_call(r, an) == "+")
