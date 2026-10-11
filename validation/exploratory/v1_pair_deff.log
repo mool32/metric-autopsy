@@ -81,3 +81,17 @@ equal score.overlap_interval's within a relative 8.3e-15)
   S1:N6c   deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 1.00: 0.982 / 0.046 | both 1.00: 0.982 / 0.046
   S1:N8    deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 3.91: 0.868 / 0.211 | both 3.91: 0.868 / 0.211
 
+## 3. Design effects of the four analyzers' main rates (by donor, by pair, both)
+  false 'effect', all nulls              a: 1028/7110 = 14.5% (95% CI 13.6-15.3%); deff donor 6.51, pair 6.66, both 10.60
+  false 'effect', all nulls              b: 286/7110 = 4.0% (95% CI 3.6-4.5%); deff donor 6.29, pair 2.54, both 7.28
+  false 'effect', all nulls              c: 300/7110 = 4.2% (95% CI 3.8-4.7%); deff donor 6.40, pair 2.35, both 7.25
+  false 'effect', all nulls              d: 54/7110 = 0.8% (95% CI 0.6-1.0%); deff donor 1.00, pair 4.40, both 4.40
+  false 'effect', nulls at risk          a: 413/2445 = 16.9% (95% CI 15.4-18.4%); deff donor 10.10, pair 11.18, both 17.44
+  false 'effect', nulls at risk          b: 74/2445 = 3.0% (95% CI 2.4-3.8%); deff donor 1.00, pair 2.07, both 2.07
+  false 'effect', nulls at risk          c: 76/2445 = 3.1% (95% CI 2.5-3.9%); deff donor 1.00, pair 1.82, both 1.82
+  false 'effect', nulls at risk          d: 54/2445 = 2.2% (95% CI 1.7-2.9%); deff donor 1.26, pair 1.00, both 1.26
+  'effect', real, valid, |Δ*| >= SESOI   a: 121/121 = 100.0% (95% CI 97.0-100.0%); deff donor 1.00, pair 1.00, both 1.00
+  'effect', real, valid, |Δ*| >= SESOI   b: 120/121 = 99.2% (95% CI 95.5-100.0%); deff donor 1.00, pair 1.02, both 1.02
+  'effect', real, valid, |Δ*| >= SESOI   c: 120/121 = 99.2% (95% CI 95.5-100.0%); deff donor 1.00, pair 1.02, both 1.02
+  'effect', real, valid, |Δ*| >= SESOI   d: 118/121 = 97.5% (95% CI 92.9-99.5%); deff donor 1.00, pair 1.00, both 1.00
+

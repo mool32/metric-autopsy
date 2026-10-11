@@ -252,7 +252,11 @@ def main(argv=None) -> int:
     # 3. the analyzers' main rates
     if args.cards:
         mine = {}
-        for line in args.cards.read_text().splitlines():
+        raw = args.cards.read_bytes()
+        if args.cards.suffix == ".gz":
+            import gzip
+            raw = gzip.decompress(raw)
+        for line in raw.decode().splitlines():
             if line.strip():
                 m = json.loads(line)
                 mine[m["card"]] = m

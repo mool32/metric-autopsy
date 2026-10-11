@@ -33,6 +33,7 @@ import argparse
 import csv
 import gzip
 import hashlib
+import io
 import itertools
 import json
 import sys
@@ -346,6 +347,8 @@ def report(args) -> int:
     published = {r["id"]: r for r in score.card_rows(entries, reports, pilot)}
     by_entry = {e["id"]: e for e in entries}
     cards_raw = args.cards.read_bytes()
+    if args.cards.suffix == ".gz":
+        cards_raw = gzip.decompress(cards_raw)
     mine = [json.loads(line) for line in cards_raw.decode().splitlines() if line.strip()]
     conds = P.conditions()
     rows = []
@@ -528,13 +531,52 @@ def report(args) -> int:
     out.append("  the calls made before the effect, and (d) made GATE 0's, 4's and 5's first)")
     out += [f"  {x}" for x in examples]
     out.append("")
+
+    # 5. decided after the results: where (b) and (d) disagree on null data, and why
+    out += ["## 5. Where (b) and (d) disagree on null data (decided after the results)",
+            "A false 'effect' of (b) only is one the gates removed; of (d) only, one they made. For the latter, the",
+            "report says whether the engine's raw replicate-level test (the uncorrected data) detected it, and how much",
+            "of the raw difference the correction kept (retained > 1: the correction enlarged it).",
+            "  condition                  at risk | both | (b) only -> what (d) said | (d) only: raw not detected, retained > 1"]
+    tot = Counter()
+    for c in null_conds:
+        rs = [r for r in nulls if r["condition"] == c.name and r["truth"] in risk]
+        bp = [r for r in rs if effect_call(r, "b") == "+"]
+        dp = [r for r in rs if effect_call(r, "d") == "+"]
+        both = [r for r in rs if effect_call(r, "b") == "+" and effect_call(r, "d") == "+"]
+        b_only = Counter(r["d_outcome"] for r in bp if effect_call(r, "d") != "+")
+        d_only = [r for r in dp if effect_call(r, "b") != "+"]
+        made = 0
+        for r in d_only:
+            det = json.loads((args.results / "reports" / f"{r['card']}.json").read_text())["fields"]["effect"]["detail"]
+            made += (not det.get("raw_detected")) and float(det.get("retained", float("nan"))) > 1
+        out.append(f"  {c.name:<8} n {len(rs):>4}: (b) {len(bp):>3}, (d) {len(dp):>3} | {len(both):>3} | {sum(b_only.values()):>3} -> "
+                   + (", ".join(f"{k} {v}" for k, v in b_only.most_common()) or "-")
+                   + f" | {len(d_only)}: {made} of them")
+        tot.update(n=len(rs), b=len(bp), d=len(dp), both=len(both), b_only=sum(b_only.values()), d_only=len(d_only),
+                   made=made)
+    out.append(f"  all      n {tot['n']}: (b) {tot['b']}, (d) {tot['d']} | {tot['both']} | {tot['b_only']} removed by the gates | "
+               f"{tot['d_only']} added by them, {tot['made']} of these by a correction that enlarged an undetected raw difference")
+    out.append("The cards of N3 at f = 0.4 (high level) that (d) SUPPORTED:")
+    for r in sorted((r for r in nulls if r["condition"] == "N3" and r["variant"] == "f=0.4" and r["level"] == "high"
+                     and r["d_outcome"] == P.SUPPORTED), key=lambda r: r["card"]):
+        det = json.loads((args.results / "reports" / f"{r['card']}.json").read_text())["fields"]["effect"]["detail"]
+        out.append(f"  {r['card']} pair {r['pair']}: (b) p {r['b_p']:.3f}; (d) raw {det['raw_effect']:+.4f} (p {det['p_raw']:.3f}), "
+                   f"corrected {det['effect']:+.4f} (p {det['p_perm']:.4f}), retained {det['retained']:.2f}")
+    n8 = [r for r in nulls if r["condition"] == "N8" and r["truth"] in risk]
+    for an in ("b", "d"):
+        cnt = Counter(r["pair"] for r in n8 if effect_call(r, an) == "+")
+        out.append(f"N8 at risk, the false 'effects' of ({an}) by gene pair: "
+                   + ", ".join(f"pair {k} {v}/{sum(r['pair'] == k for r in n8)}" for k, v in sorted(cnt.items(), key=lambda kv: -kv[1])))
+    out.append("")
     print("\n".join(out))
 
     if args.table:
         cols = ["card", "dataset", "condition", "variant", "background", "level", "pair", "truth", "data", "metric",
                 "direction", "delta_star", "sesoi", "a_delta", "a_p", "a_call", "b_delta", "b_p", "b_call", "b_test",
                 "c_outcome", "c_cause", "c_effect", "c_p", "c_tier", "d_outcome", "data_ok"]
-        with gzip.open(args.table, "wt", newline="") as fh:
+        with open(args.table, "wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as gz, \
+                io.TextIOWrapper(gz, encoding="utf-8", newline="") as fh:
             w = csv.writer(fh)
             w.writerow(cols)
             for r in sorted(rows, key=lambda r: r["card"]):
