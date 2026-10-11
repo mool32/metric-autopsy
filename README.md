@@ -1,6 +1,5 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21195679.svg)](https://doi.org/10.5281/zenodo.21195679)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Preprint](https://img.shields.io/badge/Preprint-forthcoming-lightgrey)](paper/manuscript.md)
 [![CI](https://github.com/mool32/metric-autopsy/actions/workflows/ci.yml/badge.svg)](https://github.com/mool32/metric-autopsy/actions/workflows/ci.yml)
 
 # metric-autopsy: a metric-agnostic gate system for separating biological signal from QC and technical artifacts in single-cell metrics
@@ -107,7 +106,10 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     the results) no cell differs from the nominal 2.5%; without it, N3 at f = 0.4's interval
 >     excludes it. The largest are N3 at f = 0.4, 7/83 = 8.4% (95% CI 3.5–16.6%; Holm 0.058),
 >     and N8, 11/253 = 4.3% (2.2–7.6%; Holm 0.61). Both are hypotheses for v0.4 with a
->     mechanism, not measured defects.
+>     mechanism, not measured defects. Found afterwards (exploratory,
+>     [`v1_analyzers.log`](validation/exploratory/v1_analyzers.log)): N3's 7 were all made by the
+>     depth correction, which enlarged raw differences the replicate-level test had not detected;
+>     a test over donors without the correction gives none of the 83.
 >   - GATE 0 refused 31 cards, all on N7 (26/276 = 9.4% at the high level, 5 at the medium).
 >     GATE 0 refuses where extra dropout would bias the metric beyond its tolerance, as it is built
 >     to, and a refusal is allowed, never definite; but on these null data the refusals cost
@@ -121,8 +123,11 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     a dose of 2.0, where B1's high level had 0.255 and 2.5, so simulation and settings are
 >     confounded.
 >
->   A correction for per-cell capture, and a module sham that creates no response by losing
->   counts, are planned for v0.4, with a new pre-registration.
+>   Planned for v0.4 (a draft specification, [`validation/plans/v0.4_spec.md`](validation/plans/v0.4_spec.md)):
+>   GATE 4 measured where the signal is claimed, a module probe that creates no response by
+>   losing counts, and a correction that can only remove a conclusion, never create one; a
+>   correction for per-cell capture is postponed to v0.5. Then a new pre-registration, and the
+>   test on published claims ([`validation/plans/real_claims.md`](validation/plans/real_claims.md)).
 > - **Next.** Step 4 of the validation plan, external verdicts, is ahead.
 > - **What a verdict is.** A statement about one dataset under the declared assumptions, not
 >   about biology.
@@ -236,13 +241,9 @@ any AnnData.
 
 ## Citation
 
-If you use this work, please cite:
+If you use metric-autopsy, please cite the version of the software you used:
 
-> Spiro, T. (2026). *Metric autopsy: a metric-agnostic gate system for separating biological signal from QC and technical artifacts in single-cell metrics.* Preprint.
-
-And the archived software release (when applicable):
-
-> Spiro, T. (2026). *metric-autopsy* (v0.1.1). Zenodo. https://doi.org/10.5281/zenodo.21195679
+> Spiro, T. (2026). *metric-autopsy* (the version you used). Zenodo. https://doi.org/10.5281/zenodo.21195679
 
 Citation metadata is in [`CITATION.cff`](CITATION.cff).
 
