@@ -34,5 +34,5 @@ N8 at its high-level rate 4.35% on all 790 cards: 34.3 false SUPPORTED expected,
 the comparison with the development probe p16 (simulated B1; simulate.dry_pilot's stand-in truth: valid at the high and medium levels, blind at the low;
   its SESOI 0.1 and dose 2 at every level, against the real B1's high level 0.255 and 2.5):
   p16 N8: false SUPPORTED 18/160 = 11.3% (95% CI 6.8-17.2%) over all its datasets ({'high': 56, 'low': 48, 'medium': 56}); it does not record on which they fell
-  if all 18 fell on its 112 datasets with a valid metric: 18/112 = 16.1% (95% CI 9.8-24.2%), 3.7 times N8's high-level rate and 4.4 times N8's 8/221 on its cards with a valid metric
+  if all 18 fell on its 112 datasets with a valid metric, the largest rate p16 can have there: 18/112 = 16.1% (95% CI 9.8-24.2%), so at most 3.7 times N8's high-level rate and at most 4.4 times N8's 8/221 on its cards with a valid metric
   all levels against all levels: 11.3% against N8's 11/790 = 1.4%, 8.1 times

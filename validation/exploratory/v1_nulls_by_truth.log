@@ -16,4 +16,21 @@ N8: 790 cards
   blind     low   : false SUPPORTED 0/266 = 0.0% (95% CI 0.0-1.4%)
   every card with a valid metric: false SUPPORTED 8/221 = 3.6% (95% CI 1.6-7.0%)
 
-useless metrics (N6a-c, the constant included): SUPPORTED on 0 of 1630 cards
+useless metrics: SUPPORTED on 0 of 1630 cards (N6a, random numbers, 790; N6b, a constant, 50; N6c, a score of random genes, 790)
+
+## Every condition's cards by the metric's truth (descriptive; Fig. 1)
+  useless includes the constant (N6b)
+  condition  valid ambiguous  blind useless    all
+  N1           271         0    519       0    790
+  N2           417       106   1057       0   1580
+  N3           242         0    548       0    790
+  N4           560         0   1020       0   1580
+  N5           265         0    525       0    790
+  N6a            0         0      0     790    790
+  N6b            0         0      0      50     50
+  N6c            0         0      0     790    790
+  N7           276        55    459       0    790
+  N8           221        32    537       0    790
+  E1           141       191    668       0   1000
+  E2            12        30    358       0    400
+  E3            53        88    259       0    400

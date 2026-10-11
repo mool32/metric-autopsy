@@ -5,7 +5,8 @@ v1_by_level.py reads only scores.json, which tabulates the outcomes by condition
 by condition and truth. This script rebuilds every card's row as score.py does (`score.card_rows`:
 the card assignment from the key, the oracle's truth from pilot.json, the outcome from the
 report), so a rate can be read on the cards whose metric is valid. It changes nothing in v1's
-result.
+result. Its last table, every condition's cards by the metric's truth, is descriptive: Fig. 1 of
+paper/manuscript_v03.md draws it.
 
     python validation/exploratory/v1_nulls_by_truth.py --results RESULTS --pilot pilot.json
 """
@@ -26,6 +27,7 @@ from v1_by_level import fmt  # noqa: E402  (k/n = rate (95% Clopper-Pearson CI),
 
 PURE = ("N1", "N5", "N7")
 LEVELS = ("high", "medium", "low")
+CONDITIONS = ("N1", "N2", "N3", "N4", "N5", "N6a", "N6b", "N6c", "N7", "N8", "E1", "E2", "E3")
 
 
 def main(argv=None) -> int:
@@ -61,7 +63,17 @@ def main(argv=None) -> int:
         out.append("")
     useless = [r for r in rows if r["truth"] in ("useless", "constant")]
     k = sum(r["outcome"] == P.SUPPORTED for r in useless)
-    out.append(f"useless metrics (N6a-c, the constant included): SUPPORTED on {k} of {len(useless)} cards")
+    by = {c: sum(r["condition"] == c for r in useless) for c in ("N6a", "N6b", "N6c")}
+    out.append(f"useless metrics: SUPPORTED on {k} of {len(useless)} cards (N6a, random numbers, {by['N6a']}; "
+               f"N6b, a constant, {by['N6b']}; N6c, a score of random genes, {by['N6c']})")
+    out += ["", "## Every condition's cards by the metric's truth (descriptive; Fig. 1)",
+            "  useless includes the constant (N6b)",
+            f"  {'condition':9s} {'valid':>6s} {'ambiguous':>9s} {'blind':>6s} {'useless':>7s} {'all':>6s}"]
+    for c in CONDITIONS:
+        sel = [r for r in rows if r["condition"] == c]
+        t = {x: sum(r["truth"] == x for r in sel) for x in ("valid", "ambiguous", "blind")}
+        t["useless"] = sum(r["truth"] in ("useless", "constant") for r in sel)
+        out.append(f"  {c:9s} {t['valid']:6d} {t['ambiguous']:9d} {t['blind']:6d} {t['useless']:7d} {len(sel):6d}")
     print("\n".join(out))
     return 0
 

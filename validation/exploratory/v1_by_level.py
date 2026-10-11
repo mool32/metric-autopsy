@@ -140,13 +140,13 @@ def main(argv=None) -> int:
                     f"  p16 N8: false SUPPORTED {fmt(k16, n16)} over all its datasets ({levels16}); "
                     "it does not record on which they fell"]
             k8_all = sum(count(v, SUP) for k, v in pl.items() if k.startswith("N8:"))
-            ratios = [f"if all {k16} fell on its {v16} datasets with a valid metric: {fmt(k16, v16)}, "
-                      f"{(k16 / v16) / p:.1f} times N8's high-level rate"]
+            ratios = [f"if all {k16} fell on its {v16} datasets with a valid metric, the largest rate p16 can have "
+                      f"there: {fmt(k16, v16)}, so at most {(k16 / v16) / p:.1f} times N8's high-level rate"]
             if args.by_truth_log and args.by_truth_log.exists():
                 mv = re.search(r"N8:.*?valid\s+high\s+: false SUPPORTED (\d+)/(\d+)", args.by_truth_log.read_text(), flags=re.S)
                 if mv:
                     kv, nv = int(mv.group(1)), int(mv.group(2))
-                    ratios[0] += f" and {(k16 / v16) / (kv / nv):.1f} times N8's {kv}/{nv} on its cards with a valid metric"
+                    ratios[0] += f" and at most {(k16 / v16) / (kv / nv):.1f} times N8's {kv}/{nv} on its cards with a valid metric"
             ratios.append(f"all levels against all levels: {pct(Fraction(k16, n16))}% against N8's "
                           f"{k8_all}/{n8_all} = {pct(Fraction(k8_all, n8_all))}%, {(k16 / n16) / (k8_all / n8_all):.1f} times")
             out += [f"  {r}" for r in ratios]

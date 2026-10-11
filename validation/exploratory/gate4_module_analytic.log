@@ -8,8 +8,10 @@
   ln 2 = 0.6931; f(2x) - f(x) = ln((1 + 2x)/(1 + x)) < ln 2 for every x, e.g. x = 6: 0.6190, x = 50: 0.6833
   the default (frac 0.3) with the marker in every cell: at most 0.2079, below delta_min 0.25: it cannot pass
   R1's probe (frac 1) needs a share of at least 0.25 / ln 2 = 0.3607 of cells with the marker; B2 has 0.2581: the failure follows from B2's composition and anchors.py's constants
+  with B2's measured response in its Xist cells (+0.6310, below ln 2: Xist is well detected there), the share needed is 0.25 / 0.6310 = 0.3962
   at depth 20,000, marker at CP10k 50: frac 0.3 x ln((1 + 2x)/(1 + x)) = 0.2050; simulated +0.2050 (frac 1.0: 0.6833; simulated +0.6831)
   at depth 20,000, marker at CP10k 6: frac 0.3 x ln((1 + 2x)/(1 + x)) = 0.1857; simulated +0.1956 (frac 1.0: 0.6190; simulated +0.6517)
+  where the simulation exceeds the formula, the excess is the sham's thinning of the marker's counts, which the formula leaves out
 
 ## 3. One count of the marker in a cell of depth 2,000
   untouched: CP10k 4.998, f 1.7913
@@ -19,3 +21,4 @@
   frac 0.3: response 0.3 x (0.6056 + 0.5928) = 0.3595, of which the 2-fold change 0.1817 and the sham's loss 0.1779
   simulated (gate4_module_dilution.log, depth about 2,000, a marker of one count): frac 0.3 +0.3580, frac 1.0 +1.2022
   so the default passes there only through the sham: the 2-fold change alone gives 0.1817, below delta_min 0.25
+  and the response in the marker's cells (frac 1) is 1.1985, above ln 2 = 0.6931: the bound of section 2 does not hold for a marker of single counts

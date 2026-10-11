@@ -10,7 +10,9 @@ results from pilot.json (fixed in the run tag before the key) and scores.json; i
 * N2's raw power at c = 0.5 and the levels where it reaches 0.9 (`informative_levels`: there N2
   tests the engine's correction of depth).
 * The real effects' cards: by condition, level and the metric's truth; the cards with a valid
-  metric (S5), the establishable ones (S3) and those at or above the SESOI (S6).
+  metric (S5); the establishable ones, in S3's effect stratum (a valid metric) and in its invalid
+  stratum (a blind metric, where "metric invalid" is the correct outcome); and those at or above
+  the SESOI (S6).
 
     python validation/exploratory/v1_pilot_table.py --results RESULTS --pilot pilot.json --scores scores.json
 """
@@ -81,12 +83,16 @@ def main(argv=None) -> int:
             for lv in LEVELS) + " (valid/ambiguous/blind)")
     tr = Counter(r["truth"] for r in rows)
     cells = scores["criteria"]
+    s3c = cells["S3"]["conditions"]
+    inv = {c: s3c[f"invalid:{c}"]["n"] for c in ("E1", "E2", "E3")}
     out += [f"  by truth: valid {tr['valid']}, ambiguous {tr['ambiguous']}, blind {tr['blind']}",
             f"  S5's effect cell (a valid metric): {cells['S5']['cells']['S5:effect']['n']}; "
-            f"S3's effect stratum (establishable): {cells['S3']['strata']['effect']['n']}; "
             f"S6's effect cell (at or above the SESOI, where NO DETECTABLE EFFECT is an error): "
             f"{cells['S6']['cells']['S6:effect']['n']}; S2's real-effect cell (SUPPORTED an error): "
-            f"{cells['S2']['cells']['S2:E']['n']}"]
+            f"{cells['S2']['cells']['S2:E']['n']}",
+            f"  establishable: {cells['S3']['strata']['effect']['n']} of the {tr['valid']} with a valid metric "
+            f"(S3's effect stratum), and {sum(inv.values())} of the {tr['blind']} with a blind metric (S3's invalid stratum: "
+            + ", ".join(f"{c} {n}" for c, n in inv.items()) + "), where \"metric invalid\" is the correct outcome"]
     print("\n".join(out))
     return 0
 

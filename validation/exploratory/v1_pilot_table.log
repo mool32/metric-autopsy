@@ -27,4 +27,5 @@
   E2: 400 cards; high 12/30/83; medium 0/0/130; low 0/0/145 (valid/ambiguous/blind)
   E3: 400 cards; high 53/88/0; medium 0/0/135; low 0/0/124 (valid/ambiguous/blind)
   by truth: valid 206, ambiguous 309, blind 1285
-  S5's effect cell (a valid metric): 206; S3's effect stratum (establishable): 189; S6's effect cell (at or above the SESOI, where NO DETECTABLE EFFECT is an error): 121; S2's real-effect cell (SUPPORTED an error): 1285
+  S5's effect cell (a valid metric): 206; S6's effect cell (at or above the SESOI, where NO DETECTABLE EFFECT is an error): 121; S2's real-effect cell (SUPPORTED an error): 1285
+  establishable: 189 of the 206 with a valid metric (S3's effect stratum), and 1285 of the 1285 with a blind metric (S3's invalid stratum: E1 668, E2 358, E3 259), where "metric invalid" is the correct outcome

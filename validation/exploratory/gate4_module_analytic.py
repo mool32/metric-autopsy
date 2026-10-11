@@ -12,7 +12,9 @@ The metric is R1's: the mean over cells of f(x) = log1p(x), x the marker's CP10k
    every other gene there, so x becomes at most 2x, and f(2x) - f(x) = ln((1 + 2x) / (1 + x)) is
    below ln 2 for every x. Where the marker has many counts the sham (every gene halved in another
    random `frac` of cells) leaves f's mean unchanged, so the response is at most
-   frac x share x ln 2.
+   frac x share x ln 2. With fewer counts the sham's thinning of the marker lowers f's mean too, so
+   the response exceeds the formula, and at a low depth it exceeds ln 2 (section 3): the bound holds
+   for a well-detected marker, such as Xist in B2.
 3. A single count at a low depth. With one count of the marker in a cell of depth d, the sham
    keeps it with probability 1/2 and otherwise sets x to 0: the sham's loss adds to the response
    about as much as the 2-fold change.
@@ -77,12 +79,18 @@ def main(argv=None) -> int:
     out.append(f"  R1's probe (frac {R1_FRAC:g}) needs a share of at least {DELTA_MIN:g} / ln 2 = {DELTA_MIN / ln2:.4f} of "
                f"cells with the marker; B2 has {share:.4f}: the failure follows from B2's composition and "
                "anchors.py's constants" if m_share else "")
+    if m_pos:
+        pos = float(m_pos.group(1))
+        out.append(f"  with B2's measured response in its Xist cells ({pos:+.4f}, below ln 2: Xist is well detected "
+                   f"there), the share needed is {DELTA_MIN:g} / {pos:.4f} = {DELTA_MIN / pos:.4f}")
     for depth, label, x in (("20,000", "high (50)", 50.0), ("20,000", "as B2's Xist (6)", 6.0)):
         sim = simulated(args.dilution_log, depth, label)
         if sim:
             out.append(f"  at depth {depth}, marker at CP10k {x:g}: frac 0.3 x ln((1 + 2x)/(1 + x)) = "
                        f"{DEFAULT_FRAC * math.log((1 + 2 * x) / (1 + x)):.4f}; simulated {sim[0]:+.4f} "
                        f"(frac 1.0: {math.log((1 + 2 * x) / (1 + x)):.4f}; simulated {sim[1]:+.4f})")
+    out.append("  where the simulation exceeds the formula, the excess is the sham's thinning of the marker's counts, "
+               "which the formula leaves out")
     out.append("")
 
     out.append("## 3. One count of the marker in a cell of depth 2,000")
@@ -105,6 +113,8 @@ def main(argv=None) -> int:
                    f"{sim[0]:+.4f}, frac 1.0 {sim[1]:+.4f}")
     out.append(f"  so the default passes there only through the sham: the 2-fold change alone gives "
                f"{DEFAULT_FRAC * (inj - base):.4f}, below delta_min {DELTA_MIN:g}")
+    out.append(f"  and the response in the marker's cells (frac 1) is {inj - sham:.4f}, above ln 2 = {ln2:.4f}: "
+               "the bound of section 2 does not hold for a marker of single counts")
     print("\n".join(out))
     return 0
 

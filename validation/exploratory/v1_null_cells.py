@@ -6,8 +6,9 @@ Each section says what was pre-registered and what was decided after the results
 
 1. The criteria's resolution on the cards at risk (decided after the results; the pilot showed the
    mix before the key: oc_pilot.log, "valid metric on 2453"). A false SUPPORTED needs a metric
-   that responds: on a blind metric GATE 4 stops the analysis first (0 of the 537 blind cards of
-   N8 and 0 of the 6,988 medium- and low-level cards were SUPPORTED). A card is at risk if its
+   that responds: on a blind metric GATE 4 usually stops the analysis first (0 of the 537 blind
+   cards of N8 and 0 of the 6,988 medium- and low-level cards were SUPPORTED; the blind cards of the
+   high level are counted below). A card is at risk if its
    metric is valid or ambiguous by the oracle's truth. For every cell of S1 and S2: its cards, the
    cards at risk, the limit, and on the cards at risk the rate of false SUPPORTED at which the
    cell fails with probability 0.5 and 0.95, and the probability that it passes at 5% and 7.5%.
@@ -21,6 +22,8 @@ Each section says what was pre-registered and what was decided after the results
 3. The design effects (pre-registered, v1.md sections 5 and 7), from scores.json.
 4. The S4 part of the prediction on N8 (v1.md section 6: "the answers against the direction on N8
    may fail S4's cell on the nulls as well").
+5. S3's cells per condition (pre-registered criterion cells, from scores.json): the correct definite
+   outcomes on the establishable cards of each condition of each stratum.
 
     python validation/exploratory/v1_null_cells.py --results RESULTS --pilot pilot.json --scores scores.json
 
@@ -133,8 +136,13 @@ def main(argv=None) -> int:
             out.append(resolution_line(cell[3:], rs, int(crit["S2"]["cells"][cell]["max_allowed"])))
     blind_n8 = [r for r in rows if r["condition"] == "N8" and r["truth"] == "blind"]
     blind_ml = [r for r in rows if r["level"] in ("medium", "low") and r["truth"] == "blind"]
+    blind_hi = [r for r in rows if r["level"] == "high" and r["truth"] == "blind"]
+    sup_hi = [r for r in blind_hi if r["outcome"] == P.SUPPORTED]
     out += [f"on blind metrics: N8 {sum(r['outcome'] == P.SUPPORTED for r in blind_n8)} SUPPORTED of {len(blind_n8)}; "
-            f"medium and low levels {sum(r['outcome'] == P.SUPPORTED for r in blind_ml)} of {len(blind_ml)}", ""]
+            f"medium and low levels {sum(r['outcome'] == P.SUPPORTED for r in blind_ml)} of {len(blind_ml)}; "
+            f"high level {len(sup_hi)} of {len(blind_hi)} ("
+            + ", ".join(f"{c} {sum(r['condition'] == c for r in sup_hi)} of {sum(r['condition'] == c for r in blind_hi)}"
+                        for c in sorted({r['condition'] for r in blind_hi})) + ")", ""]
 
     out += ["## 2. The twelve null cells at the high level",
             "k/n and the 95% CI: pre-registered (v1.md section 5); the one-sided p against 2.5% and Holm's correction",
@@ -167,7 +175,8 @@ def main(argv=None) -> int:
     for c, v in scores["secondary"]["s1_at_realized_deff"]["conditions"].items():
         out.append(f"  S1 {c} at its design effect {v['deff']:.4f}: P(pass | sound) {v['p_pass_sound']:.4f}, "
                    f"P(pass | doubled) {v['p_pass_doubled']:.4f}")
-    out += ["  (N2's design effect is 1 + 2e-16; oc.error_rule_deff then takes a beta-binomial in which scipy",
+    n2 = scores["secondary"]["s1_at_realized_deff"]["conditions"]["N2"]["deff"]
+    out += [f"  (N2's design effect is 1 + {n2 - 1:.1e}; oc.error_rule_deff then takes a beta-binomial in which scipy",
             "   overflows and reads 1.0 / 1.0; at a design effect of 1 the values are N1's)", ""]
 
     out.append("## 4. The S4 part of the prediction on N8 (v1.md section 6)")
@@ -176,7 +185,16 @@ def main(argv=None) -> int:
     out += [f"  S4's null cell, NOT SUPPORTED against the direction: {s4['k']} of {s4['n']}, limit {s4['max_allowed']} "
             f"(passed {s4['passed']})",
             f"  of which on N8: {sum(r['opp_null'] for r in n8)} of {len(n8)} N8 cards in the cell "
-            f"({sum(r['opp_null'] for r in n8 if r['level'] == 'high')} at the high level)"]
+            f"({sum(r['opp_null'] for r in n8 if r['level'] == 'high')} at the high level)", ""]
+
+    out.append("## 5. S3's cells per condition (pre-registered: v1.md section 6; from scores.json)")
+    s3 = crit["S3"]
+    for st, v in s3["strata"].items():
+        out.append(f"  stratum {st:8s} {v['k']:5d} of {v['n']:5d} ({100 * v['k'] / v['n']:.1f}%), at least {v['min_required']}")
+        for name, c in sorted(s3["conditions"].items()):
+            if c["stratum"] == st:
+                out.append(f"    {c['condition']:4s} {c['k']:5d} of {c['n']:5d} ({100 * c['k'] / c['n']:.1f}%), at least "
+                           f"{c['min_required']}")
     print("\n".join(out))
     return 0
 
