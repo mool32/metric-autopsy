@@ -321,6 +321,9 @@ turns that checklist into runnable behavior.
       the direction.
     - GATE 4 must measure the response where the signal is claimed (within a group, or over the
       replicates), not over all cells.
+    - Housekeeping with the next engine edits (src/ is frozen at the tag): the docstring of
+      `src/metric_autopsy/qc.py` cites the internal checklist's "2.4x", a number without a
+      script; remove it, with an entry in CHANGELOG.md.
     - The module probe's sham must create no response by losing counts. At a depth of 2,000
       counts the sham thins a marker of single counts that the injection keeps, so of a response
       of 0.360 the sham's loss makes 0.178 and the 2-fold change 0.182

@@ -1,3 +1,5 @@
+SUPERSEDED (v0.1.1). Several claims here were withdrawn after the 2026-10 audit (validation/flagship_audit/REPORT.md); the current manuscript is paper/manuscript_v03.md.
+
 # Metric autopsy: a metric-agnostic gate system for separating biological signal from QC and technical artifacts in single-cell metrics
 
 **Theodor Spiro**
