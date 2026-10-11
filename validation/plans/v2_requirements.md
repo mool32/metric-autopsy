@@ -161,8 +161,10 @@ Requirements 13–15.
 - **The errors a correction makes are counted** (requirement 20): on every artifact condition, a cell
   for the cards whose corrected effect is detected while the raw one is not, and for those where the
   correction removed a raw false effect. On v1's null cards at risk the gates removed 41 of the
-  donor-level test's 74 false effects and added 21, 15 of them made by a correction that enlarged an
-  undetected raw difference; all 7 false SUPPORTED of N3 at f = 0.4 on the high level are such cards
-  (`v1_analyzers.log`, section 5). v0.4's rule (change 6) would have turned 18 of v1's 54 false
-  SUPPORTED into INCONCLUSIVE, and 3 of its 275 true ones (`v1_correction_rule.log`).
+  donor-level test's 74 false effects and added 21 (`v1_analyzers.log`, section 5): 18 with a raw
+  difference the replicate-level test did not detect, which the correction enlarged (15, all 7
+  false SUPPORTED of N3 at f = 0.4 on the high level among them), shrank (1) or reversed (2); and 3
+  of N4 at 3 against 3, where the engine's t interval detected the raw difference and (b)'s exact
+  test cannot go below p = 2/20 = 0.1 (`v1_correction_rule.log`, section 1). v0.4's rule (change 6)
+  would have turned the 18 into INCONCLUSIVE, and 3 of v1's 275 true SUPPORTED.
 - N8 with the power to decide whether v0.5 needs a correction for per-cell capture (v0.4 change 5).

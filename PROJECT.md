@@ -448,9 +448,11 @@ operational draft is `validation/plans/v2_requirements.md`.
 19. **Report the establishable cards per stratum, and the cards at risk next to every rate.**
     *Source:* Review 2 A1; Review 1 A1.
 20. **Count the errors a correction makes**: on every artifact condition, the cards whose corrected
-    effect is detected while the raw one is not. *Source:* the decisive experiment
-    (`validation/exploratory/v1_analyzers.log`, section 5: 15 of the 21 false effects the gates
-    added on v1's null cards at risk; all 7 of N3's at f = 0.4 on the high level).
+    effect is detected while the raw one is not. *Source:* the decisive experiment: of the 21
+    false effects the gates added on v1's null cards at risk (`validation/exploratory/v1_analyzers.log`,
+    section 5), 18 had a raw difference the replicate-level test did not detect, 15 of them enlarged
+    by the correction, all 7 of N3's at f = 0.4 on the high level among them
+    (`validation/exploratory/v1_correction_rule.log`, section 1).
 
 The operational drafts: `validation/plans/v2_requirements.md` (v2) and
 `validation/plans/v0.4_spec.md` (the engine changes, each with its v2 test; no code before the

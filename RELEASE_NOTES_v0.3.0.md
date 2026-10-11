@@ -94,9 +94,11 @@ where the groups differ otherwise, as by entry-level dropout, it can enlarge an 
 difference until it is detected. On v1's cards (exploratory, after the results;
 [`v1_correction_rule.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_correction_rule.log)): 18 of the 54 false
 SUPPORTED on null data had `raw_detected` false, all on cards at risk, among them all 7 of N3 at
-f = 0.4 on the high level; of the 275 SUPPORTED on real effects, 3 had (none of the 118 valid cards
-with |Δ\*| ≥ SESOI). v0.4 is to make this the rule: a correction can only remove a conclusion,
-never create one.
+f = 0.4 on the high level. On 15 of the 18 the correction had enlarged the raw difference, on 1
+shrunk it and on 2 (both N2) reversed its sign: v0.3 makes a sign reversed by the correction
+INCONCLUSIVE only where the raw difference was detected. Of the 275 SUPPORTED on real effects, 3
+had `raw_detected` false (none of the 118 valid cards with |Δ\*| ≥ SESOI). v0.4 is to make this
+the rule: a correction can only remove a conclusion, never create one.
 
 ## Limitations
 

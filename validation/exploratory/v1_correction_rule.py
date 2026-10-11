@@ -10,7 +10,9 @@ user of v0.3.0 the same reading is the known issue of the release notes: a SUPPO
 
 1. What the rule changes on v1's cards: the false SUPPORTED on null data (all, at risk, by
    condition, and S1's key cells) and the true SUPPORTED on the real effects (all, and the valid
-   cards with |Δ*| >= SESOI).
+   cards with |Δ*| >= SESOI); for those it removes, what the correction did to the raw difference
+   (enlarged, shrank or reversed it), and how they relate to the false "effects" that only (d)
+   makes in `v1_analyzers.log` section 5.
 2. Where v1's four analyzers differ on the null cards (`v1_analyzers.log`): the false "effect" of
    (b) and (d) on blind metrics and on the cards at risk, so that the share of the reduction that is
    the refusal on blind metrics is a number.
@@ -80,7 +82,8 @@ def main(argv=None) -> int:
         big = None
         if c.data == "effect":
             big = abs(float(P.delta_of(c.name, r["variant"], r["pair"], pilot)["value"])) >= P.sesoi_of(c, r["pair"], pilot)
-        sup.append(dict(r, raw_detected=raw_det, kept=bool(same), data=c.data, big=big))
+        sup.append(dict(r, raw_detected=raw_det, kept=bool(same), data=c.data, big=big, raw=raw, est=est,
+                        p_raw=det.get("p_raw")))
     raw_opposite = sum(s["raw_detected"] and not s["kept"] for s in sup)
 
     out += ["## 1. What the rule changes (SUPPORTED stands only where the raw and the corrected test detect it, "
@@ -110,13 +113,43 @@ def main(argv=None) -> int:
         if c.key:
             rs = [s for s in null_sup if s["condition"] == c.name and s["variant"] == c.key_variant]
             out.append(f"    {c.name}: {len(rs)} -> {len(rs) - gone(rs)}")
+
+    def done(s):
+        """What the correction did to the raw difference (retained = corrected / raw effect)."""
+        if not s["raw"] or s["est"] is None:
+            return "no raw effect"
+        k = s["est"] / s["raw"]
+        return "enlarged it" if k > 1 else ("shrank it" if k > 0 else "reversed its sign")
+
+    def split(rs):
+        return ", ".join(f"{k} {v}" for k, v in sorted(Counter(done(s) for s in rs).items()))
+
+    lost = [s for s in null_sup if not s["kept"]]
+    out.append(f"  what the correction did to the raw difference of the {len(lost)} (retained = corrected / raw "
+               f"effect; enlarged > 1, shrank 0 to 1, reversed < 0): {split(lost)}; by condition: "
+               + "; ".join(f"{cn} {split([s for s in lost if s['condition'] == cn])}"
+                           for cn in sorted({s['condition'] for s in lost})))
+    d_only = [s for s in null_sup if s["truth"] in RISK and mine[s["id"]]["b_call"] != "+"]
+    kept_d = [s for s in d_only if s["raw_detected"]]
+    out.append(f"  against v1_analyzers.log section 5 (the false 'effects' of (d) at risk that (b) does not make): "
+               f"{len(d_only)}; with raw_detected false {sum(not s['raw_detected'] for s in d_only)}, the "
+               f"rule's {len(lost)} {'all among them' if all(s in d_only for s in lost) else 'NOT all among them'}; "
+               f"raw detected {len(kept_d)}, which the rule keeps: "
+               + ", ".join(f"{k} {v}" for k, v in sorted(Counter(
+                   f"{s['condition']} {s['variant']}, (b) {mine[s['id']]['b_test']}" for s in kept_d).items()))
+               + (f"; (b)'s p on them {min(mine[s['id']]['b_p'] for s in kept_d):.3f} to "
+                  f"{max(mine[s['id']]['b_p'] for s in kept_d):.3f}, the engine's raw p "
+                  f"{min(float(s['p_raw']) for s in kept_d):.4f} to {max(float(s['p_raw']) for s in kept_d):.4f}"
+                  if kept_d else ""))
     out += ["", "True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is a loss):",
             f"  all real effects: {len(eff_sup)} -> {len(eff_sup) - gone(eff_sup)}",
             "  " + ", ".join(f"{c.name} {sum(s['condition'] == c.name for s in eff_sup)} -> "
                              f"{sum(s['condition'] == c.name and s['kept'] for s in eff_sup)}"
                              for c in P.CONDITIONS if c.data == "effect"),
             f"  valid metric and |Δ*| >= SESOI: {sum(s['truth'] == 'valid' and s['big'] for s in eff_sup)} -> "
-            f"{sum(s['truth'] == 'valid' and s['big'] and s['kept'] for s in eff_sup)}", ""]
+            f"{sum(s['truth'] == 'valid' and s['big'] and s['kept'] for s in eff_sup)}",
+            "  what the correction did to the raw difference of the "
+            f"{sum(not s['kept'] for s in eff_sup)}: {split([s for s in eff_sup if not s['kept']])}", ""]
 
     # 2. the reduction of false 'effect' between (b) and (d), split by the metric's truth
     nulls = [r for r in rows if conds[r["condition"]].data == "null" and conds[r["condition"]].metric == "norm_pearson"]

@@ -28,11 +28,14 @@ False SUPPORTED on null data (every one is an error):
     N5: 8 -> 8
     N6c: 0 -> 0
     N8: 11 -> 8
+  what the correction did to the raw difference of the 18 (retained = corrected / raw effect; enlarged > 1, shrank 0 to 1, reversed < 0): enlarged it 15, reversed its sign 2, shrank it 1; by condition: N1 enlarged it 1; N2 enlarged it 2, reversed its sign 2, shrank it 1; N3 enlarged it 9; N8 enlarged it 3
+  against v1_analyzers.log section 5 (the false 'effects' of (d) at risk that (b) does not make): 21; with raw_detected false 18, the rule's 18 all among them; raw detected 3, which the rule keeps: N4 3v3, (b) exact (20 relabelings) 3; (b)'s p on them 0.100 to 0.100, the engine's raw p 0.0067 to 0.0328
 
 True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is a loss):
   all real effects: 275 -> 272
   E1 195 -> 194, E2 23 -> 21, E3 57 -> 57
   valid metric and |Δ*| >= SESOI: 118 -> 118
+  what the correction did to the raw difference of the 3: enlarged it 3
 
 ## 2. False 'effect' on the null cards (N1-N5, N7, N8): (b) donors without gates against (d) the engine
   all             n  7110: (b) 286/7110 = 4.0% (95% CI 3.6-4.5%); (d) 54/7110 = 0.8% (95% CI 0.6-1.0%); (d) under the rule 36/7110 = 0.5% (95% CI 0.4-0.7%)
