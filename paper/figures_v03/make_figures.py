@@ -2,14 +2,17 @@
 
     python paper/figures_v03/make_figures.py --scores scores.json --audit audit_results.json \
         --b2-log validation/exploratory/b2_sex_structure.log \
-        --null-cells-log validation/exploratory/v1_null_cells.log --out paper/figures_v03
+        --null-cells-log validation/exploratory/v1_null_cells.log \
+        --by-truth-log validation/exploratory/v1_nulls_by_truth.log --out paper/figures_v03
 
 * scores.json: branch results/panel-v1 (commit adc7d65), the scores of validation v1.
 * audit_results.json: branch results/flagship-audit (commit d2a5420), the flagship audit on TMS.
 * b2_sex_structure.log: B2 by sex and GATE 4's probe for R1's Xist claim (workflow run 38045140802).
 * v1_null_cells.log: the twelve null cells of the high expression level, with Holm's correction.
+* v1_nulls_by_truth.log: every condition's cards by the oracle's truth about the metric.
 
-Fig. 1 the design of v1 (claim cards per condition); Fig. 2 the criteria against their limits;
+Fig. 1 the design of v1 (claim cards per condition, by the metric's truth); Fig. 2 the criteria
+against their limits;
 Fig. 3 false SUPPORTED in the twelve null cells at the high expression level; Fig. 4 the real
 positive controls of v0.1.1 and v0.3; Fig. A1 (appendix) TMS per mouse. Every number drawn is also
 in the manuscript's text or tables. Needs matplotlib (an optional dependency of the package).
@@ -26,6 +29,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.ticker  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
@@ -36,6 +40,7 @@ from audit_tms import exact_permutation_p  # noqa: E402  (the audit's own test, 
 # the reference palette (dataviz skill, light mode), validated for these three slots all-pairs
 SURFACE, INK, INK2, MUTED, GRID, AXIS = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
+NEUTRAL = "#a8a79f"  # not a series hue: the useless metrics, which are not the pair metric at all
 
 plt.rcParams.update({
     "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
@@ -56,9 +61,17 @@ def _limit_line(ax, x, label):
             va="bottom", ha="left", zorder=4, bbox=dict(boxstyle="square,pad=0.1", fc=SURFACE, ec="none"))
 
 
-def fig1_design(scores: dict, out: Path):
-    """Claim cards per condition, grouped by what the data are."""
+def _by_truth(log: Path) -> dict:
+    """{condition: (valid, ambiguous, blind, useless, all)} from v1_nulls_by_truth.log's last table."""
+    text = log.read_text().split("## Every condition's cards by the metric's truth")[1]
+    rows = re.findall(r"^  ([NE]\d[a-c]?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$", text, flags=re.M)
+    return {c: tuple(int(x) for x in v) for c, *v in rows}
+
+
+def fig1_design(scores: dict, by_truth_log: Path, out: Path):
+    """Claim cards per condition, grouped by what the data are, each bar split by the metric's truth."""
     pc = scores["per_condition"]
+    truth = _by_truth(by_truth_log)
     order = [("Nulls and artifacts", ["N1", "N2", "N3", "N4", "N5", "N7", "N8"]),
              ("Useless metrics", ["N6a", "N6b", "N6c"]),
              ("Real effects", ["E1", "E2", "E3"])]
@@ -66,17 +79,30 @@ def fig1_design(scores: dict, out: Path):
     for group, conds in order:
         for c in conds:
             n = sum(int(v["n"]) for k, v in pc.items() if k.split(":")[0] == c)
-            rows.append((group, c, n))
-    fig, ax = plt.subplots(figsize=(7.0, 4.2))
+            if truth[c][4] != n:
+                raise SystemExit(f"{c}: {truth[c][4]} cards in {by_truth_log.name}, {n} in scores.json")
+            rows.append((group, c, n, truth[c]))
+    fig, ax = plt.subplots(figsize=(7.6, 4.8))
     y = list(range(len(rows)))[::-1]
-    ax.barh(y, [r[2] for r in rows], height=0.55, color=BLUE, zorder=2)
-    for yi, (_, c, n) in zip(y, rows):
-        ax.text(n + 20, yi, f"{n:,}", va="center", color=INK2, fontsize=8)
+    classes = (("valid", BLUE), ("ambiguous", AQUA), ("blind", ORANGE), ("useless metric", NEUTRAL))
+    for yi, (group, c, n, t) in zip(y, rows):
+        left = 0
+        for (name, color), w in zip(classes, t[:4]):
+            if w:
+                ax.barh([yi], [w], left=left, height=0.6, color=color, edgecolor=SURFACE, linewidth=0.7, zorder=2)
+                left += w
+        risk = t[0] + t[1]
+        ax.text(n + 20, yi, f"{n:,}" + (f" ({risk:,} at risk)" if group == "Nulls and artifacts" else ""),
+                va="center", color=INK2, fontsize=7.5)
     ax.set_yticks(y, [f"{r[1]} (B2)" if r[1] == "N7" else r[1] for r in rows])
     ax.grid(axis="y", visible=False)
     ax.set_xlabel("claim cards (every condition on B1 but N7, on B2)")
     total = sum(r[2] for r in rows)
-    ax.set_title(f"Validation v1: {total:,} claim cards in 9,750 datasets")
+    ax.set_title(f"Validation v1: {total:,} claim cards, by the metric's truth")
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(facecolor=color, edgecolor=SURFACE, label=name) for name, color in classes],
+              loc="lower right", fontsize=7.5, frameon=False)
+    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
     # group labels at the left margin
     start = 0
     for group, conds in order:
@@ -84,14 +110,14 @@ def fig1_design(scores: dict, out: Path):
         ax.text(-0.17, (max(ys) + min(ys)) / 2, group, transform=ax.get_yaxis_transform(), ha="right",
                 va="center", color=INK, fontsize=8.5, fontweight="bold")
         start += len(conds)
-    ax.set_xlim(0, max(r[2] for r in rows) * 1.12)
-    fig.subplots_adjust(left=0.30, right=0.97, top=0.90, bottom=0.13)
+    ax.set_xlim(0, max(r[2] for r in rows) * 1.25)
+    fig.subplots_adjust(left=0.31, right=0.97, top=0.91, bottom=0.12)
     fig.savefig(out / "fig1_design.png", dpi=200)
     plt.close(fig)
 
 
 def fig2_criteria(scores: dict, out: Path):
-    """Every cell of the error criteria as a share of its allowance, and S3 as a share of its minimum."""
+    """Every cell of the error criteria as a share of its limit, and S3 as a share of its minimum."""
     cr = scores["criteria"]
     names = {"S2:N6": "S2 N6a", "S4:null:opposite": "S4 null opposite*"}  # S2's N6 group: N6a (N6b cannot be SUPPORTED)
     err = [(f"S1 {c}", v["k"], v["n"], v["max_allowed"]) for c, v in cr["S1"]["conditions"].items()]
@@ -107,7 +133,7 @@ def fig2_criteria(scores: dict, out: Path):
     a.set_xlim(0, 1.08)
     a.grid(axis="y", visible=False)
     _limit_line(a, 1.0, "limit")
-    a.set_xlabel("errors as a share of the allowance")
+    a.set_xlabel("errors as a share of the limit")
     a.set_title("(a) error criteria: every cell below its limit")
     y3 = list(range(len(s3)))[::-1]
     b.scatter([k / m for _, k, _, m in s3], y3, s=36, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
@@ -272,12 +298,13 @@ def main(argv=None) -> int:
     ap.add_argument("--audit", type=Path, required=True)
     ap.add_argument("--b2-log", type=Path, required=True)
     ap.add_argument("--null-cells-log", type=Path, required=True)
+    ap.add_argument("--by-truth-log", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parent)
     args = ap.parse_args(argv)
     scores = json.loads(args.scores.read_text())
     audit = json.loads(args.audit.read_text())
     args.out.mkdir(parents=True, exist_ok=True)
-    fig1_design(scores, args.out)
+    fig1_design(scores, args.by_truth_log, args.out)
     fig2_criteria(scores, args.out)
     fig3_by_level(args.null_cells_log, args.out)
     fig4_controls(audit, args.b2_log, args.out)
