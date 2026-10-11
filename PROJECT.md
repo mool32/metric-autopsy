@@ -11,7 +11,7 @@
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
 - Preprint: none yet. `paper/manuscript.md` is the superseded v0.1.1 text (not to be uploaded); the v0.3 draft, `paper/manuscript_v03.md`, is paused (not for posting; to be rewritten after v0.4, validation v2 and the external verdicts)
-- Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.1.1 pending release
+- Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.3.0, the record of validation v1, to be archived at its release
 - Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
 ## Origin
