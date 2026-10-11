@@ -462,9 +462,9 @@ Col1a1 on a three-bin discretization, between young and old mice of Tabula Muris
 run 37990113298; `validation/flagship_audit/REPORT.md`; Appendix B). The verdict reproduces:
 `mi_3bin` fails at GATE 0, with a dropout shift of 43.0% (z = 54.7). It says little about
 biology. On the same data v0.1.1 also kills its positive controls, Xist and the Y-gene score, at
-GATE 1 (2.01× in the 20-month stratum), although GATE 2 keeps 100% and 104% of their effects and
-the sex markers match the label in 21 of 21 donor units (Fig. 4a). The data have no spike-ins (0
-of the Census's 53,384 features), so a technical drop in capture cannot be told apart from a
+GATE 1 (2.01× in the 20-month stratum; Fig. 4a), although GATE 2 keeps 100% and 104% of their
+effects and the sex markers match the label in 21 of 21 donor units. The data have no spike-ins
+(0 of the Census's 53,384 features), so a technical drop in capture cannot be told apart from a
 biological drop in RNA content. Nor is the design the one the preprint described: its "20
 months" group is 4 males of 24 months and 3 females of 21 months, whose 728 cells all come from
 the mammary gland. Per mouse, the males' median genes detected and `mi_3bin` both separate the
@@ -651,7 +651,7 @@ with its log:
   (`validation/flagship_audit/mouse_level.py`);
 - a rebuild of the first 20 datasets on another CPU (`blind.py verify`).
 
-R1 ran once, after the results and outside v1, with only its loading changed
+R1 ran once, after the results and outside v1; §4.7 says what was changed for it
 (`validation/prereg/DEVIATIONS.md`, D1; workflow run 38033821978).
 
 ### 8.5 Roles and the use of AI
