@@ -298,7 +298,9 @@ turns that checklist into runnable behavior.
   5. paper untouched until step 3 is done.
 
   Status, 2026-10-11: steps 0–3 are done (step 3: every criterion of v1 passed, within its
-  scope); step 4 is next.
+  scope); step 4 is next. The main track is now the test on real claims
+  (`validation/plans/real_claims.md`): if the tool shows no use on real tasks, it is not needed
+  (the owner's decision of 2026-10-11).
 - [ ] Lessons for v2, from v1's result and R1's (2026-10-11; computed after the results, from
   `validation/exploratory/v1_null_cells.log`, `v1_by_level.log`, `v1_pilot_table.log`,
   `b2_sex_structure.log` and `gate4_module_analytic.log`):
@@ -314,8 +316,11 @@ turns that checklist into runnable behavior.
   - **N2 must test the correction of depth, and the real effects must clear the SESOI.** N2's raw
     difference had power 0.14–0.21, never 0.9. No level had a key dose, so the real effects ran at
     the saturation dose, with Δ* about the SESOI at the high level (0.258 against 0.255).
-  - **The targets of v0.4: N8, N3 f = 0.4 and GATE 4.** Hypotheses with a mechanism, not measured
-    defects (Holm 0.61 and 0.058 over the twelve high-level null cells):
+  - **The targets of v0.4: N8, N3 f = 0.4 and GATE 4** (the owner's decisions of 2026-10-11 are in
+    `validation/plans/v0.4_spec.md`: N8 gets only a diagnostic, its correction postponed to v0.5;
+    N3's errors are met by a GATE 2 by which a correction can only remove a conclusion). Hypotheses
+    with a mechanism, not measured defects (Holm 0.61 and 0.058 over the twelve high-level null
+    cells):
     - Per-cell variable capture (N8): at the high level, 11/253 = 4.3% false SUPPORTED at a
       nominal 2.5%.
     - Entry-level dropout (N3 f = 0.4): 7/83 = 8.4%, and 10/83 = 12.0% with the answers against
@@ -360,9 +365,11 @@ turns that checklist into runnable behavior.
 
 ## Requirements for v2
 Collected on 2026-10-11 from the two reviews of the v0.3 draft, the lessons of v1 (above, with
-their logs) and D1 (`validation/prereg/DEVIATIONS.md`). Review 1 is the independent review of
-the full draft and Review 2 its re-check of 0ed504c, both 2026-10-11; until their texts are in
-`paper/reviews/`, they are cited by the owner's item numbers in the decisions of that day. The
+their logs) and D1 (`validation/prereg/DEVIATIONS.md`). Review 1 is the review of the full
+draft by an independent agent that had not seen the work on the text, and Review 2 its re-check of
+0ed504c, both 2026-10-11, both relayed by the owner; they are not reviews by human experts. Until
+their texts are in `paper/reviews/` with their provenance, they are cited by the owner's item
+numbers in the decisions of that day. The
 operational draft is `validation/plans/v2_requirements.md`.
 
 **The criteria**
@@ -384,8 +391,10 @@ operational draft is `validation/plans/v2_requirements.md`.
    out-of-family artifact is explicit. *Source:* Review 2 B9.
 
 **The truth**
-6. **A truth about validity independent of GATE 4's mechanism.** *Source:* Review 1 B7; v1
-   lesson; owner, 2026-10-11.
+6. **A truth about validity independent of GATE 4's mechanism**, among the candidates the same
+   Tabula Muris Senis mice measured by FACS (Smart-seq2) and by droplet (10x), the deeper method
+   as the truth, once code independent of the engine has shown the mice are really shared.
+   *Source:* Review 1 B7; v1 lesson; owner, 2026-10-11.
 7. **N2 tests the correction of depth, and the real effects clear the SESOI**: the run needs a
    level where the oracle detects N2's raw difference with power ≥ 0.9, and a key dose with Δ*
    clearly above the SESOI, or it stops before the key. *Source:* Review 1 A5; v1 lesson.
@@ -401,10 +410,12 @@ operational draft is `validation/plans/v2_requirements.md`.
     spike-ins. *Source:* Review 1 B12.
 11. **Pairs beyond the 8 most correlated of each level**, among them random and weakly
     correlated pairs. *Source:* Review 1 B12; owner, 2026-10-11.
-12. **Metrics of the types the target claims use**: coordination and correlation, noise,
-    entropy, and mean expression of markers present in only some cells, through the module
-    probe. *Source:* owner, 2026-10-11; v1 lesson (the module probe ran only on N6c); D1
-    (R1's Xist).
+12. **Metrics of the types the real claims use** (`validation/plans/real_claims.md`), each with
+    a probe v0.4 has: coordination (a pair correlation; a gene-set measure such as GCL with the
+    set coupling probe of v0.4 change 9) and mean expression of markers present in only some
+    cells or absent in one group, through the module probe. Noise and entropy, which need probes
+    v0.4 does not have, move to the next version. *Source:* owner, 2026-10-11 (narrowed the same
+    day); v1 lesson (the module probe ran only on N6c); D1 (R1's Xist).
 
 **Controls and anchors**
 13. **Real positive controls checked by independent code before registration**: each id one
@@ -427,9 +438,13 @@ operational draft is `validation/plans/v2_requirements.md`.
     *Source:* Review 1 B13.
 
 **Comparators and reporting**
-18. **The analyzers of the decisive experiment in the panel**: a test over cells, a test over
-    donors without gates, and the engine without GATE 0, 2, 4 and 5, so that v2 measures what the
-    gates add over a careful donor-level test. *Source:* owner, 2026-10-11.
+18. **The comparison with a donor-level test is v2's primary outcome**: every card also run by
+    a test over donors without gates (with a TOST for absence) and by the engine without GATE 0,
+    2, 4 and 5; false definite conclusions and sensitivity compared per stratum, with an exchange
+    fixed in advance (proposed: the gates are worth it where the false conclusions they remove are
+    at least a quarter of the true detections they lose). On v1's cards the exchange fails where
+    the metric works and holds on blind and useless metrics (`v1_correction_rule.log`). *Source:*
+    owner, 2026-10-11.
 19. **Report the establishable cards per stratum, and the cards at risk next to every rate.**
     *Source:* Review 2 A1; Review 1 A1.
 20. **Count the errors a correction makes**: on every artifact condition, the cards whose corrected
