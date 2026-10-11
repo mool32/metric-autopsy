@@ -98,7 +98,12 @@ def fig1_design(scores: dict, by_truth_log: Path, out: Path):
     ax.grid(axis="y", visible=False)
     ax.set_xlabel("claim cards (every condition on B1 but N7, on B2)")
     total = sum(r[2] for r in rows)
-    ax.set_title(f"Validation v1: {total:,} claim cards, by the metric's truth")
+    valid, blind, useless = (sum(r[3][i] for r in rows) for i in (0, 2, 3))
+    if 2 * blind <= total:
+        raise SystemExit(f"the title says most cards had a blind metric, but {blind} of {total} did")
+    fig.suptitle(f"Most cards had a blind metric: the pair metric was valid on "
+                 f"{100 * valid / (total - useless):.0f}% of its cards", fontsize=10.5, fontweight="bold",
+                 color=INK, x=0.5, y=0.975)
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(facecolor=color, edgecolor=SURFACE, label=name) for name, color in classes],
               loc="lower right", fontsize=7.5, frameon=False)
@@ -111,7 +116,7 @@ def fig1_design(scores: dict, by_truth_log: Path, out: Path):
                 va="center", color=INK, fontsize=8.5, fontweight="bold")
         start += len(conds)
     ax.set_xlim(0, max(r[2] for r in rows) * 1.25)
-    fig.subplots_adjust(left=0.31, right=0.97, top=0.91, bottom=0.12)
+    fig.subplots_adjust(left=0.31, right=0.97, top=0.90, bottom=0.12)
     fig.savefig(out / "fig1_design.png", dpi=200)
     plt.close(fig)
 

@@ -146,7 +146,8 @@ The engine was frozen as the tag `v0.3.0-prereg` (commit 90a7718) together with 
 (workflow run 37990113304). The records it fixed before drawing the key are the run tag
 `panel-v1-run` (commit 7782254). The key that chose the gene pairs and the claim cards was the
 randomness of round 32929913 of drand's quicknet, a public beacon whose rounds are threshold
-signatures of independent operators (drand 2023), published after those records (Appendix A).
+signatures of independent operators (Romailler 2023), published after those records (Appendix
+A).
 
 **Backgrounds.** A rule fixed in advance chose two backgrounds from the CELLxGENE Census
 (release 2025-11-08; CZI Cell Science Program et al. 2025):
@@ -327,13 +328,14 @@ of 2.0, where B1's high level had 0.255 and 2.5.
   the marker 2-fold in 30% of cells, so its response is at most 0.3 × ln 2 = 0.208, below δ_min
   0.25 at a SESOI of 0.5: a valid mean-expression metric of a well-detected gene cannot pass
   GATE 4 with the default (by arithmetic, `gate4_module_analytic.log`; by simulation, at most
-  +0.206 on synthetic counts and +0.191 on B2's Xist cells, `gate4_module_dilution.log`). On
-  shallow data the probe can pass for the wrong reason. At 2,000 counts per cell it passes a
-  marker of single counts (+0.358 simulated), but of the 0.360 its arithmetic gives the 2-fold
-  change makes 0.182 and the sham's loss of the single counts 0.178: the sham thins the marker,
-  the injection does not. v1 put no valid metric through the module probe (only the useless
-  N6c), so the panel could show neither. The command-line tool and the MCP server offer only the
-  coupling probe.
+  +0.206 on synthetic counts and +0.191 on B2's Xist cells, `gate4_module_dilution.log`). With
+  fewer counts the sham, which thins the marker as the injection does not, adds to the response,
+  which then exceeds the formula (0.652 against 0.619 in the marker's cells at a CP10k of 6)
+  and, for a marker of single counts at a depth of 2,000, even ln 2 (1.20). There the default
+  passes for the wrong reason (+0.358 simulated): of the 0.360 its arithmetic gives, the 2-fold
+  change makes 0.182 and the sham's loss of the single counts 0.178. v1 put no valid metric
+  through the module probe (only the useless N6c), so the panel could show neither. The
+  command-line tool and the MCP server offer only the coupling probe.
 
 ### 4.5 The anchors
 
@@ -389,14 +391,12 @@ decides first.
 *GATE 4.* The same probe, with the same 200 injections, gave +0.631 over B2's 5,027 cells with
 Xist and +0.615 over its 4,976 female cells (R1's sham), both PASS (Fig. 4b). The metric
 responds to Xist where Xist is, and the cells without it dilute the response over all cells to
-0.258 × 0.631 = 0.163, by the identity of §4.4. For a well-detected marker, as Xist is in B2,
-the response in its cells is below ln 2, here 0.631, so with `anchors.py`'s constants the probe
-needed at least 0.25 / 0.631 = 39.6% of cells with Xist: the failure was predictable from B2's
-composition (`gate4_module_analytic.log`). With fewer counts the response can exceed the
-formula, and even ln 2: 0.652 against the formula's 0.619 at a CP10k of 6, and 1.20 for a marker
-of single counts at a depth of 2,000. The defect is in what GATE 4 measures, not in the metric;
-in the anchors the probe passed on three valid metrics: R2a's G2M score, R1's Y-gene score and
-R1's sham.
+0.258 × 0.631 = 0.163, by the identity of §4.4. Xist is well detected in B2, so the bound of
+§4.4 holds: its response in its cells, 0.631, is below ln 2, and with `anchors.py`'s constants
+the probe needed at least 0.25 / 0.631 = 39.6% of cells with Xist; the failure was predictable
+from B2's composition (`gate4_module_analytic.log`). The defect is in what GATE 4 measures, not
+in the metric; in the anchors the probe passed on three valid metrics: R2a's G2M score, R1's
+Y-gene score and R1's sham.
 
 ## 5. Related work
 
@@ -543,15 +543,13 @@ and revised every section and am responsible for the content.
   heterogeneity in single-cell RNA-sequencing data reveals hidden subpopulations of cells. *Nat
   Biotechnol* 33:155–160. doi:10.1038/nbt.3102
 - Clopper CJ, Pearson ES (1934). The use of confidence or fiducial limits illustrated in the
-  case of the binomial. *Biometrika* 26:404–413. doi:10.2307/2331986
+  case of the binomial. *Biometrika* 26(4):404–413. doi:10.1093/biomet/26.4.404
 - Crowell HL, Soneson C, Germain P-L, et al. (2020). muscat detects subpopulation-specific state
   transitions from multi-sample multi-condition single-cell transcriptomics data. *Nat Commun*
   11:6077. doi:10.1038/s41467-020-19894-4
 - CZI Cell Science Program, Abdulla S, Aevermann B, Assis P, et al. (2025). CZ CELLxGENE
   Discover: a single-cell data platform for scalable exploration, analysis and modeling of
   aggregated data. *Nucleic Acids Res* 53(D1):D886–D900. doi:10.1093/nar/gkae1142
-- drand (2023). quicknet is live. League of Entropy, 16 October 2023.
-  https://drand.love/blog/2023/10/16/quicknet-is-live (chain 52db9ba7…, accessed 2026-10-11)
 - Finak G, McDavid A, Yajima M, et al. (2015). MAST: a flexible statistical framework for
   assessing transcriptional changes and characterizing heterogeneity in single-cell RNA
   sequencing data. *Genome Biol* 16:278. doi:10.1186/s13059-015-0844-5
@@ -564,7 +562,7 @@ and revised every section and am responsible for the content.
   single-cell RNA-sequencing experiments. *Biostatistics* 19(4):562–578.
   doi:10.1093/biostatistics/kxx053
 - Hrovatin K, Bastidas-Ponce A, Bakhti M, et al. (2023). Delineating mouse β-cell identity
-  during lifetime and in diabetes with a single cell atlas. *Nat Metab* 5:1615–1637.
+  during lifetime and in diabetes with a single cell atlas. *Nat Metab* 5(9):1615–1637.
   doi:10.1038/s42255-023-00876-x
 - Hurlbert SH (1984). Pseudoreplication and the design of ecological field experiments. *Ecol
   Monogr* 54(2):187–211. doi:10.2307/1942661
@@ -593,6 +591,9 @@ and revised every section and am responsible for the content.
   Natl Acad Sci USA* 115(11):2600–2606. doi:10.1073/pnas.1708274114
 - Risso D, Ngai J, Speed TP, Dudoit S (2014). Normalization of RNA-seq data using factor
   analysis of control genes or samples. *Nat Biotechnol* 32:896–902. doi:10.1038/nbt.2931
+- Romailler Y (2023). quicknet is live on the League of Entropy mainnet. drand blog, 16 October
+  2023. https://docs.drand.love/blog/2023/10/16/quicknet-is-live (chain hash 52db9ba7…, accessed
+  2026-10-11).
 - Schuirmann DJ (1987). A comparison of the two one-sided tests procedure and the power approach
   for assessing the equivalence of average bioavailability. *J Pharmacokinet Biopharm*
   15(6):657–680. doi:10.1007/BF01068419
@@ -621,15 +622,16 @@ docstring; every number drawn is also in the text.
 
 ![Fig. 1](figures_v03/fig1_design.png)
 
-**Fig. 1. The design of validation v1, by the metric's truth.** Claim cards per condition,
-grouped by what the data are, each bar split by the oracle's truth about the metric on the
-card's pair: valid, ambiguous, blind, or a useless metric (`v1_nulls_by_truth.log`). The count
-after a null's bar is its cards and, in brackets, those at risk (a valid or ambiguous metric).
-Every condition is on B1 but N7, on B2. N2 and N3 hold several steps of their artifact; N4 has
-two cards per dataset, without and with the replicate unit; E1 has four doses, 0.25, 0.5, 1 and
-1.5 times the base dose, which was the saturation dose since no key dose was found (B1: 2.5,
-2.75 and 3.0 at the high, medium and low levels). The key, drand quicknet round 32929913, drew
-every dataset's gene pair after the run's records were fixed.
+**Fig. 1. Most cards had a blind metric: the pair metric was valid on 28% of its cards.** Claim
+cards per condition, grouped by what the data are, each bar split by the oracle's truth about
+the metric on the card's pair: valid, ambiguous, blind, or a useless metric
+(`v1_nulls_by_truth.log`). The count after a null's bar is its cards and, in brackets, those at
+risk (a valid or ambiguous metric). Every condition is on B1 but N7, on B2. N2 and N3 hold
+several steps of their artifact; N4 has two cards per dataset, without and with the replicate
+unit; E1 has four doses, 0.25, 0.5, 1 and 1.5 times the base dose, which was the saturation dose
+since no key dose was found (B1: 2.5, 2.75 and 3.0 at the high, medium and low levels). The key,
+drand quicknet round 32929913, drew every dataset's gene pair after the run's records were
+fixed.
 
 ![Fig. 2](figures_v03/fig2_criteria.png)
 
