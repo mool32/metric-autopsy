@@ -225,10 +225,11 @@ turns that checklist into runnable behavior.
   - Design effects above 1.5: S3's null and invalid strata (4.74, 5.62), S5's null cell (5.28)
     and S3's E1 condition (1.54). In the false-SUPPORTED cells at most 1.055, at S1's N5, where a
     doubled error passes with probability 0.051, just above the principle's 0.05.
-  - GATE 0 refused 31 cards, all on N7 (26 at the high level), all for extra dropout, 29 on three
-    gene pairs. B2's 10x 3' v3 samples are deeper than its v2 samples, but the refusals did not
-    follow the groups' chemistry or depth (decided after the results;
-    `validation/exploratory/b2_depth_by_chemistry.log`).
+  - GATE 0 refused 31 cards, all on N7 (26 at the high level), which is GATE 0 at work: in each
+    refused dataset extra dropout biased the metric by 1.1 to 1.5 times the tolerance, and a
+    refusal is allowed, never definite. 29 of the 31 fell on three of B2's gene pairs, where
+    dropout shifted the correlation beyond the tolerance; B2's chemistry and depth do not explain
+    them (decided after the results; `validation/exploratory/b2_depth_by_chemistry.log`).
   - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
     accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
     with B4.
@@ -314,24 +315,25 @@ turns that checklist into runnable behavior.
       the direction.
     - GATE 4 must measure the response where the signal is claimed (within a group, or over the
       replicates), not over all cells.
+    - The module probe's sham must create no response by losing counts. At a depth of 2,000
+      counts the sham thins a marker of single counts that the injection keeps, so of a response
+      of 0.360 the sham's loss makes 0.178 and the 2-fold change 0.182
+      (`gate4_module_analytic.log`): on shallow data the probe can pass for the wrong reason.
   - **The development data erred in both directions.** The development probe on simulated data
     (p16, 11.3%) overstated N8's real rate by 3.7 to 8.1 times depending on the denominators, and
     ran with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5. The
     development data did not show GATE 4's failure on a marker present in only some cells. So
     v2's development backgrounds must be real. Under v1.md section 6, v1's datasets are now
     development data.
-  - **GATE 0's refusals on N7.** 31 refusals, all on N7, 29 of them on three gene pairs; B2's
-    chemistry and the groups' depth did not explain them. Find out whether those pairs' dropout
-    differs between random groups of ids, or GATE 0 is oversensitive there.
   - **GATE 4's module probe measures the response over all cells.** For a mean over cells that
     is, by identity, the share of cells with the marker times the response in them, below ln 2
-    for a marker of many counts. The default (2-fold in 30% of cells) cannot pass a well-detected
-    mean-expression metric at a SESOI of 0.5 (at most 0.3 × ln 2 = 0.208 against delta_min 0.25);
-    R1's probe (frac 1.0) needed at least 36% of cells with Xist (39.8% at the response of B2's
-    Xist cells, `gate4_module_dilution.log`), and B2 has 25.8%. At a low depth single-count
-    markers pass through the sham's loss, not through the 2-fold change. Panel v2 includes valid
-    metrics with the module probe, among them markers present in only some cells; in v1 it ran
-    only on the useless metric N6c.
+    for a marker of many counts. The default (2-fold in 30% of cells) cannot pass a
+    well-detected mean-expression metric at a SESOI of 0.5 (at most 0.3 × ln 2 = 0.208 against
+    delta_min 0.25); R1's probe (frac 1.0) needed at least 36% of cells with Xist (39.8% at the
+    response of B2's Xist cells, `gate4_module_dilution.log`), and B2 has 25.8%. At a low depth
+    single-count markers pass through the sham's loss as much as through the 2-fold change (a
+    target of v0.4 above). Panel v2 includes valid metrics with the module probe, among them
+    markers present in only some cells; in v1 it ran only on the useless metric N6c.
   - **The probe's dose and the SESOI.** In v1 both came from the pilot, that is, from the oracle.
     A user sets them, so v2 must test the engine with the defaults, or with the rule by which a
     user picks them.

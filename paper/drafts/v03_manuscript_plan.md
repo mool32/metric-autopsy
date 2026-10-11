@@ -177,7 +177,8 @@ sections 5 and 7; by-level); the items marked "post hoc" were decided after the 
   else is validated, `mi_3bin` included.
 - v0.3 does not correct per-cell capture (v1.md §6's sentence).
 - The design effects reach 5.62 (scores.json `limitations`).
-- GATE 0 refused 26 of N7's 276 high-level cards (9.4%; by-level).
+- GATE 0 refused 26 of N7's 276 high-level cards (9.4%; by-level). Round 4: GATE 0 at work, not
+  a limitation (29 of all 31 refusals on three of B2's pairs; `b2_depth_by_chemistry.log`).
 - GATE 4's module probe measures the response over all cells, so for a marker present in only
   some cells it can call a valid metric invalid (§4.7). v1's panel used the module probe only on
   the useless metric N6c, so v1 did not test this path.

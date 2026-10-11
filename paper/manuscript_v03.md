@@ -240,12 +240,13 @@ adc7d65; Fig. 2).
 | S7a | 0 of 10,540 | 0 |
 | S7b | 0 of 10,540 | ≤ 18 |
 
-No useless metric was SUPPORTED: 0 of 1,630 cards (N6a–c, the constant included; a
-pre-registered per-truth rate). I had predicted that v0.3 would fail S1 on N8, since per-cell
-variable capture is outside its correction. The prediction was not confirmed: 11 false SUPPORTED
-of 790, where S1 allows 29. Its second part, that N8's answers against the direction might fail
-S4's null cell, was not confirmed either: that cell held 58 of 2,165 (limit 102), 11 of them
-N8's (`validation/exploratory/v1_null_cells.log`).
+No useless metric was SUPPORTED: 0 of 1,630 cards, 790 with random numbers (N6a), 50 with a
+constant (N6b) and 790 with a score of random genes (N6c), a pre-registered per-truth rate. I
+had predicted that v0.3 would fail S1 on N8, since per-cell variable capture is outside its
+correction. The prediction was not confirmed: 11 false SUPPORTED of 790, where S1 allows 29. Its
+second part, that N8's answers against the direction might fail S4's null cell, was not
+confirmed either: that cell held 58 of 2,165 (limit 102), 11 of them N8's
+(`validation/exploratory/v1_null_cells.log`).
 
 **What the pass excludes.** A false SUPPORTED needs a metric that responds: on a blind metric
 GATE 4 stops the analysis first. In each key null of the pair metric only 253–271 of the 790
@@ -294,6 +295,17 @@ with 95% Clopper–Pearson intervals (Clopper & Pearson 1934).
   after the results). No excess is established. Both conditions plant an artifact outside the
   engine's correction family, entry-level dropout and capture that varies from cell to cell, so
   both are hypotheses for v0.4 with a mechanism, not measured defects.
+- GATE 0 refused 31 cards, all on N7: 26 of its 276 high-level cards (9.4%, 95% CI 6.2–13.5%)
+  and 5 at the medium level. That is GATE 0 at work: in each refused dataset extra dropout
+  biased the metric by 1.1 to 1.5 times the tolerance of 0.5 × SESOI, which GATE 0 is built to
+  stop, and a refusal is allowed, never definite (Table 3). Decided after the results
+  (`b2_depth_by_chemistry.log`): 29 of the 31 fell on three of B2's gene pairs, where extra
+  dropout shifted the correlation beyond the tolerance on 14 of the 41 N7 datasets of
+  Sec61g–Sec61b, 11 of 35 of Fau–Pfdn5 and 4 of 31 of Psma6–Psmc5. B2's chemistry and depth do
+  not explain them: its 10x 3' v3 samples are 1.66 times deeper than its v2 samples
+  (Mann–Whitney p 0.0001), but of eight comparisons of the refused datasets with the others, by
+  their share of v2 cells and their groups' chemistry and depth, only the datasets' median depth
+  gave p < 0.05 (3% higher among the refused at the high level, p 0.049).
 - Decided after the results: N8 and N3 at f = 0.4 were singled out as the two largest rates; on
   N8's 221 high-level cards with a valid metric, 8 were falsely SUPPORTED, 3.6% (95% CI
   1.6–7.0%; `v1_nulls_by_truth.log`); the pure nulls N1, N5 and N7 pooled gave 18/812 = 2.2%
@@ -322,6 +334,13 @@ of 2.0 at every level, where B1's high level had 0.255 and 2.5.
 - **GATE 6 never ran** (no card had a second dataset), so the replication field was not tested
   and every SUPPORTED on the panel is provisional. The cards declared the judgment gates
   resolved. The content estimand was tested only in R2.
+- **The module probe's sham.** At a depth of 2,000 counts the module probe passes a marker of
+  single counts (+0.358 simulated, `gate4_module_dilution.log`), but of the 0.360 its arithmetic
+  gives, the 2-fold change makes 0.182 and the sham's loss of the single counts 0.178
+  (`gate4_module_analytic.log`): the sham thins every gene, the marker included, so it loses
+  single counts that the injection keeps. On shallow data the probe can therefore pass for the
+  wrong reason. v1 put no valid metric through the module probe (only the useless N6c), so the
+  panel could not show this.
 
 ### 4.5 Limitations
 
@@ -344,15 +363,6 @@ of 2.0 at every level, where B1's high level had 0.255 and 2.5.
   less precisely. In the false-SUPPORTED cells it is at most 1.055, but at N5's 1.055 S1's cell
   passes a doubled error with probability 0.051, just above the principle's 0.05
   (`v1_null_cells.log`).
-- **GATE 0's refusals.** All 31 fell on N7 (26 of its 276 high-level cards, 9.4%, and 5 at the
-  medium level), all for extra dropout biasing the metric by 1.1 to 1.5 times the tolerance of
-  0.5 × SESOI, and 29 of them on three gene pairs. B2's 10x 3' v3 samples are deeper than its v2
-  samples (their median depths 1.66 times, Mann–Whitney p 0.0001), but the refused datasets did
-  not differ from the others in their share of v2 cells, nor their groups in chemistry or depth
-  (p 0.61, 0.73 and 0.80 at the high level, 0.30 to 0.60 at the medium). Only the datasets'
-  median depth, 3% higher among the refused at the high level, gave p 0.049 (0.96 at the
-  medium), one of eight tests. The refusals look like a property of those pairs (decided after
-  the results; `validation/exploratory/b2_depth_by_chemistry.log`).
 - **GATE 4's module probe measures the response over all cells.** For a metric that is a mean
   over cells this is, by identity, the share of cells with the marker times the response in
   them, and for a marker of many counts that response is below ln 2. The module's default raises
@@ -360,10 +370,9 @@ of 2.0 at every level, where B1's high level had 0.255 and 2.5.
   0.25 at a SESOI of 0.5: a valid mean-expression metric of a well-detected gene cannot pass
   GATE 4 with the default (`gate4_module_analytic.log`; the simulations of
   `gate4_module_dilution.log` confirm it, at most +0.206 on synthetic counts and +0.191 on 1,000
-  of B2's Xist cells). At a depth of 2,000 counts a marker of single counts does pass (+0.358),
-  but through the sham: of the 0.360 its arithmetic gives, the 2-fold change makes 0.182 and the
-  sham's loss of the single count 0.178. v1 used the module probe only on the useless N6c. The
-  command-line tool and the MCP server offer only the coupling probe.
+  of B2's Xist cells). At a low depth it can pass for the wrong reason (§4.4). v1 used the
+  module probe only on the useless N6c. The command-line tool and the MCP server offer only the
+  coupling probe.
 
 ### 4.6 Checks after the run
 
@@ -544,10 +553,10 @@ difference could not be confirmed by design, and R1 failed.
 
 **The targets of v0.4** are per-cell variable capture (N8), entry-level dropout (N3 at f = 0.4),
 a GATE 4 that measures the response where the signal is claimed (within a group, or over the
-replicates) rather than over all cells, a truth about validity independent of GATE 4, and
-criteria sized on the cards at risk. They need a new pre-registration, and GATE 0's refusals on
-N7 need an explanation first. The next step of the validation plan (`PROJECT.md`) is external
-verdicts.
+replicates) rather than over all cells, a module sham that creates no response by losing counts
+(on shallow data the probe can pass for the wrong reason, §4.4), a truth about validity
+independent of GATE 4, and criteria sized on the cards at risk. They need a new
+pre-registration. The next step of the validation plan (`PROJECT.md`) is external verdicts.
 
 ## 8. Methods
 
@@ -720,8 +729,8 @@ and revised every section and am responsible for the content.
 - Kane MT (2013). Validating the interpretations and uses of test scores. *J Educ Meas*
   50(1):1–73. doi:10.1111/jedm.12000
 - Korn EL, Graubard BI (1998). Confidence intervals for proportions with small expected number
-  of positive counts estimated from survey data. *Survey Methodology*, December 1998 issue
-  (Statistics Canada catalogue 12-001-X19980024356), 193–201.
+  of positive counts estimated from survey data. *Survey Methodology* 24(2):193–201. Statistics
+  Canada, Catalogue No. 12-001-X19980024356.
 - Lakens D (2017). Equivalence tests: a practical primer for t tests, correlations, and
   meta-analyses. *Soc Psychol Personal Sci* 8(4):355–362. doi:10.1177/1948550617697177
 - Lazic SE (2010). The problem of pseudoreplication in neuroscientific studies: is it affecting

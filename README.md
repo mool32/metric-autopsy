@@ -69,13 +69,6 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     (4.74, 5.62), S5's null cell (5.28) and S3's E1 condition (1.54). In the false-SUPPORTED
 >     cells they are at most 1.055; at N5's, S1's cell passes a doubled error with probability
 >     0.051, just above the principle's 0.05.
->   - **GATE 0 refused 31 cards, all on N7** (26 at the high level), all for extra dropout and 29
->     on three gene pairs. B2's 10x 3' v3 samples are deeper than its v2 samples (median depths
->     1.66 times, Mann–Whitney p 0.0001), but the refused datasets did not differ from the others
->     in their share of v2 cells, nor their groups in chemistry or depth; only the datasets'
->     median depth, 3% higher among the refused at the high level, gave p 0.049, one of eight tests
->     (decided after the results;
->     [`b2_depth_by_chemistry.log`](validation/exploratory/b2_depth_by_chemistry.log)).
 >   - **Anchor R1, the one real positive control expected to succeed, failed: two of its three
 >     claims were outside their allowed sets.** It ran once, after the results and outside v1
 >     ([D1](validation/prereg/DEVIATIONS.md);
@@ -94,9 +87,12 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     mean-expression metric of a well-detected gene cannot pass GATE 4 at a SESOI of 0.5: at most
 >     0.3 × ln 2 = 0.208 against delta_min 0.25
 >     ([`gate4_module_analytic.log`](validation/exploratory/gate4_module_analytic.log); simulated
->     in [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). The
->     module probe is reached through the Python API only: the CLI and the MCP server offer the
->     coupling probe. v1's panel used it only on the useless metric N6c.
+>     in [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). At a
+>     depth of 2,000 counts it passes a marker of single counts for the wrong reason: of a
+>     response of 0.360 the sham's loss of the single counts makes 0.178, the 2-fold change
+>     0.182, since the sham thins the marker and the injection does not. The module probe is
+>     reached through the Python API only: the CLI and the MCP server offer the coupling probe.
+>     v1's panel used it only on the useless metric N6c.
 > - **Error rates by level and truth** (pre-registered secondary outcomes, v1.md sections 5 and
 >   7; [`v1_by_level.log`](validation/exploratory/v1_by_level.log)):
 >   - All 2,458 cards with a valid metric are at the high expression level. At the medium and
@@ -106,12 +102,19 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     largest are N3 at f = 0.4, 7/83 = 8.4%, and N8, 11/253 = 4.3% (95% CI 2.2–7.6%); after
 >     Holm's correction over the twelve (decided after the results) 0.058 and 0.61. Both are
 >     hypotheses for v0.4 with a mechanism, not measured defects.
+>   - GATE 0 refused 31 cards, all on N7 (26/276 = 9.4% at the high level, 5 at the medium).
+>     That is GATE 0 at work: in each refused dataset extra dropout biased the metric by 1.1 to
+>     1.5 times the tolerance, and a refusal is allowed, never definite. Decided after the
+>     results: 29 of the 31 fell on three of B2's gene pairs, where dropout shifted the
+>     correlation beyond the tolerance; B2's chemistry and depth do not explain them
+>     ([`b2_depth_by_chemistry.log`](validation/exploratory/b2_depth_by_chemistry.log)).
 >   - Decided after the results: N8 on its cards with a valid metric 8/221 = 3.6%. The
 >     development probe p16 (11.3% on simulated data) overstated N8's real rate by 3.7 to 8.1
 >     times, depending on the denominators (the log gives each with its assumption); it also ran
 >     with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5.
 >
->   A correction for per-cell capture is planned for v0.4, with a new pre-registration.
+>   A correction for per-cell capture, and a module sham that creates no response by losing
+>   counts, are planned for v0.4, with a new pre-registration.
 > - **Next.** Step 4 of the validation plan, external verdicts, is ahead.
 > - **What a verdict is.** A statement about one dataset under the declared assumptions, not
 >   about biology.
