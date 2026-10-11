@@ -82,22 +82,23 @@ reach an effect verdict) and the demo are not logged unless a path is given.
 Every gate traces to one of three failures we actually shipped weeks of work into.
 
 **Error 1 — Mathematical dependency (ACP).** Claim: intracellular entropy and intercellular
-entropy are anticorrelated during aging (ρ = −0.54). Reality: when cells become internally
-uniform they also become mutually similar — a structural tendency of the two metrics sharing
-one matrix, not biology. The signal vanished on 10x (ρ = −0.09) and *reversed* at low depth
-(ρ = +0.38 at 500 genes). → **GATE 0**.
+entropy are anticorrelated during aging. Reality: when cells become internally uniform they also
+become mutually similar — a structural tendency of the two metrics sharing one matrix, not
+biology. The signal vanished on 10x and *reversed* at low depth. → **GATE 0**. *(From the
+internal checklist; no script in this repository.)*
 
 **Error 2 — Physical constant as biology (β-heart).** Claim: the ECG spectral exponent β
 encodes cardiac health. Reality: β tracks conduction-system geometry — a biophysical constant
-of the medium. The 12-lead β-vector reconstructs anatomy (AUC 0.98 LBBB vs RBBB) *because it
-is the anatomy*. → **GATE 4**.
+of the medium. The 12-lead β-vector tells the conduction blocks apart *because it is the
+anatomy*. → **GATE 4**. *(From the internal checklist; no script in this repository.)*
 
 **Error 3 — Technical confound (MI coupling).** Claim: SMAD→ECM mutual information declines
-with age while housekeeping coupling is preserved. Reality: male old cells detect 2.4× fewer
-genes (3670 → 1540, p = 9.5e-56); female cells are stable. MI with a zero-bin is driven by
-detection rate. The "pathway-specific coupling loss" was QC in the sex×age interaction —
-invisible in the young-vs-old marginal. → **GATES 1, 2, 5, 6**. *(These numbers come from the
-by-hand analysis; the automated real-data run is under audit in `validation/flagship_audit/`.)*
+with age while housekeeping coupling is preserved. Reality: in Tabula Muris Senis the old males
+detect fewer genes than the young males, and the MI falls with detection in the same mice. MI
+with a zero-bin is driven by detection rate, so the "pathway-specific coupling loss" followed
+QC. Whether the drop is technical or biological, and whether the females differ, these data
+cannot say: there are no spike-ins, and the old female arm is three mice of one tissue. →
+**GATES 1, 2, 5, 6**. *(The numbers are in the audit, `validation/flagship_audit/REPORT.md`.)*
 
 ---
 

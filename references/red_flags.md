@@ -5,18 +5,18 @@ investigate before making a claim — each has a real example attached.*
 
 | # | Red flag | Gate | Our example |
 |---|----------|------|-------------|
-| 1 | QC differs > 1.5× between compared groups | 1 | male young/old n_genes 3670/1540 = 2.4× |
+| 1 | QC differs > 1.5× between compared groups | 1 | TMS: old males detect fewer genes than young males ([audit](../validation/flagship_audit/REPORT.md)) |
 | 2 | Metric uses zero / non-zero expression as a feature | 0 | MI 3-bin: bin 0 = "not detected" |
-| 3 | Effect vanishes on a different platform | 6 | ACP: SmartSeq2 ρ=−0.54, 10x ρ=−0.09 |
-| 4 | Effect reverses sign at a different parameter | 0 | ACP at 500 genes: ρ=+0.38 (reversed) |
+| 3 | Effect vanishes on a different platform | 6 | ACP: an entropy anticorrelation on SmartSeq2 vanished on 10x (internal checklist, no script) |
+| 4 | Effect reverses sign at a different parameter | 0 | ACP: the anticorrelation reversed at low depth (internal checklist, no script) |
 | 5 | The "negative control" also shows the effect | 5 | MI: HK coupling also declines in males |
 | 6 | The effect vanishes at equal depth (or after n_genes matching) | 2 | MI human skin: all coupling vanishes |
-| 7 | Effect only in one subset but you didn't stratify | 1 | MI: 9/9 male, 0/9 female |
+| 7 | Effect only in one subset but you didn't stratify | 1 | TMS MI: GATE 1 flags the male stratum and passes the female one ([audit](../validation/flagship_audit/REPORT.md)) |
 | 8 | Metric correlates with a physical/geometric constant | 4 | β tracks conduction geometry |
 | 9 | Two metrics correlate but share input data | 0 | ACP: E_intra and E_inter from one matrix |
 | 10 | You can't state the mechanism in one sentence | 4 | "coupling decreases" — but *why*? |
-| 11 | QC distributions don't overlap between groups | 1–2 | male young/old: 3 cells in overlap |
-| 12 | QC differs in an interaction, not the main effect | 1 | young vs old fine, but male×old degraded |
+| 11 | QC distributions don't overlap between groups | 1–2 | TMS males: every old mouse detects fewer genes than every young one ([audit](../validation/flagship_audit/REPORT.md)) |
+| 12 | QC differs in an interaction, not the main effect | 1 | TMS: the drop is in the old males; whether it is a sex-by-age interaction the data cannot establish ([audit](../validation/flagship_audit/REPORT.md)) |
 
 ## How to read this table
 
