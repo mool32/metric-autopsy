@@ -4,13 +4,13 @@
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
 **Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive  ← current
-*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. A full draft of the new manuscript, `paper/manuscript_v03.md`, waits for the owner's review.)*
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. The draft of the new manuscript, `paper/manuscript_v03.md`, is paused since 2026-10-11: not for posting, to be rewritten after v0.4, validation v2 and the external verdicts.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
 **Started:** 2026-07-04   **Last update:** 2026-10-11
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
-- Preprint: none yet. `paper/manuscript.md` is the superseded v0.1.1 text (not to be uploaded); the v0.3 draft, `paper/manuscript_v03.md`, is under the owner's review
+- Preprint: none yet. `paper/manuscript.md` is the superseded v0.1.1 text (not to be uploaded); the v0.3 draft, `paper/manuscript_v03.md`, is paused (not for posting; to be rewritten after v0.4, validation v2 and the external verdicts)
 - Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.1.1 pending release
 - Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
@@ -284,8 +284,9 @@ turns that checklist into runnable behavior.
 - [x] Public repo + `gh` metadata (description, homepage→DOI, topics incl. `tool`/`single-cell`).
 - [x] Release v0.1.0 → Zenodo DOI (concept + version) → DOI badge; CI green across Python 3.9–3.12.
 - [ ] ~~Post preprint to bioRxiv (manuscript ready)~~ — superseded (2026-10-10): the v0.1.1
-  manuscript is not to be uploaded (`paper/ARXIV_SUBMISSION.md`). A full draft on v0.3,
-  `paper/manuscript_v03.md`, waits for the owner's review.
+  manuscript is not to be uploaded (`paper/ARXIV_SUBMISSION.md`). The draft on v0.3,
+  `paper/manuscript_v03.md`, is paused (2026-10-11): the tool first has to show itself on real
+  tasks and against a donor-level test.
 - [ ] Portfolio: add to `mool32.github.io/_data/publications.yml` + `papers.bib`.
 - [ ] v1.1: turnkey GATE 6 second-platform replication, more example datasets.
 - [ ] Validation plan (2026-10-07):
@@ -354,3 +355,78 @@ turns that checklist into runnable behavior.
     stratum rule), the anchor would not test those rules. By those rules R1's design on B2 was
     UNIDENTIFIABLE, with the pools (ids partially crossed with sex) and without them (no stage
     holds both sexes).
+
+## Requirements for v2
+Collected on 2026-10-11 from the two reviews of the v0.3 draft, the lessons of v1 (above, with
+their logs) and D1 (`validation/prereg/DEVIATIONS.md`). Review 1 is the independent review of
+the full draft and Review 2 its re-check of 0ed504c, both 2026-10-11; until their texts are in
+`paper/reviews/`, they are cited by the owner's item numbers in the decisions of that day. A
+draft that makes each requirement operational follows the decisive experiment on v1's data.
+
+**The criteria**
+1. **Size the criteria of false SUPPORTED on the cards at risk** (a valid or ambiguous metric),
+   per condition and level, and print for every cell the rate it catches with probability 0.95.
+   *Source:* v1 lesson (S1's 790 cards held 253–271 at risk); Review 1 A1; owner, 2026-10-11.
+2. **Pre-register every analysis a statement rests on**: the rates by level and truth, pooled
+   nulls, the test of each high-level null cell against its nominal with the correction over
+   the cells. Everything else is marked post hoc. *Source:* Review 1 A2, A3; Review 2 A3.
+3. **Test each prediction with a cell that can confirm it**, sized to detect the excess v1
+   measured (N8 4.3% and N3 at f = 0.4 8.4% at the high level, nominal 2.5%), and name every
+   criterion a prediction binds (N8's S4 part). *Source:* Review 1 A3 and C; v1 lesson (the
+   targets of v0.4).
+4. **Design effects by donor and by gene pair**; every cell keeps the principle (a doubled error
+   passes with probability ≤ 0.05) at its realized design effect. *Source:* Review 1 B11 (N5:
+   0.051); owner, 2026-10-11 (the design effect by pair).
+5. **Operating characteristics for a validator sound within the engine's correction family**,
+   not with the oracle's true correction, so that what the criteria predict for an
+   out-of-family artifact is explicit. *Source:* Review 2 B9.
+
+**The truth**
+6. **A truth about validity independent of GATE 4's mechanism.** *Source:* Review 1 B7; v1
+   lesson; owner, 2026-10-11.
+7. **N2 tests the correction of depth, and the real effects clear the SESOI**: the run needs a
+   level where the oracle detects N2's raw difference with power ≥ 0.9, and a key dose with Δ*
+   clearly above the SESOI, or it stops before the key. *Source:* Review 1 A5; v1 lesson.
+8. **No condition on one background only**, and each background's chemistry recorded and
+   declared as a stratum where it is mixed. *Source:* Review 1 B6 (B2 carried only N7 and R1)
+   and C (B2's 10x v2 and v3).
+
+**The engine under test**
+9. **The engine as a user runs it**: the SESOI, GATE 4's dose and delta_min from a rule a user
+   can apply (v0.4), not from the oracle's pilot. *Source:* v1 lesson (the probe's dose and the
+   SESOI); Review 1 (its abstract: "user-chosen settings"); owner, 2026-10-11.
+10. **GATE 6 and the content estimand in the panel**: cards with a second dataset, and data with
+    spike-ins. *Source:* Review 1 B12.
+11. **Pairs beyond the 8 most correlated of each level**, among them random and weakly
+    correlated pairs. *Source:* Review 1 B12; owner, 2026-10-11.
+12. **Metrics of the types the target claims use**: coordination and correlation, noise,
+    entropy, and mean expression of markers present in only some cells, through the module
+    probe. *Source:* owner, 2026-10-11; v1 lesson (the module probe ran only on N6c); D1
+    (R1's Xist).
+
+**Controls and anchors**
+13. **Real positive controls checked by independent code before registration**: each id one
+    animal of one sex (by Xist and the Y genes), both sexes in one stratum, and the allowed set
+    computed by code independent of the engine's design rules, as the oracle is. *Source:* v1
+    lesson; Review 1 B8 and B14; D1 (the causes); owner, 2026-10-11.
+14. **Every anchor runs end to end on its real data before the tag**, with the run's loader,
+    gene cut and library size. *Source:* D1 (the sparse loader; the cut to 2,000 genes changed
+    CP10k's denominator).
+15. **Each probe checked by arithmetic against the data's composition before registration**
+    (for the module probe: the share of cells with the marker times its response there, against
+    delta_min). *Source:* Review 1 B8 and B10; D1.
+
+**Development data**
+16. **Real development backgrounds, at the confirmatory run's settings**, and every comparison
+    with v1 on the same denominators. *Source:* v1 lesson (p16 erred in both directions);
+    Review 1 A4; Review 2 A5.
+17. **No outcome fixed by a test's discreteness**: the smallest attainable p of each design
+    checked before registration (p07: an exact test at 3 against 3 cannot reach 0.05).
+    *Source:* Review 1 B13.
+
+**Comparators and reporting**
+18. **The analyzers of the decisive experiment in the panel**: a test over cells, a test over
+    donors without gates, and the engine without GATE 0, 2, 4 and 5, so that v2 measures what the
+    gates add over a careful donor-level test. *Source:* owner, 2026-10-11.
+19. **Report the establishable cards per stratum, and the cards at risk next to every rate.**
+    *Source:* Review 2 A1; Review 1 A1.

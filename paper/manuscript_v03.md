@@ -1,3 +1,5 @@
+Draft, not for posting: to be rewritten after v0.4, validation v2 and the external verdicts.
+
 # Validating the validator: a blind, pre-registered test of artifact checks on one single-cell metric
 
 Theodor Spiro | ORCID 0009-0004-5382-9346
