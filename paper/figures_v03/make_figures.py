@@ -1,18 +1,18 @@
-"""The five figures of paper/manuscript_v03.md, each drawn from a published file of the repository.
+"""The figures of paper/manuscript_v03.md, each drawn from a published file of the repository.
 
     python paper/figures_v03/make_figures.py --scores scores.json --audit audit_results.json \
         --b2-log validation/exploratory/b2_sex_structure.log \
-        --p16-log validation/probes/p16_variable_capture_n8.log --out paper/figures_v03
+        --null-cells-log validation/exploratory/v1_null_cells.log --out paper/figures_v03
 
 * scores.json: branch results/panel-v1 (commit adc7d65), the scores of validation v1.
 * audit_results.json: branch results/flagship-audit (commit d2a5420), the flagship audit on TMS.
 * b2_sex_structure.log: B2 by sex and GATE 4's probe for R1's Xist claim (workflow run 38045140802).
-* p16_variable_capture_n8.log: the development probe p16 on simulated data.
+* v1_null_cells.log: the twelve null cells of the high expression level, with Holm's correction.
 
 Fig. 1 the design of v1 (claim cards per condition); Fig. 2 the criteria against their limits;
-Fig. 3 false SUPPORTED by condition at the high expression level; Fig. 4 TMS per mouse; Fig. 5 the
-real positive controls of v0.1.1 and v0.3. Every number drawn is also in the manuscript's text or
-tables. Needs matplotlib (an optional dependency of the package).
+Fig. 3 false SUPPORTED in the twelve null cells at the high expression level; Fig. 4 the real
+positive controls of v0.1.1 and v0.3; Fig. A1 (appendix) TMS per mouse. Every number drawn is also
+in the manuscript's text or tables. Needs matplotlib (an optional dependency of the package).
 """
 from __future__ import annotations
 
@@ -72,9 +72,9 @@ def fig1_design(scores: dict, out: Path):
     ax.barh(y, [r[2] for r in rows], height=0.55, color=BLUE, zorder=2)
     for yi, (_, c, n) in zip(y, rows):
         ax.text(n + 20, yi, f"{n:,}", va="center", color=INK2, fontsize=8)
-    ax.set_yticks(y, [f"{r[1]}" for r in rows])
+    ax.set_yticks(y, [f"{r[1]} (B2)" if r[1] == "N7" else r[1] for r in rows])
     ax.grid(axis="y", visible=False)
-    ax.set_xlabel("claim cards")
+    ax.set_xlabel("claim cards (every condition on B1 but N7, on B2)")
     total = sum(r[2] for r in rows)
     ax.set_title(f"Validation v1: {total:,} claim cards in 9,750 datasets")
     # group labels at the left margin
@@ -93,79 +93,77 @@ def fig1_design(scores: dict, out: Path):
 def fig2_criteria(scores: dict, out: Path):
     """Every cell of the error criteria as a share of its allowance, and S3 as a share of its minimum."""
     cr = scores["criteria"]
-    err = [(f"S1 {c}", v["k"], v["max_allowed"]) for c, v in cr["S1"]["conditions"].items()]
+    names = {"S2:N6": "S2 N6a", "S4:null:opposite": "S4 null opposite*"}  # S2's N6 group: N6a (N6b cannot be SUPPORTED)
+    err = [(f"S1 {c}", v["k"], v["n"], v["max_allowed"]) for c, v in cr["S1"]["conditions"].items()]
     for s in ("S2", "S4", "S5", "S6"):
         for cell, v in cr[s]["cells"].items():
-            err.append((cell.replace(":", " "), v["k"], v["max_allowed"]))
-    err.append(("S7b crashes", cr["S7b"]["k"], cr["S7b"]["max_allowed"]))
-    s3 = [(f"S3 {st}", v["k"], v["min_required"]) for st, v in cr["S3"]["strata"].items()]
-    fig, (a, b) = plt.subplots(1, 2, figsize=(7.4, 5.6), gridspec_kw=dict(width_ratios=[3, 2]))
+            err.append((names.get(cell, cell.replace(":", " ")), v["k"], v["n"], v["max_allowed"]))
+    err.append(("S7b crashes", cr["S7b"]["k"], cr["S7b"]["n"], cr["S7b"]["max_allowed"]))
+    s3 = [(f"S3 {st}", v["k"], v["n"], v["min_required"]) for st, v in cr["S3"]["strata"].items()]
+    fig, (a, b) = plt.subplots(1, 2, figsize=(8.6, 5.8), gridspec_kw=dict(width_ratios=[3, 2]))
     y = list(range(len(err)))[::-1]
-    a.scatter([k / m for _, k, m in err], y, s=36, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
-    a.set_yticks(y, [f"{lab}: {k} (≤ {m})" for lab, k, m in err], fontsize=7.5)
+    a.scatter([k / m for _, k, _, m in err], y, s=36, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
+    a.set_yticks(y, [f"{lab}: {k:,}/{n:,} (≤ {m})" for lab, k, n, m in err], fontsize=7.5)
     a.set_xlim(0, 1.08)
     a.grid(axis="y", visible=False)
     _limit_line(a, 1.0, "limit")
     a.set_xlabel("errors as a share of the allowance")
     a.set_title("(a) error criteria: every cell below its limit")
     y3 = list(range(len(s3)))[::-1]
-    b.scatter([k / m for _, k, m in s3], y3, s=36, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
-    b.set_yticks(y3, [f"{lab}: {k} (≥ {m})" for lab, k, m in s3], fontsize=7.5)
+    b.scatter([k / m for _, k, _, m in s3], y3, s=36, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
+    b.set_yticks(y3, [f"{lab}: {k:,}/{n:,} (≥ {m:,})" for lab, k, n, m in s3], fontsize=7.5)
     b.set_xlim(0.9, 1.5)
     b.set_ylim(-0.8, len(s3) - 0.2)
     b.grid(axis="y", visible=False)
     _limit_line(b, 1.0, "minimum")
-    b.set_xlabel("correct definite outcomes\nas a share of the minimum")
+    b.set_xlabel("correct definite outcomes,\nshare of the minimum")
     b.set_title("(b) S3: decisiveness")
-    fig.text(0.01, 0.01, "S7a (rule violations): 0 of 10,540, where none is allowed.", color=INK2, fontsize=8)
-    fig.subplots_adjust(left=0.27, right=0.97, top=0.93, bottom=0.12, wspace=0.95)
+    fig.text(0.01, 0.035, "S7a (rule violations): 0 of 10,540, where none is allowed.", color=INK2, fontsize=8)
+    fig.text(0.01, 0.01, "* On null data NOT SUPPORTED against the direction is allowed; its rate is bounded as a "
+             "false detection's.", color=INK2, fontsize=8)
+    fig.subplots_adjust(left=0.27, right=0.96, top=0.93, bottom=0.15, wspace=1.05)
     fig.savefig(out / "fig2_criteria.png", dpi=200)
     plt.close(fig)
 
 
-def fig3_by_level(scores: dict, p16_log: Path, out: Path):
-    """False SUPPORTED at the high expression level, with 95% Clopper-Pearson intervals."""
-    pl = scores["per_level"]
+def _null_cells(log: Path) -> list[tuple[str, int, int, float]]:
+    """(cell, k, n, Holm's p) of v1_null_cells.log's twelve high-level null cells."""
+    text = log.read_text().split("## 2. The twelve null cells at the high level")[1].split("##")[0]
+    rows = re.findall(r"^  (N\d \S+)\s+(\d+)/(\d+) = .*?\s([\d.]+)\s+([\d.]+)$", text, flags=re.M)
+    return [(c, int(k), int(n), float(h)) for c, k, n, _, h in rows]
 
-    def sup(key):
-        e = pl[key]
-        return int(e["outcomes"]["SUPPORTED"]["k"]), int(e["n"])
-    rows = [("N1 (null)", *sup("N1:null:high")), ("N5 (sham)", *sup("N5:sham:high")),
-            ("N7 (null over donor ids)", *sup("N7:mice:high"))]
-    k = sum(r[1] for r in rows)
-    n = sum(r[2] for r in rows)
-    rows.append(("pure nulls together", k, n))
-    rows += [("N3, dropout f = 0.4", *sup("N3:f=0.4:high")), ("N8, per-cell capture", *sup("N8:beta(2,2):high"))]
-    m = re.search(r"N8 beta\(2,2\).*?\n\s*false SUPPORTED by the engine (\d+)/(\d+)", p16_log.read_text())
-    dev = (int(m.group(1)), int(m.group(2)))
-    fig, ax = plt.subplots(figsize=(7.0, 3.9))
-    y = list(range(len(rows) + 1))[::-1]
-    for yi, (lab, k, n) in zip(y[1:], rows):
+
+def fig3_by_level(null_log: Path, out: Path):
+    """False SUPPORTED in the twelve null cells at the high level, with 95% Clopper-Pearson intervals."""
+    rows = _null_cells(null_log)
+    if len(rows) != 12:
+        raise SystemExit(f"expected twelve null cells in {null_log}, found {len(rows)}")
+    names = {"N1 null": "N1 (null)", "N4 3v3": "N4 (3 against 3, replicate unit)", "N5 sham": "N5 (sham)",
+             "N7 mice": "N7 (null over B2's donor ids)", "N8 beta(2,2)": "N8 (per-cell capture)"}
+    fig, ax = plt.subplots(figsize=(7.0, 4.6))
+    y = list(range(len(rows)))[::-1]
+    for yi, (cell, k, n, holm) in zip(y, rows):
         lo, hi = clopper_pearson(k, n)
         ax.plot([100 * lo, 100 * hi], [yi, yi], color=BLUE, linewidth=2, solid_capstyle="round", zorder=2)
-        ax.scatter([100 * k / n], [yi], s=48, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
-        ax.text(100 * hi + 0.4, yi, f"{k}/{n}", va="center", color=INK2, fontsize=8)
-    lo, hi = clopper_pearson(*dev)
-    ax.plot([100 * lo, 100 * hi], [y[0], y[0]], color=ORANGE, linewidth=2, solid_capstyle="round", zorder=2)
-    ax.scatter([100 * dev[0] / dev[1]], [y[0]], s=48, color=ORANGE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
-    ax.text(100 * hi + 0.4, y[0], f"{dev[0]}/{dev[1]}", va="center", color=INK2, fontsize=8)
-    ax.set_yticks(y, ["N8, development probe p16\n(simulated data, all levels)"] + [r[0] for r in rows])
+        ax.scatter([100 * k / n], [yi], s=44, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
+        ax.text(100 * hi + 0.4, yi, f"{k}/{n}; Holm p {holm:.3f}" if holm < 1 else f"{k}/{n}", va="center",
+                color=INK2, fontsize=7.5)
+    labels = [names.get(c, c.replace(" c=", ", capture c = ").replace(" f=", ", dropout f = ")) for c, *_ in rows]
+    ax.set_yticks(y, labels, fontsize=8)
     ax.grid(axis="y", visible=False)
     _limit_line(ax, 2.5, "nominal 2.5%")
-    ax.set_xlim(0, 20)
-    ax.set_xlabel("false SUPPORTED, % of cards (95% CI)")
-    ax.set_title("False SUPPORTED at high expression")
-    ax.set_ylim(-1.1, len(rows) + 0.5)
-    fig.text(0.33, 0.015, "At medium and low expression no card was SUPPORTED (0 of 6,988).", color=INK2, fontsize=8)
-    ax.scatter([], [], s=48, color=BLUE, label="validation v1, high level (real backgrounds)")
-    ax.scatter([], [], s=48, color=ORANGE, label="development probe (simulated)")
-    ax.legend(loc="upper center", bbox_to_anchor=(0.45, -0.18), ncol=2, fontsize=8)
-    fig.subplots_adjust(left=0.33, right=0.97, top=0.90, bottom=0.27)
+    ax.set_xlim(0, 22)
+    ax.set_ylim(-0.9, len(rows) - 0.4)
+    ax.set_xlabel("false SUPPORTED, % of the cell's high-level cards (95% CI)")
+    ax.set_title("The twelve null cells at high expression")
+    fig.text(0.01, 0.015, "Rates and intervals: pre-registered (v1.md §5). One-sided p against 2.5%, "
+             "Holm over the twelve: post hoc.", color=INK2, fontsize=7.5)
+    fig.subplots_adjust(left=0.33, right=0.97, top=0.92, bottom=0.16)
     fig.savefig(out / "fig3_by_level.png", dpi=200)
     plt.close(fig)
 
 
-def fig4_tms(audit: dict, out: Path):
+def figA1_tms(audit: dict, out: Path):
     """TMS: per-mouse median genes detected against mi_3bin, young and old, by sex. The Census's stages are "3m"
     and "20m" ("20-month-old stage and over"); the legend gives each group's age from its mouse ids (24_60_M is 24
     months)."""
@@ -186,7 +184,7 @@ def fig4_tms(audit: dict, out: Path):
         ax.legend(loc="upper left", fontsize=7.5)
     axes[0].set_ylabel("mi_3bin (Smad3–Col1a1)")
     fig.subplots_adjust(left=0.10, right=0.98, top=0.88, bottom=0.16, wspace=0.08)
-    fig.savefig(out / "fig4_tms_mice.png", dpi=200)
+    fig.savefig(out / "figA1_tms_mice.png", dpi=200)
     plt.close(fig)
 
 
@@ -204,7 +202,7 @@ def _b2(log: Path) -> tuple[dict, list]:
     return g4, ids
 
 
-def fig5_controls(audit: dict, b2_log: Path, out: Path):
+def fig4_controls(audit: dict, b2_log: Path, out: Path):
     """v0.1.1 on TMS (GATE 1) and v0.3 on B2 (GATE 4 and the design), side by side."""
     g1 = {r["stratum"]["age"]: r["n_genes_ratio"] for r in audit["F"]["Xist"]["gate1_table"]}
     kept = (audit["F"]["Xist"]["gate2"]["retained_frac"], audit["F"]["Y_score"]["gate2"]["retained_frac"])
@@ -217,7 +215,7 @@ def fig5_controls(audit: dict, b2_log: Path, out: Path):
     a.scatter([g1[s] for s in strata], ya, s=56, color=BLUE, edgecolor=SURFACE, linewidth=1.5, zorder=3)
     for yi, s in zip(ya, strata):
         a.text(g1[s], yi + 0.22, f"{g1[s]:.2f}×", ha="center", va="bottom", color=INK2, fontsize=8)
-    a.set_yticks(ya, [f"{s.replace('m', ' months')}" for s in strata])
+    a.set_yticks(ya, ["3 months", "18 months", "20 months+\n(M 24, F 21)"])
     a.set_ylim(-0.9, len(strata) - 0.5)
     a.set_xlim(0.9, 2.5)
     a.grid(axis="y", visible=False)
@@ -238,7 +236,7 @@ def fig5_controls(audit: dict, b2_log: Path, out: Path):
     b.set_ylim(-0.9, len(rows) - 0.5)
     b.grid(axis="y", visible=False)
     _limit_line(b, 0.25, "$\\delta_{min}$ 0.25")
-    b.set_xlabel("GATE 4 response to 2-fold Xist (95% CI)")
+    b.set_xlabel("GATE 4 response to 2-fold Xist\n(Monte Carlo 95% CI, 200 injections)")
     b.set_title("(b) v0.3 on B2: GATE 4 over all\ncells calls Xist invalid", fontsize=9)
     c = fig.add_subplot(gs[1, :])
     stage_order = ["2-week-old stage", "5-week-old stage", "8-week-old stage", "2-month-old stage",
@@ -264,7 +262,7 @@ def fig5_controls(audit: dict, b2_log: Path, out: Path):
     c.set_title("(c) B2 by development stage: single males and single females never share a stage", fontsize=9)
     c.legend(loc="lower right", fontsize=8)
     fig.subplots_adjust(left=0.13, right=0.97, top=0.92, bottom=0.08)
-    fig.savefig(out / "fig5_positive_controls.png", dpi=200)
+    fig.savefig(out / "fig4_positive_controls.png", dpi=200)
     plt.close(fig)
 
 
@@ -273,7 +271,7 @@ def main(argv=None) -> int:
     ap.add_argument("--scores", type=Path, required=True)
     ap.add_argument("--audit", type=Path, required=True)
     ap.add_argument("--b2-log", type=Path, required=True)
-    ap.add_argument("--p16-log", type=Path, required=True)
+    ap.add_argument("--null-cells-log", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parent)
     args = ap.parse_args(argv)
     scores = json.loads(args.scores.read_text())
@@ -281,9 +279,9 @@ def main(argv=None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     fig1_design(scores, args.out)
     fig2_criteria(scores, args.out)
-    fig3_by_level(scores, args.p16_log, args.out)
-    fig4_tms(audit, args.out)
-    fig5_controls(audit, args.b2_log, args.out)
+    fig3_by_level(args.null_cells_log, args.out)
+    fig4_controls(audit, args.b2_log, args.out)
+    figA1_tms(audit, args.out)
     print("\n".join(sorted(str(p.relative_to(args.out)) for p in args.out.glob("fig*.png"))))
     return 0
 
