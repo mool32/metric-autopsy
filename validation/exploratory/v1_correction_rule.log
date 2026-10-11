@@ -1,0 +1,69 @@
+# The rule 'a correction can only remove a conclusion, never create one' on validation v1's reports
+# (exploratory, post hoc; v1 and the engine unchanged)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; per-card analyzers sha256 ceaa8b36fc7708c9baa68717048874f13a7a13ffafb0fc9bcb5ce4934be2aae9; 10540 cards
+
+## 1. What the rule changes (SUPPORTED stands only where the raw and the corrected test detect it, in one direction)
+SUPPORTED cards: 329; with raw_detected false: 21; raw detected but in the other direction: 0
+
+False SUPPORTED on null data (every one is an error):
+  all null cards: 54 -> 36 (18 become INCONCLUSIVE)
+  metric at risk: 54 -> 36
+  blind or useless metric: 0 -> 0
+  by condition, variant and level (before -> after):
+    N1 null high: 5 -> 4
+    N2 c=0.3 high: 2 -> 1
+    N2 c=0.5 high: 6 -> 3
+    N2 c=0.7 high: 1 -> 0
+    N2 c=0.9 high: 2 -> 2
+    N3 f=0.1 high: 1 -> 0
+    N3 f=0.2 high: 3 -> 2
+    N3 f=0.4 high: 7 -> 0
+    N4 3v3 high: 3 -> 3
+    N5 sham high: 8 -> 8
+    N7 mice high: 5 -> 5
+    N8 beta(2,2) high: 11 -> 8
+  S1's key cells (false SUPPORTED of 790, limit 29), before -> after:
+    N1: 5 -> 4
+    N2: 6 -> 3
+    N5: 8 -> 8
+    N6c: 0 -> 0
+    N8: 11 -> 8
+
+True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is a loss):
+  all real effects: 275 -> 272
+  E1 195 -> 194, E2 23 -> 21, E3 57 -> 57
+  valid metric and |Δ*| >= SESOI: 118 -> 118
+
+## 2. False 'effect' on the null cards (N1-N5, N7, N8): (b) donors without gates against (d) the engine
+  all             n  7110: (b) 286/7110 = 4.0% (95% CI 3.6-4.5%); (d) 54/7110 = 0.8% (95% CI 0.6-1.0%); (d) under the rule 36/7110 = 0.5% (95% CI 0.4-0.7%)
+  blind metric    n  4665: (b) 212/4665 = 4.5% (95% CI 4.0-5.2%); (d) 0/4665 = 0.0% (95% CI 0.0-0.1%); (d) under the rule 0/4665 = 0.0% (95% CI 0.0-0.1%)
+  metric at risk  n  2445: (b) 74/2445 = 3.0% (95% CI 2.4-3.8%); (d) 54/2445 = 2.2% (95% CI 1.7-2.9%); (d) under the rule 36/2445 = 1.5% (95% CI 1.0-2.0%)
+  the reduction from (b) to (d): 232 false effects, 212 of them on blind metrics (91%)
+  artifacts N2, N3, N8 by level, (b) -> (d):
+    high   n 1018 (at risk 1018): (b) 49/1018 = 4.8% (95% CI 3.6-6.3%) -> (d) 33/1018 = 3.2% (95% CI 2.2-4.5%)
+    medium n 1050 (at risk    0): (b) 104/1050 = 9.9% (95% CI 8.2-11.9%) -> (d) 0/1050 = 0.0% (95% CI 0.0-0.4%)
+    low    n 1092 (at risk    0): (b) 71/1092 = 6.5% (95% CI 5.1-8.1%) -> (d) 0/1092 = 0.0% (95% CI 0.0-0.3%)
+
+## 3. NO DETECTABLE EFFECT made by the correction ((d) NDE where (c), uncorrected, is not)
+  (d) NDE 1676; of them (c) not NDE 85: effect/ambiguous 10, effect/valid 2, null/ambiguous 11, null/valid 62
+  of these, wrong by v1's rules (NDE outside the card's allowed set): 0
+
+## 4. The exchange proposed for v2, on v1's cards (an illustration, after the results)
+  E: false definite conclusions per 1,000 cards (a false effect claim or a false absence claim); S: effects
+  found in the true direction per 1,000 real-effect cards. (b) makes no claim of absence (no TOST); (c) is
+  the engine's donor-level test with its TOST and no gates; d* is (d) under the rule of section 1.
+  Components (false effect / false absence / unwarranted absence on null data with a blind or useless
+  metric, which E leaves out):
+    b : at risk 152 / 0 / 0; blind or useless 547 / 0 / 0
+    c : at risk 161 / 0 / 0; blind or useless 542 / 575 / 3664
+    d : at risk 112 / 0 / 0; blind or useless 1 / 0 / 5
+    d*: at risk 94 / 0 / 0; blind or useless 1 / 0 / 5
+  b : at risk (2960 cards) E 152 = 51.4; blind or useless (7580) E 547 = 72.2; S on the 515 real effects at risk 369 = 716.5
+  c : at risk (2960 cards) E 161 = 54.4; blind or useless (7580) E 1117 = 147.4; S on the 515 real effects at risk 369 = 716.5
+  d : at risk (2960 cards) E 112 = 37.8; blind or useless (7580) E 1 = 0.1; S on the 515 real effects at risk 273 = 530.1
+  d*: at risk (2960 cards) E 94 = 31.8; blind or useless (7580) E 1 = 0.1; S on the 515 real effects at risk 270 = 524.3
+  d against b, at risk: errors removed +13.5 per 1,000 cards, detections lost +186.4 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +72.0 per 1,000 cards
+  d* against b, at risk: errors removed +19.6 per 1,000 cards, detections lost +192.2 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +72.0 per 1,000 cards
+  d against c, at risk: errors removed +16.6 per 1,000 cards, detections lost +186.4 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +147.2 per 1,000 cards
+  d* against c, at risk: errors removed +22.6 per 1,000 cards, detections lost +192.2 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +147.2 per 1,000 cards
+

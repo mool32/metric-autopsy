@@ -1,0 +1,14 @@
+# The most expressed genes of v1's backgrounds by v1's expression level (exploratory)
+
+B1: 78332 cells, 2000 genes (file sha256 029f04766e3d8fc6...)
+  the 2,000 kept genes include 104 named ones (the G2M module, N6c's random genes), 42 of them detected in < 10% of cells, so the kept set is not the 2,000 most expressed; counted here are the 1,000 and 1,500 most expressed
+  the 1,000 most expressed  : high 434 (43.4%); medium 519 (51.9%); low 47 (4.7%); below (detected in < 10% of cells) 0 (0.0%)
+  the 1,500 most expressed  : high 434 (28.9%); medium 678 (45.2%); low 388 (25.9%); below (detected in < 10% of cells) 0 (0.0%)
+  the 1,000th most expressed gene: mean 1.034 counts per cell, detected in 53.1% of cells; the 1,500th: 0.741, 33.5%
+
+B2: 19475 cells, 2000 genes (file sha256 2aad19a98e3f2b12...)
+  the 2,000 kept genes include 104 named ones (the G2M module, N6c's random genes), 40 of them detected in < 10% of cells, so the kept set is not the 2,000 most expressed; counted here are the 1,000 and 1,500 most expressed
+  the 1,000 most expressed  : high 917 (91.7%); medium 70 (7.0%); low 13 (1.3%); below (detected in < 10% of cells) 0 (0.0%)
+  the 1,500 most expressed  : high 917 (61.1%); medium 555 (37.0%); low 28 (1.9%); below (detected in < 10% of cells) 0 (0.0%)
+  the 1,000th most expressed gene: mean 1.869 counts per cell, detected in 72.5% of cells; the 1,500th: 1.286, 63.6%
+
