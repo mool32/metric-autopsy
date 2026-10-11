@@ -4,9 +4,9 @@
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
 **Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive  ← current
-*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only; see the validation plan below. A full draft of the new manuscript, `paper/manuscript_v03.md`, waits for the owner's review.)*
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. A full draft of the new manuscript, `paper/manuscript_v03.md`, waits for the owner's review.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
-**Started:** 2026-07-04   **Last update:** 2026-10-10
+**Started:** 2026-07-04   **Last update:** 2026-10-11
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
@@ -181,55 +181,91 @@ turns that checklist into runnable behavior.
     10,540 cards, with 0 crashes and 0 rule violations.
   - The pre-registered prediction for N8 was not confirmed: 11 false SUPPORTED of 790, where S1
     allows 29.
-  - Scope: scRNA-seq counts; one metric, `norm_pearson` on a gene pair; B1 (human
-    oligodendrocytes, MSSM cohort, nuclei, 10x 3' v3) and B2 (mouse islet beta cells, cells, 10x
-    3' v2 and v3; Census metadata, workflow run 38033204255; 50 donor ids (samples), 6 of them
-    pools of both sexes; all single females are the NOD strain); the binomial-thinning family and
-    N8. Nothing else is validated, `mi_3bin` included.
-  - By expression level (exploratory, not a criterion; `validation/exploratory/v1_by_level.log`):
+  - Scope: scRNA-seq counts; one metric, `norm_pearson` on a gene pair, on the 8 most correlated
+    pairs of each expression level; two backgrounds from the CELLxGENE Census
+    (`validation/exploratory/census_metadata.log`, workflow run 38122733079):
+    - B1: human oligodendrocytes, MSSM cohort, nuclei, 10x 3' v3. It carried every condition but
+      N7: 9,750 of the 10,540 cards.
+    - B2: mouse islet beta cells, cells, 10x 3' v2 (39 donor ids) and v3 (11). Its 50 donor ids
+      are samples, 6 of them pools of both sexes; all single females are the NOD strain. It
+      carried only the null N7 and the anchor R1.
+    - Artifacts: those N2–N8 plant by binomial thinning. N2 did not test the correction of depth:
+      the oracle's power to detect its raw difference was 0.21, 0.14 and 0.16 at the three levels,
+      never the 0.9 that makes it informative (`validation/exploratory/v1_pilot_table.log`).
+    - Real effects: no level had a key dose, so E1–E3 ran at the saturation dose (B1: 2.5, 2.75
+      and 3.0). Of their 1,800 cards 206 had a valid metric, 189 were establishable and 121 at or
+      above the SESOI; at the high level Δ* (0.258) is about the SESOI (0.255).
+    - Not tested: GATE 6 (no card had a second dataset) and the content estimand (only in R2).
+
+    Nothing else is validated, `mi_3bin` included.
+  - What the pass excludes (computed after the results; `validation/exploratory/v1_null_cells.log`).
+    A false SUPPORTED needs a metric that responds, and in each key null of the pair metric only
+    253–271 of the 790 cards had a valid or ambiguous metric. There S1's cell fails with
+    probability 0.95 only at a false-SUPPORTED rate of 14.3–15.3%, and a validator wrong on 7.5% of
+    them passes with probability 0.98–0.99. The pilot showed this mix before the key
+    (`oc_pilot.log`). The pass excludes only gross excesses on the pairs where the metric works.
+  - The truth about validity is circular. The oracle calls a metric valid when it responds to the
+    injection GATE 4 itself uses, so S5 measures GATE 4's sampling error and could not find a
+    probe built the wrong way; R1's was one.
+  - By level and truth (pre-registered secondary outcomes, v1.md sections 5 and 7;
+    `validation/exploratory/v1_by_level.log`):
     - All 2,458 cards with a valid metric are at the high level. At the medium and low levels
-      the metric is blind (55 medium-level cards ambiguous), and no card there was SUPPORTED, so
-      253 of N8's 790 cards were at risk.
-    - N8 at the high level: a false SUPPORTED on 11/253 = 4.3% (95% CI 2.2–7.6%) at a nominal
-      2.5%; SUPPORTED or against the direction on 22/253 = 8.7% at a nominal 5%.
-    - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
-    - N1, N5 and N7 at the high level: SUPPORTED or against the direction on 5.9%, 3.8% and
-      4.0%; a false SUPPORTED on the pure nulls on 18/812 = 2.2%. N7 permutes the labels over
-      B2's donor ids: a null at the level of the id, not of the mouse.
-    - Had N8 kept its high-level rate on all 790 cards, about 34 false SUPPORTED would be
-      expected against S1's 29 (S1 passes with probability ≈ 0.20). The dev probe p16 gave 11.3%.
-  - Design effects above 1.5 in S5:null, S3:null, S3:invalid and S3c:effect:E1 (`limitations`).
+      the metric is blind (55 medium-level cards of N7 ambiguous), and no card there was
+      SUPPORTED (0 of 6,988).
+    - The twelve high-level null cells are compatible with the nominal 2.5%. The largest are N3
+      f = 0.4, 7/83 = 8.4%, and N8, 11/253 = 4.3% (95% CI 2.2–7.6%); after Holm's correction over
+      the twelve (decided after the results) 0.058 and 0.61. Both are hypotheses for v0.4, not
+      measured defects.
+    - Decided after the results: N8 on its cards with a valid metric 8/221 = 3.6%; the pure nulls
+      N1, N5 and N7 pooled 18/812 = 2.2%; SUPPORTED or against the direction 22/253 = 8.7% on N8
+      and 10/83 = 12.0% on N3 f = 0.4, at a nominal 5%. N7 permutes the labels over B2's donor
+      ids: a null at the level of the id, not of the mouse.
+    - The S4 part of the N8 prediction was not confirmed either: S4's null cell held 58 of 2,165
+      (limit 102), 11 of them N8's.
+  - Design effects above 1.5: S3's null and invalid strata (4.74, 5.62), S5's null cell (5.28)
+    and S3's E1 condition (1.54). In the false-SUPPORTED cells at most 1.055, at S1's N5, where a
+    doubled error passes with probability 0.051, just above the principle's 0.05.
+  - GATE 0 refused 31 cards, all on N7 (26 at the high level), all for extra dropout, 29 on three
+    gene pairs. B2's 10x 3' v3 samples are deeper than its v2 samples, but the refusals did not
+    follow the groups' chemistry or depth (decided after the results;
+    `validation/exploratory/b2_depth_by_chemistry.log`).
   - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
     accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
     with B4.
-  - R1, once more, after the results and outside v1 (DEVIATIONS.md D1, the loader only; workflow
-    run 38033821978; `results/panel-v1-r1` at 36a04bf). It ran, and two of its three claims are
-    outside their allowed sets. The causes differ (`validation/exploratory/b2_sex_structure.log`,
-    after the result):
+  - R1, once more, after the results and outside v1 (DEVIATIONS.md D1: the loader, and with it
+    the cut to 2,000 genes, which changed the denominator of CP10k; workflow run 38033821978;
+    `results/panel-v1-r1` at 36a04bf). It ran, and two of its three claims are outside their
+    allowed sets. The causes, read after the outcome (`validation/exploratory/b2_sex_structure.log`):
     - Y genes (and the design of the Xist claim): UNIDENTIFIABLE, a correct reading of B2. Its 50
       donor ids are 34 single males, 10 single females (all NOD) and 6 pools of both sexes, and
       within a development stage the sexes meet only inside the pools (2 weeks; 20 months and
       over). The protocol erred: `r1_allowed` counted the ids of each sex over all stages, and
       checked neither that an id is one animal of one sex nor that both sexes share a stratum.
-    - Xist: NOT SUPPORTED, "metric invalid" by GATE 4, which is false: an engine defect. GATE 4's
-      module probe raises Xist 2-fold in every cell and measures the metric over all cells. 74.2%
-      of B2's cells have no Xist, so the response is +0.163 over all cells, below delta_min 0.25,
-      and +0.631 over the cells with Xist. v1 never tested this path: its panel used the module
-      probe only on the useless metric N6c. In the anchors it ran on four valid metrics and passed
-      on three: R2a's G2M score, R1's Y-gene score, and R1's sham, which is the same Xist metric on
-      the female cells only.
+    - Xist: NOT SUPPORTED, "metric invalid" by GATE 4, which is false: an engine defect. GATE
+      4's module probe raises Xist 2-fold in every cell and measures the metric over all cells.
+      74.2% of B2's cells have no Xist, so the response is +0.163 over all cells, below
+      delta_min 0.25, and +0.631 over the cells with Xist. With these constants the failure was
+      predictable from B2's composition: for a mean over cells the response over all cells is
+      the share of cells with the marker times the response in them, below ln 2, so the probe
+      needed at least 0.25 / ln 2 = 36% of cells with Xist
+      (`validation/exploratory/gate4_module_analytic.log`). v1 never tested this path: its panel
+      used the module probe only on the useless metric N6c. In the anchors it ran on four valid
+      metrics and passed on three: R2a's G2M score, R1's Y-gene score, and R1's sham, which is
+      the same Xist metric on the female cells only.
     - The sham, female against female: NO DETECTABLE EFFECT, which is correct.
 
-    v0.1.1 did not confirm Xist because of GATE 1, on TMS; v0.3 did not either, because of GATE 4
-    and the design, on B2. Nothing is changed without the owner's decision.
+    v0.1.1 did not confirm Xist because of GATE 1, on TMS; v0.3, whose GATE 1 is a diagnostic,
+    was not run on TMS, and on B2 it did not confirm Xist either, because of GATE 4 and the
+    design. v0.3 confirmed no real biological difference. Nothing is changed without the owner's
+    decision.
   - Checked after the run, on another CPU:
     - `score.py` reproduces every criterion.
     - `blind.py verify` on the first 20 datasets: 20 of 20 datasets identical; all 22 reports
       the same (16 byte-identical, 6 within 1e-9).
-  - One secondary number is fragile across CPUs. `oc.error_rule_deff` switches to a
-    beta-binomial for a design effect even 2e-16 above 1, and there scipy overflows. On the
-    other CPU, S1 at N8's realized design effect read 1.0 / 1.0; the run's 0.982 / 0.046 are
-    right.
+  - One secondary number is fragile. `oc.error_rule_deff` switches to a beta-binomial for a
+    design effect even 2e-16 above 1, and there scipy overflows and reads 1.0 / 1.0. In the run's
+    `scores.json` (`secondary.s1_at_realized_deff`) that hit S1's N2 (design effect 1 + 1.6e-15);
+    re-scored on another CPU, N8 too. At a design effect of 1 both are 0.982 / 0.046, N1's.
 
 ## Data
 - See DATASETS.md. All public (Tabula Muris Senis, human skin CELLxGENE). Nothing irreplaceable.
@@ -253,15 +289,25 @@ turns that checklist into runnable behavior.
   4. external verdicts;
   5. paper untouched until step 3 is done.
 
-  Status, 2026-10-10: steps 0–3 are done (step 3: every criterion of v1 passed, within its
+  Status, 2026-10-11: steps 0–3 are done (step 3: every criterion of v1 passed, within its
   scope); step 4 is next.
-- [ ] Lessons for v2, from v1's result and R1's (2026-10-10; the numbers are exploratory, from
-  `validation/exploratory/v1_by_level.log` and `validation/exploratory/b2_sex_structure.log`):
-  - **Criteria by level.** Count the criteria of false SUPPORTED per expression level, or only
-    on the cards whose metric is valid or ambiguous. Blind pairs dilute the denominator. On the
-    real backgrounds the low and medium levels are blind, and all 537 of N8's cards there were
-    answered "metric invalid", none SUPPORTED.
-  - **The targets of v0.4: N8, N3 f = 0.4 and GATE 4.**
+- [ ] Lessons for v2, from v1's result and R1's (2026-10-11; computed after the results, from
+  `validation/exploratory/v1_null_cells.log`, `v1_by_level.log`, `v1_pilot_table.log`,
+  `b2_sex_structure.log` and `gate4_module_analytic.log`):
+  - **Size the criteria on the cards at risk.** A false SUPPORTED needs a metric that responds,
+    and on the real backgrounds the pair metric was blind at the medium and low levels. S1's 790
+    cards per key null held only 253–271 at risk, so S1 could catch only a rate of about 15% among
+    them with probability 0.95. Count the criteria of false SUPPORTED on the cards whose metric
+    is valid or ambiguous, or per level; the pilot that showed the mix before the key could have
+    resized them.
+  - **A truth about validity that does not come from GATE 4.** v1's oracle called a metric valid
+    when it responded to GATE 4's own injection, so the panel measured GATE 4's sampling error,
+    not whether its probe is built right. R1 showed a probe built wrong.
+  - **N2 must test the correction of depth, and the real effects must clear the SESOI.** N2's raw
+    difference had power 0.14–0.21, never 0.9. No level had a key dose, so the real effects ran at
+    the saturation dose, with Δ* about the SESOI at the high level (0.258 against 0.255).
+  - **The targets of v0.4: N8, N3 f = 0.4 and GATE 4.** Hypotheses with a mechanism, not measured
+    defects (Holm 0.61 and 0.058 over the twelve high-level null cells):
     - Per-cell variable capture (N8): at the high level, 11/253 = 4.3% false SUPPORTED at a
       nominal 2.5%.
     - Entry-level dropout (N3 f = 0.4): 7/83 = 8.4%, and 10/83 = 12.0% with the answers against
@@ -269,32 +315,31 @@ turns that checklist into runnable behavior.
     - GATE 4 must measure the response where the signal is claimed (within a group, or over the
       replicates), not over all cells.
   - **The development data erred in both directions.** The development probe on simulated data
-    (p16, 11.3%) put N8's rate 2.6 times above the real high-level rate (4.3%), and the
+    (p16, 11.3%) overstated N8's real rate by 3.7 to 8.1 times depending on the denominators, and
+    ran with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5. The
     development data did not show GATE 4's failure on a marker present in only some cells. So
     v2's development backgrounds must be real. Under v1.md section 6, v1's datasets are now
     development data.
-  - **GATE 0's refusals on N7.** GATE 0 refused 26 of N7's 276 high-level cards (9.4%). Find out
-    whether random groups of donor ids really differ in depth, or whether GATE 0 is oversensitive.
-  - **A donor id must be checked as one mouse of one sex** before the allowed outcomes are fixed.
-    In B2, 6 of the 50 ids are pools of both sexes.
-  - **delta_min for a metric averaged over the cells of both sexes.** GATE 4's response to a sex
-    marker, measured over all cells, is diluted by the cells without the marker: R1's Xist moved
-    by +0.163 over all cells, against delta_min 0.25, and by +0.631 over the cells with Xist.
-  - **Panel v2 includes valid metrics with the module probe,** among them markers present in only
-    some cells. In v1 the module probe ran only on the useless metric N6c.
-  - **The module probe's default cannot pass a mean-expression metric at SESOI 0.5.** With frac
-    0.3 the response over all cells is 0.3 × (share of cells with the marker) × (the response in
-    them): at B2's depth the largest upper bound was +0.206 with the marker in every cell, against
-    delta_min 0.25 (`validation/exploratory/gate4_module_dilution.log`). R1's probe (frac 1.0)
-    needs about 40% of cells with Xist (39.8% on B2's cells), more for a weaker marker (55% at
-    CP10k 1). At a low depth single-count markers pass on the sham's dropout, not on the 2-fold
-    change.
+  - **GATE 0's refusals on N7.** 31 refusals, all on N7, 29 of them on three gene pairs; B2's
+    chemistry and the groups' depth did not explain them. Find out whether those pairs' dropout
+    differs between random groups of ids, or GATE 0 is oversensitive there.
+  - **GATE 4's module probe measures the response over all cells.** For a mean over cells that
+    is, by identity, the share of cells with the marker times the response in them, below ln 2
+    for a marker of many counts. The default (2-fold in 30% of cells) cannot pass a well-detected
+    mean-expression metric at a SESOI of 0.5 (at most 0.3 × ln 2 = 0.208 against delta_min 0.25);
+    R1's probe (frac 1.0) needed at least 36% of cells with Xist (39.8% at the response of B2's
+    Xist cells, `gate4_module_dilution.log`), and B2 has 25.8%. At a low depth single-count
+    markers pass through the sham's loss, not through the 2-fold change. Panel v2 includes valid
+    metrics with the module probe, among them markers present in only some cells; in v1 it ran
+    only on the useless metric N6c.
   - **The probe's dose and the SESOI.** In v1 both came from the pilot, that is, from the oracle.
     A user sets them, so v2 must test the engine with the defaults, or with the rule by which a
     user picks them.
-  - **Backgrounds for a sex control.** Each id is one animal of one sex, checked by Xist and the Y
-    genes, and both sexes share a stratum. The allowed set is computed by the engine's own design
-    rules: replicates nested in the groups or paired within them, each in one stratum
-    (`effect._replicate_design`), and a stratum that holds both groups (GATE 1 stops otherwise).
-    By these rules R1's allowed set on B2 was UNIDENTIFIABLE, with the pools (ids partially
-    crossed with sex) and without them (no stage holds both sexes).
+  - **A positive control is checked before it is pre-registered, by code independent of the
+    engine.** Each id is one animal of one sex, checked by Xist and the Y genes, and both sexes
+    share a stratum; in B2, 6 of the 50 ids are pools of both sexes. The allowed set, and the
+    checks of the data's structure behind it, are computed by independent code, as the oracle
+    is: computed by the engine's own design rules (`effect._replicate_design`, GATE 1's
+    stratum rule), the anchor would not test those rules. By those rules R1's design on B2 was
+    UNIDENTIFIABLE, with the pools (ids partially crossed with sex) and without them (no stage
+    holds both sexes).

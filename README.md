@@ -14,78 +14,102 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
 
-> **Status (2026-10-10): v0.3.0-prereg passed the pre-registered blind validation v1, within
-> its scope only.**
+> **Status (2026-10-11): v0.3.0-prereg passed the pre-registered blind validation v1, within
+> its scope only. The pass excludes only gross excesses of false SUPPORTED on the gene pairs where
+> the metric works.**
 > - **Result.** Every criterion S1–S7b passed ([`scores.txt`](https://github.com/mool32/metric-autopsy/blob/results/panel-v1/scores.txt)).
 >   - Protocol: [`validation/prereg/v1.md`](validation/prereg/v1.md).
 >   - Frozen tag `v0.3.0-prereg`; one attempt, [workflow run 37990113304](https://github.com/mool32/metric-autopsy/actions/runs/37990113304).
 >   - Key: drand quicknet round 32929913.
->
->   The pre-registered prediction that v0.3 fails S1 on N8 was not confirmed: 11 false
->   SUPPORTED of 790 datasets, where S1 allows 29.
+>   - No useless metric was SUPPORTED: 0 of 1,630 cards.
+>   - The pre-registered prediction that v0.3 fails S1 on N8 was not confirmed: 11 false
+>     SUPPORTED of 790 datasets, where S1 allows 29. Its S4 part was not confirmed either (S4's
+>     null cell: 58 of 2,165, limit 102, 11 of them N8's).
+> - **What the pass excludes** (computed after the results;
+>   [`v1_null_cells.log`](validation/exploratory/v1_null_cells.log)). A false SUPPORTED needs a
+>   metric that responds, and in each key null of the pair metric (N1, N2, N5, N8) only 253–271
+>   of the 790 cards had a valid or ambiguous metric. On those cards S1's cell fails with
+>   probability 0.95 only at a
+>   false-SUPPORTED rate of 14.3–15.3%; a validator wrong on 7.5% of them passes with probability
+>   0.98–0.99. The pilot showed this mix before the key (`oc_pilot.log`: a valid metric on 2,453
+>   expected cards; the criteria passing with probability 1.000 at its measured rates).
 > - **Scope.**
 >   - Data: scRNA-seq counts only.
->   - Metric: one, the log-normalized Pearson correlation of a gene pair (`norm_pearson`).
+>   - Metric: one, the log-normalized Pearson correlation of a gene pair (`norm_pearson`), on
+>     the 8 most correlated pairs of each expression level.
 >   - Backgrounds, from the CELLxGENE Census
->     ([metadata](validation/exploratory/census_metadata.py), workflow run 38033204255):
->     - B1: human oligodendrocytes of the MSSM cohort; nuclei, 10x 3' v3.
->     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 and v3; 50 donor ids (samples),
->       6 of them pools of both sexes; all single females are the NOD strain.
->   - Artifacts: the binomial-thinning family, plus N8's per-cell variable capture.
+>     ([`census_metadata.log`](validation/exploratory/census_metadata.log)):
+>     - B1: human oligodendrocytes of the MSSM cohort; nuclei, 10x 3' v3. It carried every
+>       condition but N7: 9,750 of the 10,540 cards.
+>     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 (39 donor ids) and v3 (11). Its
+>       50 donor ids are samples, 6 of them pools of both sexes; all single females are the NOD
+>       strain. It carried only the null N7 and the anchor R1.
+>   - Artifacts: those N2–N8 plant by binomial thinning. N2 (capture loss in one group) did not
+>     test the correction of depth: the oracle's power to detect its raw difference was 0.21,
+>     0.14 and 0.16 at the three levels, never the 0.9 that makes it informative
+>     ([`v1_pilot_table.log`](validation/exploratory/v1_pilot_table.log)).
+>   - The real effects ran at the saturation dose, since no level had a key dose. Of their 1,800
+>     cards 206 had a valid metric, 189 were establishable and 121 at or above the SESOI; at the
+>     high level their Δ* (0.258) is about the SESOI (0.255).
+>   - Not tested: GATE 6 (no card had a second dataset, so every SUPPORTED was provisional) and
+>     the content estimand (only in the anchor R2).
 >
 >   Everything else is not validated: other metrics (`mi_3bin` included), other data and
 >   other artifacts.
 > - **Limitations.**
->   - **v0.3 does not correct capture that varies from cell to cell.** Its depth correction
->     brings whole groups to one depth, and per-cell variable capture is outside that family.
->   - On these backgrounds the metric is valid only at high expression (numbers below).
->   - The design effects reach 5.62 (datasets share donors), so on other donors the error rates
->     are known less precisely.
->   - **Anchor R1, the only real positive control, did not give the known sex difference.** It
->     ran once, after the results and outside v1 ([D1](validation/prereg/DEVIATIONS.md);
->     [`results/panel-v1-r1`](https://github.com/mool32/metric-autopsy/tree/results/panel-v1-r1);
->     [`b2_sex_structure.log`](validation/exploratory/b2_sex_structure.log)). Two of its three
->     claims are outside their allowed sets, for different causes:
->     - Y genes (and the design of the Xist claim): UNIDENTIFIABLE. That reads B2 correctly:
->       within a development stage the sexes meet only inside the 6 pooled ids. The protocol
->       erred: R1's allowed set counted the ids of each sex over all stages, and checked neither
->       that an id is one animal nor that both sexes share a stratum.
->     - Xist: "metric invalid", which is false: a defect of GATE 4 (next point).
->     - The sham, female against female: NO DETECTABLE EFFECT, which is correct.
->
->     v0.1.1 did not confirm Xist because of GATE 1, on TMS. v0.3 did not either, because of
->     GATE 4 and the design, on B2.
->   - **GATE 4's module probe measures the response over all cells.** So for a marker present in
->     only some cells it can call a valid metric invalid. In R1, 74.2% of B2's cells have no
->     Xist. The probe's 2-fold Xist signal moved the metric by +0.163 over all cells, below
->     delta_min 0.25, and by +0.631 over the cells with Xist. This is outside v1's scope (v1's
->     panel used the module probe only on the useless metric N6c) and a target of v0.4.
->   - **With the module probe's default, a valid mean-expression metric of a gene does not pass
->     GATE 4 at a SESOI of 0.5.** `injected_signal.module` raises the marker 2-fold in a random 30%
->     of cells, so the response over all cells is about 0.3 × the share of cells with the marker ×
->     the response in those cells, which for a well-detected marker is at most log 2 ≈ 0.69. At the
->     depth of B2's cells it stayed below delta_min 0.25 even with the marker in every cell
->     (largest upper bound +0.206 on synthetic counts, +0.191 on B2's Xist cells;
->     [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). The module
->     probe is reached through the Python API only: the CLI and the MCP server offer the coupling
->     probe.
-> - **The error rates by expression level** (exploratory, not a criterion;
->   [`v1_by_level.log`](validation/exploratory/v1_by_level.log), from `scores.json`):
+>   - **The SESOI and GATE 4's dose came from the pilot**, that is, from the oracle, on every
+>     card. A user sets both without a pilot.
+>   - **The truth about validity is circular.** The oracle calls a metric valid when it responds
+>     to the injection that GATE 4 itself uses, so v1's S5 measures GATE 4's sampling error and
+>     could not find a probe built the wrong way (R1's was one). A next validation needs a truth
+>     about validity that does not come from GATE 4's mechanism.
+>   - **v0.3 does not correct capture that varies from cell to cell, nor entry-level dropout.**
+>     Its depth correction brings whole groups to one depth.
+>   - **Design effects** (datasets share donors) exceed 1.5 only for S3's null and invalid strata
+>     (4.74, 5.62), S5's null cell (5.28) and S3's E1 condition (1.54). In the false-SUPPORTED
+>     cells they are at most 1.055; at N5's, S1's cell passes a doubled error with probability
+>     0.051, just above the principle's 0.05.
+>   - **GATE 0 refused 31 cards, all on N7** (26 at the high level), all for extra dropout and 29
+>     on three gene pairs. B2's 10x 3' v3 samples are deeper than its v2 samples (median depths
+>     1.66 times, Mann–Whitney p 0.0001), but the refused datasets did not differ from the others
+>     in their share of v2 cells, nor their groups in chemistry or depth; only the datasets'
+>     median depth, 3% higher among the refused at the high level, gave p 0.049, one of eight tests
+>     (decided after the results;
+>     [`b2_depth_by_chemistry.log`](validation/exploratory/b2_depth_by_chemistry.log)).
+>   - **Anchor R1, the one real positive control expected to succeed, failed: two of its three
+>     claims were outside their allowed sets.** It ran once, after the results and outside v1
+>     ([D1](validation/prereg/DEVIATIONS.md);
+>     [`results/panel-v1-r1`](https://github.com/mool32/metric-autopsy/tree/results/panel-v1-r1)).
+>     Read after the outcome
+>     ([`b2_sex_structure.log`](validation/exploratory/b2_sex_structure.log)): the Y genes'
+>     UNIDENTIFIABLE reads B2 correctly (within a stage the sexes meet only inside the pools, so
+>     the protocol's allowed set was wrong); Xist's "metric invalid" by GATE 4 is false (next
+>     point); the sham's NO DETECTABLE EFFECT is correct. v0.3 confirmed no real biological
+>     difference.
+>   - **GATE 4's module probe measures the response over all cells.** For a metric that is a mean
+>     over cells that is the share of cells with the marker times the response in them, which is
+>     below ln 2 for a marker of many counts. R1's probe therefore needed 36% of cells with Xist
+>     (0.25 / ln 2) and B2 has 25.8%: with anchors.py's constants the failure was predictable from
+>     B2's composition. With the module's default (2-fold in 30% of cells) a valid
+>     mean-expression metric of a well-detected gene cannot pass GATE 4 at a SESOI of 0.5: at most
+>     0.3 × ln 2 = 0.208 against delta_min 0.25
+>     ([`gate4_module_analytic.log`](validation/exploratory/gate4_module_analytic.log); simulated
+>     in [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). The
+>     module probe is reached through the Python API only: the CLI and the MCP server offer the
+>     coupling probe. v1's panel used it only on the useless metric N6c.
+> - **Error rates by level and truth** (pre-registered secondary outcomes, v1.md sections 5 and
+>   7; [`v1_by_level.log`](validation/exploratory/v1_by_level.log)):
 >   - All 2,458 cards with a valid metric are at the high expression level. At the medium and
->     low levels the metric is blind (55 medium-level cards are ambiguous), and no card there
->     was SUPPORTED. So only 253 of N8's 790 cards were at risk.
->   - N8 at the high level:
->     - false SUPPORTED on 11/253 = 4.3% (95% CI 2.2–7.6%), at a nominal 2.5%;
->     - SUPPORTED or against the direction on 22/253 = 8.7%, at a nominal 5%.
->   - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
->   - For comparison, at the high level:
->     - N1, N5 and N7 gave SUPPORTED or against the direction on 5.9%, 3.8% and 4.0%. N7
->       permutes the group labels over B2's donor ids: a null at the level of the id, not
->       of the mouse;
->     - the pure nulls N1, N5 and N7 together gave a false SUPPORTED on 18/812 = 2.2%.
->   - Had N8 kept its high-level rate of 4.3% on all 790 cards, about 34 false SUPPORTED would
->     be expected, against S1's 29: S1 would pass with probability ≈ 0.20. The development
->     probe p16 gave 11.3%.
+>     low levels the metric is blind (55 medium-level cards of N7 are ambiguous), and no card
+>     there was SUPPORTED (0 of 6,988).
+>   - In the twelve high-level null cells the rates are compatible with the nominal 2.5%. The
+>     largest are N3 at f = 0.4, 7/83 = 8.4%, and N8, 11/253 = 4.3% (95% CI 2.2–7.6%); after
+>     Holm's correction over the twelve (decided after the results) 0.058 and 0.61. Both are
+>     hypotheses for v0.4 with a mechanism, not measured defects.
+>   - Decided after the results: N8 on its cards with a valid metric 8/221 = 3.6%. The
+>     development probe p16 (11.3% on simulated data) overstated N8's real rate by 3.7 to 8.1
+>     times, depending on the denominators (the log gives each with its assumption); it also ran
+>     with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5.
 >
 >   A correction for per-cell capture is planned for v0.4, with a new pre-registration.
 > - **Next.** Step 4 of the validation plan, external verdicts, is ahead.
@@ -99,7 +123,8 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 > - **GATE 1 blocks real biology.** "Xist is higher in female cells" dies at GATE 1 on the
 >   demo data because one stratum has a QC gap, even though GATE 2 retains 100% of the effect.
 > - **Permutations run over cells, not biological replicates.** With 3 vs 3 mice and no
->   age effect, 22 of 40 null runs report a QC-robust "effect".
+>   age effect, 22 of 40 null runs report a QC-robust "effect" (an exact test over the mice
+>   cannot reach p < 0.05 there: its smallest p is 0.10).
 
 ---
 
@@ -107,11 +132,11 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 
 A metric that changes between conditions is not a finding — it might be dropout, library size, a batch effect, a factorial-interaction confound, or plain mathematics wearing a lab coat. `metric-autopsy` runs a single-cell metric through eight **gates**, each built to catch one way a number fakes biology, and decides one verdict from four fields: is the metric valid, is the design adequate, is there an effect at equal depth across biological replicates, does it replicate. It ships as a Claude Code skill, a pip package and an MCP server.
 
-1. **Born from three real failures.** Entropy anticorrelation (ρ = −0.54, vanished on 10x, *reversed* at low depth), cardiac β (a conduction-geometry constant read as biology), and SMAD→ECM mutual information (a detection-rate confound hiding in a sex×age interaction, male-old cells detecting 2.4× fewer genes) — each survived weeks before a 45-second QC check killed it.
+1. **Born from three real failures.** Entropy anticorrelation (it vanished on 10x and *reversed* at low depth), cardiac β (a conduction-geometry constant read as biology), and SMAD→ECM mutual information (a fall in old male cells that followed their lower detection rate; see the audit, [`validation/flagship_audit/REPORT.md`](validation/flagship_audit/REPORT.md)) — each survived weeks before a QC check killed it.
 2. **Eight gates, four fields, one rule.** GATE 0 separates nuisance *bias* (FAIL) from *attenuation* (reported, and used as a power check); GATE 4 checks that the metric responds to an injected signal; GATE 5 judges positive and negative controls against empirical nulls — together they decide **metric validity**, which needs a demonstrated response, not just invariance. GATE 1 (stratified QC parity) is a diagnostic; GATE 2 removes the technical difference the way the pre-registered **estimand** allows (thinning to equal depth for composition, to equal spike-in capture for content, otherwise UNIDENTIFIABLE) and infers the **effect** across biological replicates (exact permutation at ≥ 4 per group, *parametric only* at 3, no verdict at ≤ 2). GATE 6 re-estimates it on independent data (**replication**). GATE 3 exports the raw scatter; GATES 4 (alternative explanations) and 7 (effect size, declared as the SESOI) are judgment the skill elicits.
 3. **The reference metric is diagnosed, not just killed.** On the bundled demo (`mi_3bin`, biology identical, male-old capture degraded) GATE 0 measures attenuation (dropout −61%, depth halving −24%), GATE 1 flags the male stratum (1.94× QC ratio, 0.00 n_genes overlap), and at equal depth the raw MI difference shrinks to −13% of itself and is not detected across 16 mice: INCONCLUSIVE, not supported. The real-data run of the preprint (§4) used v0.1.1. Its audit ([`validation/flagship_audit/REPORT.md`](validation/flagship_audit/REPORT.md)) found that v0.1.1's verdict reproduces, but the design §4 describes does not hold.
 4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq (RNA only in v1).
-5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's operating characteristics are established only within the scope of validation v1 (see Status): one metric, two backgrounds, the binomial-thinning family and N8.
+5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's operating characteristics are established only within the scope of validation v1 (see Status): one metric, background B1 (B2 only for one null), the artifacts N2–N8 plant by binomial thinning; and there the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works.
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 
@@ -150,7 +175,7 @@ curated doc map for LLMs.
 | Dataset | Source | N | Notes |
 |---|---|---|---|
 | Synthetic confound | bundled (`metric_autopsy.cli.demo_data`) | 1,600 cells × 40 genes | planted sex×age QC confound; no download; powers `--demo` and the tests |
-| Tabula Muris Senis (FACS) | [CELLxGENE Census](https://cellxgene.cziscience.com/) / figshare | 110K cells, 23 tissues | worked example (real-data path); mouse young 3mo vs old 24mo |
+| Tabula Muris Senis (FACS) | [CELLxGENE Census](https://cellxgene.cziscience.com/) / figshare | 110K cells, 23 tissues | worked example (real-data path); young (3 months) against the Census's "20 months" stage (24-month males, 21-month females; see the audit) |
 | Human skin fibroblasts (10x) | [CELLxGENE](https://cellxgene.cziscience.com/) | 84K cells, 179 donors | GATE 6 cross-platform replication |
 
 ---

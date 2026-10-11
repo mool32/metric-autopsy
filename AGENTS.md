@@ -7,8 +7,11 @@ so driving it is exactly what you're for. Default posture: **state commitments �
 then believe**, never "compute → believe."
 
 > **Status: v0.3.0-prereg passed the pre-registered blind validation v1, within its scope only**
-> (README, Status: scRNA-seq counts, the log-normalized Pearson of a gene pair, two backgrounds,
-> the binomial-thinning family and N8). The released v0.1.1 errs in both directions
+> (README, Status: scRNA-seq counts; the log-normalized Pearson of a gene pair, on the 8 most
+> correlated pairs per expression level; background B1, and B2 only for the null N7 and the anchor
+> R1; the artifacts N2–N8 plant by binomial thinning, without a test of the correction of depth).
+> Even there the pass excludes only gross excesses of false SUPPORTED on the pairs where the
+> metric works. The released v0.1.1 errs in both directions
 > (`validation/probes/README.md`). **Do not call a verdict validated outside the scope of v1.
 > Inside it, cite the error rates from `scores.json` (branch `results/panel-v1`). Never write
 > "validated" or "reliable" without the scope next to it.**

@@ -6,6 +6,13 @@ owner's reply. `paper/manuscript.md` (the v0.1.1 preprint) stays untouched and i
 Every number below comes from a script in this repository or from a workflow run, and its
 source is given as a file and a commit.
 
+On 2026-10-11 the owner's fourth round, after an independent review of the full draft, changed
+the frame of the result: the pass excludes only gross excesses of false SUPPORTED on the cards
+at risk, the rates by level and truth are pre-registered secondary outcomes, B2 carried only N7
+and R1, N2 did not test the correction of depth, and the real effects ran at the saturation
+dose. `paper/manuscript_v03.md` carries it out; where this plan differs, the manuscript holds.
+The passages below that the round withdrew are corrected in place.
+
 ## Thesis
 
 A check meant to tell biology from artifact in a single-cell metric must itself be validated
@@ -26,18 +33,21 @@ With the owner's edits of 2026-10-10 (round 3), written out in `paper/manuscript
    blind test.
 4. In a pre-registered blind validation with planted truth on two real CELLxGENE backgrounds
    (9,750 datasets, 10,540 claim cards), v0.3 met all eight pre-registered criteria within its
-   scope. What works, with numbers: useless metrics never received SUPPORTED (0 of 1,630 cards),
-   and on the pure nulls with a valid metric a false SUPPORTED came on 2.2% at a nominal 2.5%.
+   scope. What works, with numbers: useless metrics never received SUPPORTED (0 of 1,630 cards).
+   (Round 4: B2 carried only N7 and R1; the pooled 2.2% on the pure nulls was decided after the
+   results and is not a confirmation.)
 5. I had predicted that it would fail on per-cell variable capture; the prediction was not
-   confirmed. Why (exploratory): the metric is blind at medium and low expression, where no
-   false SUPPORTED occurred; at high expression under per-cell capture the rate was 4.3% (95% CI
-   2.2–7.6%) at a nominal 2.5%.
+   confirmed. The metric is blind at medium and low expression, where no false SUPPORTED
+   occurred (a pre-registered secondary outcome), so the key criterion would fail with
+   probability 0.95 only at 14–15% false SUPPORTED among a null's cards at risk (round 4,
+   computed after the results); at high expression under per-cell capture the rate was 4.3% (95%
+   CI 2.2–7.6%) at a nominal 2.5%.
 6. The only real positive control expected to be confirmed was not confirmed (R2 is a real
    positive control too, without replicates by design): the background allowed the sexes to be
    compared only inside pooled samples, and GATE 4 measured an injected Xist signal over all
    cells, three quarters of which lack Xist.
-7. The development data erred in both directions: they overstated one error rate 2.6-fold and did
-   not reveal the GATE 4 defect. So a validator has to be tested blind, on real backgrounds, with
+7. The development data erred in both directions: they overstated one error rate (3.7 to 8.1
+   times, depending on the denominators; round 4) and did not reveal the GATE 4 defect. So a validator has to be tested blind, on real backgrounds, with
    real positive controls and with the settings a user would choose: on the panel the dose and
    the SESOI came from the pilot, that is, the oracle (kept because item 4 of round 3 confirmed
    that the module probe's default fails a valid mean-expression metric at SESOI 0.5; that
@@ -140,9 +150,9 @@ The probes are a development set: they found the bugs, so they carry no confirma
 | S7a | 0 of 10,540 rule violations | 0 |
 | S7b | 0 of 10,540 crashes | ≤ 18 |
 
-**The N8 prediction, and why it failed.** The pre-registered prediction is reported as "the
-prediction was not confirmed" (v1.md §6). The reason is dilution by blind pairs. These
-numbers are exploratory, not a criterion (by-level):
+**The N8 prediction.** The pre-registered prediction is reported as "the prediction was not
+confirmed" (v1.md §6). The rates by level and truth are pre-registered secondary outcomes (v1.md
+sections 5 and 7; by-level); the items marked "post hoc" were decided after the results:
 - All 2,458 cards with a valid metric are at the high level. At the medium and low levels the
   metric is blind (55 medium-level cards are ambiguous), and no card there was SUPPORTED. So
   253 of N8's 790 cards were at risk.
@@ -150,15 +160,21 @@ numbers are exploratory, not a criterion (by-level):
   - false SUPPORTED 11/253 = 4.3% (95% CI 2.2–7.6%), at a nominal 2.5%;
   - SUPPORTED or against the direction 22/253 = 8.7%, at a nominal 5%.
 - N3 f = 0.4 at the high level: 7/83 = 8.4% and 10/83 = 12.0%.
-- N1, N5 and N7 at the high level: 5.9%, 3.8% and 4.0%. The pure nulls together: a false
-  SUPPORTED on 18/812 = 2.2%.
-- At N8's high-level rate on all 790 cards, about 34 false SUPPORTED would be expected against
-  29, so S1 would pass with probability ≈ 0.20.
-- The dev probe p16 on simulated data gave 11.3% (`p16_variable_capture_n8.log`, tag).
+- N1, N5 and N7 at the high level: 5.9%, 3.8% and 4.0% (post hoc: the sums of SUPPORTED and
+  the answers against the direction). The pure nulls pooled (post hoc): a false SUPPORTED on
+  18/812 = 2.2%.
+- Withdrawn in round 4: the counterfactual of N8's high-level rate on all 790 cards. In its
+  place, the criteria's resolution on the cards at risk (`validation/exploratory/v1_null_cells.log`):
+  253–271 of each key null's 790 cards; S1 fails with probability 0.95 only at 14.3–15.3% among
+  them.
+- The dev probe p16 on simulated data gave 11.3% (`p16_variable_capture_n8.log`, tag): 3.7 to
+  8.1 times N8's real rate depending on the denominators, at a SESOI of 0.1 and a dose of 2.0
+  (post hoc; by-level).
 
 **Limitations.**
-- The scope: one metric, two backgrounds, the binomial-thinning family and N8. Nothing else is
-  validated, `mi_3bin` included.
+- The scope: one metric, two backgrounds (round 4: B2 only for N7 and R1), the artifacts N2–N8
+  plant by binomial thinning (round 4: N2 without a test of the correction of depth). Nothing
+  else is validated, `mi_3bin` included.
 - v0.3 does not correct per-cell capture (v1.md §6's sentence).
 - The design effects reach 5.62 (scores.json `limitations`).
 - GATE 0 refused 26 of N7's 276 high-level cards (9.4%; by-level).
@@ -247,9 +263,9 @@ ran once, after the results and outside v1.
 - **The sham: correct.**
 
 **v0.1.1 and v0.3 on their real positive controls.** v0.1.1 did not confirm Xist because of
-GATE 1, on TMS (step1, section F). v0.3 removed that failure (GATE 1 is now a diagnostic), but
-the control was still not confirmed: another gate, GATE 4, failed it, and the design could not
-have confirmed it.
+GATE 1, on TMS (step1, section F). In v0.3 GATE 1 is a diagnostic and by design does not block,
+but v0.3 was not run on TMS. On B2 the control was not confirmed: another gate, GATE 4, failed
+it, and the design could not have confirmed it.
 
 ## 5. The corrected TMS case
 
