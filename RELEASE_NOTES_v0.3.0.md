@@ -84,6 +84,20 @@ the 8,910 expected pair-metric cards). At the rates the pilot measured, a sound 
 the oracle's true correction on N3 and N8, passes the criteria together with probability 1.000:
 a property of the criteria, not a prediction for the engine.
 
+## Known issue in v0.3.0
+
+**A SUPPORTED whose raw replicate-level test did not detect the effect was made by the depth
+correction: read it as INCONCLUSIVE.** The raw test, on the same data without the correction, is
+in the JSON report as `fields.effect.detail.raw_detected` (with `raw_effect` and `p_raw`). The
+correction thins the deeper group to equal depth, which is exact for a difference of capture;
+where the groups differ otherwise, as by entry-level dropout, it can enlarge an undetected raw
+difference until it is detected. On v1's cards (exploratory, after the results;
+[`v1_correction_rule.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_correction_rule.log)): 18 of the 54 false
+SUPPORTED on null data had `raw_detected` false, all on cards at risk, among them all 7 of N3 at
+f = 0.4 on the high level; of the 275 SUPPORTED on real effects, 3 had (none of the 118 valid cards
+with |Δ\*| ≥ SESOI). v0.4 is to make this the rule: a correction can only remove a conclusion,
+never create one.
+
 ## Limitations
 
 - **The SESOI and GATE 4's dose came from the pilot**, that is, from the oracle, on every card.
@@ -100,12 +114,22 @@ a property of the criteria, not a prediction for the engine.
   depth correction brings whole groups to one depth. In the twelve high-level null cells, after
   Holm's correction over the twelve (decided after the results) no cell differs from the nominal
   2.5%; without it, N3 at f = 0.4's interval excludes it. The largest are N3 at f = 0.4, 7/83 =
-  8.4% (95% CI 3.5–16.6%; Holm 0.058), and N8, 11/253 = 4.3% (2.2–7.6%; Holm 0.61): hypotheses
-  for v0.4 with a mechanism, not measured defects.
+  8.4% (95% CI 3.5–16.6%; Holm 0.058), and N8, 11/253 = 4.3% (2.2–7.6%; Holm 0.61). N8's is a
+  hypothesis for v0.4 with a mechanism, not a measured defect. N3's was found after the results
+  to be made by the depth correction (the known issue above): all 7 had raw differences the
+  replicate-level test did not detect (p 0.06 to 0.34), which the correction enlarged 1.36 to 2.69
+  times, and a test over donors without the correction gives none of the 83
+  ([`v1_analyzers.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_analyzers.log), section 5).
 - **Design effects** (datasets share donors) exceed 1.5 only for S3's null and invalid strata
   (4.74, 5.62), S5's null cell (5.28) and S3's E1 condition (1.54). In the false-SUPPORTED cells
   they are at most 1.055; at N5's, S1's cell passes a doubled error with probability 0.051, just
-  above the principle's 0.05.
+  above the principle's 0.05. Cards that share a gene pair, which v1 did not compute, give larger
+  ones (exploratory, [`v1_pair_deff.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_pair_deff.log)): 3.91 for
+  S1's N8 cell, 6 of whose 11 false SUPPORTED fell on one pair, and at that design effect the cell
+  passes a doubled error with probability 0.211; 29.8 for S5's null cell; 5.93 for S3's null
+  stratum.
+- **v1's sensitivity rests on 3 gene pairs.** SUPPORTED on 118 of the 121 valid real-effect cards
+  with |Δ\*| ≥ SESOI (97.5%, 95% CI 92.9–99.5%), and those 121 cards share 3 pairs.
 - **GATE 0 refused 31 cards, all on N7** (26/276 = 9.4% at the high level, 5 at the medium).
   A refusal is allowed, never definite, but on these null data the refusals cost decisiveness
   (S3's N7 cell: 204 of 237). Decided after the results: 29 of the 31 fell on three of B2's gene
@@ -169,12 +193,57 @@ control expected to succeed.
   identical, and all 22 reports the same (16 byte-identical, 6 within 1e-9, with the same
   verdicts and causes).
 
+## What the gates add over a donor-level test (exploratory)
+
+After the results, four analyzers read every card of v1 on v1's own datasets, which are
+development data now (the plan was committed before the run:
+[`v1_analyzers_plan.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_analyzers_plan.md); results:
+[`v1_analyzers.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_analyzers.log); all 9,750 datasets rebuilt from the
+key and identical to the run's): (a) a permutation test over cells, as most papers do; (b) a
+permutation test over donors, without gates; (c) the engine with GATE 0, 2, 4 and 5 off, its own
+code (it reproduces the engine's raw replicate-level test on 2,091 of 2,091 cards with an exact
+permutation or a t interval); (d) the full engine, the published reports. "At risk": a valid or ambiguous metric.
+
+| Share "effect" (SUPPORTED for (c), (d)) | (a) | (b) | (c) | (d) |
+|---|---|---|---|---|
+| pure nulls N1, N5, N7, metric at risk (867 cards) | 18.6% | 2.9% | 2.8% | 2.1% |
+| pure nulls, blind metric (1,503) | 8.6% | 2.5% | 2.5% | 0% |
+| artifacts N2, N3, N8, metric at risk (1,018) | 16.3% | 4.8% | 4.8% | 3.2% |
+| artifacts, blind metric (2,142) | 17.6% | 8.2% | 8.2% | 0% |
+| N4, 3 against 3 donors (1,580) | 12.4% | 0% | 0.9% | 0.2% |
+| useless metrics N6a–c (1,630) | 18.2% | 2.7% | 1.8% | 0% |
+| real effects, valid metric, \|Δ\*\| ≥ SESOI (121) | 100% | 99.2% | 99.2% | 97.5% |
+| real effects, ambiguous metric (309) | 72.5% | 57.0% | 57.0% | 28.5% |
+| real effects, blind metric (1,285) | 21.3% | 10.7% | 10.7% | 0.2% |
+
+- **Where the metric works, a test over donors without gates is almost as good.** The large step
+  is from cells to donors.
+- **On all 7,110 null cards** the false "effect" is 4.0% for (b) and 0.8% for (d), and 212 of the
+  232 fewer false effects are on metrics blind to the planted coupling, where the engine refuses
+  to interpret ([`v1_correction_rule.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_correction_rule.log)).
+- **The gain on depth artifacts over all levels is mostly GATE 4's refusal** at the medium and low
+  levels, where every card had a blind metric (artifacts at the medium level 9.9% for (b) against
+  0% for (d), at the low 6.5% against 0%). At risk the correction works both ways: N2 5.4% → 2.1%,
+  N8 7.1% → 4.3% (on the same pairs as (b)'s), N3 1.2% → 4.5%.
+- **The cost:** on an ambiguous metric the real effects are found half as often (57.0% against
+  28.5%). On the real effects with a blind metric, (b) is not significant on 87.6%, (c) claims NO
+  DETECTABLE EFFECT on 44.7% and (d) calls the metric invalid on 99.8%.
+- **One mechanism builds the real effects, the truth about validity and GATE 4's probe.** That a
+  refusal on a blind metric is right, and (c)'s "no detectable effect" there wrong, holds for
+  metrics blind to that injection; whether they are blind to real biology only real data can
+  tell.
+
 ## Next
 
-v0.4 (a correction for per-cell capture; GATE 4 measured where the signal is claimed, with a
-module sham that creates no response by losing counts; a rule for the SESOI and GATE 4's dose
-without an oracle) and a new pre-registration, validation v2, whose requirements are collected
-in [`PROJECT.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/PROJECT.md) ("Requirements for v2"). The draft manuscript on v0.3,
+v0.4 (a draft specification, [`v0.4_spec.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/v0.4_spec.md)): GATE 4 measured
+where the signal is claimed, with a module probe that creates no response by losing counts; a
+rule for the SESOI and GATE 4's dose without an oracle; and the rule of the known issue above, by
+which a correction can only remove a conclusion, never create one. A correction for per-cell
+capture is postponed to v0.5; v0.4 only reports the spread of per-cell depth. Then the test that
+decides whether the gates are needed at all, on published claims with an independent verdict
+recorded before the runs ([`real_claims.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/real_claims.md)), and a new
+pre-registration, validation v2, whose requirements are collected in
+[`PROJECT.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/PROJECT.md) ("Requirements for v2"). The draft manuscript on v0.3,
 `paper/manuscript_v03.md`, is not for posting; it will be rewritten after v0.4, validation v2 and
 the external verdicts.
 
