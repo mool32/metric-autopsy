@@ -1,0 +1,57 @@
+# Validation v1: the false-SUPPORTED cells on the cards at risk, the twelve high-level null cells,
+# the design effects and the S4 part of the prediction on N8 (read after the results; v1 unchanged)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; scores.json sha256 253de86d4e60ea91e25bf9338c1e1328fb7522b85bbbf72996908311c7123c1e; 10540 cards
+
+## 1. The criteria's resolution on the cards at risk (decided after the results)
+A card is at risk if its metric is valid or ambiguous (the oracle's truth); the rates below are rates
+of false SUPPORTED among the cards at risk, with no error on the others.
+S1 (limit per key null):
+  N1      n   790, false SUPPORTED   5, limit  29 | valid  271, ambiguous   0, blind  519 | at risk 271 (false SUPPORTED 5); the limit is 10.7% of them; fails with P 0.5 at 10.9%, with P 0.95 at 14.3%; passes at 5% with P 1.000, at 7.5% with P 0.978
+  N2      n   790, false SUPPORTED   6, limit  29 | valid  182, ambiguous  73, blind  535 | at risk 255 (false SUPPORTED 6); the limit is 11.4% of them; fails with P 0.5 at 11.6%, with P 0.95 at 15.2%; passes at 5% with P 1.000, at 7.5% with P 0.990
+  N5      n   790, false SUPPORTED   8, limit  29 | valid  265, ambiguous   0, blind  525 | at risk 265 (false SUPPORTED 8); the limit is 10.9% of them; fails with P 0.5 at 11.2%, with P 0.95 at 14.6%; passes at 5% with P 1.000, at 7.5% with P 0.984
+  N6c     n   790, false SUPPORTED   0, limit  29 | valid    0, ambiguous   0, blind    0, useless  790 | at risk 0 (a useless metric: a false SUPPORTED needs GATE 4 or 5 to pass the metric first); for that error over all 790 cards: the limit is 3.7% of them; fails with P 0.5 at 3.8%, with P 0.95 at 5.0%
+  N8      n   790, false SUPPORTED  11, limit  29 | valid  221, ambiguous  32, blind  537 | at risk 253 (false SUPPORTED 11); the limit is 11.5% of them; fails with P 0.5 at 11.7%, with P 0.95 at 15.3%; passes at 5% with P 1.000, at 7.5% with P 0.991
+S2 (limit per group of the cards outside S1):
+  N2      n   790, false SUPPORTED   5, limit  30 | valid  235, ambiguous  33, blind  522 | at risk 268 (false SUPPORTED 5); the limit is 11.2% of them; fails with P 0.5 at 11.4%, with P 0.95 at 14.9%; passes at 5% with P 1.000, at 7.5% with P 0.989
+  N3      n   790, false SUPPORTED  11, limit  31 | valid  242, ambiguous   0, blind  548 | at risk 242 (false SUPPORTED 11); the limit is 12.8% of them; fails with P 0.5 at 13.1%, with P 0.95 at 16.9%; passes at 5% with P 1.000, at 7.5% with P 0.999
+  N4      n   790, false SUPPORTED   3, limit  36 | valid  280, ambiguous   0, blind  510 | at risk 280 (false SUPPORTED 3); the limit is 12.9% of them; fails with P 0.5 at 13.1%, with P 0.95 at 16.6%; passes at 5% with P 1.000, at 7.5% with P 0.999
+  N6      n   790, false SUPPORTED   0, limit  29 | valid    0, ambiguous   0, blind    0, useless  790 | at risk 0 (a useless metric: a false SUPPORTED needs GATE 4 or 5 to pass the metric first); for that error over all 790 cards: the limit is 3.7% of them; fails with P 0.5 at 3.8%, with P 0.95 at 5.0%
+  N7      n   790, false SUPPORTED   5, limit  30 | valid  276, ambiguous  55, blind  459 | at risk 331 (false SUPPORTED 5); the limit is 9.1% of them; fails with P 0.5 at 9.3%, with P 0.95 at 12.1%; passes at 5% with P 0.999, at 7.5% with P 0.880
+  E       n  1285, false SUPPORTED   2, limit  51 | valid    0, ambiguous   0, blind 1285, useless    0 | at risk 0 (a blind metric on every card: a false SUPPORTED needs GATE 4 or 5 to pass the metric first); for that error over all 1285 cards: the limit is 4.0% of them; fails with P 0.5 at 4.0%, with P 0.95 at 5.0%
+on blind metrics: N8 0 SUPPORTED of 537; medium and low levels 0 of 5853
+
+## 2. The twelve null cells at the high level
+k/n and the 95% CI: pre-registered (v1.md section 5); the one-sided p against 2.5% and Holm's correction
+over the twelve: decided after the results. Only the cards on which a false SUPPORTED is an error count.
+  cell               false SUPPORTED (95% CI)           valid/ambiguous/blind   p (one-sided)     Holm
+  N1 null            5/271 = 1.8% (95% CI 0.6-4.3%)     271/0/0                        0.8090    1.000
+  N2 c=0.5           6/255 = 2.4% (95% CI 0.9-5.1%)     182/73/0                       0.6151    1.000
+  N2 c=0.9           2/94 = 2.1% (95% CI 0.3-7.5%)      94/0/0                         0.6843    1.000
+  N2 c=0.7           1/90 = 1.1% (95% CI 0.0-6.0%)      81/9/0                         0.8976    1.000
+  N2 c=0.3           2/84 = 2.4% (95% CI 0.3-8.3%)      60/24/0                        0.6240    1.000
+  N3 f=0.1           1/80 = 1.3% (95% CI 0.0-6.8%)      80/0/0                         0.8681    1.000
+  N3 f=0.2           3/79 = 3.8% (95% CI 0.8-10.7%)     79/0/0                         0.3165    1.000
+  N3 f=0.4           7/83 = 8.4% (95% CI 3.5-16.6%)     83/0/0                         0.0048    0.058
+  N4 3v3             3/280 = 1.1% (95% CI 0.2-3.1%)     280/0/0                        0.9718    1.000
+  N5 sham            8/265 = 3.0% (95% CI 1.3-5.9%)     265/0/0                        0.3449    1.000
+  N7 mice            5/276 = 1.8% (95% CI 0.6-4.2%)     276/0/0                        0.8212    1.000
+  N8 beta(2,2)       11/253 = 4.3% (95% CI 2.2-7.6%)    221/32/0                       0.0552    0.607
+  N8 on its high-level cards with a valid metric (decided after the results): 8/221 = 3.6% (95% CI 1.6-7.0%)
+
+## 3. The design effects (pre-registered: v1.md sections 5 and 7; from scores.json)
+  S3:invalid       design effect 5.62: rate 0.998, 95% CI at n/deff 0.991-1.000 (n 4685)
+  S5:null          design effect 5.28: rate 0.041, 95% CI at n/deff 0.024-0.064 (n 2252)
+  S3:null          design effect 4.74: rate 0.917, 95% CI at n/deff 0.873-0.950 (n 1075)
+  S3c:effect:E1    design effect 1.54: rate 0.972, 95% CI at n/deff 0.913-0.995 (n 141)
+  the false-SUPPORTED cells (S1, S2): largest design effect 1.0549 (S1:N5)
+  S1 N1 at its design effect 1.0000: P(pass | sound) 0.9824, P(pass | doubled) 0.0465
+  S1 N2 at its design effect 1.0000: P(pass | sound) 1.0000, P(pass | doubled) 1.0000
+  S1 N5 at its design effect 1.0549: P(pass | sound) 0.9797, P(pass | doubled) 0.0509
+  S1 N6c at its design effect 1.0000: P(pass | sound) 0.9824, P(pass | doubled) 0.0465
+  S1 N8 at its design effect 1.0000: P(pass | sound) 0.9824, P(pass | doubled) 0.0465
+  (N2's design effect is 1 + 2e-16; oc.error_rule_deff then takes a beta-binomial in which scipy
+   overflows and reads 1.0 / 1.0; at a design effect of 1 the values are N1's)
+
+## 4. The S4 part of the prediction on N8 (v1.md section 6)
+  S4's null cell, NOT SUPPORTED against the direction: 58 of 2165, limit 102 (passed True)
+  of which on N8: 11 of 253 N8 cards in the cell (11 at the high level)

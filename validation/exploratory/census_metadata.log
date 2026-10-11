@@ -1,0 +1,60 @@
+# Output of validation/exploratory/census_metadata.py at 3c52708: workflow run 38122733079, job
+# 114420632074 (2026-10-11), the job log's output lines with their timestamps removed
+B1 (homo_sapiens): 1632971 primary droplet-3' cells of the chosen group; suspension type / assay: {"nucleus / 10x 3' v3": 1632971}
+B2 (mus_musculus): 102109 primary droplet-3' cells of the chosen group; suspension type / assay: {"cell / 10x 3' v2": 55809, "cell / 10x 3' v3": 46300}
+B2 per donor id (all cells of the chosen group; raw_sum over all genes):
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_2y__MUC13974 | cells 6445 | assay {"10x 3' v3": 6445} | median raw_sum 28439 | median nnz 3929
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_2y__MUC13975 | cells 2413 | assay {"10x 3' v3": 2413} | median raw_sum 31632 | median nnz 4138
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_2y__MUC13976 | cells 5459 | assay {"10x 3' v3": 5459} | median raw_sum 31874 | median nnz 4192
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_P16__145_mGFP | cells 3246 | assay {"10x 3' v2": 3246} | median raw_sum 20648 | median nnz 3189
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_P16__146_mRFP | cells 2628 | assay {"10x 3' v2": 2628} | median raw_sum 23270 | median nnz 3281
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_P16__147_mTmG | cells 1536 | assay {"10x 3' v2": 1536} | median raw_sum 22342 | median nnz 3288
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_adult__mouse1 | cells 3245 | assay {"10x 3' v2": 3245} | median raw_sum 33495 | median nnz 3968
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_adult__mouse2 | cells 4252 | assay {"10x 3' v2": 4252} | median raw_sum 29850 | median nnz 3856
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_adult__mouse3 | cells 1916 | assay {"10x 3' v2": 1916} | median raw_sum 34539 | median nnz 4104
+  donor mouse_pancreatic_islet_atlas_Hrovatin__Fltp_adult__mouse4 | cells 4325 | assay {"10x 3' v2": 4325} | median raw_sum 24100 | median nnz 3527
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD__SRR10985097 | cells 445 | assay {"10x 3' v2": 445} | median raw_sum 27429 | median nnz 3894
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD__SRR10985098 | cells 306 | assay {"10x 3' v2": 306} | median raw_sum 24484 | median nnz 3654
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD__SRR10985099 | cells 783 | assay {"10x 3' v2": 783} | median raw_sum 32088 | median nnz 3161
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610295 | cells 189 | assay {"10x 3' v2": 189} | median raw_sum 35866 | median nnz 2978
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610296 | cells 128 | assay {"10x 3' v2": 128} | median raw_sum 35244 | median nnz 3029
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610297 | cells 231 | assay {"10x 3' v2": 231} | median raw_sum 27456 | median nnz 2445
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610298 | cells 795 | assay {"10x 3' v2": 795} | median raw_sum 25154 | median nnz 2539
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610299 | cells 620 | assay {"10x 3' v2": 620} | median raw_sum 31648 | median nnz 2906
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610300 | cells 233 | assay {"10x 3' v2": 233} | median raw_sum 23327 | median nnz 2472
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610301 | cells 305 | assay {"10x 3' v2": 305} | median raw_sum 27118 | median nnz 2651
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610302 | cells 589 | assay {"10x 3' v2": 589} | median raw_sum 40860 | median nnz 3455
+  donor mouse_pancreatic_islet_atlas_Hrovatin__NOD_elimination__SRR7610303 | cells 649 | assay {"10x 3' v2": 649} | median raw_sum 42145 | median nnz 3394
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G1 | cells 5795 | assay {"10x 3' v2": 5795} | median raw_sum 18897 | median nnz 2556
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G2 | cells 1496 | assay {"10x 3' v2": 1496} | median raw_sum 32552 | median nnz 3786
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G3 | cells 1204 | assay {"10x 3' v2": 1204} | median raw_sum 31998 | median nnz 3604
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G4 | cells 1135 | assay {"10x 3' v2": 1135} | median raw_sum 22678 | median nnz 3259
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G5 | cells 1608 | assay {"10x 3' v2": 1608} | median raw_sum 25336 | median nnz 3361
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G6 | cells 1670 | assay {"10x 3' v2": 1670} | median raw_sum 31271 | median nnz 3590
+  donor mouse_pancreatic_islet_atlas_Hrovatin__STZ__G8 | cells 1421 | assay {"10x 3' v2": 1421} | median raw_sum 29421 | median nnz 3165
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13631 | cells 865 | assay {"10x 3' v3": 865} | median raw_sum 92655 | median nnz 6764
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13632 | cells 8130 | assay {"10x 3' v3": 8130} | median raw_sum 28482 | median nnz 3372
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13633 | cells 3656 | assay {"10x 3' v3": 3656} | median raw_sum 39150 | median nnz 4116
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13634 | cells 4050 | assay {"10x 3' v3": 4050} | median raw_sum 39566 | median nnz 4184
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13639 | cells 3058 | assay {"10x 3' v3": 3058} | median raw_sum 39261 | median nnz 4485
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13640 | cells 5374 | assay {"10x 3' v3": 5374} | median raw_sum 40302 | median nnz 4311
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13641 | cells 2206 | assay {"10x 3' v3": 2206} | median raw_sum 58543 | median nnz 5368
+  donor mouse_pancreatic_islet_atlas_Hrovatin__VSG__MUC13642 | cells 4644 | assay {"10x 3' v3": 4644} | median raw_sum 48040 | median nnz 4979
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751502 | cells 1481 | assay {"10x 3' v2": 1481} | median raw_sum 11527 | median nnz 2956
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751503 | cells 746 | assay {"10x 3' v2": 746} | median raw_sum 19316 | median nnz 4117
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751504 | cells 1883 | assay {"10x 3' v2": 1883} | median raw_sum 13033 | median nnz 2837
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751505 | cells 1068 | assay {"10x 3' v2": 1068} | median raw_sum 19238 | median nnz 3632
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751506 | cells 1598 | assay {"10x 3' v2": 1598} | median raw_sum 12636 | median nnz 2781
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751507 | cells 694 | assay {"10x 3' v2": 694} | median raw_sum 24006 | median nnz 3353
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751508 | cells 1583 | assay {"10x 3' v2": 1583} | median raw_sum 14125 | median nnz 3000
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751509 | cells 426 | assay {"10x 3' v2": 426} | median raw_sum 25306 | median nnz 3251
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751510 | cells 914 | assay {"10x 3' v2": 914} | median raw_sum 20322 | median nnz 3415
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751511 | cells 876 | assay {"10x 3' v2": 876} | median raw_sum 17138 | median nnz 3078
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751512 | cells 440 | assay {"10x 3' v2": 440} | median raw_sum 21886 | median nnz 3769
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751513 | cells 567 | assay {"10x 3' v2": 567} | median raw_sum 21135 | median nnz 4126
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751514 | cells 1010 | assay {"10x 3' v2": 1010} | median raw_sum 19882 | median nnz 3219
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751515 | cells 590 | assay {"10x 3' v2": 590} | median raw_sum 21598 | median nnz 3517
+  donor mouse_pancreatic_islet_atlas_Hrovatin__spikein_drug__SRR10751516 | cells 1183 | assay {"10x 3' v2": 1183} | median raw_sum 22058 | median nnz 3366
+B2 per assay:
+  assay 10x 3' v2 | donor ids 41 | cells 55809 | median raw_sum 23476 | median nnz 3329
+  assay 10x 3' v3 | donor ids 11 | cells 46300 | median raw_sum 35516 | median nnz 4162
