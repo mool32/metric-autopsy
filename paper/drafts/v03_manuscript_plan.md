@@ -89,8 +89,8 @@ With the owner's edits of 2026-10-10 (round 3), written out in `paper/manuscript
 - **Content.** The three failures that started the project (entropy anticorrelation, cardiac
   β, SMAD–ECM mutual information), described qualitatively.
 - **No numbers from ref 1.** It is an internal checklist with no script behind it: v0.1.1's
-  §1 numbers, such as 2.4× and 3670 vs 1540, cannot be sourced. The TMS case is told with the
-  audit's numbers in §5 instead.
+  §1 numbers cannot be sourced. The TMS case is told with the audit's numbers instead
+  (round 5: Appendix B).
 
 ## 2. v0.1 and how it failed its own probes
 

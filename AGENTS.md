@@ -9,7 +9,7 @@ then believe**, never "compute → believe."
 > **Status: v0.3.0-prereg passed the pre-registered blind validation v1, within its scope only**
 > (README, Status: scRNA-seq counts; the log-normalized Pearson of a gene pair, on the 8 most
 > correlated pairs per expression level; background B1, and B2 only for the null N7 and the anchor
-> R1; the artifacts N2–N8 plant by binomial thinning, without a test of the correction of depth).
+> R1; the artifacts N2, N3 and N8, without a test of the correction of depth).
 > Even there the pass excludes only gross excesses of false SUPPORTED on the pairs where the
 > metric works. The released v0.1.1 errs in both directions
 > (`validation/probes/README.md`). **Do not call a verdict validated outside the scope of v1.

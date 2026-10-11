@@ -18,8 +18,7 @@ design adequacy, effect, replication — with the numbers behind each.
 
 > **Status: validated only within the scope of the pre-registered validation v1** (README,
 > Status: scRNA-seq counts; `norm_pearson` on a gene pair, on the 8 most correlated pairs per
-> expression level; background B1, and B2 only for the null N7 and the anchor R1; the artifacts
-> N2–N8 plant by binomial thinning, without a test of the correction of depth). Even there the
+> expression level; background B1, and B2 only for the null N7 and the anchor R1; the artifacts N2, N3 and N8, without a test of the correction of depth). Even there the
 > pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works. Do
 > not call a verdict validated outside that scope. Inside it, cite the error
 > rates from `scores.json` (branch `results/panel-v1`). Never write "validated" or "reliable"

@@ -31,8 +31,11 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >   of the 790 cards had a valid or ambiguous metric. On those cards S1's cell fails with
 >   probability 0.95 only at a
 >   false-SUPPORTED rate of 14.3–15.3%; a validator wrong on 7.5% of them passes with probability
->   0.98–0.99. The pilot showed this mix before the key (`oc_pilot.log`: a valid metric on 2,453
->   expected cards; the criteria passing with probability 1.000 at its measured rates).
+>   0.98–0.99. The pilot showed this mix before the key
+>   (`oc_pilot.log`: a valid metric on 2,453 of the 8,910 expected pair-metric cards). At the
+>   rates the pilot measured, a sound validator, with the oracle's true correction on N3 and N8,
+>   passes the criteria together with probability 1.000: a property of the criteria, not a
+>   prediction for the engine.
 > - **Scope.**
 >   - Data: scRNA-seq counts only.
 >   - Metric: one, the log-normalized Pearson correlation of a gene pair (`norm_pearson`), on
@@ -44,13 +47,15 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     - B2: mouse pancreatic islet beta cells; cells, 10x 3' v2 (39 donor ids) and v3 (11). Its
 >       50 donor ids are samples, 6 of them pools of both sexes; all single females are the NOD
 >       strain. It carried only the null N7 and the anchor R1.
->   - Artifacts: those N2–N8 plant by binomial thinning. N2 (capture loss in one group) did not
->     test the correction of depth: the oracle's power to detect its raw difference was 0.21,
+>   - Artifacts: N2, N3 and N8 (capture loss and entry-level dropout, of v1's binomial-thinning
+>     family, and per-cell capture, outside the engine's correction family). N2 (capture loss in
+>     one group) did not test the correction of depth: the oracle's power to detect its raw difference was 0.21,
 >     0.14 and 0.16 at the three levels, never the 0.9 that makes it informative
 >     ([`v1_pilot_table.log`](validation/exploratory/v1_pilot_table.log)).
 >   - The real effects ran at the saturation dose, since no level had a key dose. Of their 1,800
->     cards 206 had a valid metric, 189 were establishable and 121 at or above the SESOI; at the
->     high level their Δ* (0.258) is about the SESOI (0.255).
+>     cards 206 had a valid metric, 189 of them establishable and 121 at or above the SESOI; all
+>     1,285 with a blind metric were establishable too, with "metric invalid" as the correct
+>     outcome. At the high level their Δ* (0.258) is about the SESOI (0.255).
 >   - Not tested: GATE 6 (no card had a second dataset, so every SUPPORTED was provisional) and
 >     the content estimand (only in the anchor R2).
 >
@@ -81,9 +86,9 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     difference.
 >   - **GATE 4's module probe measures the response over all cells.** For a metric that is a mean
 >     over cells that is the share of cells with the marker times the response in them, which is
->     below ln 2 for a marker of many counts. R1's probe therefore needed 36% of cells with Xist
->     (0.25 / ln 2) and B2 has 25.8%: with anchors.py's constants the failure was predictable from
->     B2's composition. With the module's default (2-fold in 30% of cells) a valid
+>     below ln 2 for a well-detected marker. With Xist's response of 0.631 in B2's Xist cells, R1's
+>     probe needed at least 39.6% of cells with Xist (0.25 / 0.631), and B2 has 25.8%: with
+>     anchors.py's constants the failure was predictable from B2's composition. With the module's default (2-fold in 30% of cells) a valid
 >     mean-expression metric of a well-detected gene cannot pass GATE 4 at a SESOI of 0.5: at most
 >     0.3 × ln 2 = 0.208 against delta_min 0.25
 >     ([`gate4_module_analytic.log`](validation/exploratory/gate4_module_analytic.log); simulated
@@ -98,20 +103,23 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >   - All 2,458 cards with a valid metric are at the high expression level. At the medium and
 >     low levels the metric is blind (55 medium-level cards of N7 are ambiguous), and no card
 >     there was SUPPORTED (0 of 6,988).
->   - In the twelve high-level null cells the rates are compatible with the nominal 2.5%. The
->     largest are N3 at f = 0.4, 7/83 = 8.4%, and N8, 11/253 = 4.3% (95% CI 2.2–7.6%); after
->     Holm's correction over the twelve (decided after the results) 0.058 and 0.61. Both are
->     hypotheses for v0.4 with a mechanism, not measured defects.
+>   - In the twelve high-level null cells, after Holm's correction over the twelve (decided after
+>     the results) no cell differs from the nominal 2.5%; without it, N3 at f = 0.4's interval
+>     excludes it. The largest are N3 at f = 0.4, 7/83 = 8.4% (95% CI 3.5–16.6%; Holm 0.058),
+>     and N8, 11/253 = 4.3% (2.2–7.6%; Holm 0.61). Both are hypotheses for v0.4 with a
+>     mechanism, not measured defects.
 >   - GATE 0 refused 31 cards, all on N7 (26/276 = 9.4% at the high level, 5 at the medium).
->     That is GATE 0 at work: in each refused dataset extra dropout biased the metric by 1.1 to
->     1.5 times the tolerance, and a refusal is allowed, never definite. Decided after the
->     results: 29 of the 31 fell on three of B2's gene pairs, where dropout shifted the
->     correlation beyond the tolerance; B2's chemistry and depth do not explain them
+>     GATE 0 refuses where extra dropout would bias the metric beyond its tolerance, as it is built
+>     to, and a refusal is allowed, never definite; but on these null data the refusals cost
+>     decisiveness (S3's N7 cell: 204 of 237). Decided after the results: 29 of the 31 fell on
+>     three of B2's gene pairs, where dropout shifted the correlation beyond the tolerance; eight
+>     tests found no association with B2's chemistry or depth (one at p = 0.049)
 >     ([`b2_depth_by_chemistry.log`](validation/exploratory/b2_depth_by_chemistry.log)).
 >   - Decided after the results: N8 on its cards with a valid metric 8/221 = 3.6%. The
->     development probe p16 (11.3% on simulated data) overstated N8's real rate by 3.7 to 8.1
->     times, depending on the denominators (the log gives each with its assumption); it also ran
->     with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5.
+>     development probe p16 (11.3% on simulated data) was 8.1 times N8's real rate over all
+>     levels, and at most 3.7 times on the datasets at risk; it also ran with a SESOI of 0.1 and
+>     a dose of 2.0, where B1's high level had 0.255 and 2.5, so simulation and settings are
+>     confounded.
 >
 >   A correction for per-cell capture, and a module sham that creates no response by losing
 >   counts, are planned for v0.4, with a new pre-registration.
@@ -139,7 +147,7 @@ A metric that changes between conditions is not a finding — it might be dropou
 2. **Eight gates, four fields, one rule.** GATE 0 separates nuisance *bias* (FAIL) from *attenuation* (reported, and used as a power check); GATE 4 checks that the metric responds to an injected signal; GATE 5 judges positive and negative controls against empirical nulls — together they decide **metric validity**, which needs a demonstrated response, not just invariance. GATE 1 (stratified QC parity) is a diagnostic; GATE 2 removes the technical difference the way the pre-registered **estimand** allows (thinning to equal depth for composition, to equal spike-in capture for content, otherwise UNIDENTIFIABLE) and infers the **effect** across biological replicates (exact permutation at ≥ 4 per group, *parametric only* at 3, no verdict at ≤ 2). GATE 6 re-estimates it on independent data (**replication**). GATE 3 exports the raw scatter; GATES 4 (alternative explanations) and 7 (effect size, declared as the SESOI) are judgment the skill elicits.
 3. **The reference metric is diagnosed, not just killed.** On the bundled demo (`mi_3bin`, biology identical, male-old capture degraded) GATE 0 measures attenuation (dropout −61%, depth halving −24%), GATE 1 flags the male stratum (1.94× QC ratio, 0.00 n_genes overlap), and at equal depth the raw MI difference shrinks to −13% of itself and is not detected across 16 mice: INCONCLUSIVE, not supported. The real-data run of the preprint (§4) used v0.1.1. Its audit ([`validation/flagship_audit/REPORT.md`](validation/flagship_audit/REPORT.md)) found that v0.1.1's verdict reproduces, but the design §4 describes does not hold.
 4. **Metric-as-plugin.** You pass `metric(data) -> float` and your factorial `obs` column names; the gates treat the metric as a black box and probe the data and its response to controlled perturbations. Metric-agnostic, domain-locked to scRNA-seq (RNA only in v1).
-5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's operating characteristics are established only within the scope of validation v1 (see Status): one metric, background B1 (B2 only for one null), the artifacts N2–N8 plant by binomial thinning; and there the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works.
+5. **Necessary, not sufficient (honest limit).** Passing the gates removes only the artifacts these gates know about; no correlation metric is fully depth-invariant under dropout. Every report carries the data and pre-registration hashes, and a run log counts repeated attempts at the same claim. The validator's operating characteristics are established only within the scope of validation v1 (see Status): one metric, background B1 (B2 only for one null), the artifacts N2, N3 and N8; and there the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works.
 
 Two front doors, one engine: the **skill** catches the audience inside the Claude ecosystem; the **pip package** catches everyone outside it.
 

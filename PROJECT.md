@@ -189,12 +189,15 @@ turns that checklist into runnable behavior.
     - B2: mouse islet beta cells, cells, 10x 3' v2 (39 donor ids) and v3 (11). Its 50 donor ids
       are samples, 6 of them pools of both sexes; all single females are the NOD strain. It
       carried only the null N7 and the anchor R1.
-    - Artifacts: those N2–N8 plant by binomial thinning. N2 did not test the correction of depth:
+    - Artifacts: N2, N3 and N8 (capture loss and entry-level dropout, of v1's binomial-thinning
+      family, and per-cell capture, outside the engine's correction family). N2 did not test the
+      correction of depth:
       the oracle's power to detect its raw difference was 0.21, 0.14 and 0.16 at the three levels,
       never the 0.9 that makes it informative (`validation/exploratory/v1_pilot_table.log`).
     - Real effects: no level had a key dose, so E1–E3 ran at the saturation dose (B1: 2.5, 2.75
-      and 3.0). Of their 1,800 cards 206 had a valid metric, 189 were establishable and 121 at or
-      above the SESOI; at the high level Δ* (0.258) is about the SESOI (0.255).
+      and 3.0). Of their 1,800 cards 206 had a valid metric, 189 of them establishable and 121
+      at or above the SESOI; all 1,285 with a blind metric were establishable too (S3's invalid
+      stratum: E1 668, E2 358, E3 259). At the high level Δ* (0.258) is about the SESOI (0.255).
     - Not tested: GATE 6 (no card had a second dataset) and the content estimand (only in R2).
 
     Nothing else is validated, `mi_3bin` included.
@@ -212,10 +215,11 @@ turns that checklist into runnable behavior.
     - All 2,458 cards with a valid metric are at the high level. At the medium and low levels
       the metric is blind (55 medium-level cards of N7 ambiguous), and no card there was
       SUPPORTED (0 of 6,988).
-    - The twelve high-level null cells are compatible with the nominal 2.5%. The largest are N3
-      f = 0.4, 7/83 = 8.4%, and N8, 11/253 = 4.3% (95% CI 2.2–7.6%); after Holm's correction over
-      the twelve (decided after the results) 0.058 and 0.61. Both are hypotheses for v0.4, not
-      measured defects.
+    - In the twelve high-level null cells, after Holm's correction over the twelve (decided after
+      the results) no cell differs from the nominal 2.5%; without it, N3 f = 0.4's interval
+      excludes it. The largest are N3 f = 0.4, 7/83 = 8.4% (95% CI 3.5–16.6%; Holm 0.058), and
+      N8, 11/253 = 4.3% (2.2–7.6%; Holm 0.61). Both are hypotheses for v0.4, not measured
+      defects.
     - Decided after the results: N8 on its cards with a valid metric 8/221 = 3.6%; the pure nulls
       N1, N5 and N7 pooled 18/812 = 2.2%; SUPPORTED or against the direction 22/253 = 8.7% on N8
       and 10/83 = 12.0% on N3 f = 0.4, at a nominal 5%. N7 permutes the labels over B2's donor
@@ -225,11 +229,13 @@ turns that checklist into runnable behavior.
   - Design effects above 1.5: S3's null and invalid strata (4.74, 5.62), S5's null cell (5.28)
     and S3's E1 condition (1.54). In the false-SUPPORTED cells at most 1.055, at S1's N5, where a
     doubled error passes with probability 0.051, just above the principle's 0.05.
-  - GATE 0 refused 31 cards, all on N7 (26 at the high level), which is GATE 0 at work: in each
-    refused dataset extra dropout biased the metric by 1.1 to 1.5 times the tolerance, and a
-    refusal is allowed, never definite. 29 of the 31 fell on three of B2's gene pairs, where
-    dropout shifted the correlation beyond the tolerance; B2's chemistry and depth do not explain
-    them (decided after the results; `validation/exploratory/b2_depth_by_chemistry.log`).
+  - GATE 0 refused 31 cards, all on N7 (26 at the high level). GATE 0 refuses where extra
+    dropout would bias the metric beyond its tolerance, as it is built to, and a refusal is
+    allowed, never definite; but on these null data the refusals cost decisiveness (S3's N7 cell
+    204 of 237, against 250/271, 346/364 and 186/203 on N1, N2 and N5). 29 of the 31 fell on
+    three of B2's gene pairs, where dropout shifted the correlation beyond the tolerance; eight
+    tests found no association with B2's chemistry or depth (one at p = 0.049; decided after the
+    results; `validation/exploratory/b2_depth_by_chemistry.log`).
   - Anchors: R1 did not run. `anchors.py` passes B2's sparse matrix to `SimpleData`, which
     accepts only dense arrays (ValueError). R2a–R2c are in their allowed sets; R3 was dropped
     with B4.
@@ -247,9 +253,9 @@ turns that checklist into runnable behavior.
       74.2% of B2's cells have no Xist, so the response is +0.163 over all cells, below
       delta_min 0.25, and +0.631 over the cells with Xist. With these constants the failure was
       predictable from B2's composition: for a mean over cells the response over all cells is
-      the share of cells with the marker times the response in them, below ln 2, so the probe
-      needed at least 0.25 / ln 2 = 36% of cells with Xist
-      (`validation/exploratory/gate4_module_analytic.log`). v1 never tested this path: its panel
+      the share of cells with the marker times the response in them, below ln 2 for a
+      well-detected marker, so at Xist's 0.631 the probe needed at least 0.25 / 0.631 = 39.6% of
+      cells with Xist (`validation/exploratory/gate4_module_analytic.log`). v1 never tested this path: its panel
       used the module probe only on the useless metric N6c. In the anchors it ran on four valid
       metrics and passed on three: R2a's G2M score, R1's Y-gene score, and R1's sham, which is
       the same Xist metric on the female cells only.
@@ -320,17 +326,17 @@ turns that checklist into runnable behavior.
       of 0.360 the sham's loss makes 0.178 and the 2-fold change 0.182
       (`gate4_module_analytic.log`): on shallow data the probe can pass for the wrong reason.
   - **The development data erred in both directions.** The development probe on simulated data
-    (p16, 11.3%) overstated N8's real rate by 3.7 to 8.1 times depending on the denominators, and
-    ran with a SESOI of 0.1 and a dose of 2.0, where B1's high level had 0.255 and 2.5. The
+    (p16, 11.3%) was 8.1 times N8's real rate over all levels and at most 3.7 times on the
+    datasets at risk, and it ran with a SESOI of 0.1 and a dose of 2.0, where B1's high level had
+    0.255 and 2.5, so simulation and settings are confounded. The
     development data did not show GATE 4's failure on a marker present in only some cells. So
     v2's development backgrounds must be real. Under v1.md section 6, v1's datasets are now
     development data.
   - **GATE 4's module probe measures the response over all cells.** For a mean over cells that
-    is, by identity, the share of cells with the marker times the response in them, below ln 2
-    for a marker of many counts. The default (2-fold in 30% of cells) cannot pass a
+    is, by identity, the share of cells with the marker times the response in them, below ln 2 for a well-detected marker. The default (2-fold in 30% of cells) cannot pass a
     well-detected mean-expression metric at a SESOI of 0.5 (at most 0.3 × ln 2 = 0.208 against
-    delta_min 0.25); R1's probe (frac 1.0) needed at least 36% of cells with Xist (39.8% at the
-    response of B2's Xist cells, `gate4_module_dilution.log`), and B2 has 25.8%. At a low depth
+    delta_min 0.25); R1's probe (frac 1.0) needed at least 39.6% of cells with Xist at its
+    response of 0.631 in B2's Xist cells (`gate4_module_analytic.log`), and B2 has 25.8%. At a low depth
     single-count markers pass through the sham's loss as much as through the 2-fold change (a
     target of v0.4 above). Panel v2 includes valid metrics with the module probe, among them
     markers present in only some cells; in v1 it ran only on the useless metric N6c.
