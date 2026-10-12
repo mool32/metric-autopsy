@@ -8,7 +8,7 @@
 
 Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) | tspiro@vaika.org
 
-📄 **Preprint (v0.1.1, superseded; do not upload):** [`paper/main.pdf`](paper/main.pdf); see [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). The draft of a new manuscript on v0.3, [`paper/manuscript_v03.md`](paper/manuscript_v03.md), is paused (2026-10-11): it is not for posting and will be rewritten after v0.4, validation v2 and the external verdicts.
+📄 **No preprint yet.** The v0.1.1 manuscript ([`paper/main.pdf`](paper/main.pdf)) is superseded and will not be posted. The draft of a new manuscript on v0.3, [`paper/manuscript_v03.md`](paper/manuscript_v03.md), is paused (2026-10-11): it is not for posting and will be rewritten after v0.4, validation v2 and the external verdicts.
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)
@@ -124,10 +124,12 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     confounded.
 >
 >   Planned for v0.4 (a draft specification, [`validation/plans/v0.4_spec.md`](validation/plans/v0.4_spec.md)):
->   GATE 4 measured where the signal is claimed, a module probe that creates no response by
->   losing counts, and a correction that can only remove a conclusion, never create one; a
->   correction for per-cell capture is postponed to v0.5. Then a new pre-registration, and the
->   test on published claims ([`validation/plans/real_claims.md`](validation/plans/real_claims.md)).
+>   GATE 4's response measured with the claim's own replicate-level test, the signal injected in
+>   the group where the probed genes have more counts per cell, whatever the claim's wording; a
+>   module probe that creates no response by losing counts; and a correction that can only remove
+>   a conclusion, never create one. A correction for per-cell capture is postponed to v0.5. Then
+>   a new pre-registration, and the test on published claims
+>   ([`validation/plans/real_claims.md`](validation/plans/real_claims.md)).
 > - **Next.** Step 4 of the validation plan, external verdicts, is ahead.
 > - **What a verdict is.** A statement about one dataset under the declared assumptions, not
 >   about biology.

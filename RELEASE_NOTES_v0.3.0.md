@@ -201,7 +201,7 @@ After the results, four analyzers read every card of v1 on v1's own datasets, wh
 development data now (the plan was committed before the run:
 [`v1_analyzers_plan.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_analyzers_plan.md); results:
 [`v1_analyzers.log`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/exploratory/v1_analyzers.log); all 9,750 datasets rebuilt from the
-key and identical to the run's): (a) a permutation test over cells, as most papers do; (b) a
+key and identical to the run's): (a) a permutation test over cells, the common analysis; (b) a
 permutation test over donors, without gates; (c) the engine with GATE 0, 2, 4 and 5 off, its own
 code (it reproduces the engine's raw replicate-level test on 2,091 of 2,091 cards with an exact
 permutation or a t interval); (d) the full engine, the published reports. "At risk": a valid or ambiguous metric.
@@ -237,13 +237,14 @@ permutation or a t interval); (d) the full engine, the published reports. "At ri
 
 ## Next
 
-v0.4 (a draft specification, [`v0.4_spec.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/v0.4_spec.md)): GATE 4 measured
-where the signal is claimed, with a module probe that creates no response by losing counts; a
-rule for the SESOI and GATE 4's dose without an oracle; and the rule of the known issue above, by
-which a correction can only remove a conclusion, never create one. A correction for per-cell
-capture is postponed to v0.5; v0.4 only reports the spread of per-cell depth. Then the test that
-decides whether the gates are needed at all, on published claims with an independent verdict
-recorded before the runs ([`real_claims.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/real_claims.md)), and a new
+v0.4 (a draft specification, [`v0.4_spec.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/v0.4_spec.md)): GATE 4's
+response measured with the claim's own replicate-level test, the signal injected in the group where
+the probed genes have more counts per cell, whatever the claim's wording, with a module probe that
+creates no response by losing counts; a rule for the SESOI and GATE 4's dose without an oracle; and
+the rule of the known issue above, by which a correction can only remove a conclusion, never
+create one. A correction for per-cell capture is postponed to v0.5; v0.4 only reports the spread
+of per-cell depth. Then the test that decides whether the gates are needed at all, on published
+claims with an independent verdict recorded before the runs ([`real_claims.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/validation/plans/real_claims.md)), and a new
 pre-registration, validation v2, whose requirements are collected in
 [`PROJECT.md`](https://github.com/mool32/metric-autopsy/blob/v0.3.0/PROJECT.md) ("Requirements for v2"). The draft manuscript on v0.3,
 `paper/manuscript_v03.md`, is not for posting; it will be rewritten after v0.4, validation v2 and

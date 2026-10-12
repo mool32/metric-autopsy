@@ -1,7 +1,8 @@
 # Validation v2: requirements (draft for the owner)
 
 A draft, not a pre-registration. It makes operational the requirements collected in `PROJECT.md`
-("Requirements for v2", items 1–20, each with its source) and the owner's decisions of 2026-10-11.
+("Requirements for v2", items 1–21, each with its source) and the owner's decisions of 2026-10-11
+and 2026-10-12.
 The engine v2 tests is v0.4 (`validation/plans/v0.4_spec.md`); each of its changes names its test
 here. Numbers come from the logs named, each from a script in this repository. v1's datasets are
 development data now (v1.md section 6), so v2's panel is drawn afresh, from backgrounds v1 did not
@@ -19,32 +20,45 @@ Every card of v2 is run through (b) a test over donors without gates, here with 
 for its claims of absence, so that it can make the same errors as the engine; (c) the engine with
 GATE 0, 2, 4 and 5 off; and the engine, v0.4. (a), the test over cells, is reported, not compared.
 
-**Primary outcome A, errors:** false definite conclusions per 1,000 cards: a claim of an effect, in
-either direction, on null data or against the true direction on a real effect; a claim of absence
-(NO DETECTABLE EFFECT) on a real effect with |Δ\*| ≥ SESOI or on a blind or useless metric. Counted
-separately on the cards at risk (a valid or ambiguous metric) and on blind and useless metrics. A
-claim of absence on null data with a blind or useless metric is true of the data but not shown by
-the metric; it is reported next to A, not in it.
+**Errors:** false definite conclusions, counted per null card and per effect card apart: a claim of
+an effect, in either direction, on null data or against the true direction on a real effect; a claim
+of absence (NO DETECTABLE EFFECT) on a real effect with |Δ\*| ≥ SESOI or on a blind or useless
+metric. Counted separately on the cards at risk (a valid or ambiguous metric) and on blind and
+useless metrics. A claim of absence on null data with a blind or useless metric is true of the data
+but not shown by the metric; it is reported next to the errors, not among them.
 
-**Primary outcome B, sensitivity:** effects found in the true direction per 1,000 real-effect cards
-at risk, and on the valid cards with |Δ\*| ≥ SESOI.
+**Sensitivity:** effects found in the true direction per effect card at risk, and on the valid
+cards with |Δ\*| ≥ SESOI.
 
-**The exchange, fixed in advance (proposed).** In a stratum, the gates are worth their cost if the
-false conclusions they remove against (b) are at least a quarter of the true detections they lose:
-ΔA ≥ ΔB / 4, judged by the 95% interval of ΔA − ΔB / 4 (paired over cards, with the design effects
-by donor and by gene pair): above 0, worth it; below 0, not; across 0, undecided. The ratio 1 to 4
-is the convention α = 0.05 against β = 0.20: one false conclusion costs as much as four missed
-detections. The product keeps its gates only where they are worth it in a stratum that the real
-claims show to occur.
+**The exchange** (the owner, 2026-10-12): one false conclusion is worth four lost detections, the
+convention α = 0.05 against β = 0.20. Errors removed per 1,000 cards of a stratum against
+detections lost per 1,000 effect cards mix two denominators, so such a comparison depends on the
+shares of nulls and effects in the panel, which is a decision of design. Instead, with a share π
+of true effects among the claims, the gates pay off against a comparator where
+(1 − π)·r + π·r₁ ≥ π·l/4: r the false conclusions they remove per null card, r₁ per effect card,
+l the true detections they lose per effect card. (The owner's form has no r₁. On v1 r₁ = 0 against
+(b) where the metric works; it counts the false conclusions a comparator draws on effect cards,
+(b)'s effects in the wrong direction and (c)'s claims of absence.)
+
+**Primary outcome: the threshold π\* = r / (r + l/4 − r₁)**, the largest share of true effects at
+which the gates pay off, per stratum, against (b) and against (c), with its 95% interval over cards
+and the design effects by donor and by gene pair. The share of true effects among the real claims,
+estimated from their independent verdicts (`real_claims.md`), is compared with it: where the share
+is below π\*, the gates pay off on such claims.
 
 **On v1's cards** (an illustration after the results, with (c) standing in for (b) with a TOST;
-`v1_correction_rule.log`, section 4): on the 2,960 cards at risk the engine removes 13.5 false
-conclusions per 1,000 cards against (b) and 16.6 against (c), and loses 186.4 detections per 1,000
-real-effect cards at risk (716.5 against 530.1, most of them on ambiguous metrics), so the exchange
-fails; under the rule of v0.4 change 6 it removes 19.6 and loses 192.2, and still fails. On the 7,580
-blind and useless cards it removes 72.0 per 1,000 cards against (b) and 147.2 against (c): worth it.
-So v1's engine earns its gates only where the metric is blind or useless; v0.4 has to earn them
-where the metric works too, or the real claims have to show that blind metrics are common.
+`v1_correction_rule.log`, section 4; intervals by bootstrap over cards, then over gene pairs, the
+donors that datasets share not resampled):
+- At risk (2,445 null and 515 effect cards), against (b): the engine removes 40 false conclusions
+  (r = 40/2,445) and loses 96 detections (l = 96/515), π\* = 0.26 (0.14–0.37; 0.00–0.56); under
+  the rule of v0.4 change 6, 58 and 99, π\* = 0.33 (0.24–0.41; 0.02–0.61). At v1's own share of
+  effects (515 of 2,960, 0.17) the exchange holds: 40 ≥ 96/4 = 24.
+- On blind and useless metrics (6,295 null and 1,285 effect cards), against (b): 525 false
+  conclusions removed on null cards and 21 on effect cards, 136 detections lost, π\* = 0.89
+  (0.82–0.98; 0.78–0.98). Against (c), with 596 false conclusions on the effect cards (575 of them
+  claims of absence), the gates pay off at every share.
+- The interval over gene pairs rests on 18 pairs at risk: π\* is decisive only with many more pairs
+  (section 4).
 
 ## 2. The criteria count the cards at risk
 
@@ -167,4 +181,13 @@ Requirements 13–15.
   of N4 at 3 against 3, where the engine's t interval detected the raw difference and (b)'s exact
   test cannot go below p = 2/20 = 0.1 (`v1_correction_rule.log`, section 1). v0.4's rule (change 6)
   would have turned the 18 into INCONCLUSIVE, and 3 of v1's 275 true SUPPORTED.
+- **Absences the correction makes** (the owner, 2026-10-12; v0.4 change 6): real effects with an
+  artifact outside the correction's family (E + N3, E + N8), with a cell for the NO DETECTABLE
+  EFFECT that only the corrected data show. v0.4 marks them in the report; if v2 finds errors among
+  them, v0.5 extends the rule to absences. On v1 the correction made 85 of the 1,676 NO DETECTABLE
+  EFFECT, none wrong by v1's rules (`v1_correction_rule.log`, section 3).
+- **The verdict does not depend on the claim's wording** (the owner, 2026-10-12; v0.4 changes 1 and
+  2): every marker and pair claim also in its mirrored wording, the order of the groups and the
+  direction swapped ("Xist is higher in females", "Xist is lower in males"). The verdict and its
+  cause must coincide on every such pair of cards, without exception.
 - N8 with the power to decide whether v0.5 needs a correction for per-cell capture (v0.4 change 5).

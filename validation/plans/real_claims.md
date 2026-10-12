@@ -55,9 +55,12 @@ Selection rules:
   coordination of a gene set if v0.4 has the set coupling probe (change 9), or a marker's mean
   expression through the module probe;
 - the data are public, with donor (or animal) ids, and at least 3 to 5 donors per group;
-- an independent source of the verdict exists and is recorded before the run: a replication on an
-  independent cohort, a causal experiment, or a published re-analysis (for claims of noise, of the
-  kind v2 leaves to a later version, Ibañez-Solé et al. 2022, eLife, is such a re-analysis);
+- an independent source of the verdict exists and is recorded before the run: a causal experiment,
+  a published re-analysis (for claims of noise, of the kind v2 leaves to a later version,
+  Ibañez-Solé et al. 2022, eLife, is one), or a replication that does not share the suspected
+  artifact: another technology, or a design in which the artifact cannot arise. A repeat by the
+  same method on data of the same type repeats the artifact too and is not a verdict (the owner,
+  2026-10-12);
 - the search that finds the claims (sources, terms, dates) is written down before it is run, and
   every claim it finds is listed with the reason it is kept or left out.
 
@@ -78,10 +81,16 @@ coordination with age, by the global coordination level (GCL).
   (`validation/exploratory/gcl_gene_levels.log`). If GCL is blind there too, the engine would refuse
   to read a difference of GCL as a difference of coordination where a donor-level test would report
   it. That is testable, and it is the tool's unique use, not a property of donor-level testing.
+- *The data.* By the press release (the owner, 2026-10-12) the paper holds about 20 experiments
+  from 6 labs: mouse, human and Drosophila; brain, pancreas and haematopoietic stem cells. Each is
+  checked against the selection rules (donor ids, at least 3 to 5 donors per group) before it is
+  kept, and the paper's unit of comparison, cells or animals, against its Methods.
 - *What the engine needs.* GCL as a black-box metric (`metric(data) -> float`) is enough for GATE 0,
-  GATE 2 and the effect; GATE 4 needs a probe that couples a set of genes (v0.4 change 9); GATE 5's
-  pair controls do not apply, so validity rests on GATE 4. The comparison must be per animal, with
-  enough cells per animal for a distance correlation.
+  GATE 2 and the effect; GATE 4 needs a probe that couples a set of genes (v0.4 change 9, coded only
+  after GCL's definition is checked against the paper and its data pass the selection rules; the
+  rest of v0.4 does not wait for it); GATE 5's pair controls do not apply, so validity rests on
+  GATE 4. The comparison must be per animal, with enough cells per animal for a distance
+  correlation.
 
 ## The runs, after the tag of v0.4
 
@@ -94,16 +103,25 @@ TOST at the SESOI for absence); (d) v0.4 with its own rules, never with settings
   conclusion the verdict rejects or finds one the verdict confirms, (b)'s if it loses a conclusion
   the verdict confirms or makes one it rejects; a verdict that cannot decide is reported, not
   counted.
+- **Claims of one paper are not independent** (the owner, 2026-10-12). In the sign test a paper is
+  one vote: the side on which most of its deciding disagreements fall, none on a tie; so k and the
+  test count papers, and the selection takes claims from as many papers as it can. (The owner's
+  other option, a cap on the claims taken from one paper, is the alternative if the first leaves
+  too few votes.)
 - **Separately:** the claims that fail already at (b). That is pseudoreplication, a known problem,
   and no merit of the tool.
-- **The decision rule, fixed before the run.** The gates have not justified themselves if (d)
-  changes (b)'s conclusion on fewer than k claims, or if in those disagreements the independent
-  verdict is not more often on (d)'s side than on (b)'s. Then the product reduces to a test over
-  donors plus a report of the metric's sensitivity.
-- **k = 5 (proposed).** Five is the smallest number of disagreements on which even a unanimous
-  verdict for (d) can be told apart from chance by a one-sided sign test at 0.05 (0.5⁵ = 0.031;
-  four give 0.0625). With 20 claims, k = 5 asks the gates to change a conclusion on a quarter of
-  them; with fewer claims the track cannot decide and is extended before it is read.
+- **The decision rule, fixed before the run.** The gates justify themselves only if the papers whose
+  disagreements meet a deciding verdict number at least k = 5 and a one-sided sign test on their
+  votes at 0.05 favors (d). With 5 votes that needs all 5 on (d)'s side (0.5⁵ = 0.031); a simple
+  majority, 3 against 2, cannot be told from chance (p = 16/32 = 0.5). Otherwise the product
+  reduces to a test over donors plus a report of the metric's sensitivity.
+- **k = 5** (the owner, 2026-10-12). Five is the smallest number of votes on which even a unanimous
+  verdict for (d) can be told apart from chance by that test (four give 0.5⁴ = 0.0625); with fewer
+  the track cannot decide and is extended before it is read.
+- **The share of true effects among the selected claims**, estimated from their independent
+  verdicts with its interval, is compared with v2's threshold π\* in the stratum the claims fall in
+  (`v2_requirements.md`, section 1): below π\*, the gates pay off on such claims by v2's exchange;
+  above it, a donor-level test does better.
 
 ## Now, in parallel with v0.4
 

@@ -327,8 +327,9 @@ turns that checklist into runnable behavior.
       the direction. Found after the results by the decisive experiment (`v1_analyzers.log`,
       section 5): all 7 were made by the depth correction, which enlarged a raw difference that the
       replicate-level test did not detect; a test over donors without the correction gives 0 of 83.
-    - GATE 4 must measure the response where the signal is claimed (within a group, or over the
-      replicates), not over all cells.
+    - GATE 4 must measure the response with the claim's own replicate-level statistic, not over
+      all cells, with the signal injected in the group where the probed genes have more counts per
+      cell, whatever the claim's wording (the owner, 2026-10-12).
     - Housekeeping with the next engine edits (src/ is frozen at the tag): the docstring of
       `src/metric_autopsy/qc.py` cites the internal checklist's "2.4x", a number without a
       script; remove it, with an entry in CHANGELOG.md.
@@ -365,12 +366,12 @@ turns that checklist into runnable behavior.
 
 ## Requirements for v2
 Collected on 2026-10-11 from the two reviews of the v0.3 draft, the lessons of v1 (above, with
-their logs) and D1 (`validation/prereg/DEVIATIONS.md`). Review 1 is the review of the full
-draft by an independent agent that had not seen the work on the text, and Review 2 its re-check of
-0ed504c, both 2026-10-11, both relayed by the owner; they are not reviews by human experts. Until
-their texts are in `paper/reviews/` with their provenance, they are cited by the owner's item
-numbers in the decisions of that day. The
-operational draft is `validation/plans/v2_requirements.md`.
+their logs) and D1 (`validation/prereg/DEVIATIONS.md`), with the owner's decisions of 2026-10-12.
+Review 1 is the review of the full draft by an independent agent that had not seen the work on the
+text, and Review 2 its re-check of 0ed504c, both 2026-10-11, both relayed by the owner; they are
+not reviews by human experts. Until their texts are in `paper/reviews/` with their provenance, they
+are cited by the owner's item numbers in the decisions of that day. The operational draft is
+`validation/plans/v2_requirements.md`.
 
 **The criteria**
 1. **Size the criteria of false SUPPORTED on the cards at risk** (a valid or ambiguous metric),
@@ -440,11 +441,16 @@ operational draft is `validation/plans/v2_requirements.md`.
 **Comparators and reporting**
 18. **The comparison with a donor-level test is v2's primary outcome**: every card also run by
     a test over donors without gates (with a TOST for absence) and by the engine without GATE 0,
-    2, 4 and 5; false definite conclusions and sensitivity compared per stratum, with an exchange
-    fixed in advance (proposed: the gates are worth it where the false conclusions they remove are
-    at least a quarter of the true detections they lose). On v1's cards the exchange fails where
-    the metric works and holds on blind and useless metrics (`v1_correction_rule.log`). *Source:*
-    owner, 2026-10-11.
+    2, 4 and 5; false definite conclusions and sensitivity compared per stratum, with the exchange
+    fixed in advance: one false conclusion is worth four lost detections. The primary outcome is
+    the threshold π\* = r / (r + l/4 − r₁) per stratum, with its interval and the design effects:
+    the largest share of true effects among the claims at which the gates pay off, r and r₁ the
+    false conclusions they remove per null and per effect card, l the detections they lose per
+    effect card. On v1's cards at risk, against the donor-level test, π\* = 0.26, and 0.33 under
+    v0.4's rule of change 6; at v1's own share of effects the exchange holds (40 false conclusions
+    removed against 96/4 = 24); on blind and useless metrics π\* = 0.89
+    (`v1_correction_rule.log`, section 4). *Source:* owner, 2026-10-11; the exchange and its form,
+    2026-10-12.
 19. **Report the establishable cards per stratum, and the cards at risk next to every rate.**
     *Source:* Review 2 A1; Review 1 A1.
 20. **Count the errors a correction makes**: on every artifact condition, the cards whose corrected
@@ -452,7 +458,13 @@ operational draft is `validation/plans/v2_requirements.md`.
     false effects the gates added on v1's null cards at risk (`validation/exploratory/v1_analyzers.log`,
     section 5), 18 had a raw difference the replicate-level test did not detect, 15 of them enlarged
     by the correction, all 7 of N3's at f = 0.4 on the high level among them
-    (`validation/exploratory/v1_correction_rule.log`, section 1).
+    (`validation/exploratory/v1_correction_rule.log`, section 1). And the absences it makes: real
+    effects with an artifact outside the correction's family (E + N3, E + N8), with a cell for the
+    NO DETECTABLE EFFECT that only the corrected data show; errors there extend v0.4's rule to
+    absences in v0.5. *Source:* owner, 2026-10-12.
+21. **The verdict does not depend on the claim's wording**: every marker and pair claim also in its
+    mirrored wording ("Xist is higher in females", "Xist is lower in males"); the verdicts must
+    coincide. *Source:* owner, 2026-10-12 (v0.4 changes 1 and 2).
 
 The operational drafts: `validation/plans/v2_requirements.md` (v2) and
 `validation/plans/v0.4_spec.md` (the engine changes, each with its v2 test; no code before the

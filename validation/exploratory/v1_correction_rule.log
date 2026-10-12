@@ -51,22 +51,36 @@ True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is
   (d) NDE 1676; of them (c) not NDE 85: effect/ambiguous 10, effect/valid 2, null/ambiguous 11, null/valid 62
   of these, wrong by v1's rules (NDE outside the card's allowed set): 0
 
-## 4. The exchange proposed for v2, on v1's cards (an illustration, after the results)
-  E: false definite conclusions per 1,000 cards (a false effect claim or a false absence claim); S: effects
-  found in the true direction per 1,000 real-effect cards. (b) makes no claim of absence (no TOST); (c) is
-  the engine's donor-level test with its TOST and no gates; d* is (d) under the rule of section 1.
-  Components (false effect / false absence / unwarranted absence on null data with a blind or useless
-  metric, which E leaves out):
-    b : at risk 152 / 0 / 0; blind or useless 547 / 0 / 0
-    c : at risk 161 / 0 / 0; blind or useless 542 / 575 / 3664
-    d : at risk 112 / 0 / 0; blind or useless 1 / 0 / 5
-    d*: at risk 94 / 0 / 0; blind or useless 1 / 0 / 5
-  b : at risk (2960 cards) E 152 = 51.4; blind or useless (7580) E 547 = 72.2; S on the 515 real effects at risk 369 = 716.5
-  c : at risk (2960 cards) E 161 = 54.4; blind or useless (7580) E 1117 = 147.4; S on the 515 real effects at risk 369 = 716.5
-  d : at risk (2960 cards) E 112 = 37.8; blind or useless (7580) E 1 = 0.1; S on the 515 real effects at risk 273 = 530.1
-  d*: at risk (2960 cards) E 94 = 31.8; blind or useless (7580) E 1 = 0.1; S on the 515 real effects at risk 270 = 524.3
-  d against b, at risk: errors removed +13.5 per 1,000 cards, detections lost +186.4 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +72.0 per 1,000 cards
-  d* against b, at risk: errors removed +19.6 per 1,000 cards, detections lost +192.2 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +72.0 per 1,000 cards
-  d against c, at risk: errors removed +16.6 per 1,000 cards, detections lost +186.4 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +147.2 per 1,000 cards
-  d* against c, at risk: errors removed +22.6 per 1,000 cards, detections lost +192.2 per 1,000 real-effect cards; the rule 'removed >= lost / 4' fails; blind or useless: errors removed +147.2 per 1,000 cards
+## 4. The exchange for v2, on v1's cards (an illustration, after the results)
+  The owner's decision of 2026-10-12: one false conclusion is worth four lost detections. With a share pi
+  of true effects among the claims, the gates pay off against a comparator where
+  (1 - pi) * r + pi * r1 >= pi * l / 4: r the false conclusions they remove per null card, r1 per effect
+  card, l the true detections they lose per effect card; pi* = r / (r + l / 4 - r1), the largest share of
+  true effects at which they pay off. A false conclusion: an effect claimed in either direction on null
+  data or against the true direction on a real one; an absence claimed on a real effect with
+  |Δ*| >= SESOI or with a blind or useless metric. An absence claimed on null data with a blind or useless
+  metric is true of the data but not shown by the metric: counted apart as unwarranted. A detection: an
+  effect found in the true direction. (b) makes no claim of absence (no TOST); (c) is the engine's
+  donor-level test with its TOST and no gates; d* is (d) under the rule of section 1. Intervals: 95%
+  percentile bootstrap, 2000 resamples each, over cards (null and effect cards apart) and over gene
+  pairs (background, pool index; all of a pair's cards together); the donors that datasets share are
+  not resampled.
+  at risk: 2445 null cards, 515 effect cards, 18 gene pairs. False conclusions on null cards / on effect cards; detections; unwarranted absences:
+    b : 152 / 0; 369; 0
+    c : 161 / 0; 369; 0
+    d : 112 / 0; 273; 0
+    d*: 94 / 0; 270; 0
+    d against b: r 40/2445 = 0.0164, r1 0/515 = 0.0000, l 96/515 = 0.1864; pi* 0.260 (cards 0.136-0.369; gene pairs 0.000-0.558); at v1's share pi = 515/2960 = 0.174: removed 40 against lost / 4 = 24.0, pays off
+    d* against b: r 58/2445 = 0.0237, r1 0/515 = 0.0000, l 99/515 = 0.1922; pi* 0.330 (cards 0.235-0.413; gene pairs 0.020-0.610); at v1's share pi = 515/2960 = 0.174: removed 58 against lost / 4 = 24.8, pays off
+    d against c: r 49/2445 = 0.0200, r1 0/515 = 0.0000, l 96/515 = 0.1864; pi* 0.301 (cards 0.193-0.397; gene pairs 0.009-0.564); at v1's share pi = 515/2960 = 0.174: removed 49 against lost / 4 = 24.0, pays off
+    d* against c: r 67/2445 = 0.0274, r1 0/515 = 0.0000, l 99/515 = 0.1922; pi* 0.363 (cards 0.282-0.443; gene pairs 0.114-0.601); at v1's share pi = 515/2960 = 0.174: removed 67 against lost / 4 = 24.8, pays off
+  blind or useless: 6295 null cards, 1285 effect cards, 38 gene pairs. False conclusions on null cards / on effect cards; detections; unwarranted absences:
+    b : 526 / 21; 138; 0
+    c : 521 / 596; 138; 3664
+    d : 1 / 0; 2; 5
+    d*: 1 / 0; 2; 5
+    d against b: r 525/6295 = 0.0834, r1 21/1285 = 0.0163, l 136/1285 = 0.1058; pi* 0.892 (cards 0.817-0.977; gene pairs 0.775-0.978); at v1's share pi = 1285/7580 = 0.170: removed 546 against lost / 4 = 34.0, pays off
+    d* against b: r 525/6295 = 0.0834, r1 21/1285 = 0.0163, l 136/1285 = 0.1058; pi* 0.892 (cards 0.819-0.981; gene pairs 0.778-0.981); at v1's share pi = 1285/7580 = 0.170: removed 546 against lost / 4 = 34.0, pays off
+    d against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
+    d* against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
 

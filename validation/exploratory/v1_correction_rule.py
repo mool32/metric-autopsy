@@ -18,11 +18,12 @@ user of v0.3.0 the same reading is the known issue of the release notes: a SUPPO
    the refusal on blind metrics is a number.
 3. Absences the correction made: (d)'s NO DETECTABLE EFFECT where (c), the same engine on the
    uncorrected data, does not reach it (whether the rule should bind absence claims too).
-4. An illustration, on v1's cards, of the exchange proposed for v2's primary comparison
-   (validation/plans/v2_requirements.md): erroneous definite conclusions (a claim of an effect, in
-   either direction, on null data or against the true direction on a real one; a claim of absence
-   on a real effect with |Δ*| >= SESOI or on a blind or useless metric) and sensitivity (an effect
-   in the true direction on the real effects at risk), for (b), (c), (d) and (d) under the rule.
+4. An illustration, on v1's cards, of the exchange of v2's primary comparison
+   (validation/plans/v2_requirements.md; the owner's decision of 2026-10-12): per stratum, the false
+   definite conclusions the gates remove per null card (r) and per effect card (r1), the true
+   detections they lose per effect card (l), and pi* = r / (r + l / 4 - r1), the largest share of
+   true effects among the claims at which they pay off, with bootstrap intervals over cards and over
+   gene pairs; for (d) and (d) under the rule, against (b) and (c).
 
     python validation/exploratory/v1_correction_rule.py --results RESULTS --pilot pilot.json \
         --cards validation/exploratory/v1_analyzers_cards.jsonl.gz > v1_correction_rule.log
@@ -217,38 +218,76 @@ def main(argv=None) -> int:
         fe, fa, _ = kinds(r, an)
         return fe or fa
 
-    out += ["## 4. The exchange proposed for v2, on v1's cards (an illustration, after the results)",
-            "  E: false definite conclusions per 1,000 cards (a false effect claim or a false absence claim); S: effects",
-            "  found in the true direction per 1,000 real-effect cards. (b) makes no claim of absence (no TOST); (c) is",
-            "  the engine's donor-level test with its TOST and no gates; d* is (d) under the rule of section 1.",
-            "  Components (false effect / false absence / unwarranted absence on null data with a blind or useless",
-            "  metric, which E leaves out):"]
-    for an in ("b", "c", "d", "d*"):
-        parts = []
-        for label, rs in (("at risk", [r for r in rows if r["truth"] in RISK]),
-                          ("blind or useless", [r for r in rows if r["truth"] not in RISK])):
-            k = [sum(kinds(r, an)[i] for r in rs) for i in range(3)]
-            parts.append(f"{label} {k[0]} / {k[1]} / {k[2]}")
-        out.append(f"    {an:<2}: " + "; ".join(parts))
-    risk_all = [r for r in rows if r["truth"] in RISK]
-    risk_eff = [r for r in risk_all if conds[r["condition"]].data == "effect"]
-    other = [r for r in rows if r["truth"] not in RISK]
-    vals = {}
-    for an in ("b", "c", "d", "d*"):
-        e_r = sum(wrong(r, an) for r in risk_all)
-        e_o = sum(wrong(r, an) for r in other)
-        s_r = sum(outcome_of(r, an) == "effect" for r in risk_eff)
-        vals[an] = (1000 * e_r / len(risk_all), 1000 * e_o / len(other), 1000 * s_r / len(risk_eff))
-        out.append(f"  {an:<2}: at risk ({len(risk_all)} cards) E {e_r} = {vals[an][0]:.1f}; blind or useless "
-                   f"({len(other)}) E {e_o} = {vals[an][1]:.1f}; S on the {len(risk_eff)} real effects at risk "
-                   f"{s_r} = {vals[an][2]:.1f}")
-    for ref in ("b", "c"):
-        for an in ("d", "d*"):
-            de, ds = vals[ref][0] - vals[an][0], vals[ref][2] - vals[an][2]
-            out.append(f"  {an} against {ref}, at risk: errors removed {de:+.1f} per 1,000 cards, detections lost "
-                       f"{ds:+.1f} per 1,000 real-effect cards; the rule 'removed >= lost / 4' "
-                       f"{'holds' if de >= ds / 4 else 'fails'}; blind or useless: errors removed "
-                       f"{vals[ref][1] - vals[an][1]:+.1f} per 1,000 cards")
+    def unit(r):
+        """The gene pair a card is drawn on (background, pool index): the cluster of the bootstrap."""
+        return f"{conds[r['condition']].background}:{r['pair']}"
+
+    def pi_star(r0, r1, lost):
+        """The largest share of true effects at which the gates pay off, (1 - pi) r0 + pi r1 >= pi lost / 4:
+        1.0 where they pay off at every share, 0.0 where at none, nan where only above a share."""
+        a, b = r0, lost / 4 - r1
+        if a + b > 0:
+            return min(max(a / (a + b), 0.0), 1.0)
+        return 1.0 if a >= 0 else float("nan")
+
+    rng = np.random.default_rng(20261012)
+    n_boot = 2000
+    out += ["## 4. The exchange for v2, on v1's cards (an illustration, after the results)",
+            "  The owner's decision of 2026-10-12: one false conclusion is worth four lost detections. With a share pi",
+            "  of true effects among the claims, the gates pay off against a comparator where",
+            "  (1 - pi) * r + pi * r1 >= pi * l / 4: r the false conclusions they remove per null card, r1 per effect",
+            "  card, l the true detections they lose per effect card; pi* = r / (r + l / 4 - r1), the largest share of",
+            "  true effects at which they pay off. A false conclusion: an effect claimed in either direction on null",
+            "  data or against the true direction on a real one; an absence claimed on a real effect with",
+            "  |Δ*| >= SESOI or with a blind or useless metric. An absence claimed on null data with a blind or useless",
+            "  metric is true of the data but not shown by the metric: counted apart as unwarranted. A detection: an",
+            "  effect found in the true direction. (b) makes no claim of absence (no TOST); (c) is the engine's",
+            "  donor-level test with its TOST and no gates; d* is (d) under the rule of section 1. Intervals: 95%",
+            f"  percentile bootstrap, {n_boot} resamples each, over cards (null and effect cards apart) and over gene",
+            "  pairs (background, pool index; all of a pair's cards together); the donors that datasets share are",
+            "  not resampled."]
+    for label, rs in (("at risk", [r for r in rows if r["truth"] in RISK]),
+                      ("blind or useless", [r for r in rows if r["truth"] not in RISK])):
+        is_null = np.array([conds[r["condition"]].data == "null" for r in rs])
+        units = sorted({unit(r) for r in rs})
+        uidx = np.array([units.index(unit(r)) for r in rs])
+        n0, n1 = int(is_null.sum()), int((~is_null).sum())
+        rec = {an: (np.array([wrong(r, an) for r in rs], dtype=float),
+                    np.array([not z and outcome_of(r, an) == "effect" for r, z in zip(rs, is_null)], dtype=float))
+               for an in ("b", "c", "d", "d*")}
+        out.append(f"  {label}: {n0} null cards, {n1} effect cards, {len(units)} gene pairs. False conclusions on "
+                   "null cards / on effect cards; detections; unwarranted absences:")
+        for an, (e, d) in rec.items():
+            out.append(f"    {an:<2}: {int(e[is_null].sum())} / {int(e[~is_null].sum())}; {int(d.sum())}; "
+                       f"{sum(kinds(r, an)[2] for r in rs)}")
+        i0, i1 = np.flatnonzero(is_null), np.flatnonzero(~is_null)
+        for ref in ("b", "c"):
+            for an in ("d", "d*"):
+                dE, dS = rec[ref][0] - rec[an][0], rec[ref][1] - rec[an][1]
+                e0, e1, ls = int(dE[i0].sum()), int(dE[i1].sum()), int(dS[i1].sum())
+                est = pi_star(e0 / n0, e1 / n1, ls / n1)
+                card = []
+                for _ in range(n_boot):
+                    j0, j1 = rng.choice(i0, n0), rng.choice(i1, n1)
+                    card.append(pi_star(dE[j0].sum() / n0, dE[j1].sum() / n1, dS[j1].sum() / n1))
+                agg = np.zeros((len(units), 5))
+                np.add.at(agg, uidx, np.column_stack([is_null, ~is_null, dE * is_null, dE * ~is_null, dS]))
+                pair = []
+                for _ in range(n_boot):
+                    t = np.bincount(rng.integers(0, len(units), len(units)), minlength=len(units)) @ agg
+                    pair.append(pi_star(t[2] / t[0], t[3] / t[1], t[4] / t[1]) if t[0] and t[1] else float("nan"))
+
+                def ci(v):
+                    v = np.asarray(v)
+                    lo, hi = np.nanpercentile(v, [2.5, 97.5])
+                    nan = int(np.isnan(v).sum())
+                    return f"{lo:.3f}-{hi:.3f}" + (f", {nan} resamples undefined" if nan else "")
+
+                pays = e0 + e1 >= ls / 4
+                out.append(f"    {an} against {ref}: r {e0}/{n0} = {e0 / n0:.4f}, r1 {e1}/{n1} = {e1 / n1:.4f}, l {ls}/{n1} "
+                           f"= {ls / n1:.4f}; pi* {est:.3f} (cards {ci(card)}; gene pairs {ci(pair)}); at v1's share "
+                           f"pi = {n1}/{len(rs)} = {n1 / len(rs):.3f}: removed {e0 + e1} against lost / 4 = {ls / 4:.1f}, "
+                           f"{'pays off' if pays else 'does not pay off'}")
     out.append("")
     print("\n".join(out))
     return 0
