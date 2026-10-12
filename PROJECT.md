@@ -3,10 +3,10 @@
 > The single source of truth for where this project is. Update it at every stage transition.
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
-**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive  ← current
-*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. The draft of the new manuscript, `paper/manuscript_v03.md`, is paused since 2026-10-11: not for posting, to be rewritten after v0.4, validation v2 and the external verdicts.)*
+**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · 4 Write-up · 5 Publish · 6 Archive — validation v1: **6 Archive** (its record released as v0.3.0 on 2026-10-12); the new cycle (v0.4, validation v2, the test on published claims): **1 Pre-reg**, its plans awaiting the owner's approval  ← current
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. The draft of the new manuscript, `paper/manuscript_v03.md`, is paused since 2026-10-11: not for posting, to be rewritten after v0.4, validation v2 and the external verdicts. On 2026-10-12 the owner released v0.3.0, the record of validation v1 (`RELEASE_NOTES_v0.3.0.md`).)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
-**Started:** 2026-07-04   **Last update:** 2026-10-11
+**Started:** 2026-07-04   **Last update:** 2026-10-12
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
@@ -367,10 +367,10 @@ turns that checklist into runnable behavior.
 ## Requirements for v2
 Collected on 2026-10-11 from the two reviews of the v0.3 draft, the lessons of v1 (above, with
 their logs) and D1 (`validation/prereg/DEVIATIONS.md`), with the owner's decisions of 2026-10-12.
-Review 1 is the review of the full draft by an independent agent that had not seen the work on the
-text, and Review 2 its re-check of 0ed504c, both 2026-10-11, both relayed by the owner; they are
-not reviews by human experts. Until their texts are in `paper/reviews/` with their provenance, they
-are cited by the owner's item numbers in the decisions of that day. The operational draft is
+Review 1 and Review 2 are the owner's paraphrase of two reviews of the draft received from an AI
+assistant on 2026-10-11 (Review 2 a re-check of 0ed504c); their texts are not archived (the
+owner's decision of 2026-10-12), and they are cited by the owner's item numbers in the decisions of
+2026-10-11. They are not reviews by human experts. The operational draft is
 `validation/plans/v2_requirements.md`.
 
 **The criteria**
@@ -410,7 +410,9 @@ are cited by the owner's item numbers in the decisions of that day. The operatio
 10. **GATE 6 and the content estimand in the panel**: cards with a second dataset, and data with
     spike-ins. *Source:* Review 1 B12.
 11. **Pairs beyond the 8 most correlated of each level**, among them random and weakly
-    correlated pairs. *Source:* Review 1 B12; owner, 2026-10-11.
+    correlated pairs, and at least 200 pairs at risk, so that the interval of π\* over pairs is
+    within ±0.1 (v1 had 18; `v1_correction_rule.log`, section 5). *Source:* Review 1 B12; owner,
+    2026-10-11 and 2026-10-12.
 12. **Metrics of the types the real claims use** (`validation/plans/real_claims.md`), each with
     a probe v0.4 has: coordination (a pair correlation; a gene-set measure such as GCL with the
     set coupling probe of v0.4 change 9) and mean expression of markers present in only some

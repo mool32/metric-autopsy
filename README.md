@@ -8,7 +8,7 @@
 
 Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-9346) | tspiro@vaika.org
 
-📄 **No preprint yet.** The v0.1.1 manuscript ([`paper/main.pdf`](paper/main.pdf)) is superseded and will not be posted. The draft of a new manuscript on v0.3, [`paper/manuscript_v03.md`](paper/manuscript_v03.md), is paused (2026-10-11): it is not for posting and will be rewritten after v0.4, validation v2 and the external verdicts.
+📄 **No preprint yet.** The v0.1.1 manuscript ([`paper/main.pdf`](paper/main.pdf)) is superseded and will not be posted. A new manuscript will follow v0.4, validation v2 and the test on published claims.
 🧮 **Run the gates:** [`scripts/run_gates.py`](scripts/run_gates.py) · CLI `metric-autopsy --demo`
 📦 **Archived release (Zenodo DOI):** [10.5281/zenodo.21195679](https://doi.org/10.5281/zenodo.21195679)
 📊 **Worked-example notebook:** [`examples/mi_coupling_tms/notebook.ipynb`](examples/mi_coupling_tms/notebook.ipynb)

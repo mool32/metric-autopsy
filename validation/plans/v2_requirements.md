@@ -2,7 +2,8 @@
 
 A draft, not a pre-registration. It makes operational the requirements collected in `PROJECT.md`
 ("Requirements for v2", items 1–21, each with its source) and the owner's decisions of 2026-10-11
-and 2026-10-12.
+and 2026-10-12. Review 1 and Review 2 are the owner's paraphrase of two reviews received from an AI
+assistant on 2026-10-11; their texts are not archived.
 The engine v2 tests is v0.4 (`validation/plans/v0.4_spec.md`); each of its changes names its test
 here. Numbers come from the logs named, each from a script in this repository. v1's datasets are
 development data now (v1.md section 6), so v2's panel is drawn afresh, from backgrounds v1 did not
@@ -36,9 +37,9 @@ detections lost per 1,000 effect cards mix two denominators, so such a compariso
 shares of nulls and effects in the panel, which is a decision of design. Instead, with a share π
 of true effects among the claims, the gates pay off against a comparator where
 (1 − π)·r + π·r₁ ≥ π·l/4: r the false conclusions they remove per null card, r₁ per effect card,
-l the true detections they lose per effect card. (The owner's form has no r₁. On v1 r₁ = 0 against
-(b) where the metric works; it counts the false conclusions a comparator draws on effect cards,
-(b)'s effects in the wrong direction and (c)'s claims of absence.)
+l the true detections they lose per effect card. (r₁, accepted by the owner on 2026-10-12, counts
+the false conclusions a comparator draws on effect cards, (b)'s effects in the wrong direction and
+(c)'s claims of absence; on v1 it is 0 against (b) where the metric works.)
 
 **Primary outcome: the threshold π\* = r / (r + l/4 − r₁)**, the largest share of true effects at
 which the gates pay off, per stratum, against (b) and against (c), with its 95% interval over cards
@@ -119,6 +120,13 @@ real-effect cards with |Δ\*| ≥ SESOI SUPPORTED, all on 3 pairs). Requirements
 - Enough pairs that every cell's effective sample size, after the design effect by pair, reaches
   its size in section 2; the design effect is computed by donor, by pair and by both
   (`v1_pair_deff.py`'s estimator) for every cell.
+- **For the primary outcome, at least 200 gene pairs at risk** (with a valid or ambiguous metric),
+  against v1's 18, so that the 95% interval of π\* over pairs is within ±0.1 (the owner,
+  2026-10-12). Resampling v1's pairs K at a time, the half-width falls to 0.1 at K = 200 against
+  (b), 150 under the rule of v0.4 change 6, and 125 against (c); the square-root rule from v1's own
+  interval gives 116 to 145 (`v1_correction_rule.log`, section 5). Against (b) v1's interval
+  reaches 0, where π\* is clipped, so there the square-root rule understates the need (145 against
+  200).
 
 ## 5. The engine as a user runs it
 

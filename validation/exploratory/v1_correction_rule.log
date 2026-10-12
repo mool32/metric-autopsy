@@ -83,4 +83,55 @@ True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is
     d* against b: r 525/6295 = 0.0834, r1 21/1285 = 0.0163, l 136/1285 = 0.1058; pi* 0.892 (cards 0.819-0.981; gene pairs 0.778-0.981); at v1's share pi = 1285/7580 = 0.170: removed 546 against lost / 4 = 34.0, pays off
     d against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
     d* against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
+## 5. Gene pairs at risk needed for the interval of pi* over pairs to be within +-0.1
+  The cards at risk drawn on K gene pairs resampled with replacement from v1's 18 (a pair's
+  cards together, 2000 resamples per K): the half-width of the 95% percentile interval of pi*, and
+  the K a square-root rule gives from v1's own half-width (K = 18 * (half-width / 0.1)^2).
+    d against b: half-width K 18 0.284, K 25 0.264, K 50 0.199, K 75 0.158, K 100 0.135, K 125 0.121, K 150 0.111, K 175 0.106, K 200 0.095, K 250 0.088, K 300 0.077, K 400 0.068, K 500 0.059; the first K within 0.1: 200; the square-root rule: 145
+    d* against b: half-width K 18 0.280, K 25 0.233, K 50 0.171, K 75 0.139, K 100 0.121, K 125 0.108, K 150 0.099, K 175 0.092, K 200 0.086, K 250 0.073, K 300 0.069, K 400 0.058, K 500 0.052; the first K within 0.1: 150; the square-root rule: 141
+    d against c: half-width K 18 0.272, K 25 0.232, K 50 0.165, K 75 0.129, K 100 0.113, K 125 0.098, K 150 0.090, K 175 0.082, K 200 0.080, K 250 0.070, K 300 0.068, K 400 0.057, K 500 0.050; the first K within 0.1: 125; the square-root rule: 133
+    d* against c: half-width K 18 0.254, K 25 0.211, K 50 0.145, K 75 0.117, K 100 0.106, K 125 0.092, K 150 0.082, K 175 0.077, K 200 0.073, K 250 0.065, K 300 0.056, K 400 0.049, K 500 0.045; the first K within 0.1: 125; the square-root rule: 116
+
+## 6. Votes a control dataset gives, on v1's cards (an illustration, after the results)
+  A vote compares (d) with (c), which stands in for the real track's donor-level test with its TOST,
+  where their conclusions differ: for (d) if it avoids a conclusion the truth rejects or finds one it
+  confirms, for the test if the reverse, none where both are equally right or wrong. The null cards
+  of the artifacts stand in for negative controls (truth by construction: an absence is true), the real
+  effects for positive ones. Two rules: every difference of conclusion decides (as decided), or only
+  one where a side claims an effect (an absence against no conclusion does not decide). A dataset
+  with m claims is m cards drawn at random from the stratum (v1's cards come from different datasets,
+  so the claims of one real dataset may agree more); its vote is the side of the majority of its card
+  votes, none on a tie. 20000 datasets per m.
+  rule: every difference decides
+    negative (N2, N3, N8: artifacts, no effect): 3160 cards; per card for (d) 464, for the test 1497, none 1199
+      m =  1: a deciding vote in 0.620 of the datasets; for (d) in 0.235 of those
+      m =  8: a deciding vote in 0.917 of the datasets; for (d) in 0.073 of those
+      m = 24: a deciding vote in 0.991 of the datasets; for (d) in 0.011 of those
+    positive (E1, E2, E3: real effects): 1800 cards; per card for (d) 605, for the test 273, none 922
+      m =  1: a deciding vote in 0.486 of the datasets; for (d) in 0.686 of those
+      m =  8: a deciding vote in 0.849 of the datasets; for (d) in 0.825 of those
+      m = 24: a deciding vote in 0.951 of the datasets; for (d) in 0.929 of those
+    half negative and half positive datasets, m = 8: for (d) in 0.434 of the deciding votes
+    half negative and half positive datasets, m = 24: for (d) in 0.461 of the deciding votes
+  rule: effect claims only
+    negative (N2, N3, N8: artifacts, no effect): 3160 cards; per card for (d) 437, for the test 33, none 2690
+      m =  1: a deciding vote in 0.153 of the datasets; for (d) in 0.924 of those
+      m =  8: a deciding vote in 0.697 of the datasets; for (d) in 0.958 of those
+      m = 24: a deciding vote in 0.950 of the datasets; for (d) in 0.987 of those
+    positive (E1, E2, E3: real effects): 1800 cards; per card for (d) 23, for the test 230, none 1547
+      m =  1: a deciding vote in 0.142 of the datasets; for (d) in 0.085 of those
+      m =  8: a deciding vote in 0.663 of the datasets; for (d) in 0.066 of those
+      m = 24: a deciding vote in 0.930 of the datasets; for (d) in 0.021 of those
+    half negative and half positive datasets, m = 8: for (d) in 0.523 of the deciding votes
+    half negative and half positive datasets, m = 24: for (d) in 0.509 of the deciding votes
+  Datasets needed for 13 and 15 deciding votes, half negative and half positive controls, after the
+  votes of N papers of which a share f change the conclusion and half of those meet a deciding verdict:
+  rule: every difference decides
+    m =  1 (a deciding vote in 0.553 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 20 / 24; N 20, f 0.3: papers 3.0 votes, controls 19 / 22; N 30, f 0.2: papers 3.0 votes, controls 19 / 22; N 30, f 0.3: papers 4.5 votes, controls 16 / 20
+    m =  8 (a deciding vote in 0.883 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 13 / 15; N 20, f 0.3: papers 3.0 votes, controls 12 / 14; N 30, f 0.2: papers 3.0 votes, controls 12 / 14; N 30, f 0.3: papers 4.5 votes, controls 10 / 12
+    m = 24 (a deciding vote in 0.971 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 12 / 14; N 20, f 0.3: papers 3.0 votes, controls 11 / 13; N 30, f 0.2: papers 3.0 votes, controls 11 / 13; N 30, f 0.3: papers 4.5 votes, controls 9 / 11
+  rule: effect claims only
+    m =  1 (a deciding vote in 0.147 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 75 / 89; N 20, f 0.3: papers 3.0 votes, controls 68 / 82; N 30, f 0.2: papers 3.0 votes, controls 68 / 82; N 30, f 0.3: papers 4.5 votes, controls 58 / 72
+    m =  8 (a deciding vote in 0.680 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 17 / 20; N 20, f 0.3: papers 3.0 votes, controls 15 / 18; N 30, f 0.2: papers 3.0 votes, controls 15 / 18; N 30, f 0.3: papers 4.5 votes, controls 13 / 16
+    m = 24 (a deciding vote in 0.940 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 12 / 14; N 20, f 0.3: papers 3.0 votes, controls 11 / 13; N 30, f 0.2: papers 3.0 votes, controls 11 / 13; N 30, f 0.3: papers 4.5 votes, controls 10 / 12
 
