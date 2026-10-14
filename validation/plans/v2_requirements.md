@@ -43,9 +43,10 @@ the false conclusions a comparator draws on effect cards, (b)'s effects in the w
 
 **Primary outcome: the threshold π\* = r / (r + l/4 − r₁)**, the largest share of true effects at
 which the gates pay off, per stratum, against (b) and against (c), with its 95% interval over cards
-and the design effects by donor and by gene pair. The share of true effects among the real claims,
-estimated from their independent verdicts (`real_claims.md`), is compared with it: where the share
-is below π\*, the gates pay off on such claims.
+and the design effects by donor and by gene pair. On real data the same threshold is measured on
+controls with the truth by construction (π\*_real) and compared with the share of true effects
+among the real claims, estimated from their independent verdicts (`real_claims.md`); v2's π\* is
+compared with π\*_real, as a check of the simulation.
 
 **On v1's cards** (an illustration after the results, with (c) standing in for (b) with a TOST;
 `v1_correction_rule.log`, section 4; intervals by bootstrap over cards, then over gene pairs, the

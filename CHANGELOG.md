@@ -10,7 +10,7 @@ comparability.
 Nothing yet. The next engine, v0.4, is specified in `validation/plans/v0.4_spec.md` and waits
 for the owner's approval.
 
-## [0.3.0] — 2026-10-12
+## [0.3.0] — 2026-10-14
 
 Released as v0.3.0, the record of validation v1 (`RELEASE_NOTES_v0.3.0.md`). The code is the
 tag `v0.3.0-prereg`'s and reports its version as `0.3.0.dev0`: the verdict logic reworked

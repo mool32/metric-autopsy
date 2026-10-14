@@ -3,8 +3,9 @@
 **If the tool shows no use on real tasks, it is not needed** (the owner's decision of 2026-10-11).
 The simulations of v1 and v2 say what the engine does where the truth is planted; this track asks
 whether it changes what an analyst would conclude from published data, and whether it is right
-when it does. Nothing here is run before the tag of v0.4; the selection, the data and the
-verdicts are fixed before any run, so that v0.4 cannot be tuned to these claims.
+when it does. Nothing of the confirmatory set (level B and the controls) is run before the tag of
+v0.4; its selection, data and verdicts are fixed before any run, so that v0.4 cannot be tuned to
+these claims. A pilot on development cases runs on v0.3.0 right after its release (level A).
 
 ## What v1 leaves open
 
@@ -15,12 +16,17 @@ was on metrics that see depth but not the planted coupling: it refuses to interp
 donor-level test stays silent or, with a TOST, claims an absence. How often real claims rest on
 such metrics is not known; that is what this track measures. It asks two questions in order: how
 often the engine changes the donor-level test's conclusion, and, only if that is often enough,
-whether the engine is right when it does.
+whether its gates pay off by v2's exchange, measured on real controls.
 
 ## Level A: development, not proof
 
 The tool was built around these cases, so it must catch them, but catching them proves nothing.
-Each is run, like level B, only after the tag of v0.4, and reported apart from level B.
+They run first on v0.3.0, in a pilot right after its release, in a pull request of its own, with
+its plan (`validation/exploratory/real_pilot_plan.md`) committed before the run; and again after
+the tag of v0.4, reported apart from level B (the owner, 2026-10-14). The pilot adds one negative
+control, the same donors (at least 4) in two technical conditions, if an open dataset has them.
+All of the pilot's data are development data and stay outside the confirmatory set for good. Kang
+et al. 2018 and Levy et al. 2020 are not in the pilot: they belong to the confirmatory set.
 
 1. **The three documented failures**, where the data are available:
    - *MI coupling on Tabula Muris Senis (FACS).* Scripted already for v0.1.1 by the flagship audit
@@ -92,103 +98,88 @@ coordination with age, by the global coordination level (GCL).
   GATE 4. The comparison must be per animal, with enough cells per animal for a distance
   correlation.
 
-## Controls: votes with the truth by construction
+## Controls: the truth by construction
 
 Selected by rules of their own and registered, each with its data, claims and structure check,
-before it is run (the owner, 2026-10-12). Each dataset gives one vote in the second question.
+before it is run (the owner, 2026-10-12). They measure the exchange of the second question on real
+data; a control dataset is one unit, its claims taken together.
 - **Negative controls:** the same donors measured in two technical conditions (the chemistry, cells
   against nuclei, the protocol, the same libraries sequenced again): the artifacts are real, a
   biological difference there is none. Public data with donor ids and at least 3 to 5 donors; the
   claims formed by a rule fixed before the run, of the metric types of level B.
-- **Positive controls:** experimental perturbations with a known response, such as interferon-β
-  stimulation (Kang et al. 2018, Nat Biotechnol 36:89–94: the same donors' cells with and without
-  stimulation, the donor as the pair; the claims the coexpression of interferon-response genes, the
-  truth its known induction). The structure (donors demultiplexed by genotype, cells per donor,
-  cell type and condition) is checked first.
+- **Positive controls:** experimental perturbations with a known response, an effect clearly above
+  the SESOI only (the owner, 2026-10-14), such as interferon-β stimulation (Kang et al. 2018, Nat
+  Biotechnol 36:89–94: the same donors' cells with and without stimulation, the donor as the pair;
+  the claims the coexpression of interferon-response genes, the truth its known induction). The
+  structure (donors demultiplexed by genotype, cells per donor, cell type and condition) is checked
+  first.
 
 ## The runs, after the tag of v0.4
 
 On every claim, three analyses: (a) the paper's own, as published (cells or pooled, its statistic);
 (b) a test over donors (the donor-level analogue of the paper's metric, a permutation over donors, a
 TOST at the SESOI for absence); (d) v0.4 with its own rules, never with settings fitted to the claim.
-A paper, like a control dataset, is one unit: it counts as changed where (d) changes (b)'s
-conclusion on more than half of its selected claims, and its vote is the side on which most of its
-deciding disagreements fall, none on a tie (claims of one paper are not independent; the owner,
-2026-10-12).
+A paper is one unit: it counts as changed where (d) changes (b)'s conclusion on more than half of
+its selected claims (claims of one paper are not independent; the owner, 2026-10-12).
 
 **First question, frequency (no verdict needed).** The share of papers where (d) changes (b)'s
-conclusion, a refusal to interpret included. **Threshold, fixed before the runs: 0.20 (proposed).**
-It lies midway between "almost never", one paper in ten, and "often", three in ten, and with 20
-papers the rule (at least 4 changed) passes a true frequency of 0.10 with probability 0.133 and
-fails one of 0.30 with probability 0.107; with 30 papers 0.073 and 0.077; with 10 papers 0.264 and
-0.149, too weak, hence at least 20 papers (`validation/exploratory/real_claims_power.log`, section
-2). Below the threshold the gates change almost nothing on real tasks: the product reduces to a test
-over donors plus a report of the metric's sensitivity, and the track stops there.
+conclusion, a refusal to interpret included. **Threshold: 0.20, with at least 20 papers** (approved
+by the owner, 2026-10-14). It lies midway between "almost never", one paper in ten, and "often",
+three in ten, and with 20 papers the rule (at least 4 changed) passes a true frequency of 0.10 with
+probability 0.133 and fails one of 0.30 with probability 0.107; with 30 papers 0.073 and 0.077;
+with 10 papers 0.264 and 0.149 (`validation/exploratory/real_claims_power.log`, section 2). Below
+the threshold the gates change almost nothing on real tasks: the product reduces to a test over
+donors plus a report of the metric's sensitivity, and the track stops there.
 
-**Second question, rightness (only above the threshold).** A one-sided sign test at 0.05 on the
-deciding votes. A vote compares (d) with (b) where their conclusions differ: it is (d)'s if (d)
-avoids a conclusion the verdict rejects or finds one the verdict confirms, (b)'s if (d) loses a
-conclusion the verdict confirms or makes one it rejects; a verdict that cannot decide is reported,
-not counted. The votes come from the papers with an independent verdict, the negative controls and
-the positive controls, and are reported by source. The gates justify themselves only if the test
-favours (d); otherwise the product reduces to a test over donors plus a report of the metric's
-sensitivity.
+**Second question, rightness (only above the threshold): v2's exchange on real controls** (the
+owner, 2026-10-14). On the controls, where the truth is known by construction, the quantities of
+v2's primary outcome (`v2_requirements.md`, section 1), the engine against (b), per claim:
+- on negative controls, r: the false conclusions the gates remove, less those they add (an effect
+  claimed in either direction is false). An absence is true there and does not enter r; the share
+  of (d)'s refusals on them is reported apart;
+- on positive controls, l: the true detections the gates lose, less those they find; and r₁: the
+  false conclusions they remove there, less those they add. (b)'s "no effect" is a false
+  conclusion on a positive control, and an effect in the wrong direction too, so the engine's
+  refusal or detection where (b) claims an absence removes one;
+- **π\*_real = r / (r + l/4 − r₁)**, with its interval over the control datasets.
 
-**Power, before the selection** (`real_claims_power.log`, section 1). The probability that the
-test passes when (d) is right in a share p of the disagreements:
+π, the share of true effects among the selected papers' claims, is estimated from their
+independent verdicts, with its interval. **The gates are justified on real data if π is below
+π\*_real, both intervals taken into account.** The exact form of the rule, its operating
+characteristics and the number of control datasets it needs are proposed after the pilot. The mix
+of negative and positive controls is not fixed: r is taken per negative claim and l and r₁ per
+positive one, so π\*_real does not depend on it.
+
+A sign test on the controls was dropped (the owner, 2026-10-14): on v1's cards its outcome was set
+by the share of negative controls (at 24 claims per dataset, negative controls gave the engine
+1.1% of their deciding votes and positive ones 92.9%; `v1_correction_rule.log`, section 6), and it
+weighs a false conclusion removed and a detection lost alike, against the exchange.
+
+**Descriptive: a sign test on the papers with a deciding verdict** (a one-sided test at 0.05, a
+paper one vote, the side on which most of its deciding disagreements fall, none on a tie). It does
+not decide: with few votes it can say little (`real_claims_power.log`, section 1; the probability
+that it passes when (d) is right in a share p of the disagreements):
 
 | deciding votes | (d)'s votes needed | p = 0.80 | p = 0.85 | p = 0.90 |
 |---|---|---|---|---|
 | 5 | 5 | 0.328 | 0.444 | 0.590 |
-| 6 | 6 | 0.262 | 0.377 | 0.531 |
 | 7 | 7 | 0.210 | 0.321 | 0.478 |
-| 8 | 7 | 0.503 | 0.657 | 0.813 |
 | 10 | 9 | 0.376 | 0.544 | 0.736 |
 | 13 | 10 | 0.747 | 0.882 | 0.966 |
 | 15 | 12 | 0.648 | 0.823 | 0.944 |
 | 20 | 15 | 0.804 | 0.933 | 0.989 |
-| 30 | 20 | 0.974 | 0.997 | 1.000 |
-
-With 5 to 7 votes an engine right in 80% of the disagreements passes with probability 0.21 to 0.33,
-and one right in 90% with 0.48 to 0.59. **The target: 15 deciding votes.** From 13 votes to 40, the
-range computed, an engine right in 85% passes with probability at least 0.8 at every number (the
-lowest, 0.823, at 15); 15 leaves two votes of margin.
-
-**How many papers and controls** (`v1_correction_rule.log`, section 6, v1's cards as a guide). With
-N papers of which a share f is changed and half of those meet a deciding verdict, 20 papers at
-f = 0.2 to 0.3 give 2 to 3 votes and 30 give 3 to 4.5; the controls give the rest. On v1's artifacts
-and real effects, half negative and half positive, the control datasets needed for 13 to 15
-deciding votes are 9 to 14 with 24 claims each, 10 to 15 with 8 and 16 to 24 with one; if only
-claims of an effect decide (proposal (ii) below), 10 to 14 with 24 claims, 13 to 20 with 8 and 58
-to 89 with one. The plan: at least 20 papers and about 15 control datasets of about 24 claims each.
-
-**For the owner: the mix of controls and the counting of absences.** On v1's cards the two kinds of
-control vote for opposite sides (`v1_correction_rule.log`, section 6). On the artifacts as
-negative controls 1,497 card votes go to the donor-level test and 464 to the engine, and 1,464 of
-the 1,497 are an absence against no conclusion: an absence is true there by construction, and on a
-metric blind to the probe the TOST claims it where GATE 4 refuses. On the real effects as positive
-controls the same disagreement votes for the engine (605 against 273), the absences being false
-there. At 24 claims per dataset negative controls give the engine 1.1% of their deciding votes and
-positive ones 92.9%; half and half, 0.46. If an absence against no conclusion does not decide, the
-sides swap (98.7% and 2.1%; half and half, 0.51). Either way a pooled test measures the mix of the
-controls more than the engine. This draft proposes: (i) the numbers of negative and positive control
-datasets fixed before their run in the proportion of the selected papers' independent verdicts (no
-effect against effect), so that the controls stand for the claims; (ii) only disagreements in which
-a side claims an effect decide, an absence against no conclusion being reported apart, because on
-real data only GATE 4, the engine under test, could say whether the metric was able to see a
-difference.
 
 **Separately:** the claims that fail already at (b). That is pseudoreplication, a known problem, and
 no merit of the tool.
 
-**Secondary:** the share of true effects among the selected papers, estimated from their
-independent verdicts with its interval, against v2's threshold π\* in the stratum the claims fall
-in (`v2_requirements.md`, section 1): below π\*, the gates pay off on such claims by v2's exchange.
-The decision rests on the frequency and the rightness.
+**Secondary:** π\*_real against v2's π\* in the same stratum (whether the simulation predicts the
+real exchange), and π against v2's π\*. The decision rests on the frequency and on π against
+π\*_real.
 
 ## Now, in parallel with v0.4
 
-Selecting the claims, getting the data, checking their structure and recording the independent
-verdicts. The data are read in GitHub Actions, as the Census was for v1 (this environment's network
-cannot reach most data hosts). No public write-up of another group's finding before the
-confirmatory runs. The plan needs the owner's approval before the selection starts.
+First the pilot on v0.3.0 (level A), in a pull request of its own after the release. Then selecting
+the claims and the controls, getting the data, checking their structure and recording the
+independent verdicts. The data are read in GitHub Actions, as the Census was for v1 (this
+environment's network cannot reach most data hosts). No public write-up of another group's finding
+before the confirmatory runs. The plan needs the owner's approval before the selection starts.
