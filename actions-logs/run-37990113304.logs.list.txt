@@ -1,0 +1,75 @@
+Archive:  work/actions-logs/run-37990113304.logs.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+    42789  1980-00-00 00:00   0_anchors.txt
+      761  1980-00-00 00:00   anchors/system.txt
+    54432  1980-00-00 00:00   2_score.txt
+      699  1980-00-00 00:00   score/system.txt
+    67583  1980-00-00 00:00   3_collect.txt
+      842  1980-00-00 00:00   collect/system.txt
+     3539  1980-00-00 00:00   5_check_shards.txt
+      769  1980-00-00 00:00   check_shards/system.txt
+    48783  1980-00-00 00:00   6_shard (1).txt
+      916  1980-00-00 00:00   shard (1)/system.txt
+    48799  1980-00-00 00:00   7_shard (15).txt
+      762  1980-00-00 00:00   shard (15)/system.txt
+    48796  1980-00-00 00:00   8_shard (11).txt
+      916  1980-00-00 00:00   shard (11)/system.txt
+    48793  1980-00-00 00:00   9_shard (17).txt
+      762  1980-00-00 00:00   shard (17)/system.txt
+    48793  1980-00-00 00:00   10_shard (13).txt
+      762  1980-00-00 00:00   shard (13)/system.txt
+    48801  1980-00-00 00:00   11_shard (0).txt
+      762  1980-00-00 00:00   shard (0)/system.txt
+    48784  1980-00-00 00:00   12_shard (5).txt
+      762  1980-00-00 00:00   shard (5)/system.txt
+    48802  1980-00-00 00:00   13_shard (18).txt
+      762  1980-00-00 00:00   shard (18)/system.txt
+    48799  1980-00-00 00:00   14_shard (16).txt
+      762  1980-00-00 00:00   shard (16)/system.txt
+    48793  1980-00-00 00:00   15_shard (12).txt
+      762  1980-00-00 00:00   shard (12)/system.txt
+    48791  1980-00-00 00:00   16_shard (2).txt
+      762  1980-00-00 00:00   shard (2)/system.txt
+    48781  1980-00-00 00:00   17_shard (9).txt
+      762  1980-00-00 00:00   shard (9)/system.txt
+    48793  1980-00-00 00:00   18_shard (19).txt
+      762  1980-00-00 00:00   shard (19)/system.txt
+    48786  1980-00-00 00:00   19_shard (8).txt
+      762  1980-00-00 00:00   shard (8)/system.txt
+    48784  1980-00-00 00:00   20_shard (3).txt
+      762  1980-00-00 00:00   shard (3)/system.txt
+    48800  1980-00-00 00:00   21_shard (10).txt
+      762  1980-00-00 00:00   shard (10)/system.txt
+    48793  1980-00-00 00:00   22_shard (14).txt
+      762  1980-00-00 00:00   shard (14)/system.txt
+    48789  1980-00-00 00:00   23_shard (4).txt
+      762  1980-00-00 00:00   shard (4)/system.txt
+    48792  1980-00-00 00:00   24_shard (7).txt
+      762  1980-00-00 00:00   shard (7)/system.txt
+    48783  1980-00-00 00:00   25_shard (6).txt
+      762  1980-00-00 00:00   shard (6)/system.txt
+    34922  1980-00-00 00:00   26_key.txt
+      697  1980-00-00 00:00   key/system.txt
+    44162  1980-00-00 00:00   27_prepare.txt
+      701  1980-00-00 00:00   prepare/system.txt
+    30164  1980-00-00 00:00   28_run_tag.txt
+      587  1980-00-00 00:00   run_tag/system.txt
+   510057  1980-00-00 00:00   29_pilot.txt
+      585  1980-00-00 00:00   pilot/system.txt
+    45268  1980-00-00 00:00   30_pilot_part (1).txt
+      590  1980-00-00 00:00   pilot_part (1)/system.txt
+    45268  1980-00-00 00:00   31_pilot_part (3).txt
+      590  1980-00-00 00:00   pilot_part (3)/system.txt
+    45267  1980-00-00 00:00   32_pilot_part (2).txt
+      590  1980-00-00 00:00   pilot_part (2)/system.txt
+    45263  1980-00-00 00:00   33_pilot_part (0).txt
+      590  1980-00-00 00:00   pilot_part (0)/system.txt
+    42550  1980-00-00 00:00   34_pilot_base.txt
+      590  1980-00-00 00:00   pilot_base/system.txt
+    86482  1980-00-00 00:00   35_select.txt
+      586  1980-00-00 00:00   select/system.txt
+    26751  1980-00-00 00:00   36_guard.txt
+      585  1980-00-00 00:00   guard/system.txt
+---------                     -------
+  2125642                     70 files
