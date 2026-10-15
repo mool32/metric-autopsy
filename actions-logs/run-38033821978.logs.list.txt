@@ -1,0 +1,9 @@
+Archive:  work/actions-logs/run-38033821978.logs.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+    52376  1980-00-00 00:00   0_r1.txt
+      576  1980-00-00 00:00   r1/system.txt
+    39065  1980-00-00 00:00   1_test.txt
+      849  1980-00-00 00:00   test/system.txt
+---------                     -------
+    92866                     4 files
