@@ -5,7 +5,8 @@ The simulations of v1 and v2 say what the engine does where the truth is planted
 whether it changes what an analyst would conclude from published data, and whether it is right
 when it does. Nothing of the confirmatory set (level B and the controls) is run before the tag of
 v0.4; its selection, data and verdicts are fixed before any run, so that v0.4 cannot be tuned to
-these claims. A pilot on development cases runs on v0.3.0 right after its release (level A).
+these claims. A pilot on development cases runs now on v0.3.0's engine, the tag `v0.3.0-prereg`,
+without a release (level A; the owner, 2026-10-15).
 
 ## What v1 leaves open
 
@@ -21,9 +22,10 @@ whether its gates pay off by v2's exchange, measured on real controls.
 ## Level A: development, not proof
 
 The tool was built around these cases, so it must catch them, but catching them proves nothing.
-They run first on v0.3.0, in a pilot right after its release, in a pull request of its own, with
-its plan (`validation/exploratory/real_pilot_plan.md`) committed before the run; and again after
-the tag of v0.4, reported apart from level B (the owner, 2026-10-14). The pilot adds one negative
+They run first on v0.3.0's engine, the tag `v0.3.0-prereg`, in a pilot that runs now, without a
+release (the owner, 2026-10-15), in a pull request of its own, with its plan
+(`validation/exploratory/real_pilot_plan.md`) committed before the run; and again after the tag of
+v0.4, reported apart from level B (the owner, 2026-10-14). The pilot adds one negative
 control, the same donors (at least 4) in two technical conditions, if an open dataset has them.
 All of the pilot's data are development data and stay outside the confirmatory set for good. Kang
 et al. 2018 and Levy et al. 2020 are not in the pilot: they belong to the confirmatory set.
@@ -178,8 +180,8 @@ real exchange), and π against v2's π\*. The decision rests on the frequency an
 
 ## Now, in parallel with v0.4
 
-First the pilot on v0.3.0 (level A), in a pull request of its own after the release. Then selecting
-the claims and the controls, getting the data, checking their structure and recording the
-independent verdicts. The data are read in GitHub Actions, as the Census was for v1 (this
+First the pilot on v0.3.0's engine (level A), now and without a release, in a pull request of its
+own. Then selecting the claims and the controls, getting the data, checking their structure and
+recording the independent verdicts. The data are read in GitHub Actions, as the Census was for v1 (this
 environment's network cannot reach most data hosts). No public write-up of another group's finding
 before the confirmatory runs. The plan needs the owner's approval before the selection starts.

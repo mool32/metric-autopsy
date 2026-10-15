@@ -7,16 +7,11 @@ comparability.
 
 ## [Unreleased]
 
-Nothing yet. The next engine, v0.4, is specified in `validation/plans/v0.4_spec.md` and waits
-for the owner's approval.
-
-## [0.3.0] — 2026-10-14
-
-Released as v0.3.0, the record of validation v1 (`RELEASE_NOTES_v0.3.0.md`). The code is the
-tag `v0.3.0-prereg`'s and reports its version as `0.3.0.dev0`: the verdict logic reworked
-against the exploratory probes in `validation/probes/` (a development set with no confirmatory
-weight). **Breaking:** the verdict vocabulary, GATE 1/2/5 semantics and several result fields
-changed.
+The record of validation v1; the release is postponed until the check on real data (the owner's
+decision of 2026-10-15; draft notes in `RELEASE_NOTES_v0.3.0.md`). The code is the tag
+`v0.3.0-prereg`'s and reports its version as `0.3.0.dev0`: the verdict logic reworked against the
+exploratory probes in `validation/probes/` (a development set with no confirmatory weight).
+**Breaking:** the verdict vocabulary, GATE 1/2/5 semantics and several result fields changed.
 
 ### Changed
 - **Four-field verdict.** `Autopsy` carries `metric_validity`, `design_adequacy`, `effect`
@@ -280,7 +275,6 @@ cardiac-β, and MI-coupling failures) into runnable behavior with two front door
 - **Tests**: synthetic planted-confound suite proving the gates separate a confounded metric
   from a clean one on the same data.
 
-[Unreleased]: https://github.com/mool32/metric-autopsy/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/mool32/metric-autopsy/compare/v0.1.1...v0.3.0
+[Unreleased]: https://github.com/mool32/metric-autopsy/compare/v0.1.1...HEAD
 [0.1.1]: https://github.com/mool32/metric-autopsy/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mool32/metric-autopsy/releases/tag/v0.1.0

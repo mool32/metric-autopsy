@@ -3,15 +3,15 @@
 > The single source of truth for where this project is. Update it at every stage transition.
 > Lifecycle and rules: ../_meta/RESEARCH_FLOW.md
 
-**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · 3 Verdict · 4 Write-up · 5 Publish · 6 Archive — validation v1: **6 Archive** (its record released as v0.3.0 on 2026-10-14); the new cycle (v0.4, validation v2, the test on published claims): **1 Pre-reg**, its plans awaiting the owner's approval  ← current
-*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. The draft of the new manuscript, `paper/manuscript_v03.md`, is paused since 2026-10-11: not for posting, to be rewritten after v0.4, validation v2 and the external verdicts. On 2026-10-14 the owner released v0.3.0, the record of validation v1 (`RELEASE_NOTES_v0.3.0.md`).)*
+**Stage:** 0 Seed · 1 Pre-reg · 2 Execute · **3 Verdict** · 4 Write-up · 5 Publish · 6 Archive — validation v1: **3 Verdict**, its record complete, its release postponed until the check on real data (the owner's decision of 2026-10-15); the new cycle (v0.4, validation v2, the test on published claims): **1 Pre-reg**, a pilot on real data with v0.3.0's engine first, its plans awaiting the owner's approval  ← current
+*(Moved back from 5 Publish on 2026-10-07 to validate the validator. On 2026-10-10 v0.3.0-prereg passed the pre-registered validation v1, within its scope only, and the pass excludes only gross excesses of false SUPPORTED on the pairs where the metric works; see the validation plan below. The draft of the new manuscript, `paper/manuscript_v03.md`, is paused since 2026-10-11: not for posting, to be rewritten after v0.4, validation v2 and the external verdicts. The record of validation v1 is complete (draft release notes, `RELEASE_NOTES_v0.3.0.md`); by the owner's decision of 2026-10-15 v0.3.0 is not released until the check on real data.)*
 **One-liner:** A gate system — shipped as a Claude Code skill, a pip package, *and* an MCP server — that red-teams a computed single-cell metric to tell biological signal apart from QC/technical/mathematical artifacts.
-**Started:** 2026-07-04   **Last update:** 2026-10-14
+**Started:** 2026-07-04   **Last update:** 2026-10-15
 
 ## Links
 - GitHub: https://github.com/mool32/metric-autopsy (public) · CI green (3.9–3.12)
 - Preprint: none yet. `paper/manuscript.md` is the superseded v0.1.1 text (not to be uploaded); the v0.3 draft, `paper/manuscript_v03.md`, is paused (not for posting; to be rewritten after v0.4, validation v2 and the external verdicts)
-- Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.3.0, the record of validation v1, to be archived at its release
+- Zenodo DOI: **10.5281/zenodo.21195679** (concept, resolves to latest) · v0.3.0, the record of validation v1, not released: its release and archiving wait for the check on real data (the owner, 2026-10-15)
 - Portfolio entry: pending — `mool32.github.io/_data/publications.yml` + `papers.bib`
 
 ## Origin
@@ -300,10 +300,11 @@ turns that checklist into runnable behavior.
   Status, 2026-10-11: steps 0–3 are done (step 3: every criterion of v1 passed, within its
   scope); step 4 is next. The main track is now the test on real claims
   (`validation/plans/real_claims.md`): if the tool shows no use on real tasks, it is not needed
-  (the owner's decision of 2026-10-11). Next (the owner, 2026-10-14): v0.3.0 released on
-  2026-10-14; a pilot on development cases with v0.3.0 (MI coupling and Xist with the Y genes on
-  Tabula Muris Senis, one negative control), in a pull request of its own; then the code of v0.4,
-  by its specification as corrected by the pilot.
+  (the owner's decision of 2026-10-11). Next (the owner, 2026-10-15): v0.3.0 is not released
+  yet; first a pilot on real data with v0.3.0's engine, the tag `v0.3.0-prereg` (development
+  cases: MI coupling and Xist with the Y genes on Tabula Muris Senis, one negative control), in a
+  pull request of its own; the full release after it; then the code of v0.4, by its
+  specification as corrected by the pilot.
 - [ ] Lessons for v2, from v1's result and R1's (2026-10-11; computed after the results, from
   `validation/exploratory/v1_null_cells.log`, `v1_by_level.log`, `v1_pilot_table.log`,
   `b2_sex_structure.log` and `gate4_module_analytic.log`):

@@ -1,3 +1,5 @@
+> **Draft, not released.** The release of v0.3.0 is postponed until the check on real data (the owner's decision of 2026-10-15); the links to `blob/v0.3.0/` work only once the tag exists.
+
 # metric-autopsy v0.3.0 — validation v1 record
 
 **What this release is.** The archive of validation v1: the engine frozen at the tag
