@@ -22,7 +22,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Sequence
 
-from . import metrics
+from . import injected_signal, metrics
 from . import qc as _qc
 from .report import run_autopsy
 
@@ -61,21 +61,63 @@ def autopsy_report(
     data2_path: str | None = None,
     resolve_judgment: bool = False,
     stop_on_first_fail: bool = True,
+    replicate_col: str | None = None,
+    estimand: str | None = None,
+    direction: str | None = None,
+    sesoi: float | None = None,
+    sesoi_scale: str | None = None,
+    bias_tolerance: float | None = None,
+    delta_min: float | None = None,
+    min_replicates: int | None = None,
+    prereg_path: str | None = None,
+    inject_signal: str | None = None,
+    seed: int = 0,
+    json_path: str | None = None,
+    log_path: str | None = None,
 ) -> str:
     """Run the full metric-autopsy gate sequence on an AnnData `.h5ad` and return a Markdown
-    report (gate-by-gate table + a verdict decided by the first blocking gate).
+    report: four-field assessment, gate-by-gate table, verdict and provenance hashes.
 
     metric: one of the reference metrics (see list_metrics) or `spectral_entropy` (no genes).
     groups: the two levels of `group_col` to compare, e.g. ["young", "old"].
-    within: factorial obs columns to stratify QC/controls by, e.g. ["sex", "tissue"].
-    pos_pair/neg_pair: control gene pairs for GATE 5. data2_path: second .h5ad for GATE 6.
-    resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional PASS is reachable.
+    within: factorial obs columns to stratify QC/controls/effects by, e.g. ["sex", "tissue"].
+    replicate_col: obs column of the biological replicate (mouse, donor) — required for an
+    effect verdict. estimand: 'composition' (relative expression) or 'content' (RNA amount).
+    direction: the claimed change of the metric from groups[0] to groups[1] — 'increase',
+    'decrease' or 'two-sided' (non-directional); required for SUPPORTED.
+    sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
+    GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
+    sesoi_scale: 'construct' (default: equivalence within ±attenuation x SESOI) or 'observed'
+    (the SESOI is a difference of the metric as measured at this depth).
+    delta_min: the smallest response to an injected signal that matters (GATE 4/5; default
+    0.5 x SESOI): the metric is invalid only if its response is shown below it.
+    pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
+    metric's response to an injected coupling of (gene_a, gene_b). data2_path: GATE 6.
+    resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
+    prereg_path: pre-registration JSON (explicit arguments override it). json_path: write the
+    JSON report. log_path: run log; a pre-registered run is always logged (default
+    $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl; "off" disables).
     """
+    import json
+
     data = _load(h5ad_path)
     metric_fn, raw_fn, pairwise = _bind(metric, gene_a, gene_b)
     gene_pair = (gene_a, gene_b) if (pairwise and gene_a and gene_b) else None
     do_controls = bool(pairwise and pos_pair and neg_pair)
     data2 = _load(data2_path) if data2_path else None
+    prereg = {}
+    if prereg_path:
+        with open(prereg_path) as fh:
+            prereg = json.load(fh)
+    for key, val in (("estimand", estimand), ("direction", direction), ("sesoi", sesoi),
+                     ("sesoi_scale", sesoi_scale),
+                     ("bias_tolerance", bias_tolerance), ("delta_min", delta_min),
+                     ("min_replicates", min_replicates)):
+        if val is not None:
+            prereg[key] = val
+    if resolve_judgment:
+        prereg["judgment_pending"] = False
+    signal = injected_signal.coupling(*gene_pair) if (inject_signal == "coupling" and gene_pair) else None
 
     autopsy = run_autopsy(
         metric_fn, data,
@@ -85,10 +127,16 @@ def autopsy_report(
         pos_pair=tuple(pos_pair) if do_controls else None,
         neg_pair=tuple(neg_pair) if do_controls else None,
         data2=data2,
-        prereg={"judgment_pending": not resolve_judgment},
+        prereg=prereg,
         stop_on_first_fail=stop_on_first_fail,
+        replicate_col=replicate_col,
+        signal_test=signal,
+        seed=seed,
+        log_path=log_path,  # None: the shared rule (logged iff pre-registered)
     )
     autopsy.metric_name = metric
+    if json_path:
+        autopsy.save_json(json_path)
     return autopsy.to_markdown()
 
 
@@ -110,10 +158,13 @@ def qc_parity_report(
         lines.append(f"| {r['stratum']} | {r['n_a']} | {r['n_b']} | {r['median_n_genes_a']:.0f} | "
                      f"{r['median_n_genes_b']:.0f} | {r['n_genes_ratio']:.2f} | {r['overlap']:.2f} | "
                      f"{'⚠️ YES' if r['flagged'] else 'no'} |")
-    verdict = ("FAIL — some strata are QC-disparate; matching required (GATE 2)"
-               if res["flagged"] else "PASS — all strata within QC tolerance")
-    lines += ["", f"**{verdict}** (worst ratio {res['worst_ratio']:.2f}× across "
-              f"{res['n_compared']} strata)."]
+    verdict = ("WARN — some strata are confidently QC-imbalanced; the estimand-dependent "
+               "correction (depth thinning for composition, spike-in capture for content) must "
+               "remove it, or the comparison is unidentifiable"
+               if res["flagged"] else "PASS — no confident QC imbalance in any assessable stratum")
+    lines += ["", f"**{verdict}** (worst point ratio {res['worst_ratio']:.2f}× across "
+              f"{res['n_compared']} strata; {res['n_assessable']} assessable, "
+              f"alpha {res['alpha']} Bonferroni)."]
     return "\n".join(lines)
 
 
@@ -135,15 +186,17 @@ def list_metrics() -> str:
 
 def demo_report(stop_on_first_fail: bool = False) -> str:
     """Run the reference `mi_3bin` autopsy on the bundled synthetic confound (no data file
-    needed) — the fastest way for an agent to see what an autopsy looks like."""
+    needed; 4 mice per sex x age block; composition estimand) — the fastest way for an
+    agent to see what an autopsy looks like."""
     from .cli import demo_data
     data = demo_data()
     m = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
     autopsy = run_autopsy(
         m, data, group_col="age", groups=("young", "old"), within=["sex"],
-        gene_pair=("Smad3", "Col1a1"),
+        gene_pair=("Smad3", "Col1a1"), replicate_col="mouse",
         pair_metric=metrics.mi_3bin, pos_pair=("Actb", "Gapdh"), neg_pair=("Gene0", "Gene1"),
-        stop_on_first_fail=stop_on_first_fail,
+        prereg={"estimand": "composition"},
+        stop_on_first_fail=stop_on_first_fail, log_path="off",
     )
     autopsy.metric_name = "mi_3bin (demo)"
     return autopsy.to_markdown()
@@ -153,14 +206,18 @@ def demo_report(stop_on_first_fail: bool = False) -> str:
 # MCP wrapper (lazy — importing this module never requires `mcp`)
 # --------------------------------------------------------------------------- #
 def build_server():
-    """Construct the FastMCP server with the tools registered. Requires the `mcp` extra."""
+    """Construct the MCP server with the tools registered. Requires the `mcp` extra; works
+    with mcp 1.x (``FastMCP``) and 2.x (renamed ``MCPServer``, same ``tool()``/``run()``)."""
     try:
-        from mcp.server.fastmcp import FastMCP
-    except ImportError as e:  # pragma: no cover
-        raise RuntimeError(
-            "the MCP server needs the mcp SDK — `pip install \"metric-autopsy[mcp]\"`"
-        ) from e
-    server = FastMCP("metric-autopsy")
+        from mcp.server.fastmcp import FastMCP as Server  # mcp 1.x
+    except ImportError:
+        try:
+            from mcp.server.mcpserver import MCPServer as Server  # mcp >= 2
+        except ImportError as e:  # pragma: no cover
+            raise RuntimeError(
+                "the MCP server needs the mcp SDK — `pip install \"metric-autopsy[mcp]\"`"
+            ) from e
+    server = Server("metric-autopsy")
     server.tool()(autopsy_report)
     server.tool()(qc_parity_report)
     server.tool()(list_metrics)

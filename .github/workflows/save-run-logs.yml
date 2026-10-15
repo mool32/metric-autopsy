@@ -1,0 +1,64 @@
+# The Actions logs of validation v1's runs, kept on their results branches (the owner's decision of
+# 2026-10-15): a public repository keeps run logs for at most 90 days, and v1's record cites the runs.
+#
+# For each run, the job downloads the run's log archive with the workflow's token and commits it,
+# with its sha256, the list of its files, the run's and its jobs' metadata, to actions-logs/ on the
+# run's results branch. A branch that already has the run's archive is left as it is, so a second
+# start changes nothing. Nothing else on the branches is touched.
+name: Save v1's run logs (once)
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/save-run-logs.yml"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  save:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Each run's logs to its results branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          save() {  # run id, results branch
+            run=$1; branch=$2
+            remote="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+            rm -rf work
+            git clone -q --depth 1 --branch "$branch" "$remote" work
+            if ls work/actions-logs/run-"$run"* >/dev/null 2>&1; then
+              echo "$branch already holds the logs of run $run: nothing to do"
+              return
+            fi
+            mkdir -p work/actions-logs
+            out="work/actions-logs/run-$run"
+            gh api "repos/$REPO/actions/runs/$run" > "$out.json"
+            gh api --paginate "repos/$REPO/actions/runs/$run/jobs?per_page=100" > "$out.jobs.json"
+            curl -sSfL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/actions/runs/$run/logs" -o "$out.logs.zip"
+            unzip -l "$out.logs.zip" > "$out.logs.list.txt"
+            (cd work/actions-logs && sha256sum "run-$run.logs.zip" > "run-$run.logs.zip.sha256")
+            size=$(stat -c %s "$out.logs.zip")
+            if [ "$size" -gt 94371840 ]; then  # GitHub refuses files over 100 MB: store it in parts
+              split -b 90m -d "$out.logs.zip" "$out.logs.zip.part-"
+              rm "$out.logs.zip"
+            fi
+            echo "run $run: archive of $size bytes; $(grep -c '\.txt$' "$out.logs.list.txt") log files"
+            cd work
+            git config user.name "metric-autopsy validation"
+            git config user.email "validation@users.noreply.github.com"
+            git add actions-logs
+            git commit -qm "The Actions logs of workflow run $run, kept beyond GitHub's 90 days (workflow run ${{ github.run_id }})"
+            for i in 1 2 3 4 5; do git push -q origin "HEAD:refs/heads/$branch" && break; sleep $((i * 10)); done
+            test "$(git ls-remote origin "refs/heads/$branch" | cut -f1)" = "$(git rev-parse HEAD)"
+            cd ..
+          }
+          save 37990113304 results/panel-v1
+          save 38033821978 results/panel-v1-r1
+          save 37990113298 results/flagship-audit

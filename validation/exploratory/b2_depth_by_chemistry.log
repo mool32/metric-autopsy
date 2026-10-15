@@ -1,0 +1,28 @@
+# B2's depth by chemistry and GATE 0's refusals on N7 (read after the results; v1 unchanged)
+# compact B2 sha256 2aad19a98e3f2b12bc2277edb6b31d17e3830c9a571e32f69654581916741e32; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; assays from census_metadata.log
+
+## B2 by chemistry (depth: counts over the 2,000 kept genes)
+  10x 3' v2: 39 donor ids, 15075 cells; per cell: median depth 21288, median genes detected 1465; donor medians of depth 9558 to 39671
+  10x 3' v3: 11 donor ids, 4400 cells; per cell: median depth 34602, median genes detected 1657; donor medians of depth 24251 to 84786
+  studies: Fltp_2y 3 (v3), Fltp_P16 3 (v2), Fltp_adult 4 (v2), NOD 3 (v2), NOD_elimination 7 (v2), STZ 7 (v2), VSG 8 (v3), spikein_drug 15 (v2)
+  v3 against v2, the donor ids' median depths: ratio of medians 1.66, Mann-Whitney two-sided p 0.0001
+
+## GATE 0's refusals on N7: 31 of 790 cards (high 26 of 276, medium 5 of 259, low 0 of 255)
+  the flagged nuisance: extra_dropout 31
+  high level, refused (26) against the others (250):
+    share of 10x 3' v2 cells in the dataset: refused median 0.792, range 0.708 to 0.917; others median 0.792, range 0.625 to 0.958; Mann-Whitney p 0.613
+    |difference of the groups' v2 shares|: refused median 0.083, range 0.000 to 0.417; others median 0.083, range 0.000 to 0.500; Mann-Whitney p 0.730
+    |log2 ratio of the groups' median depths|: refused median 0.132, range 0.001 to 0.507; others median 0.156, range 0.001 to 0.707; Mann-Whitney p 0.797
+    the dataset's median depth: refused median 24052.250, range 21625.000 to 26212.500; others median 23345.750, range 19790.000 to 26249.000; Mann-Whitney p 0.049
+  medium level, refused (5) against the others (254):
+    share of 10x 3' v2 cells in the dataset: refused median 0.792, range 0.750 to 0.917; others median 0.792, range 0.625 to 0.958; Mann-Whitney p 0.296
+    |difference of the groups' v2 shares|: refused median 0.083, range 0.000 to 0.250; others median 0.083, range 0.000 to 0.500; Mann-Whitney p 0.462
+    |log2 ratio of the groups' median depths|: refused median 0.142, range 0.059 to 0.205; others median 0.147, range 0.002 to 0.662; Mann-Whitney p 0.600
+    the dataset's median depth: refused median 22980.000, range 21664.000 to 25823.000; others median 23361.750, range 20199.000 to 27354.000; Mann-Whitney p 0.959
+  refusals by gene pair (refused / N7 cards with the pair):
+    pair  6 Sec61g-Sec61b (high): 14 / 41
+    pair  5 Fau-Pfdn5 (high): 11 / 35
+    pair 15 Psma6-Psmc5 (medium): 4 / 31
+    pair 11 Ppp1r15a-Ifrd1 (medium): 1 / 31
+    pair  1 Tpt1-Eef1a1 (high): 1 / 34
+  bias over its tolerance (0.5 x SESOI): median 1.233, range 1.097 to 1.461 (31 refusals)

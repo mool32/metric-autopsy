@@ -1,0 +1,97 @@
+# Validation v1: its sensitivity, and the design effect of cards sharing a gene pair (exploratory;
+# planned before the run in v1_analyzers_plan.md; v1 unchanged)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; scores.json sha256 253de86d4e60ea91e25bf9338c1e1328fb7522b85bbbf72996908311c7123c1e; 10540 cards
+
+## 1. Sensitivity: SUPPORTED on the real effects
+  a valid metric and |Δ*| >= SESOI: SUPPORTED 118/121 = 97.5% (95% CI 92.9-99.5%)
+  a valid metric, any Δ*:          SUPPORTED 185/206 = 89.8% (95% CI 84.8-93.6%)
+  the outcomes of the main cell: SUPPORTED 118; INCONCLUSIVE 1; NOT SUPPORTED: metric invalid (GATE 4/5) 2
+  by condition and variant (main cell):
+    E1 dose=key   SUPPORTED 54/54 = 100.0% (95% CI 93.4-100.0%)
+    E1 dose=0.5   SUPPORTED 13/13 = 100.0% (95% CI 75.3-100.0%)
+    E1 dose=1.5   SUPPORTED 21/22 = 95.5% (95% CI 77.2-99.9%)
+    E2 against    SUPPORTED 11/12 = 91.7% (95% CI 61.5-99.8%)
+    E3 with       SUPPORTED 19/20 = 95.0% (95% CI 75.1-99.9%)
+  design effect of the main cell: donors 1.00, pair 1.00, both 1.00
+  its 121 cards share 3 gene pairs
+
+(the design effects below through M'M: on 68 cell and unit choices of up to 1,500 cards they
+equal score.overlap_interval's within a relative 8.3e-15)
+
+## 2. Design effects of v1's criterion cells: by donor (v1's), by gene pair, and both
+  cell                        n     k | by donor (scores.json) | by pair | both (b_donor, b_pair) | pairs
+  S1:N1                        790     5 |   1.00 (1.00) |   1.21 |   1.21 (0.00e+00, 3.91e-05) | 24
+  S1:N2                        790     6 |   1.00 (1.00) |   1.12 |   1.12 (0.00e+00, 2.84e-05) | 24
+  S1:N5                        790     8 |   1.05 (1.05) |   1.14 |   1.16 (7.54e-07, 4.31e-05) | 24
+  S1:N6c                       790     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 24
+  S1:N8                        790    11 |   1.00 (1.00) |   3.91 |   3.91 (0.00e+00, 1.23e-03) | 24
+  S2:N2                        790     5 |   1.00 (1.00) |   1.20 |   1.20 (0.00e+00, 3.91e-05) | 24
+  S2:N3                        790    11 |   1.05 (1.05) |   2.02 |   2.02 (0.00e+00, 4.19e-04) | 24
+  S2:N4                        790     3 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 24
+  S2:N6                        790     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 24
+  S2:N7                        790     5 |   1.00 (1.00) |   1.16 |   1.16 (0.00e+00, 3.03e-05) | 24
+  S2:E                        1285     2 |   1.00 (1.00) |   1.04 |   1.04 (0.00e+00, 7.81e-07) | 21
+  S4:effect:opposite           515     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 8
+  S4:effect:depth              364     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 8
+  S4:null:opposite            2165    58 |   1.40 (1.40) |   1.00 |   1.40 (5.32e-06, 0.00e+00) | 18
+  S4:null:depth               1147     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 18
+  S4:invalid:opposite         7020     1 |   1.00 (1.00) |   1.03 |   1.03 (0.00e+00, 1.19e-08) | 38
+  S4:invalid:depth            4261     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 38
+  S5:effect                    206     4 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 4
+  S5:null                     2252    92 |   5.28 (5.28) |  29.83 |  29.83 (0.00e+00, 5.09e-03) | 16
+  S6:effect                    121     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 3
+  S6:invalid                  7020     5 |   1.04 (1.04) |   1.91 |   1.91 (0.00e+00, 2.00e-06) | 38
+  S3:effect                    189   181 |   1.05 (1.05) |   1.00 |   1.05 (7.62e-06, 0.00e+00) | 4
+  S3:null                     1075   986 |   4.74 (4.74) |   5.93 |   8.09 (1.53e-04, 3.65e-03) | 15
+  S3:invalid                  4685  4674 |   5.62 (5.62) |   2.23 |   6.21 (2.05e-06, 1.15e-05) | 38
+  S3c:effect:E1                141   137 |   1.54 (1.54) |   1.00 |   1.54 (8.36e-05, 0.00e+00) | 4
+  S3c:effect:E2                 12    11 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 1
+  S3c:effect:E3                 36    33 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 2
+  S3c:null:N2                  364   346 |   1.00 (1.00) |   1.96 |   1.96 (0.00e+00, 7.96e-04) | 7
+  S3c:null:N1                  271   250 |   1.00 (1.00) |   3.04 |   3.04 (0.00e+00, 4.29e-03) | 8
+  S3c:null:N5                  203   186 |   1.00 (1.00) |   1.53 |   1.53 (0.00e+00, 1.21e-03) | 6
+  S3c:null:N7                  237   204 |   1.00 (1.00) |   7.65 |   7.65 (0.00e+00, 2.37e-02) | 7
+  S3c:invalid:N6c              790   790 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 24
+  S3c:invalid:E2               358   357 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 21
+  S3c:invalid:N6b               50    50 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 22
+  S3c:invalid:E1               668   667 |   1.00 (1.00) |   1.02 |   1.02 (0.00e+00, 8.07e-07) | 17
+  S3c:invalid:N2              1057  1057 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 16
+  S3c:invalid:N5               525   522 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 16
+  S3c:invalid:N1               519   518 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 16
+  S3c:invalid:N7               459   454 |   1.00 (1.00) |   3.12 |   3.12 (0.00e+00, 7.03e-04) | 14
+  S3c:invalid:E3               259   259 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 16
+  S7a                        10540     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 48
+  S7b                        10540     0 |   1.00 (1.00) |   1.00 |   1.00 (0.00e+00, 0.00e+00) | 48
+  the largest design effects by pair: S5:null 29.83, S3c:null:N7 7.65, S3:null 5.93, S1:N8 3.91, S3c:invalid:N7 3.12, S3c:null:N1 3.04, S3:invalid 2.23, S2:N3 2.02
+  where the counted outcomes fall, in the cells whose design effect by pair exceeds 2 (k/n per pair):
+    S5:null            k 92 of 2252 on 16 pairs; the three with the most: B1:0 57/243, B1:1 15/244, B1:4 10/198
+    S3c:null:N7        k 204 of 237 on 7 pairs; the three lowest rates: B2:5 22/35, B2:6 26/41, B2:2 31/34
+    S3:null            k 986 of 1075 on 15 pairs; the three lowest rates: B2:5 22/35, B2:6 26/41, B1:0 29/38
+    S1:N8              k 11 of 790 on 24 pairs; the three with the most: B1:7 6/32, B1:4 3/32, B1:1 1/32
+    S3c:invalid:N7     k 454 of 459 on 14 pairs; the three lowest rates: B2:15 27/31, B2:11 30/31, B2:10 35/35
+    S3c:null:N1        k 250 of 271 on 8 pairs; the three lowest rates: B1:0 29/38, B1:1 26/31, B1:6 32/34
+    S3:invalid         k 4674 of 4685 on 38 pairs; the three lowest rates: B2:15 27/31, B2:11 30/31, B1:7 49/50
+    S2:N3              k 11 of 790 on 24 pairs; the three with the most: B1:3 3/40, B1:6 3/30, B1:4 2/35
+
+## 2b. S1 at the realized design effects: P(the cell passes) at the nominal 2.5% and at a doubled 5%
+  (the principle wants P(pass | doubled) <= 0.05; given the background the count is binomial, deff 1)
+  S1:N1    deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 1.21: 0.972 / 0.063 | both 1.21: 0.972 / 0.063
+  S1:N2    deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 1.12: 0.976 / 0.056 | both 1.12: 0.976 / 0.056
+  S1:N5    deff 1 1.00: 0.982 / 0.046 | donor 1.05: 0.980 / 0.051 | pair 1.14: 0.975 / 0.058 | both 1.16: 0.974 / 0.059
+  S1:N6c   deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 1.00: 0.982 / 0.046 | both 1.00: 0.982 / 0.046
+  S1:N8    deff 1 1.00: 0.982 / 0.046 | donor 1.00: 0.982 / 0.046 | pair 3.91: 0.868 / 0.211 | both 3.91: 0.868 / 0.211
+
+## 3. Design effects of the four analyzers' main rates (by donor, by pair, both)
+  false 'effect', all nulls              a: 1028/7110 = 14.5% (95% CI 13.6-15.3%); deff donor 6.51, pair 6.66, both 10.60
+  false 'effect', all nulls              b: 286/7110 = 4.0% (95% CI 3.6-4.5%); deff donor 6.29, pair 2.54, both 7.28
+  false 'effect', all nulls              c: 300/7110 = 4.2% (95% CI 3.8-4.7%); deff donor 6.40, pair 2.35, both 7.25
+  false 'effect', all nulls              d: 54/7110 = 0.8% (95% CI 0.6-1.0%); deff donor 1.00, pair 4.40, both 4.40
+  false 'effect', nulls at risk          a: 413/2445 = 16.9% (95% CI 15.4-18.4%); deff donor 10.10, pair 11.18, both 17.44
+  false 'effect', nulls at risk          b: 74/2445 = 3.0% (95% CI 2.4-3.8%); deff donor 1.00, pair 2.07, both 2.07
+  false 'effect', nulls at risk          c: 76/2445 = 3.1% (95% CI 2.5-3.9%); deff donor 1.00, pair 1.82, both 1.82
+  false 'effect', nulls at risk          d: 54/2445 = 2.2% (95% CI 1.7-2.9%); deff donor 1.26, pair 1.00, both 1.26
+  'effect', real, valid, |Δ*| >= SESOI   a: 121/121 = 100.0% (95% CI 97.0-100.0%); deff donor 1.00, pair 1.00, both 1.00
+  'effect', real, valid, |Δ*| >= SESOI   b: 120/121 = 99.2% (95% CI 95.5-100.0%); deff donor 1.00, pair 1.02, both 1.02
+  'effect', real, valid, |Δ*| >= SESOI   c: 120/121 = 99.2% (95% CI 95.5-100.0%); deff donor 1.00, pair 1.02, both 1.02
+  'effect', real, valid, |Δ*| >= SESOI   d: 118/121 = 97.5% (95% CI 92.9-99.5%); deff donor 1.00, pair 1.00, both 1.00
+

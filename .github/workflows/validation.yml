@@ -1,0 +1,767 @@
+# The confirmatory validation v1, from the frozen tag to the scores (validation/prereg/v1.md).
+#
+# Real run: the push of the annotated tag v0.3.0-prereg (the owner's approval) starts it, and
+# nobody decides anything afterwards. The run's commits go to its own branch prereg/panel-v1,
+# created from the tag's commit (no other branch is needed or touched): select -> the backgrounds
+# by the rule of section 3.1, committed there; pilot_base, pilot_part x 4, pilot -> pilot.json (the
+# oracle in parallel jobs, the fifth round: every stage but establishability, establishability's jobs
+# in four parts, their merge, which writes what one job would), the timing pilot and its drops,
+# oc_pilot.log and S3's tiers, committed there; run_tag -> the tag panel-v1-run on that
+# commit, naming a drand quicknet round at least an hour later; key -> waits for the round,
+# verifies it, its randomness is the key; prepare -> the planned backgrounds; shard x 20 -> the
+# engine on every claim card; check_shards / rerun -> shards lost to the infrastructure are run
+# again (the verdicts are the same: the run is a deterministic function of the code, the
+# backgrounds, the pilot and the key) and recorded; collect -> the results and the planned
+# backgrounds committed to the branch results/panel-v1; score -> scores.json committed;
+# anchors -> R1-R3 committed. Every job
+# that runs the panel's code first runs the frozen tag's own frozen.py on its checkout, before it
+# installs anything (guard, check_shards and cleanup run none: git checks, artifacts, a deletion);
+# it also stops a job of a re-run workflow run (one attempt: github.run_attempt must be 1), and
+# every shard records its run and attempt in the results.
+#
+# Dry run: pull requests that touch the panel run the same jobs and the same scripts on simulated
+# backgrounds written as files (simulate.py write), with a recent drand round as the key: the
+# Census selection as a rehearsal that prints no identities, a scratch data branch and a scratch
+# run tag (both deleted), the whole pilot as a smoke test (oracle.py --smoke in two parts, the timing pilot
+# with its drops, oc.py --write-judged), two shards of four datasets (shard 1 leaves no results
+# on purpose and is re-run), the results committed to results/panel-v1-dry.
+name: Validation v1
+
+on:
+  push:
+    tags: ["v0.3.0-prereg"]
+  pull_request:
+    paths:
+      - "src/**"
+      - "validation/prereg/**"
+      - ".github/workflows/validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validation-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+# The environment of every job is pinned (the third review found it pinned only in part): the runner
+# image family ubuntu-24.04 (GitHub updates its builds; each job's log names its image version, and
+# run_panel.machine records it), CPython 3.13.16, pip 26.2.1, and each requirements file the whole
+# closure of its packages, installed with --no-deps and checked with pip check.
+env:
+  FROZEN_TAG: v0.3.0-prereg
+  RUN_TAG: panel-v1-run
+  DATA_BRANCH: prereg/panel-v1
+  REAL: ${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.3.0-prereg' }}
+  # one deterministic numerical path on every runner: one BLAS thread, OpenBLAS's Haswell kernels,
+  # numpy's AVX2 (x86-64-v3) dispatch at most, a fixed hash seed
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_CORETYPE: Haswell
+  NPY_DISABLE_CPU_FEATURES: "X86_V4 AVX512_ICL AVX512_SPR"
+  PYTHONHASHSEED: "0"
+
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    outputs:
+      real: ${{ steps.mode.outputs.real }}
+      shards: ${{ steps.mode.outputs.shards }}
+      n_shards: ${{ steps.mode.outputs.n_shards }}
+      pilot_parts: ${{ steps.mode.outputs.pilot_parts }}
+      n_pilot_parts: ${{ steps.mode.outputs.n_pilot_parts }}
+      results_branch: ${{ steps.mode.outputs.results_branch }}
+      data_branch: ${{ steps.mode.outputs.data_branch }}
+      ref: ${{ steps.mode.outputs.ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: mode
+        run: |
+          # the run starts from the tag's commit; the dry run from the pull request's head (a commit a
+          # branch holds: GitHub refuses a token's push of a ref to a commit that no ref holds when its
+          # workflows differ, such as a pull request's merge commit)
+          if [ "$REAL" = "true" ]; then n=20; k=4; rb=results/panel-v1; db="$DATA_BRANCH"; ref="$GITHUB_SHA"
+          else n=2; k=2; rb=results/panel-v1-dry; db="$DATA_BRANCH-dry-${{ github.run_id }}"; ref="${{ github.event.pull_request.head.sha }}"; fi
+          echo "real=$REAL" >> "$GITHUB_OUTPUT"
+          echo "n_shards=$n" >> "$GITHUB_OUTPUT"
+          echo "shards=$(python3 -c "import json; print(json.dumps(list(range($n))))")" >> "$GITHUB_OUTPUT"
+          echo "n_pilot_parts=$k" >> "$GITHUB_OUTPUT"
+          echo "pilot_parts=$(python3 -c "import json; print(json.dumps(list(range($k))))")" >> "$GITHUB_OUTPUT"
+          echo "results_branch=$rb" >> "$GITHUB_OUTPUT"
+          echo "data_branch=$db" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - name: The tag is the annotated frozen tag (real run)
+        if: env.REAL == 'true'
+        run: |
+          test "$(git cat-file -t "$FROZEN_TAG")" = tag
+          test "$(git rev-list -n 1 "$FROZEN_TAG")" = "$(git rev-parse HEAD)"
+          git tag -l --format='%(contents)' "$FROZEN_TAG"
+      - name: The run's branches and run tag do not exist yet, and this is the run's first attempt (real run, one attempt; v1.md section 2)
+        if: env.REAL == 'true'
+        run: |
+          # every later job of the real run checks the attempt again in frozen.py (a re-run of failed jobs
+          # does not re-run this one)
+          if [ "$GITHUB_RUN_ATTEMPT" != "1" ]; then echo "attempt $GITHUB_RUN_ATTEMPT of the run: the real run is one attempt"; exit 1; fi
+          for ref in "refs/heads/$DATA_BRANCH" refs/heads/results/panel-v1 "refs/tags/$RUN_TAG"; do
+            if git ls-remote --exit-code origin "$ref" > /dev/null; then echo "$ref exists: the run was started before"; exit 1; fi
+          done
+
+  select:
+    needs: guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.guard.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the selection's environment
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-select.txt && pip check
+      - name: Rehearsal (dry run, no identities printed)
+        if: needs.guard.outputs.real != 'true'
+        run: python validation/prereg/select_backgrounds.py --rehearsal --out-dir data
+      - name: The dry run's backgrounds - simulated files, and B3 from the rehearsal where it qualified
+        if: needs.guard.outputs.real != 'true'
+        run: |
+          python validation/prereg/simulate.py write --out-dir data --spec validation/prereg/backgrounds.json \
+            --report validation/prereg/selection.md
+      - name: Select the backgrounds by the rule of section 3.1 (real run)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          python validation/prereg/select_backgrounds.py --out-dir data \
+            --spec validation/prereg/backgrounds.json --report validation/prereg/selection.md
+      - name: The environment, into selection.md
+        run: |
+          { echo; echo '## Environment'; echo; echo '```'; pip freeze; echo '```'; } >> validation/prereg/selection.md
+          cat validation/prereg/selection.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backgrounds-data
+          path: data/*.npz
+          if-no-files-found: error
+          retention-days: 90
+      - name: Commit backgrounds.json and selection.md to the run's own branch
+        id: commit
+        run: |
+          db="${{ needs.guard.outputs.data_branch }}"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add validation/prereg/backgrounds.json validation/prereg/selection.md
+          git commit -m "Validation v1: backgrounds selected by the rule of v1.md 3.1 (workflow run ${{ github.run_id }})"
+          # a new branch from the tag's commit (the dry run: from the pull request's head)
+          for i in 1 2 3 4 5; do git push origin "HEAD:refs/heads/$db" && break; sleep $((i * 10)); done
+          test "$(git ls-remote origin "refs/heads/$db" | cut -f1)" = "$(git rev-parse HEAD)"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # the pilot in parallel jobs (the fifth round: the whole pilot in one job came near its limit; the
+  # rehearsal on simulated backgrounds of the panel's sizes, pilot-rehearsal.yml, measured every one):
+  # the base, then establishability's jobs in parts, then the merge, the timing pilot and S3's tiers
+  pilot_base:
+    needs: [guard, select]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.commit }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+      - name: The pilot's base (oracle.py --stage base; the dry run's smoke test runs the same code with tiny sizes)
+        run: |
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then smoke=""; else smoke="--smoke"; fi
+          python validation/prereg/oracle.py --backgrounds validation/prereg/backgrounds.json --data-dir data \
+            --stage base --out base.json --workers 4 $smoke
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pilot-base
+          path: base.json
+          retention-days: 90
+
+  pilot_part:
+    needs: [guard, select, pilot_base]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    strategy:
+      fail-fast: true
+      matrix:
+        part: ${{ fromJSON(needs.guard.outputs.pilot_parts) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.commit }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot-base
+          path: base
+      - name: A part of establishability's jobs (oracle.py --stage part; its sizes are the base's)
+        run: |
+          python validation/prereg/oracle.py --backgrounds validation/prereg/backgrounds.json --data-dir data \
+            --stage part --base base/base.json --part ${{ matrix.part }} --parts ${{ needs.guard.outputs.n_pilot_parts }} \
+            --out "part-${{ matrix.part }}.json" --workers 4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pilot-part-${{ matrix.part }}
+          path: part-${{ matrix.part }}.json
+          retention-days: 90
+
+  pilot:
+    needs: [guard, select, pilot_base, pilot_part]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.commit }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: Install the pinned environment and the engine from this commit
+        run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot-base
+          path: base
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: pilot-part-*
+          path: parts
+          merge-multiple: true
+      - name: Pilot (oracle.py --stage merge; every part of the split once, all of this base)
+        run: |
+          test "$(ls parts/part-*.json | wc -l)" = "${{ needs.guard.outputs.n_pilot_parts }}"
+          python validation/prereg/oracle.py --backgrounds validation/prereg/backgrounds.json --data-dir data \
+            --stage merge --base base/base.json --part-files parts/part-*.json --out validation/prereg/pilot.json --workers 4
+      - name: Timing pilot on the backgrounds, the drops it needs, and GATE 0's refusals per S3 stratum
+        run: |
+          # the sample takes one dataset of every condition (13), the rest in proportion to their cards;
+          # then the engine runs on establishable cards of every S3 stratum (GATE 0's refusal share)
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then cards=24; refusals=100; else cards=13; refusals=2; fi
+          python validation/prereg/timing.py --workers 4 --cards $cards --backgrounds validation/prereg/backgrounds.json \
+            --data-dir data --pilot validation/prereg/pilot.json --write-drops --refusals $refusals \
+            > validation/prereg/timing_pilot.log
+          cat validation/prereg/timing_pilot.log
+      - name: Operating characteristics on the pilot's expected cards, and S3's tiers fixed before the key
+        run: |
+          python validation/prereg/oc.py --pilot validation/prereg/pilot.json --write-judged > validation/prereg/oc_pilot.log
+          cat validation/prereg/oc_pilot.log
+      - name: Commit the pilot to the run's own branch
+        id: commit
+        run: |
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add validation/prereg/pilot.json validation/prereg/timing_pilot.log validation/prereg/oc_pilot.log
+          git commit -m "Validation v1: pilot, timing and drops before the key (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push origin "HEAD:refs/heads/${{ needs.guard.outputs.data_branch }}" && break; sleep $((i * 10)); done
+          test "$(git ls-remote origin "refs/heads/${{ needs.guard.outputs.data_branch }}" | cut -f1)" = "$(git rev-parse HEAD)"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  run_tag:
+    needs: [guard, pilot]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      round: ${{ steps.tag.outputs.round }}
+      ref: ${{ steps.tag.outputs.ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # the pilot's commit on the run's own branch (the tag must be on a commit a branch holds)
+          ref: ${{ needs.pilot.outputs.commit }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-beacon.txt && pip check
+      - name: Name a drand round at least an hour ahead and push the run tag
+        id: tag
+        run: |
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          bc='import sys; sys.path.insert(0, "validation/prereg"); import beacon'
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then tag="$RUN_TAG"; delay=$(python -c "$bc; print(beacon.TAG_DELAY)"); else tag="panel-v1-dry-${{ github.run_id }}"; delay=120; fi
+          # the relays serve a verified round before one is named (the fifth review): failing here loses nothing
+          python -c "$bc; print('the newest verified round before the run tag:', beacon.latest(within=beacon.LATEST_BEFORE))"
+          info=$(python validation/prereg/beacon.py round --delay "$delay")
+          round=$(echo "$info" | python -c "import json,sys; print(json.load(sys.stdin)['round'])")
+          when=$(echo "$info" | python -c "import json,sys; print(json.load(sys.stdin)['round_time_utc'])")
+          printf 'Validation v1 run: the key is the randomness of\n\ndrand quicknet round: %s\n\n(chain %s, produced at %s; named by workflow run %s, at least an hour before it exists)\n' \
+            "$round" "$(python -c 'import sys; sys.path.insert(0, "validation/prereg"); import beacon; print(beacon.CHAIN["hash"])')" \
+            "$when" "${{ github.run_id }}" > tagmsg.txt
+          git tag -a "$tag" -F tagmsg.txt
+          git push origin "refs/tags/$tag"
+          pushed=$(date +%s)
+          python - "$round" "$pushed" "${{ needs.guard.outputs.real }}" <<'PY'
+          import sys
+          sys.path.insert(0, "validation/prereg")
+          import beacon
+          rnd, pushed, real = int(sys.argv[1]), float(sys.argv[2]), sys.argv[3] == "true"
+          # by the runner's clock and by the newest verified round the relays serve after the push,
+          # asked again for up to LATEST_AFTER seconds, inside the delay's margin (the fifth review)
+          gap = beacon.gap_after_push(rnd, pushed, beacon.latest(within=beacon.LATEST_AFTER))
+          print(f"round {rnd} is produced {gap['by_clock']:.0f} s after the tag was pushed by the runner's clock, "
+                f"{gap['by_beacon']} s after the newest round that existed after it ({gap['newest']})")
+          if real and gap["seconds"] < beacon.MIN_DELAY:
+              raise SystemExit("the named round is less than an hour after the push")
+          PY
+          echo "round=$round" >> "$GITHUB_OUTPUT"
+          echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          if [ "${{ needs.guard.outputs.real }}" != "true" ]; then git push origin --delete "refs/tags/$tag"; fi
+
+  key:
+    needs: [guard, run_tag]
+    if: always() && needs.run_tag.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    outputs:
+      sha256: ${{ steps.key.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-beacon.txt && pip check
+      - name: The relays' chain info against the constants
+        run: python validation/prereg/beacon.py info
+      - name: Wait for the round, fetch it from the relays, verify its signature
+        id: key
+        run: |
+          python validation/prereg/beacon.py wait --round "${{ needs.run_tag.outputs.round }}" --out key.json --hours 4
+          cat key.json
+          echo "sha256=$(sha256sum key.json | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: key
+          path: key.json
+          retention-days: 90
+
+  prepare:
+    needs: [guard, run_tag]
+    if: always() && needs.run_tag.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    outputs:
+      compact: ${{ steps.prep.outputs.compact }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+      - name: Plan and compact the backgrounds
+        id: prep
+        run: |
+          python validation/prereg/blind.py prepare --backgrounds validation/prereg/backgrounds.json --data-dir data --out compact
+          echo "compact=$(cat compact/SHA256)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: compact
+          path: compact/
+          retention-days: 90
+
+  shard:
+    needs: [guard, run_tag, key, prepare]
+    if: always() && needs.key.result == 'success' && needs.prepare.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    # a lost shard is found by check_shards and run again by rerun; collect needs every shard
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.guard.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: compact
+          path: compact
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: key
+          path: keyrec
+      - name: A runner lost on purpose (dry run, shard 1)
+        id: lost
+        if: needs.guard.outputs.real != 'true' && matrix.shard == 1
+        run: |
+          echo "the dry run tests the re-run of a shard lost to the infrastructure: this one leaves no results"
+          echo "lost=true" >> "$GITHUB_OUTPUT"
+      - name: Run the shard
+        if: steps.lost.outputs.lost != 'true'
+        run: |
+          test "$(sha256sum keyrec/key.json | cut -d' ' -f1)" = "${{ needs.key.outputs.sha256 }}"
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then
+            python validation/prereg/blind.py run --compact compact --expect-compact "${{ needs.prepare.outputs.compact }}" \
+              --pilot validation/prereg/pilot.json --key-record keyrec/key.json --run-tag "$RUN_TAG" \
+              --shard ${{ matrix.shard }} --shards ${{ needs.guard.outputs.n_shards }} --workers 4 --out out
+          else
+            python validation/prereg/blind.py run --dry-run --compact compact --expect-compact "${{ needs.prepare.outputs.compact }}" \
+              --pilot validation/prereg/pilot.json --key-record keyrec/key.json --shard ${{ matrix.shard }} \
+              --shards ${{ needs.guard.outputs.n_shards }} --workers 4 --limit 4 --out out
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.lost.outputs.lost != 'true'
+        with:
+          name: shard-${{ matrix.shard }}
+          path: out/
+          retention-days: 90
+
+  check_shards:
+    needs: [guard, key, prepare, shard]
+    if: always() && needs.key.result == 'success' && needs.prepare.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+    outputs:
+      missing: ${{ steps.check.outputs.missing }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[].name' > names.txt
+          python3 - "${{ needs.guard.outputs.n_shards }}" <<'PY' >> "$GITHUB_OUTPUT"
+          import json, sys
+          have = set(open("names.txt").read().split())
+          missing = [k for k in range(int(sys.argv[1])) if f"shard-{k}" not in have]
+          print("missing=" + json.dumps(missing))
+          PY
+          cat "$GITHUB_OUTPUT"
+
+  rerun:
+    needs: [guard, run_tag, key, prepare, check_shards]
+    if: always() && needs.check_shards.result == 'success' && needs.check_shards.outputs.missing != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.check_shards.outputs.missing) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: compact
+          path: compact
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: key
+          path: keyrec
+      - name: Run the lost shard again (the same inputs, the same result)
+        run: |
+          test "$(sha256sum keyrec/key.json | cut -d' ' -f1)" = "${{ needs.key.outputs.sha256 }}"
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then
+            python validation/prereg/blind.py run --compact compact --expect-compact "${{ needs.prepare.outputs.compact }}" \
+              --pilot validation/prereg/pilot.json --key-record keyrec/key.json --run-tag "$RUN_TAG" \
+              --shard ${{ matrix.shard }} --shards ${{ needs.guard.outputs.n_shards }} --workers 4 --out out
+          else
+            python validation/prereg/blind.py run --dry-run --compact compact --expect-compact "${{ needs.prepare.outputs.compact }}" \
+              --pilot validation/prereg/pilot.json --key-record keyrec/key.json --shard ${{ matrix.shard }} \
+              --shards ${{ needs.guard.outputs.n_shards }} --workers 4 --limit 4 --out out
+          fi
+          echo '{"shard": ${{ matrix.shard }}, "reason": "no artifact from the first attempt (a lost runner or an infrastructure failure)", "rerun_job": "${{ github.job }}", "run_id": ${{ github.run_id }}, "run_attempt": ${{ github.run_attempt }}}' > out/rerun.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: shard-${{ matrix.shard }}
+          path: out/
+          retention-days: 90
+
+  collect:
+    needs: [guard, run_tag, key, check_shards, rerun]
+    if: always() && needs.check_shards.result == 'success' && (needs.rerun.result == 'success' || needs.rerun.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: shard-*
+          path: shards
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: compact
+          path: compact
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: key
+          path: keyrec
+      - name: Merge the shards
+        run: |
+          python3 -c "import json, glob; print(json.dumps([json.load(open(p)) for p in sorted(glob.glob('shards/*/rerun.json'))]))" > reruns.json
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then pilot="--pilot validation/prereg/pilot.json"; else pilot=""; fi
+          python validation/prereg/blind.py collect --shards-dir shards --out results --reruns reruns.json $pilot
+          cp keyrec/key.json results/key.json
+          cat results/summary.md
+      - name: Commit the results to ${{ needs.guard.outputs.results_branch }}
+        id: commit
+        run: |
+          rb="${{ needs.guard.outputs.results_branch }}"
+          mkdir pub && cd pub
+          git init -q -b "$rb"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          tar -czf reports.tar.gz -C ../results reports
+          if [ "$(stat -c %s reports.tar.gz)" -gt 90000000 ]; then split -b 90m -d reports.tar.gz reports.tar.gz.part- && rm reports.tar.gz; fi
+          # the planned backgrounds as every shard read them, so that `blind.py verify` needs no download
+          tar -cf compact.tar -C .. compact
+          if [ "$(stat -c %s compact.tar)" -gt 90000000 ]; then split -b 90m -d compact.tar compact.tar.part- && rm compact.tar; fi
+          cp ../validation/prereg/pilot.json ../validation/prereg/backgrounds.json .
+          cp ../results/manifest.json ../results/summary.json ../results/summary.md ../results/runtime.json ../results/key.json ../results/SHA256SUMS .
+          gzip -c ../results/runlog.jsonl > runlog.jsonl.gz
+          printf '# Validation v1: results of workflow run %s\n\nThe frozen code is the tag %s; the run tag %s names the drand round whose randomness is the key (key.json).\nreports.tar.gz holds one JSON report per claim card; SHA256SUMS covers every file of the uncompressed results.\ncompact.tar (or its parts, concatenated) holds the planned backgrounds the shards read (compact/SHA256 is their digest); pilot.json and backgrounds.json are the run tag'"'"'s.\nAnyone can re-run datasets and compare the reports: tar -xf compact.tar and cat reports.tar.gz* | tar -xzf - (concatenate the parts first where they are split), then, at the run tag, python validation/prereg/blind.py verify --results . --compact compact --pilot pilot.json --datasets 20 --out rerun (it checks SHA256SUMS first)\n' \
+            "${{ github.run_id }}" "$FROZEN_TAG" "$RUN_TAG" > README.md
+          git add -A
+          git commit -qm "Validation v1: the blind run's results (workflow run ${{ github.run_id }}, attempt ${{ github.run_attempt }})"
+          # the real run creates its results branch once (a plain push fails if it exists); the dry run's
+          # scratch results branch is replaced on every pull request run
+          if [ "${{ needs.guard.outputs.real }}" = "true" ]; then force=""; else force="-f"; fi
+          git push $force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/$rb"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  score:
+    needs: [guard, run_tag, collect]
+    if: always() && needs.collect.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.collect.outputs.commit }}
+          path: pub
+          fetch-depth: 0
+      - name: Score
+        run: |
+          mkdir results
+          cat pub/reports.tar.gz* | tar -xzf - -C results
+          cp pub/manifest.json results/
+          key=$(python -c "import json; print(json.load(open('pub/key.json'))['key'])")
+          python validation/prereg/score.py --key "$key" --results results --pilot validation/prereg/pilot.json \
+            --out pub/scores.json | tee pub/scores.txt
+      - name: Commit the scores
+        run: |
+          cd pub
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add scores.json scores.txt
+          git commit -qm "Validation v1: scores (workflow run ${{ github.run_id }})"
+          git push "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/${{ needs.guard.outputs.results_branch }}"
+
+  anchors:
+    needs: [guard, run_tag, score]
+    if: always() && needs.score.result == 'success' && needs.guard.outputs.real == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.run_tag.outputs.ref }}
+          fetch-depth: 0
+      - name: The frozen code (real run; the tag's own frozen.py, before anything is installed)
+        if: needs.guard.outputs.real == 'true'
+        run: |
+          git show "$FROZEN_TAG:validation/prereg/frozen.py" > "$RUNNER_TEMP/frozen.py"
+          python3 "$RUNNER_TEMP/frozen.py" --frozen-tag "$FROZEN_TAG" --repo .
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - run: |
+          python -m pip install pip==26.2.1
+          pip install --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: backgrounds-data
+          path: data
+      - name: Anchors R1-R3 with the frozen engine
+        run: python validation/prereg/anchors.py --backgrounds validation/prereg/backgrounds.json --data-dir data --out anchors.json
+      - name: Commit the anchors
+        run: |
+          git fetch origin "${{ needs.guard.outputs.results_branch }}"
+          git checkout -B results "origin/${{ needs.guard.outputs.results_branch }}"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -f anchors.json anchors.md
+          git commit -qm "Validation v1: anchors R1-R3 (workflow run ${{ github.run_id }})"
+          git push origin "HEAD:refs/heads/${{ needs.guard.outputs.results_branch }}"
+
+  cleanup:
+    # the dry run's scratch branch, once every job that checks out its commits is done
+    needs: [guard, select, score]
+    if: always() && needs.guard.outputs.real != 'true' && needs.select.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.guard.outputs.ref }}
+      - run: git push origin --delete "refs/heads/${{ needs.guard.outputs.data_branch }}"

@@ -1,0 +1,137 @@
+# The rule 'a correction can only remove a conclusion, never create one' on validation v1's reports
+# (exploratory, post hoc; v1 and the engine unchanged)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; per-card analyzers sha256 ceaa8b36fc7708c9baa68717048874f13a7a13ffafb0fc9bcb5ce4934be2aae9; 10540 cards
+
+## 1. What the rule changes (SUPPORTED stands only where the raw and the corrected test detect it, in one direction)
+SUPPORTED cards: 329; with raw_detected false: 21; raw detected but in the other direction: 0
+
+False SUPPORTED on null data (every one is an error):
+  all null cards: 54 -> 36 (18 become INCONCLUSIVE)
+  metric at risk: 54 -> 36
+  blind or useless metric: 0 -> 0
+  by condition, variant and level (before -> after):
+    N1 null high: 5 -> 4
+    N2 c=0.3 high: 2 -> 1
+    N2 c=0.5 high: 6 -> 3
+    N2 c=0.7 high: 1 -> 0
+    N2 c=0.9 high: 2 -> 2
+    N3 f=0.1 high: 1 -> 0
+    N3 f=0.2 high: 3 -> 2
+    N3 f=0.4 high: 7 -> 0
+    N4 3v3 high: 3 -> 3
+    N5 sham high: 8 -> 8
+    N7 mice high: 5 -> 5
+    N8 beta(2,2) high: 11 -> 8
+  S1's key cells (false SUPPORTED of 790, limit 29), before -> after:
+    N1: 5 -> 4
+    N2: 6 -> 3
+    N5: 8 -> 8
+    N6c: 0 -> 0
+    N8: 11 -> 8
+  what the correction did to the raw difference of the 18 (retained = corrected / raw effect; enlarged > 1, shrank 0 to 1, reversed < 0): enlarged it 15, reversed its sign 2, shrank it 1; by condition: N1 enlarged it 1; N2 enlarged it 2, reversed its sign 2, shrank it 1; N3 enlarged it 9; N8 enlarged it 3
+  against v1_analyzers.log section 5 (the false 'effects' of (d) at risk that (b) does not make): 21; with raw_detected false 18, the rule's 18 all among them; raw detected 3, which the rule keeps: N4 3v3, (b) exact (20 relabelings) 3; (b)'s p on them 0.100 to 0.100, the engine's raw p 0.0067 to 0.0328
+
+True SUPPORTED on the real effects (each one the rule turns into INCONCLUSIVE is a loss):
+  all real effects: 275 -> 272
+  E1 195 -> 194, E2 23 -> 21, E3 57 -> 57
+  valid metric and |Δ*| >= SESOI: 118 -> 118
+  what the correction did to the raw difference of the 3: enlarged it 3
+
+## 2. False 'effect' on the null cards (N1-N5, N7, N8): (b) donors without gates against (d) the engine
+  all             n  7110: (b) 286/7110 = 4.0% (95% CI 3.6-4.5%); (d) 54/7110 = 0.8% (95% CI 0.6-1.0%); (d) under the rule 36/7110 = 0.5% (95% CI 0.4-0.7%)
+  blind metric    n  4665: (b) 212/4665 = 4.5% (95% CI 4.0-5.2%); (d) 0/4665 = 0.0% (95% CI 0.0-0.1%); (d) under the rule 0/4665 = 0.0% (95% CI 0.0-0.1%)
+  metric at risk  n  2445: (b) 74/2445 = 3.0% (95% CI 2.4-3.8%); (d) 54/2445 = 2.2% (95% CI 1.7-2.9%); (d) under the rule 36/2445 = 1.5% (95% CI 1.0-2.0%)
+  the reduction from (b) to (d): 232 false effects, 212 of them on blind metrics (91%)
+  artifacts N2, N3, N8 by level, (b) -> (d):
+    high   n 1018 (at risk 1018): (b) 49/1018 = 4.8% (95% CI 3.6-6.3%) -> (d) 33/1018 = 3.2% (95% CI 2.2-4.5%)
+    medium n 1050 (at risk    0): (b) 104/1050 = 9.9% (95% CI 8.2-11.9%) -> (d) 0/1050 = 0.0% (95% CI 0.0-0.4%)
+    low    n 1092 (at risk    0): (b) 71/1092 = 6.5% (95% CI 5.1-8.1%) -> (d) 0/1092 = 0.0% (95% CI 0.0-0.3%)
+
+## 3. NO DETECTABLE EFFECT made by the correction ((d) NDE where (c), uncorrected, is not)
+  (d) NDE 1676; of them (c) not NDE 85: effect/ambiguous 10, effect/valid 2, null/ambiguous 11, null/valid 62
+  of these, wrong by v1's rules (NDE outside the card's allowed set): 0
+
+## 4. The exchange for v2, on v1's cards (an illustration, after the results)
+  The owner's decision of 2026-10-12: one false conclusion is worth four lost detections. With a share pi
+  of true effects among the claims, the gates pay off against a comparator where
+  (1 - pi) * r + pi * r1 >= pi * l / 4: r the false conclusions they remove per null card, r1 per effect
+  card, l the true detections they lose per effect card; pi* = r / (r + l / 4 - r1), the largest share of
+  true effects at which they pay off. A false conclusion: an effect claimed in either direction on null
+  data or against the true direction on a real one; an absence claimed on a real effect with
+  |Δ*| >= SESOI or with a blind or useless metric. An absence claimed on null data with a blind or useless
+  metric is true of the data but not shown by the metric: counted apart as unwarranted. A detection: an
+  effect found in the true direction. (b) makes no claim of absence (no TOST); (c) is the engine's
+  donor-level test with its TOST and no gates; d* is (d) under the rule of section 1. Intervals: 95%
+  percentile bootstrap, 2000 resamples each, over cards (null and effect cards apart) and over gene
+  pairs (background, pool index; all of a pair's cards together); the donors that datasets share are
+  not resampled.
+  at risk: 2445 null cards, 515 effect cards, 18 gene pairs. False conclusions on null cards / on effect cards; detections; unwarranted absences:
+    b : 152 / 0; 369; 0
+    c : 161 / 0; 369; 0
+    d : 112 / 0; 273; 0
+    d*: 94 / 0; 270; 0
+    d against b: r 40/2445 = 0.0164, r1 0/515 = 0.0000, l 96/515 = 0.1864; pi* 0.260 (cards 0.136-0.369; gene pairs 0.000-0.558); at v1's share pi = 515/2960 = 0.174: removed 40 against lost / 4 = 24.0, pays off
+    d* against b: r 58/2445 = 0.0237, r1 0/515 = 0.0000, l 99/515 = 0.1922; pi* 0.330 (cards 0.235-0.413; gene pairs 0.020-0.610); at v1's share pi = 515/2960 = 0.174: removed 58 against lost / 4 = 24.8, pays off
+    d against c: r 49/2445 = 0.0200, r1 0/515 = 0.0000, l 96/515 = 0.1864; pi* 0.301 (cards 0.193-0.397; gene pairs 0.009-0.564); at v1's share pi = 515/2960 = 0.174: removed 49 against lost / 4 = 24.0, pays off
+    d* against c: r 67/2445 = 0.0274, r1 0/515 = 0.0000, l 99/515 = 0.1922; pi* 0.363 (cards 0.282-0.443; gene pairs 0.114-0.601); at v1's share pi = 515/2960 = 0.174: removed 67 against lost / 4 = 24.8, pays off
+  blind or useless: 6295 null cards, 1285 effect cards, 38 gene pairs. False conclusions on null cards / on effect cards; detections; unwarranted absences:
+    b : 526 / 21; 138; 0
+    c : 521 / 596; 138; 3664
+    d : 1 / 0; 2; 5
+    d*: 1 / 0; 2; 5
+    d against b: r 525/6295 = 0.0834, r1 21/1285 = 0.0163, l 136/1285 = 0.1058; pi* 0.892 (cards 0.817-0.977; gene pairs 0.775-0.978); at v1's share pi = 1285/7580 = 0.170: removed 546 against lost / 4 = 34.0, pays off
+    d* against b: r 525/6295 = 0.0834, r1 21/1285 = 0.0163, l 136/1285 = 0.1058; pi* 0.892 (cards 0.819-0.981; gene pairs 0.778-0.981); at v1's share pi = 1285/7580 = 0.170: removed 546 against lost / 4 = 34.0, pays off
+    d against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
+    d* against c: r 520/6295 = 0.0826, r1 596/1285 = 0.4638, l 136/1285 = 0.1058; pi* 1.000 (cards 1.000-1.000; gene pairs 1.000-1.000); at v1's share pi = 1285/7580 = 0.170: removed 1116 against lost / 4 = 34.0, pays off
+## 5. Gene pairs at risk needed for the interval of pi* over pairs to be within +-0.1
+  The cards at risk drawn on K gene pairs resampled with replacement from v1's 18 (a pair's
+  cards together, 2000 resamples per K): the half-width of the 95% percentile interval of pi*, and
+  the K a square-root rule gives from v1's own half-width (K = 18 * (half-width / 0.1)^2).
+    d against b: half-width K 18 0.284, K 25 0.264, K 50 0.199, K 75 0.158, K 100 0.135, K 125 0.121, K 150 0.111, K 175 0.106, K 200 0.095, K 250 0.088, K 300 0.077, K 400 0.068, K 500 0.059; the first K within 0.1: 200; the square-root rule: 145
+    d* against b: half-width K 18 0.280, K 25 0.233, K 50 0.171, K 75 0.139, K 100 0.121, K 125 0.108, K 150 0.099, K 175 0.092, K 200 0.086, K 250 0.073, K 300 0.069, K 400 0.058, K 500 0.052; the first K within 0.1: 150; the square-root rule: 141
+    d against c: half-width K 18 0.272, K 25 0.232, K 50 0.165, K 75 0.129, K 100 0.113, K 125 0.098, K 150 0.090, K 175 0.082, K 200 0.080, K 250 0.070, K 300 0.068, K 400 0.057, K 500 0.050; the first K within 0.1: 125; the square-root rule: 133
+    d* against c: half-width K 18 0.254, K 25 0.211, K 50 0.145, K 75 0.117, K 100 0.106, K 125 0.092, K 150 0.082, K 175 0.077, K 200 0.073, K 250 0.065, K 300 0.056, K 400 0.049, K 500 0.045; the first K within 0.1: 125; the square-root rule: 116
+
+## 6. Votes a control dataset gives, on v1's cards (an illustration, after the results)
+  A vote compares (d) with (c), which stands in for the real track's donor-level test with its TOST,
+  where their conclusions differ: for (d) if it avoids a conclusion the truth rejects or finds one it
+  confirms, for the test if the reverse, none where both are equally right or wrong. The null cards
+  of the artifacts stand in for negative controls (truth by construction: an absence is true), the real
+  effects for positive ones. Two rules: every difference of conclusion decides (as decided), or only
+  one where a side claims an effect (an absence against no conclusion does not decide). A dataset
+  with m claims is m cards drawn at random from the stratum (v1's cards come from different datasets,
+  so the claims of one real dataset may agree more); its vote is the side of the majority of its card
+  votes, none on a tie. 20000 datasets per m.
+  rule: every difference decides
+    negative (N2, N3, N8: artifacts, no effect): 3160 cards; per card for (d) 464, for the test 1497, none 1199
+      m =  1: a deciding vote in 0.620 of the datasets; for (d) in 0.235 of those
+      m =  8: a deciding vote in 0.917 of the datasets; for (d) in 0.073 of those
+      m = 24: a deciding vote in 0.991 of the datasets; for (d) in 0.011 of those
+    positive (E1, E2, E3: real effects): 1800 cards; per card for (d) 605, for the test 273, none 922
+      m =  1: a deciding vote in 0.486 of the datasets; for (d) in 0.686 of those
+      m =  8: a deciding vote in 0.849 of the datasets; for (d) in 0.825 of those
+      m = 24: a deciding vote in 0.951 of the datasets; for (d) in 0.929 of those
+    half negative and half positive datasets, m = 8: for (d) in 0.434 of the deciding votes
+    half negative and half positive datasets, m = 24: for (d) in 0.461 of the deciding votes
+  rule: effect claims only
+    negative (N2, N3, N8: artifacts, no effect): 3160 cards; per card for (d) 437, for the test 33, none 2690
+      m =  1: a deciding vote in 0.153 of the datasets; for (d) in 0.924 of those
+      m =  8: a deciding vote in 0.697 of the datasets; for (d) in 0.958 of those
+      m = 24: a deciding vote in 0.950 of the datasets; for (d) in 0.987 of those
+    positive (E1, E2, E3: real effects): 1800 cards; per card for (d) 23, for the test 230, none 1547
+      m =  1: a deciding vote in 0.142 of the datasets; for (d) in 0.085 of those
+      m =  8: a deciding vote in 0.663 of the datasets; for (d) in 0.066 of those
+      m = 24: a deciding vote in 0.930 of the datasets; for (d) in 0.021 of those
+    half negative and half positive datasets, m = 8: for (d) in 0.523 of the deciding votes
+    half negative and half positive datasets, m = 24: for (d) in 0.509 of the deciding votes
+  Datasets needed for 13 and 15 deciding votes, half negative and half positive controls, after the
+  votes of N papers of which a share f change the conclusion and half of those meet a deciding verdict:
+  rule: every difference decides
+    m =  1 (a deciding vote in 0.553 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 20 / 24; N 20, f 0.3: papers 3.0 votes, controls 19 / 22; N 30, f 0.2: papers 3.0 votes, controls 19 / 22; N 30, f 0.3: papers 4.5 votes, controls 16 / 20
+    m =  8 (a deciding vote in 0.883 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 13 / 15; N 20, f 0.3: papers 3.0 votes, controls 12 / 14; N 30, f 0.2: papers 3.0 votes, controls 12 / 14; N 30, f 0.3: papers 4.5 votes, controls 10 / 12
+    m = 24 (a deciding vote in 0.971 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 12 / 14; N 20, f 0.3: papers 3.0 votes, controls 11 / 13; N 30, f 0.2: papers 3.0 votes, controls 11 / 13; N 30, f 0.3: papers 4.5 votes, controls 9 / 11
+  rule: effect claims only
+    m =  1 (a deciding vote in 0.147 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 75 / 89; N 20, f 0.3: papers 3.0 votes, controls 68 / 82; N 30, f 0.2: papers 3.0 votes, controls 68 / 82; N 30, f 0.3: papers 4.5 votes, controls 58 / 72
+    m =  8 (a deciding vote in 0.680 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 17 / 20; N 20, f 0.3: papers 3.0 votes, controls 15 / 18; N 30, f 0.2: papers 3.0 votes, controls 15 / 18; N 30, f 0.3: papers 4.5 votes, controls 13 / 16
+    m = 24 (a deciding vote in 0.940 of control datasets): N 20, f 0.2: papers 2.0 votes, controls 12 / 14; N 20, f 0.3: papers 3.0 votes, controls 11 / 13; N 30, f 0.2: papers 3.0 votes, controls 11 / 13; N 30, f 0.3: papers 4.5 votes, controls 10 / 12
+

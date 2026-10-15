@@ -44,9 +44,12 @@ def test_pairwise_metric_matches(pair):
 
 def test_gate1_agrees(pair):
     sd, ad = pair
-    s = gate1_qc_parity(sd, "age", ("young", "old"), within=["sex"]).status
-    a = gate1_qc_parity(ad, "age", ("young", "old"), within=["sex"]).status
-    assert s == a == GateStatus.FAIL  # the male-old QC confound is caught on both
+    s = gate1_qc_parity(sd, "age", ("young", "old"), within=["sex"])
+    a = gate1_qc_parity(ad, "age", ("young", "old"), within=["sex"])
+    # the male-old QC confound is found on both (v0.3: a WARN diagnostic, not a FAIL)
+    assert s.status == a.status == GateStatus.WARN
+    assert ({r["stratum"]["sex"] for r in s.detail["flagged"]}
+            == {r["stratum"]["sex"] for r in a.detail["flagged"]} == {"male"})
 
 
 def test_gate2_agrees_on_male_stratum(pair):
@@ -60,12 +63,19 @@ def test_gate2_agrees_on_male_stratum(pair):
 
 
 def test_full_autopsy_verdict_agrees(pair):
+    """Same verdict, same four fields and same numbers on SimpleData and on AnnData. The demo
+    has identical biology, so the verdict must not be SUPPORTED (v0.1.1 checked 'FAIL')."""
     sd, ad = pair
     m = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
     kw = dict(group_col="age", groups=("young", "old"), within=["sex"],
-              gene_pair=("Smad3", "Col1a1"),
+              gene_pair=("Smad3", "Col1a1"), replicate_col="mouse",
               pair_metric=metrics.mi_3bin, pos_pair=("Actb", "Gapdh"),
-              neg_pair=("Gene0", "Gene1"), stop_on_first_fail=False)
-    v_sd = run_autopsy(m, sd, **kw).verdict
-    v_ad = run_autopsy(m, ad, **kw).verdict
-    assert v_sd == v_ad and v_sd.startswith("FAIL")
+              neg_pair=("Gene0", "Gene1"), prereg={"estimand": "composition"},
+              stop_on_first_fail=False)
+    a_sd = run_autopsy(m, sd, **kw)
+    a_ad = run_autopsy(m, ad, **kw)
+    assert a_sd.verdict == a_ad.verdict
+    assert not a_sd.verdict.startswith("SUPPORTED")
+    assert ({k: v.status for k, v in a_sd.fields().items()}
+            == {k: v.status for k, v in a_ad.fields().items()})
+    assert np.isclose(a_sd.effect.detail["effect"], a_ad.effect.detail["effect"], atol=1e-12)

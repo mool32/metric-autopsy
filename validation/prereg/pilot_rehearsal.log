@@ -1,0 +1,153 @@
+# The pilot at its real sizes before the tag (the owner's fifth round, item 8)
+# pilot-rehearsal.yml, run 37926165104 (https://github.com/mool32/metric-autopsy/actions/runs/37926165104),
+# started by the label full-pilot-rehearsal on the pull request's head 9ce9417, 2026-10-09, 11:50-14:29 UTC;
+# GitHub-hosted ubuntu-24.04 runners (image 20261004.327.1, 4 CPUs, 16 GB), the run's pinned environment;
+# simulated backgrounds of the panel's sizes (simulate.py write --panel-size), never real backgrounds.
+# Below: the workflow's own log lines, with their timestamps (UTC), copied without edits. The bound is
+# the owner's 170 minutes per job, half the real job's 340-minute limit. (Each job's `nproc` printed 1:
+# GNU nproc honours OMP_NUM_THREADS=1; the runner's 4 CPUs are timing.py's "cpus" below.)
+
+## backgrounds: simulate.py write --panel-size (in the real run the select job writes the backgrounds)
+2026-10-09T11:52:14.2092477Z written in 106 s
+2026-10-09T11:52:14.2101324Z B1: simulated, 200 donors, 80000 cells x 32500 genes
+2026-10-09T11:52:14.2101596Z B2: simulated, 48 donors, 19200 cells x 32500 genes
+2026-10-09T11:52:14.2101869Z B3: a simulated stand-in (simulate.b3_stand_in)
+2026-10-09T11:52:14.2114756Z -rw-r--r--  1 runner runner 317817749 Oct  9 11:51 B1.npz
+2026-10-09T11:52:14.2115065Z -rw-r--r--  1 runner runner  76506618 Oct  9 11:52 B2.npz
+2026-10-09T11:52:14.2115330Z -rw-r--r--  1 runner runner     82404 Oct  9 11:52 B3.npz
+
+## select: select_backgrounds.py --rehearsal --time-full-extraction (the real Census extraction at
+## the caps and the pool rule, timed; it prints no identities and keeps nothing)
+2026-10-09T11:58:32.2362130Z Census release: stable = 2025-11-08 (LTS False)
+2026-10-09T11:58:32.2363693Z B1: 74,541,452 primary droplet-3' cells of Homo sapiens counted in 9 s
+2026-10-09T11:58:32.2365051Z B1: the real extraction at the caps and the pool rule: 179 s extracting, 104 s on the pool rule, 296 s in all; peak memory so far 8.8 GB
+2026-10-09T11:58:32.2366228Z B2: 6,081,774 primary droplet-3' cells of Mus musculus counted in 3 s
+2026-10-09T11:58:32.2367028Z B2: the real extraction at the caps and the pool rule: 52 s extracting, 40 s on the pool rule, 96 s in all; peak memory so far 8.8 GB
+2026-10-09T11:58:32.2368145Z B3: E-MTAB-2805, cells per phase {'G1': 96, 'S': 96, 'G2M': 96}, 100 ERCC genes; sha256 c7f16e68be248cf7cb41840d3dc3be6f833ee9370ac30f09690307f9cfabbb10
+2026-10-09T11:58:32.2370104Z B4: GEO GSE146773 (GSE146773_fucci_coords.csv.gz, GSE146773_Counts.csv.gz: 1152 cells, 3 plates) fails the criteria (not raw counts (2,202,784 non-integer and 0 negative values); FUCCI intensities for 1146 of 1152 cells); dropped with R3
+2026-10-09T11:58:32.2371411Z select: 456 s in all (the job's limit: 300 minutes); peak memory 8.8 GB
+2026-10-09T11:58:32.4849067Z the select step: 7 min; the job's limit 300 min
+
+## pilot_base: oracle.py --stage base
+2026-10-09T11:55:38.5267434Z pilot stage loading and planning the backgrounds: 141 s
+2026-10-09T11:59:00.7680139Z pilot stage SESOI: 202 s (total 202 s)
+2026-10-09T12:02:22.5181362Z pilot stage response curves (120 s) and pair truth (82 s): 202 s (total 404 s)
+2026-10-09T12:20:10.9484692Z pilot stage key dose: 1068 s (total 1472 s)
+2026-10-09T12:24:46.5860973Z pilot stage delta: 276 s (total 1748 s)
+2026-10-09T12:25:07.5851807Z pilot stage N2 raw power: 21 s (total 1769 s)
+2026-10-09T12:38:01.5872097Z pilot stage case truth: 774 s (total 2543 s)
+2026-10-09T12:38:01.7171527Z oracle.py --stage base: 44.7 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T12:38:03.2035745Z the job pilot_base: 45 min in all; the bound 170 min, the real job's limit 340 min: within it
+
+## pilot_part 0-3, in parallel after the base: oracle.py --stage part (establishability's jobs)
+2026-10-09T12:40:50.4671481Z pilot stage loading and planning the backgrounds: 113 s
+2026-10-09T13:12:12.0468479Z pilot stage establishability, part 0 of 4: 1882 s (total 1882 s)
+2026-10-09T13:12:12.1550540Z oracle.py --stage part 0 of 4: 33.3 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T13:12:13.3749404Z the job pilot_part-0: 33 min in all; the bound 170 min, the real job's limit 340 min: within it
+2026-10-09T12:41:19.1311901Z pilot stage loading and planning the backgrounds: 155 s
+2026-10-09T13:25:20.7690542Z pilot stage establishability, part 1 of 4: 2642 s (total 2642 s)
+2026-10-09T13:25:20.8819672Z oracle.py --stage part 1 of 4: 46.6 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T13:25:21.8936482Z the job pilot_part-1: 47 min in all; the bound 170 min, the real job's limit 340 min: within it
+2026-10-09T12:40:13.5670469Z pilot stage loading and planning the backgrounds: 90 s
+2026-10-09T13:05:50.0371315Z pilot stage establishability, part 2 of 4: 1536 s (total 1536 s)
+2026-10-09T13:05:50.1046419Z oracle.py --stage part 2 of 4: 27.1 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T13:05:51.0545402Z the job pilot_part-2: 27 min in all; the bound 170 min, the real job's limit 340 min: within it
+2026-10-09T12:40:32.8875713Z pilot stage loading and planning the backgrounds: 114 s
+2026-10-09T13:11:56.1558580Z pilot stage establishability, part 3 of 4: 1883 s (total 1883 s)
+2026-10-09T13:11:56.2604480Z oracle.py --stage part 3 of 4: 33.3 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T13:11:56.9955087Z the job pilot_part-3: 33 min in all; the bound 170 min, the real job's limit 340 min: within it
+
+## pilot, after the parts: oracle.py --stage merge; timing.py --cards 24 --write-drops --refusals 100;
+## oc.py --pilot --write-judged (the rehearsal's pilot.json: simulated backgrounds, not the run's numbers)
+2026-10-09T13:28:33.4469903Z pilot stage loading and planning the backgrounds: 139 s
+2026-10-09T13:28:33.5250596Z pilot stage establishability (merged from the parts): 0 s (total 0 s)
+2026-10-09T13:28:34.4533249Z oracle.py --stage merge: 2.3 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T14:28:49.2718640Z timing.py (24 cards, the drops, 100 refusal cards per S3 stratum): 60.2 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T14:28:49.2779425Z # timing pilot — git 9ce9417, python 3.13.16, numpy 2.5.3
+2026-10-09T14:28:49.2784011Z # machine: {"cpus": 4, "cpu_model": "AMD EPYC 7763 64-Core Processor", "runner_image": {"ImageOS": "ubuntu24", "ImageVersion": "20261004.327.1"}, "blas_threads_in_use": [1], "blas": [{"internal_api": "openblas", "version": "0.3.34.106.0", "architecture": "Haswell", "num_threads": 1}], "numpy_simd": {"baseline": ["X86_V2"], "dispatch": ["X86_V3"]}, "numeric_env": {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_CORETYPE": "Haswell", "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"}, "versions": {"python": "3.13.16", "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39", "numpy": "2.5.3", "scipy": "1.18.1", "pandas": "2.3.3", "metric_autopsy": "0.3.0.dev0"}}
+2026-10-09T14:28:49.2787244Z # backgrounds: data/backgrounds.json (sha256 c475f3c1231fee9d52fa0a30f11e8c96c231a3aed13f82e5b53de1c412d52225)
+2026-10-09T14:28:49.2788218Z # sample of 24 datasets: {'N6a': 2, 'N5': 2, 'N8': 2, 'N3': 1, 'N4': 5, 'N1': 2, 'N2': 2, 'E3': 1, 'N7': 2, 'E1': 2, 'E2': 1, 'N6c': 1, 'N6b': 1}; levels {'medium': 10, 'high': 10, 'low': 4}
+2026-10-09T14:28:49.2788896Z # dataset shape (cells x genes): (3200, 2000)
+2026-10-09T14:28:49.2789484Z workers=1: 29 cards in 497 s wall; per card mean 17.1 s, median 16.8 s; errors 0; peak memory of a worker 6658 MB
+2026-10-09T14:28:49.2790282Z   per condition (mean s): E1 22.2, E2 16.8, E3 21.5, N1 22.5, N2 19.9, N3 20.1, N4 7.5, N5 9.6, N6a 16.7, N6b 15.6, N6c 63.1, N7 31.1, N8 19.4
+2026-10-09T14:28:49.2791061Z workers=4: 29 cards in 188 s wall; per card mean 24.7 s, median 24.6 s; errors 0; peak memory of a worker 1670 MB
+2026-10-09T14:28:49.2791844Z   per condition (mean s): E1 33.0, E2 25.0, E3 31.8, N1 33.2, N2 28.7, N3 29.9, N4 10.9, N5 14.5, N6a 24.4, N6b 23.6, N6c 84.5, N7 43.9, N8 29.1
+2026-10-09T14:28:49.2792654Z # whole panel: 10540 cards, each at its condition's mean time: 90.1 CPU-h at 4 workers (single-core 62.7 CPU-h)
+2026-10-09T14:28:49.2793956Z # blind run: 20 shards of 4 workers, a shard's expected time 1.13 h (budget 3.0 h per shard; a job may run 6 h)
+2026-10-09T14:28:49.2794720Z # memory: a worker's peak 1670 MB x 4 workers = 6681 MB; the runner has 15990 MB (at most 75% may be used)
+2026-10-09T14:28:49.2795267Z # drops written to pilot.json: none
+2026-10-09T14:28:49.2796126Z # GATE 0 refusals, S3 stratum effect: 0 of 100 establishable cards (0.000); outcomes {'INCONCLUSIVE': 1, 'NO DETECTABLE EFFECT': 8, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 5, 'SUPPORTED': 86}
+2026-10-09T14:28:49.2797609Z # GATE 0 refusals, S3 stratum null: 0 of 100 establishable cards (0.000); outcomes {'NO DETECTABLE EFFECT': 88, 'NOT SUPPORTED: explained by depth': 3, 'NOT SUPPORTED: metric invalid (GATE 4/5)': 3, 'NOT SUPPORTED: opposite direction': 3, 'SUPPORTED': 3}
+2026-10-09T14:28:49.2798901Z # GATE 0 refusals, S3 stratum invalid: 0 of 100 establishable cards (0.000); outcomes {'NOT SUPPORTED: metric invalid (GATE 4/5)': 100}
+2026-10-09T14:28:49.2799550Z # GATE 0's refusal shares written to pilot.json
+2026-10-09T14:28:59.0032237Z oc.py --pilot --write-judged: 0.2 min, peak memory of its largest process 0.3 GB, exit 0
+2026-10-09T14:28:59.0092194Z # operating characteristics of the v1 success criteria (two-sided 95% Clopper-Pearson)
+2026-10-09T14:28:59.0093973Z # principle: P(pass | sound) >= 0.9, P(pass | doubled nominal error) <= 0.05;
+2026-10-09T14:28:59.0095241Z # S1, a conjunction over the key null conditions, meets it as a whole; P(S1-S7 together | sound) >= 0.9
+2026-10-09T14:28:59.0096138Z 
+2026-10-09T14:28:59.0096369Z ## The expected cards of pilot.json (every pool pair equally often)
+2026-10-09T14:28:59.0096984Z   cards 10540: valid metric on 3000, establishable 6835; rates measured by the pilot on 8960
+2026-10-09T14:28:59.0098165Z   S1 N1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0099204Z   S1 N2: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0100222Z   S1 N5: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0101268Z   S1 N6c: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0102292Z   S1 N8: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0103818Z   S2 N2: false SUPPORTED where it is an error, the cards outside S1: n = 790, pass with at most 30 errors (upper 95% CP bound <= 0.0538); P(pass | 0.0262) = 0.981, P(pass | 0.0523) = 0.037 — meets the principle
+2026-10-09T14:28:59.0105190Z     a sound validator (the cards' mean rate 0.0068) passes it with 1.0000; it fails an error rate of 0.0512 or more with probability >= 0.95
+2026-10-09T14:28:59.0106531Z   S2 N3: false SUPPORTED where it is an error, the cards outside S1: n = 790, pass with at most 31 errors (upper 95% CP bound <= 0.0552); P(pass | 0.0270) = 0.983, P(pass | 0.0539) = 0.035 — meets the principle
+2026-10-09T14:28:59.0107684Z     a sound validator (the cards' mean rate 0.0085) passes it with 1.0000; it fails an error rate of 0.0526 or more with probability >= 0.95
+2026-10-09T14:28:59.0109583Z   S2 N4: false SUPPORTED where it is an error, the cards outside S1 (the cards' mean rule nominal 0.0250, raised to 0.0299: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 790, pass with at most 36 errors (upper 95% CP bound <= 0.0625); P(pass | 0.0299) = 0.994, P(pass | 0.0598) = 0.049 — meets the principle
+2026-10-09T14:28:59.0112148Z     a sound validator (the cards' mean rate 0.0250) passes it with 0.9997; it fails an error rate of 0.0597 or more with probability >= 0.95
+2026-10-09T14:28:59.0114557Z   S2 N6: false SUPPORTED where it is an error, the cards outside S1: n = 790, pass with at most 29 errors (upper 95% CP bound <= 0.0523); P(pass | 0.0250) = 0.982, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0116434Z     a sound validator (the cards' mean rate 0.0033) passes it with 1.0000; it fails an error rate of 0.0497 or more with probability >= 0.95
+2026-10-09T14:28:59.0118556Z   S2 N7: false SUPPORTED where it is an error, the cards outside S1: n = 790, pass with at most 31 errors (upper 95% CP bound <= 0.0552); P(pass | 0.0265) = 0.987, P(pass | 0.0529) = 0.046 — meets the principle
+2026-10-09T14:28:59.0120431Z     a sound validator (the cards' mean rate 0.0116) passes it with 1.0000; it fails an error rate of 0.0526 or more with probability >= 0.95
+2026-10-09T14:28:59.0122646Z   S2 E: false SUPPORTED where it is an error, the cards outside S1: n = 1176, pass with at most 46 errors (upper 95% CP bound <= 0.0518); P(pass | 0.0250) = 0.999, P(pass | 0.0500) = 0.046 — meets the principle
+2026-10-09T14:28:59.0124851Z     a sound validator (the cards' mean rate 0.0000) passes it with 1.0000; it fails an error rate of 0.0497 or more with probability >= 0.95
+2026-10-09T14:28:59.0127638Z   S3 effect: correct definite outcomes, establishable cards (the measured 0.899, at most 0.85), principle tier [JUDGED]: n = 235, pass with at least 177 correct definite outcomes (lower 95% CP bound >= 0.6929); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.042 — meets the principle
+2026-10-09T14:28:59.0131643Z   S3 effect: correct definite outcomes, establishable cards (the measured 0.899, at most 0.85), floor tier [attainable, not judged]: n = 235, pass with at least 113 correct definite outcomes (lower 95% CP bound >= 0.4154); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.048 — meets the principle
+2026-10-09T14:28:59.0135715Z   S3 null: correct definite outcomes, establishable cards (the measured 0.874, at most 0.85), principle tier [JUDGED]: n = 715, pass with at least 522 correct definite outcomes (lower 95% CP bound >= 0.6959); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.042 — meets the principle
+2026-10-09T14:28:59.0138335Z   S3 null: correct definite outcomes, establishable cards (the measured 0.874, at most 0.85), floor tier [attainable, not judged]: n = 715, pass with at least 327 correct definite outcomes (lower 95% CP bound >= 0.4204); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.044 — meets the principle
+2026-10-09T14:28:59.0140398Z   S3 invalid: correct definite outcomes, establishable cards (the measured 1.000, at most 0.85), principle tier [JUDGED]: n = 4448, pass with at least 3165 correct definite outcomes (lower 95% CP bound >= 0.6980); P(pass | 0.850) = 1.000, P(pass | 0.700) = 0.048 — meets the principle
+2026-10-09T14:28:59.0142559Z   S3 invalid: correct definite outcomes, establishable cards (the measured 1.000, at most 0.85), floor tier [attainable, not judged]: n = 4448, pass with at least 1946 correct definite outcomes (lower 95% CP bound >= 0.4229); P(pass | 0.850) = 1.000, P(pass | 0.425) = 0.047 — meets the principle
+2026-10-09T14:28:59.0144661Z   S4 effect: false NOT SUPPORTED against the direction where it is an error: n = 624, pass with at most 22 errors (upper 95% CP bound <= 0.0529); P(pass | 0.0250) = 0.955, P(pass | 0.0500) = 0.050 — meets the principle
+2026-10-09T14:28:59.0145794Z     a sound validator (the cards' mean rate 0.0005) passes it with 1.0000; it fails an error rate of 0.0500 or more with probability >= 0.95
+2026-10-09T14:28:59.0147045Z   S4 effect: false NOT SUPPORTED explained by depth where it is an error: n = 386, pass with at most 28 errors (upper 95% CP bound <= 0.1031); P(pass | 0.0500) = 0.980, P(pass | 0.1000) = 0.039 — meets the principle
+2026-10-09T14:28:59.0148139Z     a sound validator (the cards' mean rate 0.0016) passes it with 1.0000; it fails an error rate of 0.0981 or more with probability >= 0.95
+2026-10-09T14:28:59.0149535Z   S4 null: NOT SUPPORTED against the direction on null data (allowed: its rate bounded as a false detection's): n = 2310, pass with at most 120 errors (upper 95% CP bound <= 0.0618); P(pass | 0.0301) = 1.000, P(pass | 0.0603) = 0.048 — meets the principle
+2026-10-09T14:28:59.0150755Z     a sound validator (the cards' mean rate 0.0230) passes it with 1.0000; it fails an error rate of 0.0602 or more with probability >= 0.95
+2026-10-09T14:28:59.0151981Z   S4 null: false NOT SUPPORTED explained by depth where it is an error: n = 1254, pass with at most 107 errors (upper 95% CP bound <= 0.1022); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.044 — meets the principle
+2026-10-09T14:28:59.0153350Z     a sound validator (the cards' mean rate 0.0105) passes it with 1.0000; it fails an error rate of 0.0994 or more with probability >= 0.95
+2026-10-09T14:28:59.0154671Z   S4 invalid: false NOT SUPPORTED against the direction where it is an error: n = 6766, pass with at most 308 errors (upper 95% CP bound <= 0.0508); P(pass | 0.0250) = 1.000, P(pass | 0.0500) = 0.047 — meets the principle
+2026-10-09T14:28:59.0155786Z     a sound validator (the cards' mean rate 0.0023) passes it with 1.0000; it fails an error rate of 0.0499 or more with probability >= 0.95
+2026-10-09T14:28:59.0157018Z   S4 invalid: false NOT SUPPORTED explained by depth where it is an error: n = 4134, pass with at most 381 errors (upper 95% CP bound <= 0.1014); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.048 — meets the principle
+2026-10-09T14:28:59.0158276Z     a sound validator (the cards' mean rate 0.0064) passes it with 1.0000; it fails an error rate of 0.0999 or more with probability >= 0.95
+2026-10-09T14:28:59.0159438Z   S5 effect: false metric invalid where it is an error: n = 624, pass with at most 108 errors (upper 95% CP bound <= 0.2051); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.050 — meets the principle
+2026-10-09T14:28:59.0160464Z     a sound validator (the cards' mean rate 0.0750) passes it with 1.0000; it fails an error rate of 0.1999 or more with probability >= 0.95
+2026-10-09T14:28:59.0161611Z   S5 null: false metric invalid where it is an error: n = 2376, pass with at most 442 errors (upper 95% CP bound <= 0.2023); P(pass | 0.1000) = 1.000, P(pass | 0.2000) = 0.046 — meets the principle
+2026-10-09T14:28:59.0162619Z     a sound validator (the cards' mean rate 0.0806) passes it with 1.0000; it fails an error rate of 0.1997 or more with probability >= 0.95
+2026-10-09T14:28:59.0164615Z   S6 effect: false NO DETECTABLE EFFECT where it is an error (the cards' mean rule nominal 0.0500, raised to 0.0520: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 242, pass with at most 17 errors (upper 95% CP bound <= 0.1101); P(pass | 0.0520) = 0.917, P(pass | 0.1041) = 0.047 — meets the principle
+2026-10-09T14:28:59.0166144Z     a sound validator (the cards' mean rate 0.0052) passes it with 1.0000; it fails an error rate of 0.1035 or more with probability >= 0.95
+2026-10-09T14:28:59.0167469Z   S6 invalid: false NO DETECTABLE EFFECT where it is an error: n = 6766, pass with at most 635 errors (upper 95% CP bound <= 0.1011); P(pass | 0.0500) = 1.000, P(pass | 0.1000) = 0.047 — meets the principle
+2026-10-09T14:28:59.0168530Z     a sound validator (the cards' mean rate 0.0041) passes it with 1.0000; it fails an error rate of 0.0999 or more with probability >= 0.95
+2026-10-09T14:28:59.0169986Z   S7a verdicts the engine's deterministic rules cannot give (a label that does not match its cause, an unexpected cause, UNIDENTIFIABLE, DEGENERATE METRIC on a varying metric, an effect verdict where the rules exclude one: N4 without the replicate unit, the constant metric): n = 10540, none allowed
+2026-10-09T14:28:59.0172468Z   S7b crashes (an engine exception or no report; a sound engine has none) at the nominal 0.001 (the cards' mean rule nominal 0.0010, raised to 0.0013: there the principle is attainable and a sound validator fails the cell with probability <= 0.0005): n = 10540, pass with at most 18 errors (upper 95% CP bound <= 0.0027); P(pass | 0.0013) = 0.914, P(pass | 0.0025) = 0.048 — meets the principle
+2026-10-09T14:28:59.0174382Z     a sound validator (the cards' mean rate 0.0000) passes it with 1.0000; it fails an error rate of 0.0025 or more with probability >= 0.95
+2026-10-09T14:28:59.0175298Z   P(S1-S7 all pass | sound), simulated, S1 at its design, S3 judged on effect (principle), null (principle), invalid (principle): 0.916
+2026-10-09T14:28:59.0175967Z   the same with every rate as measured (S1 included): 1.000
+2026-10-09T14:28:59.0176232Z 
+2026-10-09T14:28:59.0176518Z # GATE 0's refusal share before the key, S3 stratum effect: 0 of 100 (0.000); at most 0.2 in the model
+2026-10-09T14:28:59.0177228Z # GATE 0's refusal share before the key, S3 stratum invalid: 0 of 100 (0.000); as measured (a blind or useless metric)
+2026-10-09T14:28:59.0177922Z # GATE 0's refusal share before the key, S3 stratum null: 0 of 100 (0.000); at most 0.2 in the model
+2026-10-09T14:28:59.0178591Z # S3's tiers written to pilot.json: {'effect': 'principle', 'null': 'principle', 'invalid': 'principle'}
+2026-10-09T14:28:59.0403078Z oracle.py --stage merge: 2.3 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T14:28:59.0404564Z timing.py (24 cards, the drops, 100 refusal cards per S3 stratum): 60.2 min, peak memory of its largest process 6.5 GB, exit 0
+2026-10-09T14:28:59.0405931Z oc.py --pilot --write-judged: 0.2 min, peak memory of its largest process 0.3 GB, exit 0
+2026-10-09T14:28:59.0416841Z the job pilot: 63 min in all; the bound 170 min, the real job's limit 340 min: within it
+
+## In all (the lines above)
+# Every job within the bound: pilot_base 45 min; the four parts 33, 47, 27 and 33 min; pilot 63 min
+# (timing.py 60.2 of them); the select step 456 s of its job's 300-minute limit. The largest process
+# peaked at 6.5 GB in every pilot job and 8.8 GB in the select job; a blind run's worker at 1670 MB
+# (x 4 = 6681 MB of the runner's 15990 MB). In one job the pilot's stages would sum to about 240 min
+# (44.7 + 132.4, establishability's 7,943 s over the four parts, + 62.7), over the bound: hence the split.

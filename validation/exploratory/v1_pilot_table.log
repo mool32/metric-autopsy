@@ -1,0 +1,31 @@
+# Validation v1's pilot as the cards used it, and the real effects' denominators (read after the results)
+# pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; scores.json sha256 253de86d4e60ea91e25bf9338c1e1328fb7522b85bbbf72996908311c7123c1e
+
+## Per background and level: the SESOI and GATE 4's dose (the saturation dose) every card passed
+       level    SESOI  found  delta_min  saturation dose
+  B1   high     0.255   True     0.1275             2.50
+  B1   medium   0.320   True     0.1600             2.75
+  B1   low      0.355   True     0.1775             3.00
+  B2   high     0.250   True     0.1250             3.25
+  B2   medium   0.265   True     0.1325             2.25
+  B2   low      0.370   True     0.1850             2.00
+
+## B1's real effects: the key dose and Δ* (the level's mean over its pairs)
+  high: key dose found False (doses meeting power >= 0.9 and Δ* >= 1.25 x SESOI = 0.319: none); the scan's largest power 0.85 (dose 2), largest Δ* 0.263 (dose 3.25); base dose of the real effects 2.5 (the saturation dose)
+      Δ* at E1's doses (x the base): x0.25 0.086, x0.5 0.189, x1 0.258, x1.5 0.257; at the base dose 0.258 against the SESOI 0.255 (ratio 1.01)
+  medium: key dose found False (doses meeting power >= 0.9 and Δ* >= 1.25 x SESOI = 0.400: none); the scan's largest power 0.13 (dose 3.5), largest Δ* 0.072 (dose 3.75); base dose of the real effects 2.75 (the saturation dose)
+      Δ* at E1's doses (x the base): x0.25 0.025, x0.5 0.054, x1 0.065, x1.5 0.059; at the base dose 0.065 against the SESOI 0.320 (ratio 0.20)
+  low: key dose found False (doses meeting power >= 0.9 and Δ* >= 1.25 x SESOI = 0.444: none); the scan's largest power 0.07 (dose 2.5), largest Δ* 0.058 (dose 3); base dose of the real effects 3 (the saturation dose)
+      Δ* at E1's doses (x the base): x0.25 0.022, x0.5 0.037, x1 0.047, x1.5 0.049; at the base dose 0.047 against the SESOI 0.355 (ratio 0.13)
+
+## N2's raw power at c = 0.5 (the oracle's power to detect N2's raw difference)
+  high 0.21, medium 0.14, low 0.16; levels where it reaches 0.9 (`informative_levels`): none
+  so at no level did N2 test the engine's correction of depth
+
+## The real effects' cards: 1800
+  E1: 1000 cards; high 141/191/14; medium 0/0/334; low 0/0/320 (valid/ambiguous/blind)
+  E2: 400 cards; high 12/30/83; medium 0/0/130; low 0/0/145 (valid/ambiguous/blind)
+  E3: 400 cards; high 53/88/0; medium 0/0/135; low 0/0/124 (valid/ambiguous/blind)
+  by truth: valid 206, ambiguous 309, blind 1285
+  S5's effect cell (a valid metric): 206; S6's effect cell (at or above the SESOI, where NO DETECTABLE EFFECT is an error): 121; S2's real-effect cell (SUPPORTED an error): 1285
+  establishable: 189 of the 206 with a valid metric (S3's effect stratum), and 1285 of the 1285 with a blind metric (S3's invalid stratum: E1 668, E2 358, E3 259), where "metric invalid" is the correct outcome

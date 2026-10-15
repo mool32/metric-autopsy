@@ -1,0 +1,36 @@
+# Validation v1: false SUPPORTED on the pure nulls and on N8, by the metric's truth and level
+# Exploratory, not a criterion; rows rebuilt as score.py builds them (score.card_rows)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; 10540 cards
+
+the pure nulls N1, N5 and N7: 2370 cards
+  valid     high  : false SUPPORTED 18/812 = 2.2% (95% CI 1.3-3.5%)
+  ambiguous medium: false SUPPORTED 0/55 = 0.0% (95% CI 0.0-6.5%)
+  blind     medium: false SUPPORTED 0/762 = 0.0% (95% CI 0.0-0.5%)
+  blind     low   : false SUPPORTED 0/741 = 0.0% (95% CI 0.0-0.5%)
+  every card with a valid metric: false SUPPORTED 18/812 = 2.2% (95% CI 1.3-3.5%)
+
+N8: 790 cards
+  valid     high  : false SUPPORTED 8/221 = 3.6% (95% CI 1.6-7.0%)
+  ambiguous high  : false SUPPORTED 3/32 = 9.4% (95% CI 2.0-25.0%)
+  blind     medium: false SUPPORTED 0/271 = 0.0% (95% CI 0.0-1.4%)
+  blind     low   : false SUPPORTED 0/266 = 0.0% (95% CI 0.0-1.4%)
+  every card with a valid metric: false SUPPORTED 8/221 = 3.6% (95% CI 1.6-7.0%)
+
+useless metrics: SUPPORTED on 0 of 1630 cards (N6a, random numbers, 790; N6b, a constant, 50; N6c, a score of random genes, 790)
+
+## Every condition's cards by the metric's truth (descriptive; Fig. 1)
+  useless includes the constant (N6b)
+  condition  valid ambiguous  blind useless    all
+  N1           271         0    519       0    790
+  N2           417       106   1057       0   1580
+  N3           242         0    548       0    790
+  N4           560         0   1020       0   1580
+  N5           265         0    525       0    790
+  N6a            0         0      0     790    790
+  N6b            0         0      0      50     50
+  N6c            0         0      0     790    790
+  N7           276        55    459       0    790
+  N8           221        32    537       0    790
+  E1           141       191    668       0   1000
+  E2            12        30    358       0    400
+  E3            53        88    259       0    400

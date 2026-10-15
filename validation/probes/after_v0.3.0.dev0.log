@@ -1,0 +1,155 @@
+# metric-autopsy probes — git af9f8d3, python 3.13.16, numpy 2.5.3
+=================== p01_null_metrics_and_offset.py
+P1a: constant metric lambda d: 0.0 on clean data, via run_autopsy defaults
+  G0 DEGENERATE the metric returned the same value (0) on every resample, null and perturbation — it carries no information about the data
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)
+  VERDICT: DEGENERATE METRIC — the metric returned the same value (0) on every resample, null and perturbation — it carries no information about the data
+
+P1b: random-number metric (pure noise, no data dependence)
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+P1c: GATE 0 location-invariance: mi_3bin vs mi_3bin + C on clean data
+  C=    0: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=  0.5: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=    1: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+  C=   10: GATE0 PASS  worst=extra_dropout rel=0.683 z=32.6
+
+P1d: GATE 0 scale-invariance? mi_3bin * k
+  k=     1: GATE0 PASS
+  k=   100: GATE0 PASS
+  k=  0.01: GATE0 PASS
+
+P1e: affine reparametrisation of norm_pearson: Fisher z / (1 - r)
+  r                           : GATE0 PASS worst=depth_downsample rel=0.042 base=0.520
+  1-r (a 'decoupling' score)  : GATE0 PASS worst=depth_downsample rel=0.042 base=0.480
+  atanh(r)                    : GATE0 PASS worst=depth_downsample rel=0.050 base=0.577
+=================== p02_cellcycle_positive_control.py
+P3a: POSITIVE CONTROL — sorted G1 vs sorted G2M cells (FUCCI/Hoechst-style ground truth)
+     metric = mean G2M score (normalized, Tirosh-style). True effect is huge by construction.
+
+  G2M RNA content x1.0
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  G2M RNA content x1.4
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.15x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  G2M RNA content x1.9
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.29x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  G2M RNA content x2.4
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 WARN     2/2 assessable strata are QC-imbalanced: 2 with n_genes overlap confidently < 0.2 (worst 0.01 at {'batch': 'b2'}) — handled by the estimand-dependent 
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+=================== p03_proliferation_mediator.py
+P3b: REAL BIOLOGY THAT MOVES QC — young tissue proliferates (35% cycling), old does not (5%).
+     Cycling cells carry more RNA (biology). metric = fraction of G2M-high cells / mean G2M score.
+
+  content(G1,S,G2M)=(1.0, 1.4, 1.9)  metric=frac_cycling
+  G0 PASS     no bias; attenuation depth_downsample −4% of the signal (passed to design adequacy as a power check) — reported, not failed
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.07x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  content(G1,S,G2M)=(1.0, 1.4, 1.9)  metric=mean_g2m_score
+  G0 PASS     no bias; level shift extra_dropout -26% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) — reported,
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.07x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  content(G1,S,G2M)=(1.0, 1.6, 2.4)  metric=frac_cycling
+  G0 PASS     no bias; attenuation depth_downsample −18% of the signal (passed to design adequacy as a power check) — reported, not failed
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.08x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+  content(G1,S,G2M)=(1.0, 1.6, 2.4)  metric=mean_g2m_score
+  G0 PASS     no bias; level shift extra_dropout -27% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) — reported,
+  G1 PASS     no confident QC imbalance in 2 assessable strata (worst point ratio 1.08x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+=================== p04_xist_same_data_control.py
+metric = mean log1p(CP10k) of Xist; group_col=sex (female vs male); within=['age']
+  G0 PASS     no bias or attenuation beyond estimator noise under any nuisance perturbation
+  G1 WARN     1/2 assessable strata are QC-imbalanced: 1 confidently beyond 1.5x QC ratio (worst 2.00x at {'age': 'old'}); 1 with n_genes overlap confidently < 0.2 
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+
+per-stratum QC table from GATE 1:
+   {'age': 'old'} median n_genes female=32 male=16 ratio=2.00 overlap=0.00 flagged=True
+   {'age': 'young'} median n_genes female=32 male=31 ratio=1.03 overlap=0.86 flagged=False
+
+Arithmetic on the manuscript's real TMS table (§4): old stratum female/male = 3413/1701 = 2.01x > 1.5x
+=================== p05_strata_false_fail.py
+GATE 1 false-FAIL rate on null data (identical QC distributions in both groups)
+  cells/group/stratum -> [5, 10, 20, 50, 200]
+  K=  1 strata:    0%     0%     0%     0%     0%
+  K=  4 strata:    0%     0%     0%     0%     0%
+  K= 16 strata:    0%     0%     0%     0%     0%
+  K= 64 strata:    0%     0%     0%     0%     0%
+
+GATE 5 false-FAIL rate on null data (controls behave identically in every stratum)
+  pair_metric=norm_pearson; cells/stratum -> [10, 30, 100, 400]
+   K=  1 strata:    7%     7%     3%     3%
+   K=  4 strata:    5%     0%     2%     3%
+   K= 16 strata:    2%     2%     3%     0%
+  pair_metric=mi_3bin; cells/stratum -> [10, 30, 100, 400]
+   K=  1 strata:    3%     7%     2%     2%
+   K=  4 strata:    7%     5%     0%     7%
+   K= 16 strata:    3%     0%     0%     2%
+=================== p06_gate5_closure_artifact.py
+norm_pearson pos (Actb-Gapdh): mean 0.633   band neg_max = 0.2*pos = 0.127
+norm_pearson neg (Gene0-Gene1): mean 0.079 sd 0.053  -> fraction |neg|>band: 20%
+codetected_spearman neg on raw counts: mean -0.012 sd 0.056
+all 630 independent filler pairs: norm_pearson mean r = 0.084 ; raw codetected spearman mean = -0.003
+=================== p07_pseudoreplication.py
+40 null simulations (no age effect; 3 vs 3 mice; mouse-to-mouse sd in coupling):
+  GATE 2 'effect survives matching' (i.e. tool reports a real, QC-robust age effect): 22 / 40
+  GATE 2 'no meaningful effect': 18 / 40   other: 0
+  replicate-level exact permutation p<0.05: 0 / 40  (min attainable p with 3v3 = 0.10)
+
+example full autopsy on null seed 0 (Python API defaults):
+  G0 PASS     no bias; attenuation depth_downsample −21%, gene_subsample −14% of the signal (passed to design adequacy as a power check) — reported, not failed
+  G1 PASS     no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)
+  G2 STOP     no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+  VERDICT: UNIDENTIFIABLE — no estimand pre-registered: declare 'composition' (relative expression) or 'content' (total RNA / genes detected) — the correction depends on it
+=================== p08_attenuation.py
+mean UMI/cell of the coupled pair -> GATE 0 status, worst perturbation, rel shift
+  mean~  0.3  norm_pearson                base=0.510 -> PASS  extra_dro=2%  depth_dow=11%  library_s=7%
+  mean~  0.3  lognorm_pearson(all cells)  base=0.165 -> PASS  extra_dro=26%  depth_dow=36%  library_s=1%
+  mean~  1.0  norm_pearson                base=0.350 -> PASS  extra_dro=5%  depth_dow=5%  library_s=4%
+  mean~  1.0  lognorm_pearson(all cells)  base=0.299 -> PASS  extra_dro=36%  depth_dow=30%  library_s=1%
+  mean~  3.0  norm_pearson                base=0.477 -> PASS  extra_dro=2%  depth_dow=13%  library_s=0%
+  mean~  3.0  lognorm_pearson(all cells)  base=0.429 -> PASS  extra_dro=55%  depth_dow=28%  library_s=1%
+  mean~ 10.0  norm_pearson                base=0.577 -> PASS  extra_dro=1%  depth_dow=13%  library_s=0%
+  mean~ 10.0  lognorm_pearson(all cells)  base=0.585 -> PASS  extra_dro=75%  depth_dow=21%  library_s=0%
+=================== p09_gate2_floor_noise.py
+young coupling 1.5 vs old 1.5: (last effect +0.017)  {'PASS-survives': 3, 'PASS-no-effect': 37, 'FAIL': 0, 'STOP': 0}   null floor across seeds: median 0.080, range 0.049-0.119
+young coupling 1.5 vs old 1.2: (last effect +0.119)  {'PASS-survives': 21, 'PASS-no-effect': 19, 'FAIL': 0, 'STOP': 0}   null floor across seeds: median 0.080, range 0.047-0.123
+young coupling 1.5 vs old 0.9: (last effect +0.268)  {'PASS-survives': 40, 'PASS-no-effect': 0, 'FAIL': 0, 'STOP': 0}   null floor across seeds: median 0.092, range 0.051-0.135
+=================== p10_perturbation_magnitude.py
+demo data, mi_3bin. rows: extra_dropout fraction; cols: binomial thinning keep-prob
+              thin=0.8       thin=0.5       thin=0.3       
+  drop=0.05:  PASS(33%/4%)        PASS(33%/26%)       PASS(33%/51%)     
+  drop=0.10:  PASS(52%/4%)        PASS(52%/31%)       PASS(52%/50%)     
+  drop=0.20:  PASS(76%/7%)        PASS(76%/31%)       PASS(76%/47%)     
+=================== p11_thinning_alternative.py
+retained fraction of the between-group effect after depth equalization
+
+  proliferation decline, mean G2M score        truth=REAL      effect=+0.163 | n_genes-selection: +0.055 ( 34%) [FAIL] | thinning: +0.164 (100%)
+  demo male stratum, mi_3bin (QC artifact)     truth=ARTIFACT  effect=+0.084 | n_genes-selection: +nan (nan%) [STOP] | thinning: +0.004 (  5%)
+  old stratum, Xist female vs male             truth=REAL      effect=+7.724 | n_genes-selection: +nan (nan%) [STOP] | thinning: +7.610 ( 99%)
+  coupling loss + QC confound, norm_pearson    truth=REAL      effect=+0.523 | n_genes-selection: +nan (nan%) [STOP] | thinning: +0.237 ( 45%)
+  coupling loss + QC confound, mi_3bin         truth=MIXED     effect=+0.243 | n_genes-selection: +nan (nan%) [STOP] | thinning: +0.137 ( 56%)

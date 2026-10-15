@@ -1,3 +1,8 @@
+УСТАРЕЛО: версия v0.1.1, не загружать
+
+> **Superseded: this is version v0.1.1; do not upload it.** The validator's own probes showed that
+> v0.1.1 errs in both directions (`validation/probes/README.md`). A new manuscript on v0.3 is planned.
+
 # Submitting `metric-autopsy` to arXiv
 
 Everything needed to post the preprint. The paper is a single-cell methods/tool paper; the
@@ -7,14 +12,14 @@ best-fit arXiv archive is **q-bio.QM** (Quantitative Methods).
 
 | File | What | Upload to arXiv? |
 |---|---|---|
-| `arxiv-submission.tar.gz` | ready-to-upload source bundle: `main.tex` + `figures/` | **yes — upload this** |
+| `arxiv-submission-v0.1.1-superseded.tar.gz` | the v0.1.1 source bundle: `main.tex` + `figures/` | **no — superseded** |
 | `main.tex` | the arXiv LaTeX source (pure ASCII, pdflatex-safe, numbered sections) | (inside the tarball) |
 | `figures/fig1_qc_strata.png`, `fig2_raw_scatter.png` | the two figures `main.tex` references | (inside the tarball) |
 | `main.pdf` | compiled preview — **15 pages, 4 figures** | **no** — arXiv builds the PDF from source |
 | `build_arxiv.py` | regenerates `main.tex` from `manuscript.md` (needs `pandoc`) | no |
 
 > Do **not** upload `main.pdf`. arXiv wants the LaTeX *source* and compiles it itself; uploading
-> a PDF alongside the source confuses its AutoTeX. Upload only `arxiv-submission.tar.gz`.
+> a PDF alongside the source confuses its AutoTeX. Upload only the source bundle.
 
 ## Before you start
 
@@ -29,7 +34,7 @@ best-fit arXiv archive is **q-bio.QM** (Quantitative Methods).
 
 1. **Start New Submission.**
 2. **License** → choose **Creative Commons Attribution 4.0 (CC BY 4.0)**.
-3. **Upload** `arxiv-submission.tar.gz`. arXiv detects LaTeX and compiles with pdfLaTeX. Wait for
+3. **Upload** the source bundle. arXiv detects LaTeX and compiles with pdfLaTeX. Wait for
    processing to succeed, then **view the generated PDF** and confirm it matches `main.pdf`
    (title page, abstract, 4 figures, ~15 pages). The source is standard LaTeX (a few UTF-8
    author names in the references compile fine under arXiv's pdfLaTeX via inputenc utf8).

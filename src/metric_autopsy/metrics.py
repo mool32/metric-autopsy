@@ -89,11 +89,12 @@ def codetected_spearman(data, *, gene_a: str, gene_b: str) -> float:
 def norm_pearson(data, *, gene_a: str, gene_b: str) -> float:
     """Library-normalized (CP10k + log1p) Pearson on co-detected cells.
 
-    The robust reference: per-cell normalization divides out library size, so unlike
-    `pearson`/`codetected_spearman` this is invariant to the per-cell depth nuisance, and
-    conditioning on co-detection removes the zero-bin dependence. It is the metric that
-    *passes* GATE 0 in the test suite — proof that the confounds are avoidable, not that
-    all metrics are doomed.
+    The reference for a normalized metric: per-cell normalization divides out the library
+    size, and conditioning on co-detection removes the zero-bin dependence, so it passes
+    GATE 0 on the 40-gene test data. It is not invariant to depth: dividing both genes by the
+    same total correlates them (the CP10k ratio correlation, probe p06), and that correlation
+    grows as depth falls, so with enough cells GATE 0 classifies depth as bias for it (probe
+    p13).
     """
     from .core import as_dense, unique_col_index
 

@@ -1,0 +1,50 @@
+# Power of the real claims' decision rule (exact binomial; no data)
+
+## 1. Rightness: a one-sided sign test at 0.05 on the deciding votes
+  n votes: critical value c (votes for the engine needed), exact size P(X >= c | 0.5);
+  power P(X >= c | p) for an engine right in a share p of the disagreements
+     n   c   size    p=0.80  p=0.85  p=0.90
+     5   5  0.0312   0.328   0.444   0.590
+     6   6  0.0156   0.262   0.377   0.531
+     7   7  0.0078   0.210   0.321   0.478
+     8   7  0.0352   0.503   0.657   0.813
+     9   8  0.0195   0.436   0.599   0.775
+    10   9  0.0107   0.376   0.544   0.736
+    11   9  0.0327   0.617   0.779   0.910
+    12  10  0.0193   0.558   0.736   0.889
+    13  10  0.0461   0.747   0.882   0.966
+    14  11  0.0287   0.698   0.853   0.956
+    15  12  0.0176   0.648   0.823   0.944
+    16  12  0.0384   0.798   0.921   0.983
+    17  13  0.0245   0.758   0.901   0.978
+    18  13  0.0481   0.867   0.958   0.994
+    19  14  0.0318   0.837   0.946   0.991
+    20  15  0.0207   0.804   0.933   0.989
+    21  15  0.0392   0.891   0.971   0.997
+    22  16  0.0262   0.867   0.963   0.996
+    23  16  0.0466   0.928   0.985   0.999
+    24  17  0.0320   0.911   0.980   0.998
+    25  18  0.0216   0.891   0.975   0.998
+    26  18  0.0378   0.941   0.989   0.999
+    27  19  0.0261   0.926   0.986   0.999
+    28  19  0.0436   0.961   0.994   1.000
+    29  20  0.0307   0.951   0.993   1.000
+    30  20  0.0494   0.974   0.997   1.000
+    35  23  0.0448   0.986   0.999   1.000
+    40  26  0.0403   0.992   1.000   1.000
+
+  the smallest n at which an engine right in 85% passes with probability >= 0.8: 13 (power 0.882)
+  numbers of votes above it, up to 40, where it does not: none; the lowest power from 13 up: 0.823 at n = 15
+  at 15 votes: power 0.823
+
+## 2. Frequency: the share of papers where the engine changes the donor-level test's conclusion
+  rule: the share observed is at least 0.20 (at least ceil(0.20 N) of N papers);
+  the probability that the rule passes at a true frequency f
+     N  needed   f=0.05  f=0.10  f=0.20  f=0.30  f=0.40
+    10      2    0.086  0.264  0.624  0.851  0.954
+    15      3    0.036  0.184  0.602  0.873  0.973
+    20      4    0.016  0.133  0.589  0.893  0.984
+    25      5    0.007  0.098  0.579  0.910  0.991
+    30      6    0.003  0.073  0.572  0.923  0.994
+    40      8    0.001  0.042  0.563  0.945  0.998
+

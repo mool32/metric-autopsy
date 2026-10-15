@@ -1,0 +1,213 @@
+# Dev-set journal: changes to frozen expectations
+
+The expected verdicts in `test_probes.py` were frozen before any fix, and a fix must meet them
+without editing them. This journal records every exception: what changed, why, who decided it,
+and the evidence. An entry is written *before* the new expectation is tested.
+
+The dev set has no confirmatory weight either way (see `README.md`). Confirmatory validation
+runs on a frozen tag with a new panel; its own deviations go to `validation/prereg/`.
+
+---
+
+## D1 — p11 split by design (2026-10-07; decided by the project owner)
+
+**Frozen expectation.** p11 (demo male stratum: identical biology, old-male capture 30%,
+4 vs 4 mice of 100 cells): NOT SUPPORTED, explained by depth.
+
+**Why it changes.** The expectation asked for more than the design can establish. With 4 vs 4
+mice the exact permutation over replicates has 70 assignments, so a raw difference reaches
+p < 0.05 only at complete separation of the mice (p = 0.029; the next attainable values are
+0.057 and 0.086). The raw MI difference is positive in every split and the corrected one is near
+zero, but "explained by depth" requires the raw difference to be detected across mice, and it is
+in only 3 of 10 splits of the same cells (`verdicts_v0.3.0.dev0.log`) and 5 of 40 independent
+datasets (`p11b_design.log`). The test passed for the split it was written with. A verdict that
+depends on what is establishable under the design is the tool's own principle; it now applies to
+its tests.
+
+**New expectations.**
+- **p11a — 4 vs 4 mice:** allowed verdicts {NOT SUPPORTED, INCONCLUSIVE}; SUPPORTED is the only
+  error. Tested over 10 splits.
+- **p11b — N vs N mice:** NOT SUPPORTED with the diagnosis "explained by depth". N is the
+  smallest number of mice per group (from 4, 6, 8, 10, 12, 16) whose lower 95% Clopper-Pearson
+  bound of P(explained by depth) over 40 independent datasets is ≥ 0.80. The rule was committed
+  before it was run (`p11b_design.py`, commit `cda7dd9`); the result is in `p11b_design.log`.
+
+**Not changed.** The data generator and the truth (identical biology, capture 30%).
+
+**Amendment D1a (2026-10-07).** No candidate up to 16 met the rule: P(explained by depth) was
+5/40 at N = 4, 25/40 at 6 and 8, 26/40 at 10, 31/40 at 12 and 37/40 at 16 (lower 95% bound
+0.796, just below 0.80). SUPPORTED was 0/40 at every N. The per-mouse MI from 100 cells is
+noisy (between-mouse SD 0.04-0.08 against a raw difference of 0.035-0.075), so power grows
+slowly with N. Rather than relax the criterion, the candidate set was extended to
+{20, 24, 32} with the same criterion; the amendment was committed before those runs.
+
+**Amendment D1b (2026-10-07) — the design run exposed an engine bias, fixed before rerunning.**
+With N >= 20 the raw difference was detected in 40/40 datasets, yet "explained by depth" fell
+to 30-35/40: at equal depth the corrected effect was itself detected. The depth correction
+thinned each cell to the other group's depth *quantiles*, so a cell's keep-probability depended
+on its own total, which includes the genes the metric reads; that distorted their joint
+distribution. With 24 mice per group, 18% of the raw MI difference survived the correction
+(+0.0136, 7 standard errors) and was detected in 5 of 20 datasets; thinning by one common ratio
+per stratum leaves 5% (+0.0049) and 1 of 20. The engine now thins by the common ratio
+(`equalize.thin_to_match`), and the design is rerun with the same rule and candidates
+(`p11b_design.log`). This was a bug in the correction, not a change to the probe.
+
+**Result (2026-10-07, `p11b_design.log`, engine `d96d747`).** N = 20: explained by depth
+40/40 (95% CP 91-100%), raw difference detected 40/40, SUPPORTED 0/40. SUPPORTED was 0/40 at
+every N from 4 to 32. p11b uses 20 mice per group; p11a keeps 4.
+
+## D2 — the p01 rescaling and p10 lock-in tests (2026-10-07; decided by the project owner)
+
+Revised when the verdict scheme changed, so that they test the v0.3 meaning instead of
+conserving the v0.1.1 one: the rescaling test compares classifications and |shift| in scale
+units (v0.1.1 compared statuses only); p10 keeps mi_3bin's dropout sensitivity but expects it to
+be classified as attenuation and reported, not failed. Recorded here for completeness; the change
+was made in `d3f05fb`.
+
+## D3 — directional claims (2026-10-08; decided by the project owner)
+
+**What changed.** SUPPORTED needs a pre-registered `direction`: the change of the metric from
+`groups[0]` to `groups[1]` (`increase`, `decrease`, or `two-sided` for a non-directional claim,
+which the verdict marks). A detected effect in the other direction is NOT SUPPORTED; an effect
+whose sign the correction reverses stays INCONCLUSIVE; without a declared direction a detected
+effect is INCONCLUSIVE.
+
+**Frozen expectations.** No expected verdict changes. The probes' pre-registrations gain the
+commitment that is now mandatory: p02, p03 and p04 their true direction (`decrease`: the first
+group is the higher one). In `verdicts_v03.py` the real-effect cases get their true direction and
+the null and artifact cases get `two-sided`, so that a detected effect in either direction could
+still become SUPPORTED: the guard is as strict as before the change, not vacuously met. (p07 and
+p11a cannot reach SUPPORTED by construction, before and after: no demonstrated response, or
+judgment pending; their error rates count the other verdicts.)
+
+## D4 — GATE 0: depth-matched null, option (b), SESOI tolerance (2026-10-08; decided by the project owner)
+
+**What changed.**
+- The null gives every gene, independently, the count of a random neighbouring cell at least as
+  deep, thinned to the cell's depth (as GATE 5's positive control); non-count input keeps the
+  shuffle within depth bins. The bin shuffle made a pair coupled only through cell size look
+  coupled above the null (more than 0.05 of a raw correlation of 0.7-0.9 in every one of six
+  datasets); with the new null the signal above it stays below 0.01
+  (`test_gate0_null_keeps_depth_so_a_depth_only_pair_shows_no_structure`).
+- A depth bias that the declared correction removes between groups (composition: depth
+  thinning; content with spike-ins: capture thinning) is reported, not blocking. Any other bias
+  (dropout, library scale) blocks only if it exceeds `bias_tolerance` x SESOI (pre-registered,
+  default 0.5) and so does the lower bound of its 95% interval; otherwise it is reported.
+  Without a SESOI a bias cannot be sized against the claim: it is reported as unsized, the
+  effect is still estimated, and SUPPORTED is withheld (INCONCLUSIVE). The last rule is the
+  agent's reading of "otherwise, a message without blocking"; it keeps a detected bias from
+  passing silently when no SESOI was declared. Approved by the project owner later on
+  2026-10-08, together with the default tolerance of 0.5 SESOI, with one change: the messages
+  (GATE 0's note and the verdict) say what to do, "declare a SESOI", and that the bias is then
+  judged against `bias_tolerance` x SESOI.
+
+**p13 joins the dev set as a regression.** `test_p13_norm_pearson_at_800_cells_per_donor_is_not_blocked`:
+at 800 cells per donor the depth response of `norm_pearson` is still classified as bias, and
+under the composition estimand it no longer blocks. It runs with 500 genes for speed;
+`p13_depth_bias_at_scale.log` (2,000 genes, rule before this entry, git ac8f1a8) records the
+finding.
+
+**Frozen expectations.** None edited. p01 (GATE 0 invariance to offsets and rescaling), p08
+(attenuation is not bias) and p10 (mi_3bin's dropout sensitivity reported as attenuation) pass
+on the new null unchanged.
+
+## D5 — GATE 4 by the interval of its response; delta_min; verdicts with causes (2026-10-08; decided by the project owner)
+
+**What changed.**
+- GATE 4 injects the signal `GATE4_N_REP` = 200 times, each against its sham, and takes the
+  two-sided 95% t interval of the mean response. PASS: the lower bound in the declared
+  direction is above 0. FAIL: the upper bound is below `delta_min`, the smallest response that
+  matters (pre-registered `delta_min`, default 0.5 x SESOI; `report.delta_min_of`). Otherwise
+  UNTESTED (the gate reports WARN). "Metric invalid" is a proof of blindness, not an absence of
+  response, as NO DETECTABLE EFFECT is to INCONCLUSIVE. Without a delta_min the gate cannot FAIL.
+  The former rule, z >= 3 over 10 injections, failed the valid metric where its response is real
+  but weak (p14).
+- The verdict comes with its cause (`report.decide_cause`, `CAUSES`; `cause` in the JSON report
+  and the Markdown), so that a NOT SUPPORTED says whether the metric was invalid (and by which
+  gate), the effect explained by depth, or opposite to the claim.
+
+**The agent's readings, for the owner's approval.**
+- When the whole interval lies in (0, delta_min), FAIL takes precedence over PASS: the metric
+  responds, but less than the smallest response that matters, which is blindness by the
+  definition of delta_min and by the truth of the confirmatory panel (blind at <= 0.8 x
+  delta_min). (`test_a_response_shown_below_delta_min_is_blindness`.)
+- Where GATE 4 ran on the analysed construct and is UNTESTED, a positive control that fires on
+  another pair does not make the metric valid for the claim: metric validity stays UNTESTED, so
+  neither NO DETECTABLE EFFECT nor SUPPORTED can follow (otherwise a blind construct reaches NO
+  DETECTABLE EFFECT through another pair's control). Where GATE 4 did not run, the positive control
+  counts as before. (`test_an_untested_construct_is_not_rescued_by_a_control_on_another_pair`.)
+- The injection's dose is the caller's (`injected_signal.coupling(strength=...)`); the confirmatory
+  panel uses the largest grid dose without saturation, from its pilot.
+- A column-local injector (`coupling`) rewrites the two genes of one private copy of the data and
+  restores them after every evaluation instead of copying the matrix for every injection
+  (`gates.injected_deltas`): the same random draws, the same values (tested), about 20 times faster.
+
+**p14 joins the dev set as a regression** (`test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind`,
+the owner's requirement): on simulated backgrounds of the panel's size, at each level's saturation
+dose and delta_min = 0.05, the high level PASSes, at the medium level FAIL is no more frequent
+than alpha, and at the low level FAIL has probability >= 0.8. `p14_gate4_by_expression_level.log`
+has the response curves, the population response of every pair and GATE 4 on 40 datasets per
+level; the test repeats the last step on 8.
+
+**Frozen expectations.** None edited; every dev-set test passes. In `tests/`, the useless-metric
+test now expects a random number to stay untested (its noise keeps the interval wide: it is never
+shown blind, and never valid), the constant and the wrong genes to FAIL when a delta_min is given;
+the bias-tolerance test pre-registers its delta_min apart from its large SESOI.
+
+## D6 — GATE 5: a silent positive control judged as GATE 4 judges a response (2026-10-08; decided by the project owner)
+
+**The owner's condition.** "Check GATE 5 by the same measure on p14-type data: if the power rule
+gives a false FAIL on a weak but valid control more often than alpha, move it to the same rule."
+
+**The check** (`p15_gate5_weak_positive_control.py`, log `p15_gate5_weak_positive_control.log`;
+20 null datasets per row, delta_min 0.05). With the rule of 2026-10-07 (a silent control FAILs
+where a reference detector had power >= 0.8 for an injected coupling of dose 2.0) a valid metric
+whose control was coupled, but weakly (a coupling of dose 0.25, 0.35 or 0.5 injected into an
+uncoupled high-level pair), was failed in 17, 8 and 0 of 20 datasets. Judged by the metric's own
+response to a coupling of dose 2.0 injected into the control's genes with their own coupling
+removed (FAIL if the upper 95% bound is below delta_min), it was failed in none. Both rules failed
+a metric blind to gene b (20/20) and the low level, where the metric is blind (13/20 and 17/20).
+The log was regenerated after the switch, with a frozen copy of the removed rule in the probe and
+the engine's GATE 5 at that commit (200 injections), which agrees with the probe's copy of the
+response rule on every row. The first measurement, at 777f18e with the engine's own power rule and
+50 injections, gave 16, 10 and 1 of 20, and 16/20 and 18/20 (in the git history).
+
+**What changed.** A silent positive control is judged by that response rule (`gate5_controls`:
+`pos_dose` = pre-registered `positive_control_dose`, default 2.0; `delta_min`; the interval at
+alpha/K over K strata): FAIL only where the metric is shown blind; otherwise WARN, and where the
+metric responds to the injection the message says that the control is not coupled here. The
+reference detector and `positive_control_power` are gone. Without a delta_min a silent control
+cannot FAIL the metric.
+
+**Frozen expectations.** None edited; every dev-set test passes. In `tests/`, the blind-metric
+test now passes a delta_min (and expects WARN in a 10-cell stratum where the interval is too wide
+for delta_min 0.05), and an uncoupled positive control offered to a responsive metric is WARN,
+not FAIL (the metric stays untested and the claim is not certified).
+
+## D7 — the SESOI's scale, and "explained by depth" with a SESOI (2026-10-08; after the first independent review, for the owner's approval)
+
+**The finding** (review 1, V2 and V4). The engine judged equivalence within ±λ·SESOI, λ the
+attenuation GATE 0 measures, while the panel's oracle and its SESOI rule use ±SESOI: on simulated
+N1 cards (high level, SESOI 0.12, λ 0.50–0.89, median 0.72) the engine reached a correct definite
+outcome on 10 of 16 cards and the oracle on 83 of 100, and 3 of the 5 INCONCLUSIVE would have been
+equivalent at the card's SESOI. And "explained by depth" needed only that the corrected effect
+keep less than half of the raw one, so a real effect smaller than the raw artifact (E3) could be
+called depth although the corrected effect was not shown to be negligible.
+
+**What changed.**
+- A pre-registration may say on which scale its SESOI is stated: `sesoi_scale` = `construct`
+  (the default and the behaviour so far: the SESOI is about the construct, so it is attenuated
+  by GATE 0's λ before the TOST and the power check) or `observed` (the SESOI is on the metric's
+  observed scale, λ = 1). The CLI (`--sesoi-scale`), the MCP tools and `run_autopsy` take it; an
+  unknown value is refused. The panel's cards declare `observed`, the scale on which the pilot
+  fixes the SESOI.
+- With a SESOI, NOT SUPPORTED "explained by depth" also needs the corrected effect shown smaller
+  than the SESOI (TOST, at the same α); otherwise the verdict is INCONCLUSIVE: "the corrected
+  effect is not shown smaller than the SESOI, so depth does not explain it". Without a SESOI the
+  rule is unchanged (less than half retained), so p11a/p11b keep their behaviour.
+
+**Frozen expectations.** None edited; every dev-set test passes. New tests in `tests/`:
+`test_with_a_sesoi_explained_by_depth_needs_the_corrected_effect_shown_smaller`,
+`test_a_sesoi_on_the_observed_scale_is_not_attenuated`. The panel's allowed outcomes follow
+(validation/prereg/v1.md 3.2): below the SESOI, "explained by depth" is allowed on a real effect
+with a planted artifact (E2, E3), as NO DETECTABLE EFFECT is.

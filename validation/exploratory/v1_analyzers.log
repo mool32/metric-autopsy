@@ -1,0 +1,183 @@
+# What the gates add over a donor-level test: four analyzers on validation v1's cards
+# (exploratory; plan committed before the run at d3db111: validation/exploratory/v1_analyzers_plan.md)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; per-card results sha256 ceaa8b36fc7708c9baa68717048874f13a7a13ffafb0fc9bcb5ce4934be2aae9
+# cards 10540 of 10540; datasets rebuilt 9750, identical to the manifest's 9750
+
+(a) cells
+(b) donors, no gates
+(c) engine, GATE 0/2/4/5 off
+(d) full engine
+Changes after the plan (none to the analyzers, the sample or the outcomes; the code was tested on the
+first 20 and 60 datasets, and the summary's grouping (section 0) was added after a look at the first
+3,200 cards): section 4 leaves out N6a, whose random metric cannot agree by construction, and compares
+Monte Carlo p values by their detection only; '-' marks an outcome an analyzer cannot give.
+
+'effect': (a), (b) p < 0.05 in the claimed direction; (c), (d) SUPPORTED. 'against': p < 0.05 the other
+way; (c), (d) NOT SUPPORTED, opposite direction. Rates are k/n (95% Clopper-Pearson interval).
+
+## 0. Summary
+False 'effect' on null data (nominal 2.5%):
+  pure nulls N1, N5, N7, metric at risk        n   867 | a 161/867 = 18.6% (95% CI 16.0-21.3%) | b 25/867 = 2.9% (95% CI 1.9-4.2%) | c 24/867 = 2.8% (95% CI 1.8-4.1%) | d 18/867 = 2.1% (95% CI 1.2-3.3%)
+  pure nulls N1, N5, N7, blind metric          n  1503 | a 129/1503 = 8.6% (95% CI 7.2-10.1%) | b 37/1503 = 2.5% (95% CI 1.7-3.4%) | c 37/1503 = 2.5% (95% CI 1.7-3.4%) | d 0/1503 = 0.0% (95% CI 0.0-0.2%)
+  artifacts N2, N3, N8, metric at risk         n  1018 | a 166/1018 = 16.3% (95% CI 14.1-18.7%) | b 49/1018 = 4.8% (95% CI 3.6-6.3%) | c 49/1018 = 4.8% (95% CI 3.6-6.3%) | d 33/1018 = 3.2% (95% CI 2.2-4.5%)
+  artifacts N2, N3, N8, blind metric           n  2142 | a 376/2142 = 17.6% (95% CI 16.0-19.2%) | b 175/2142 = 8.2% (95% CI 7.0-9.4%) | c 175/2142 = 8.2% (95% CI 7.0-9.4%) | d 0/2142 = 0.0% (95% CI 0.0-0.2%)
+  N4, 3 against 3 donors (both cards)          n  1580 | a 196/1580 = 12.4% (95% CI 10.8-14.1%) | b 0/1580 = 0.0% (95% CI 0.0-0.2%) | c 15/1580 = 0.9% (95% CI 0.5-1.6%) | d 3/1580 = 0.2% (95% CI 0.0-0.6%)
+Useless metrics N6a-c (only 'metric invalid' or DEGENERATE METRIC is right; '-': the analyzer cannot say it):
+  'effect'                                     n  1630 | a 297/1630 = 18.2% (95% CI 16.4-20.2%) | b 44/1630 = 2.7% (95% CI 2.0-3.6%) | c 30/1630 = 1.8% (95% CI 1.2-2.6%) | d 0/1630 = 0.0% (95% CI 0.0-0.2%)
+  NO DETECTABLE EFFECT claimed                 n  1630 | a - | b - | c 803/1630 = 49.3% (95% CI 46.8-51.7%) | d 0/1630 = 0.0% (95% CI 0.0-0.2%)
+  flagged (metric invalid, DEGENERATE)         n  1630 | a - | b - | c - | d 1113/1630 = 68.3% (95% CI 66.0-70.5%)
+Real effects:
+  'effect', valid metric and |Δ*| >= SESOI     n   121 | a 121/121 = 100.0% (95% CI 97.0-100.0%) | b 120/121 = 99.2% (95% CI 95.5-100.0%) | c 120/121 = 99.2% (95% CI 95.5-100.0%) | d 118/121 = 97.5% (95% CI 92.9-99.5%)
+  'effect', ambiguous metric                   n   309 | a 224/309 = 72.5% (95% CI 67.2-77.4%) | b 176/309 = 57.0% (95% CI 51.2-62.6%) | c 176/309 = 57.0% (95% CI 51.2-62.6%) | d 88/309 = 28.5% (95% CI 23.5-33.9%)
+  blind metric: 'effect'                       n  1285 | a 274/1285 = 21.3% (95% CI 19.1-23.7%) | b 138/1285 = 10.7% (95% CI 9.1-12.6%) | c 138/1285 = 10.7% (95% CI 9.1-12.6%) | d 2/1285 = 0.2% (95% CI 0.0-0.6%)
+  blind metric: not significant ((a), (b))     n  1285 | a 955/1285 = 74.3% (95% CI 71.8-76.7%) | b 1126/1285 = 87.6% (95% CI 85.7-89.4%) | c - | d -
+  blind metric: NO DETECTABLE EFFECT ((c), (d)) n  1285 | a - | b - | c 575/1285 = 44.7% (95% CI 42.0-47.5%) | d 0/1285 = 0.0% (95% CI 0.0-0.3%)
+  blind metric: flagged ((d))                  n  1285 | a - | b - | c - | d 1283/1285 = 99.8% (95% CI 99.4-100.0%)
+
+## 1. False 'effect' on null data (N1-N5, N7, N8; nominal 2.5%)
+By condition and variant, all levels:
+  N1 null                    n   790 | a 121/790 = 15.3% (95% CI 12.9-18.0%) | b 18/790 = 2.3% (95% CI 1.4-3.6%) | c 18/790 = 2.3% (95% CI 1.4-3.6%) | d 5/790 = 0.6% (95% CI 0.2-1.5%)
+  N2 c=0.5                   n   790 | a 149/790 = 18.9% (95% CI 16.2-21.8%) | b 51/790 = 6.5% (95% CI 4.8-8.4%) | c 51/790 = 6.5% (95% CI 4.8-8.4%) | d 6/790 = 0.8% (95% CI 0.3-1.6%)
+  N2 c=0.9                   n   264 | a 40/264 = 15.2% (95% CI 11.1-20.1%) | b 8/264 = 3.0% (95% CI 1.3-5.9%) | c 8/264 = 3.0% (95% CI 1.3-5.9%) | d 2/264 = 0.8% (95% CI 0.1-2.7%)
+  N2 c=0.7                   n   263 | a 30/263 = 11.4% (95% CI 7.8-15.9%) | b 9/263 = 3.4% (95% CI 1.6-6.4%) | c 9/263 = 3.4% (95% CI 1.6-6.4%) | d 1/263 = 0.4% (95% CI 0.0-2.1%)
+  N2 c=0.3                   n   263 | a 63/263 = 24.0% (95% CI 18.9-29.6%) | b 30/263 = 11.4% (95% CI 7.8-15.9%) | c 30/263 = 11.4% (95% CI 7.8-15.9%) | d 2/263 = 0.8% (95% CI 0.1-2.7%)
+  N3 f=0.1                   n   264 | a 23/264 = 8.7% (95% CI 5.6-12.8%) | b 3/264 = 1.1% (95% CI 0.2-3.3%) | c 3/264 = 1.1% (95% CI 0.2-3.3%) | d 1/264 = 0.4% (95% CI 0.0-2.1%)
+  N3 f=0.2                   n   263 | a 31/263 = 11.8% (95% CI 8.2-16.3%) | b 10/263 = 3.8% (95% CI 1.8-6.9%) | c 10/263 = 3.8% (95% CI 1.8-6.9%) | d 3/263 = 1.1% (95% CI 0.2-3.3%)
+  N3 f=0.4                   n   263 | a 37/263 = 14.1% (95% CI 10.1-18.9%) | b 8/263 = 3.0% (95% CI 1.3-5.9%) | c 8/263 = 3.0% (95% CI 1.3-5.9%) | d 7/263 = 2.7% (95% CI 1.1-5.4%)
+  N4 3v3                     n  1580 | a 196/1580 = 12.4% (95% CI 10.8-14.1%) | b 0/1580 = 0.0% (95% CI 0.0-0.2%) | c 15/1580 = 0.9% (95% CI 0.5-1.6%) | d 3/1580 = 0.2% (95% CI 0.0-0.6%)
+  N5 sham                    n   790 | a 17/790 = 2.2% (95% CI 1.3-3.4%) | b 24/790 = 3.0% (95% CI 2.0-4.5%) | c 24/790 = 3.0% (95% CI 2.0-4.5%) | d 8/790 = 1.0% (95% CI 0.4-2.0%)
+  N7 mice                    n   790 | a 152/790 = 19.2% (95% CI 16.5-22.2%) | b 20/790 = 2.5% (95% CI 1.6-3.9%) | c 19/790 = 2.4% (95% CI 1.5-3.7%) | d 5/790 = 0.6% (95% CI 0.2-1.5%)
+  N8 beta(2,2)               n   790 | a 169/790 = 21.4% (95% CI 18.6-24.4%) | b 105/790 = 13.3% (95% CI 11.0-15.9%) | c 105/790 = 13.3% (95% CI 11.0-15.9%) | d 11/790 = 1.4% (95% CI 0.7-2.5%)
+By expression level, all null conditions:
+  high                       n  2390 | a 401/2390 = 16.8% (95% CI 15.3-18.3%) | b 72/2390 = 3.0% (95% CI 2.4-3.8%) | c 74/2390 = 3.1% (95% CI 2.4-3.9%) | d 54/2390 = 2.3% (95% CI 1.7-2.9%)
+  medium                     n  2417 | a 371/2417 = 15.3% (95% CI 13.9-16.8%) | b 126/2417 = 5.2% (95% CI 4.4-6.2%) | c 133/2417 = 5.5% (95% CI 4.6-6.5%) | d 0/2417 = 0.0% (95% CI 0.0-0.2%)
+  low                        n  2303 | a 256/2303 = 11.1% (95% CI 9.9-12.5%) | b 88/2303 = 3.8% (95% CI 3.1-4.7%) | c 93/2303 = 4.0% (95% CI 3.3-4.9%) | d 0/2303 = 0.0% (95% CI 0.0-0.2%)
+By condition and variant, the high level only:
+  N1 null high               n   271 | a 61/271 = 22.5% (95% CI 17.7-28.0%) | b 5/271 = 1.8% (95% CI 0.6-4.3%) | c 5/271 = 1.8% (95% CI 0.6-4.3%) | d 5/271 = 1.8% (95% CI 0.6-4.3%)
+  N2 c=0.5 high              n   255 | a 43/255 = 16.9% (95% CI 12.5-22.0%) | b 13/255 = 5.1% (95% CI 2.7-8.6%) | c 13/255 = 5.1% (95% CI 2.7-8.6%) | d 6/255 = 2.4% (95% CI 0.9-5.1%)
+  N2 c=0.9 high              n    94 | a 24/94 = 25.5% (95% CI 17.1-35.6%) | b 5/94 = 5.3% (95% CI 1.7-12.0%) | c 5/94 = 5.3% (95% CI 1.7-12.0%) | d 2/94 = 2.1% (95% CI 0.3-7.5%)
+  N2 c=0.7 high              n    90 | a 15/90 = 16.7% (95% CI 9.6-26.0%) | b 3/90 = 3.3% (95% CI 0.7-9.4%) | c 3/90 = 3.3% (95% CI 0.7-9.4%) | d 1/90 = 1.1% (95% CI 0.0-6.0%)
+  N2 c=0.3 high              n    84 | a 12/84 = 14.3% (95% CI 7.6-23.6%) | b 7/84 = 8.3% (95% CI 3.4-16.4%) | c 7/84 = 8.3% (95% CI 3.4-16.4%) | d 2/84 = 2.4% (95% CI 0.3-8.3%)
+  N3 f=0.1 high              n    80 | a 8/80 = 10.0% (95% CI 4.4-18.8%) | b 1/80 = 1.3% (95% CI 0.0-6.8%) | c 1/80 = 1.3% (95% CI 0.0-6.8%) | d 1/80 = 1.3% (95% CI 0.0-6.8%)
+  N3 f=0.2 high              n    79 | a 13/79 = 16.5% (95% CI 9.1-26.5%) | b 2/79 = 2.5% (95% CI 0.3-8.8%) | c 2/79 = 2.5% (95% CI 0.3-8.8%) | d 3/79 = 3.8% (95% CI 0.8-10.7%)
+  N3 f=0.4 high              n    83 | a 14/83 = 16.9% (95% CI 9.5-26.7%) | b 0/83 = 0.0% (95% CI 0.0-4.3%) | c 0/83 = 0.0% (95% CI 0.0-4.3%) | d 7/83 = 8.4% (95% CI 3.5-16.6%)
+  N4 3v3 high                n   560 | a 86/560 = 15.4% (95% CI 12.5-18.6%) | b 0/560 = 0.0% (95% CI 0.0-0.7%) | c 3/560 = 0.5% (95% CI 0.1-1.6%) | d 3/560 = 0.5% (95% CI 0.1-1.6%)
+  N5 sham high               n   265 | a 9/265 = 3.4% (95% CI 1.6-6.3%) | b 9/265 = 3.4% (95% CI 1.6-6.3%) | c 9/265 = 3.4% (95% CI 1.6-6.3%) | d 8/265 = 3.0% (95% CI 1.3-5.9%)
+  N7 mice high               n   276 | a 79/276 = 28.6% (95% CI 23.4-34.3%) | b 9/276 = 3.3% (95% CI 1.5-6.1%) | c 8/276 = 2.9% (95% CI 1.3-5.6%) | d 5/276 = 1.8% (95% CI 0.6-4.2%)
+  N8 beta(2,2) high          n   253 | a 37/253 = 14.6% (95% CI 10.5-19.6%) | b 18/253 = 7.1% (95% CI 4.3-11.0%) | c 18/253 = 7.1% (95% CI 4.3-11.0%) | d 11/253 = 4.3% (95% CI 2.2-7.6%)
+By the metric's truth (at risk: valid or ambiguous):
+  at risk                    n  2445 | a 413/2445 = 16.9% (95% CI 15.4-18.4%) | b 74/2445 = 3.0% (95% CI 2.4-3.8%) | c 76/2445 = 3.1% (95% CI 2.5-3.9%) | d 54/2445 = 2.2% (95% CI 1.7-2.9%)
+  blind                      n  4665 | a 615/4665 = 13.2% (95% CI 12.2-14.2%) | b 212/4665 = 4.5% (95% CI 4.0-5.2%) | c 224/4665 = 4.8% (95% CI 4.2-5.5%) | d 0/4665 = 0.0% (95% CI 0.0-0.1%)
+By condition, the cards at risk only:
+  N1 at risk                 n   271 | a 61/271 = 22.5% (95% CI 17.7-28.0%) | b 5/271 = 1.8% (95% CI 0.6-4.3%) | c 5/271 = 1.8% (95% CI 0.6-4.3%) | d 5/271 = 1.8% (95% CI 0.6-4.3%)
+  N2 at risk                 n   523 | a 94/523 = 18.0% (95% CI 14.8-21.5%) | b 28/523 = 5.4% (95% CI 3.6-7.6%) | c 28/523 = 5.4% (95% CI 3.6-7.6%) | d 11/523 = 2.1% (95% CI 1.1-3.7%)
+  N3 at risk                 n   242 | a 35/242 = 14.5% (95% CI 10.3-19.5%) | b 3/242 = 1.2% (95% CI 0.3-3.6%) | c 3/242 = 1.2% (95% CI 0.3-3.6%) | d 11/242 = 4.5% (95% CI 2.3-8.0%)
+  N4 at risk                 n   560 | a 86/560 = 15.4% (95% CI 12.5-18.6%) | b 0/560 = 0.0% (95% CI 0.0-0.7%) | c 3/560 = 0.5% (95% CI 0.1-1.6%) | d 3/560 = 0.5% (95% CI 0.1-1.6%)
+  N5 at risk                 n   265 | a 9/265 = 3.4% (95% CI 1.6-6.3%) | b 9/265 = 3.4% (95% CI 1.6-6.3%) | c 9/265 = 3.4% (95% CI 1.6-6.3%) | d 8/265 = 3.0% (95% CI 1.3-5.9%)
+  N7 at risk                 n   331 | a 91/331 = 27.5% (95% CI 22.8-32.6%) | b 11/331 = 3.3% (95% CI 1.7-5.9%) | c 10/331 = 3.0% (95% CI 1.5-5.5%) | d 5/331 = 1.5% (95% CI 0.5-3.5%)
+  N8 at risk                 n   253 | a 37/253 = 14.6% (95% CI 10.5-19.6%) | b 18/253 = 7.1% (95% CI 4.3-11.0%) | c 18/253 = 7.1% (95% CI 4.3-11.0%) | d 11/253 = 4.3% (95% CI 2.2-7.6%)
+'effect' or 'against' (any false detection; nominal 5%):
+  all nulls                  n  7110 | a 2089/7110 = 29.4% (95% CI 28.3-30.5%) | b 598/7110 = 8.4% (95% CI 7.8-9.1%) | c 619/7110 = 8.7% (95% CI 8.1-9.4%) | d 112/7110 = 1.6% (95% CI 1.3-1.9%)
+  at risk                    n  2445 | a 811/2445 = 33.2% (95% CI 31.3-35.1%) | b 152/2445 = 6.2% (95% CI 5.3-7.2%) | c 161/2445 = 6.6% (95% CI 5.6-7.6%) | d 112/2445 = 4.6% (95% CI 3.8-5.5%)
+  N1                         n   790 | a 213/790 = 27.0% (95% CI 23.9-30.2%) | b 41/790 = 5.2% (95% CI 3.7-7.0%) | c 41/790 = 5.2% (95% CI 3.7-7.0%) | d 16/790 = 2.0% (95% CI 1.2-3.3%)
+  N2                         n  1580 | a 588/1580 = 37.2% (95% CI 34.8-39.7%) | b 210/1580 = 13.3% (95% CI 11.7-15.1%) | c 210/1580 = 13.3% (95% CI 11.7-15.1%) | d 27/1580 = 1.7% (95% CI 1.1-2.5%)
+  N3                         n   790 | a 196/790 = 24.8% (95% CI 21.8-28.0%) | b 39/790 = 4.9% (95% CI 3.5-6.7%) | c 39/790 = 4.9% (95% CI 3.5-6.7%) | d 16/790 = 2.0% (95% CI 1.2-3.3%)
+  N4                         n  1580 | a 374/1580 = 23.7% (95% CI 21.6-25.8%) | b 0/1580 = 0.0% (95% CI 0.0-0.2%) | c 25/1580 = 1.6% (95% CI 1.0-2.3%) | d 10/1580 = 0.6% (95% CI 0.3-1.2%)
+  N5                         n   790 | a 36/790 = 4.6% (95% CI 3.2-6.3%) | b 44/790 = 5.6% (95% CI 4.1-7.4%) | c 44/790 = 5.6% (95% CI 4.1-7.4%) | d 10/790 = 1.3% (95% CI 0.6-2.3%)
+  N7                         n   790 | a 318/790 = 40.3% (95% CI 36.8-43.8%) | b 44/790 = 5.6% (95% CI 4.1-7.4%) | c 40/790 = 5.1% (95% CI 3.6-6.8%) | d 11/790 = 1.4% (95% CI 0.7-2.5%)
+  N8                         n   790 | a 364/790 = 46.1% (95% CI 42.6-49.6%) | b 220/790 = 27.8% (95% CI 24.7-31.1%) | c 220/790 = 27.8% (95% CI 24.7-31.1%) | d 22/790 = 2.8% (95% CI 1.8-4.2%)
+
+## 2. Real effects: the share 'effect' (sensitivity)
+The main cell: a valid metric and |Δ*| >= SESOI.
+  valid, |Δ*| >= SESOI       n   121 | a 121/121 = 100.0% (95% CI 97.0-100.0%) | b 120/121 = 99.2% (95% CI 95.5-100.0%) | c 120/121 = 99.2% (95% CI 95.5-100.0%) | d 118/121 = 97.5% (95% CI 92.9-99.5%)
+  valid, |Δ*| < SESOI        n    85 | a 78/85 = 91.8% (95% CI 83.8-96.6%) | b 73/85 = 85.9% (95% CI 76.6-92.5%) | c 73/85 = 85.9% (95% CI 76.6-92.5%) | d 67/85 = 78.8% (95% CI 68.6-86.9%)
+  ambiguous                  n   309 | a 224/309 = 72.5% (95% CI 67.2-77.4%) | b 176/309 = 57.0% (95% CI 51.2-62.6%) | c 176/309 = 57.0% (95% CI 51.2-62.6%) | d 88/309 = 28.5% (95% CI 23.5-33.9%)
+  blind                      n  1285 | a 274/1285 = 21.3% (95% CI 19.1-23.7%) | b 138/1285 = 10.7% (95% CI 9.1-12.6%) | c 138/1285 = 10.7% (95% CI 9.1-12.6%) | d 2/1285 = 0.2% (95% CI 0.0-0.6%)
+By condition and variant, a valid metric with |Δ*| >= SESOI:
+  E1 dose=key                n    54 | a 54/54 = 100.0% (95% CI 93.4-100.0%) | b 54/54 = 100.0% (95% CI 93.4-100.0%) | c 54/54 = 100.0% (95% CI 93.4-100.0%) | d 54/54 = 100.0% (95% CI 93.4-100.0%)
+  E1 dose=0.25               n     0 | a - | b - | c - | d -
+  E1 dose=0.5                n    13 | a 13/13 = 100.0% (95% CI 75.3-100.0%) | b 13/13 = 100.0% (95% CI 75.3-100.0%) | c 13/13 = 100.0% (95% CI 75.3-100.0%) | d 13/13 = 100.0% (95% CI 75.3-100.0%)
+  E1 dose=1.5                n    22 | a 22/22 = 100.0% (95% CI 84.6-100.0%) | b 21/22 = 95.5% (95% CI 77.2-99.9%) | c 21/22 = 95.5% (95% CI 77.2-99.9%) | d 21/22 = 95.5% (95% CI 77.2-99.9%)
+  E2 against                 n    12 | a 12/12 = 100.0% (95% CI 73.5-100.0%) | b 12/12 = 100.0% (95% CI 73.5-100.0%) | c 12/12 = 100.0% (95% CI 73.5-100.0%) | d 11/12 = 91.7% (95% CI 61.5-99.8%)
+  E3 with                    n    20 | a 20/20 = 100.0% (95% CI 83.2-100.0%) | b 20/20 = 100.0% (95% CI 83.2-100.0%) | c 20/20 = 100.0% (95% CI 83.2-100.0%) | d 19/20 = 95.0% (95% CI 75.1-99.9%)
+By condition, all truths (and 'against'):
+  E1 effect                  n  1000 | a 377/1000 = 37.7% (95% CI 34.7-40.8%) | b 300/1000 = 30.0% (95% CI 27.2-32.9%) | c 300/1000 = 30.0% (95% CI 27.2-32.9%) | d 195/1000 = 19.5% (95% CI 17.1-22.1%)
+  E1 against                 n  1000 | a 21/1000 = 2.1% (95% CI 1.3-3.2%) | b 6/1000 = 0.6% (95% CI 0.2-1.3%) | c 6/1000 = 0.6% (95% CI 0.2-1.3%) | d 0/1000 = 0.0% (95% CI 0.0-0.4%)
+  E2 effect                  n   400 | a 186/400 = 46.5% (95% CI 41.5-51.5%) | b 103/400 = 25.8% (95% CI 21.5-30.3%) | c 103/400 = 25.8% (95% CI 21.5-30.3%) | d 23/400 = 5.8% (95% CI 3.7-8.5%)
+  E2 against                 n   400 | a 1/400 = 0.3% (95% CI 0.0-1.4%) | b 0/400 = 0.0% (95% CI 0.0-0.9%) | c 0/400 = 0.0% (95% CI 0.0-0.9%) | d 0/400 = 0.0% (95% CI 0.0-0.9%)
+  E3 effect                  n   400 | a 134/400 = 33.5% (95% CI 28.9-38.4%) | b 104/400 = 26.0% (95% CI 21.8-30.6%) | c 104/400 = 26.0% (95% CI 21.8-30.6%) | d 57/400 = 14.3% (95% CI 11.0-18.1%)
+  E3 against                 n   400 | a 35/400 = 8.8% (95% CI 6.2-12.0%) | b 15/400 = 3.8% (95% CI 2.1-6.1%) | c 15/400 = 3.8% (95% CI 2.1-6.1%) | d 0/400 = 0.0% (95% CI 0.0-0.9%)
+By level, all real effects:
+  high                       n   612 | a 486/612 = 79.4% (95% CI 76.0-82.5%) | b 415/612 = 67.8% (95% CI 63.9-71.5%) | c 415/612 = 67.8% (95% CI 63.9-71.5%) | d 275/612 = 44.9% (95% CI 40.9-49.0%)
+  medium                     n   599 | a 142/599 = 23.7% (95% CI 20.4-27.3%) | b 61/599 = 10.2% (95% CI 7.9-12.9%) | c 61/599 = 10.2% (95% CI 7.9-12.9%) | d 0/599 = 0.0% (95% CI 0.0-0.6%)
+  low                        n   589 | a 69/589 = 11.7% (95% CI 9.2-14.6%) | b 31/589 = 5.3% (95% CI 3.6-7.4%) | c 31/589 = 5.3% (95% CI 3.6-7.4%) | d 0/589 = 0.0% (95% CI 0.0-0.6%)
+
+## 3. Blind and useless metrics: every analyzer's outcomes
+  null data, blind metric (n 4665):
+    a: not significant 3387/4665 = 72.6% (95% CI 71.3-73.9%); against 663/4665 = 14.2% (95% CI 13.2-15.2%); effect 615/4665 = 13.2% (95% CI 12.2-14.2%)
+    b: not significant 4219/4665 = 90.4% (95% CI 89.6-91.3%); against 234/4665 = 5.0% (95% CI 4.4-5.7%); effect 212/4665 = 4.5% (95% CI 4.0-5.2%)
+    c: NO DETECTABLE EFFECT 2861/4665 = 61.3% (95% CI 59.9-62.7%); INCONCLUSIVE 1346/4665 = 28.9% (95% CI 27.6-30.2%); NOT SUPPORTED: opposite direction 234/4665 = 5.0% (95% CI 4.4-5.7%); SUPPORTED 224/4665 = 4.8% (95% CI 4.2-5.5%)
+    d: NOT SUPPORTED: metric invalid (GATE 4/5) 4642/4665 = 99.5% (95% CI 99.3-99.7%); INCONCLUSIVE 13/4665 = 0.3% (95% CI 0.1-0.5%); REFUSAL: nuisance bias (GATE 0) 5/4665 = 0.1% (95% CI 0.0-0.2%); NO DETECTABLE EFFECT 5/4665 = 0.1% (95% CI 0.0-0.2%)
+  real effects, blind metric (n 1285):
+    a: not significant 955/1285 = 74.3% (95% CI 71.8-76.7%); effect 274/1285 = 21.3% (95% CI 19.1-23.7%); against 56/1285 = 4.4% (95% CI 3.3-5.6%)
+    b: not significant 1126/1285 = 87.6% (95% CI 85.7-89.4%); effect 138/1285 = 10.7% (95% CI 9.1-12.6%); against 21/1285 = 1.6% (95% CI 1.0-2.5%)
+    c: NO DETECTABLE EFFECT 575/1285 = 44.7% (95% CI 42.0-47.5%); INCONCLUSIVE 551/1285 = 42.9% (95% CI 40.2-45.6%); SUPPORTED 138/1285 = 10.7% (95% CI 9.1-12.6%); NOT SUPPORTED: opposite direction 21/1285 = 1.6% (95% CI 1.0-2.5%)
+    d: NOT SUPPORTED: metric invalid (GATE 4/5) 1283/1285 = 99.8% (95% CI 99.4-100.0%); SUPPORTED 2/1285 = 0.2% (95% CI 0.0-0.6%)
+  N6a (random) (n 790):
+    a: not significant 752/790 = 95.2% (95% CI 93.5-96.6%); effect 22/790 = 2.8% (95% CI 1.8-4.2%); against 16/790 = 2.0% (95% CI 1.2-3.3%)
+    b: not significant 747/790 = 94.6% (95% CI 92.7-96.0%); effect 25/790 = 3.2% (95% CI 2.1-4.6%); against 18/790 = 2.3% (95% CI 1.4-3.6%)
+    c: INCONCLUSIVE 764/790 = 96.7% (95% CI 95.2-97.8%); NOT SUPPORTED: opposite direction 15/790 = 1.9% (95% CI 1.1-3.1%); SUPPORTED 11/790 = 1.4% (95% CI 0.7-2.5%)
+    d: INCONCLUSIVE 516/790 = 65.3% (95% CI 61.9-68.6%); NOT SUPPORTED: metric invalid (GATE 4/5) 273/790 = 34.6% (95% CI 31.2-38.0%); NOT SUPPORTED: opposite direction 1/790 = 0.1% (95% CI 0.0-0.7%)
+  N6b (constant) (n 50):
+    a: not significant 50/50 = 100.0% (95% CI 92.9-100.0%)
+    b: not significant 50/50 = 100.0% (95% CI 92.9-100.0%)
+    c: NO DETECTABLE EFFECT 50/50 = 100.0% (95% CI 92.9-100.0%)
+    d: DEGENERATE METRIC 50/50 = 100.0% (95% CI 92.9-100.0%)
+  N6c (score) (n 790):
+    a: against 297/790 = 37.6% (95% CI 34.2-41.1%); effect 275/790 = 34.8% (95% CI 31.5-38.2%); not significant 218/790 = 27.6% (95% CI 24.5-30.9%)
+    b: not significant 753/790 = 95.3% (95% CI 93.6-96.7%); effect 19/790 = 2.4% (95% CI 1.5-3.7%); against 18/790 = 2.3% (95% CI 1.4-3.6%)
+    c: NO DETECTABLE EFFECT 753/790 = 95.3% (95% CI 93.6-96.7%); SUPPORTED 19/790 = 2.4% (95% CI 1.5-3.7%); NOT SUPPORTED: opposite direction 18/790 = 2.3% (95% CI 1.4-3.6%)
+    d: NOT SUPPORTED: metric invalid (GATE 4/5) 790/790 = 100.0% (95% CI 99.5-100.0%)
+  null data, at risk (n 2445):
+    a: not significant 1634/2445 = 66.8% (95% CI 64.9-68.7%); effect 413/2445 = 16.9% (95% CI 15.4-18.4%); against 398/2445 = 16.3% (95% CI 14.8-17.8%)
+    b: not significant 2293/2445 = 93.8% (95% CI 92.8-94.7%); against 78/2445 = 3.2% (95% CI 2.5-4.0%); effect 74/2445 = 3.0% (95% CI 2.4-3.8%)
+    c: NO DETECTABLE EFFECT 1747/2445 = 71.5% (95% CI 69.6-73.2%); INCONCLUSIVE 537/2445 = 22.0% (95% CI 20.3-23.7%); NOT SUPPORTED: opposite direction 85/2445 = 3.5% (95% CI 2.8-4.3%); SUPPORTED 76/2445 = 3.1% (95% CI 2.5-3.9%)
+    d: NO DETECTABLE EFFECT 1622/2445 = 66.3% (95% CI 64.4-68.2%); INCONCLUSIVE 459/2445 = 18.8% (95% CI 17.2-20.4%); NOT SUPPORTED: metric invalid (GATE 4/5) 182/2445 = 7.4% (95% CI 6.4-8.6%); NOT SUPPORTED: opposite direction 58/2445 = 2.4% (95% CI 1.8-3.1%); SUPPORTED 54/2445 = 2.2% (95% CI 1.7-2.9%); NOT SUPPORTED: explained by depth 44/2445 = 1.8% (95% CI 1.3-2.4%); REFUSAL: nuisance bias (GATE 0) 26/2445 = 1.1% (95% CI 0.7-1.6%)
+  real effects, valid, |Δ*| >= SESOI (n 121):
+    a: effect 121/121 = 100.0% (95% CI 97.0-100.0%)
+    b: effect 120/121 = 99.2% (95% CI 95.5-100.0%); not significant 1/121 = 0.8% (95% CI 0.0-4.5%)
+    c: SUPPORTED 120/121 = 99.2% (95% CI 95.5-100.0%); INCONCLUSIVE 1/121 = 0.8% (95% CI 0.0-4.5%)
+    d: SUPPORTED 118/121 = 97.5% (95% CI 92.9-99.5%); NOT SUPPORTED: metric invalid (GATE 4/5) 2/121 = 1.7% (95% CI 0.2-5.8%); INCONCLUSIVE 1/121 = 0.8% (95% CI 0.0-4.5%)
+
+## 4. (c) against the engine's own raw replicate-level test in the published reports
+Where (d) estimated the effect, its report holds the raw test at the replicate level (raw_detected,
+p_raw; the same data without the correction). (c) runs that test; with an exact permutation they must agree.
+  exact permutation or t interval: 2091 agree, 0 differ; Monte Carlo permutation (N7): 251, the same detection at alpha on 248 (their p differ by the Monte Carlo error: other draws)
+  (N6a's random metric is not compared: it draws a new number at every call, so its values depend on
+  the calls made before the effect, and (d) made GATE 0's, 4's and 5's first)
+
+## 5. Where (b) and (d) disagree on null data (decided after the results)
+A false 'effect' of (b) only is one the gates removed; of (d) only, one they made. For the latter, the
+report says whether the engine's raw replicate-level test (the uncorrected data) detected it, and how much
+of the raw difference the correction kept (retained > 1: the correction enlarged it).
+  condition                  at risk | both | (b) only -> what (d) said | (d) only: raw not detected, retained > 1
+  N1       n  271: (b)   5, (d)   5 |   4 |   1 -> NO DETECTABLE EFFECT 1 | 1: 1 of them
+  N2       n  523: (b)  28, (d)  11 |   6 |  22 -> NOT SUPPORTED: explained by depth 12, NO DETECTABLE EFFECT 7, NOT SUPPORTED: metric invalid (GATE 4/5) 2, INCONCLUSIVE 1 | 5: 2 of them
+  N3       n  242: (b)   3, (d)  11 |   2 |   1 -> NO DETECTABLE EFFECT 1 | 9: 9 of them
+  N4       n  560: (b)   0, (d)   3 |   0 |   0 -> - | 3: 0 of them
+  N5       n  265: (b)   9, (d)   8 |   8 |   1 -> INCONCLUSIVE 1 | 0: 0 of them
+  N7       n  331: (b)  11, (d)   5 |   5 |   6 -> NO DETECTABLE EFFECT 3, NOT SUPPORTED: metric invalid (GATE 4/5) 2, REFUSAL: nuisance bias (GATE 0) 1 | 0: 0 of them
+  N8       n  253: (b)  18, (d)  11 |   8 |  10 -> NOT SUPPORTED: explained by depth 6, NO DETECTABLE EFFECT 3, NOT SUPPORTED: metric invalid (GATE 4/5) 1 | 3: 3 of them
+  all      n 2445: (b) 74, (d) 54 | 33 | 41 removed by the gates | 21 added by them, 15 of these by a correction that enlarged an undetected raw difference
+The cards of N3 at f = 0.4 (high level) that (d) SUPPORTED:
+  D1618 pair 5: (b) p 0.165; (d) raw +0.1251 (p 0.165), corrected +0.1696 (p 0.0387), retained 1.36
+  D2102 pair 1: (b) p 0.060; (d) raw -0.1399 (p 0.060), corrected -0.2484 (p 0.0028), retained 1.78
+  D2181 pair 3: (b) p 0.186; (d) raw -0.0732 (p 0.186), corrected -0.1267 (p 0.0426), retained 1.73
+  D2798 pair 6: (b) p 0.278; (d) raw +0.0414 (p 0.278), corrected +0.1114 (p 0.0076), retained 2.69
+  D7013 pair 6: (b) p 0.068; (d) raw -0.1299 (p 0.068), corrected -0.1813 (p 0.0078), retained 1.40
+  D7563 pair 6: (b) p 0.131; (d) raw -0.0894 (p 0.131), corrected -0.1265 (p 0.0434), retained 1.42
+  D8801 pair 3: (b) p 0.335; (d) raw -0.0323 (p 0.335), corrected -0.0853 (p 0.0365), retained 2.64
+Real effects SUPPORTED by (d) whose raw replicate-level difference was not detected (the correction made them detectable): E1 1 of 195, E2 2 of 23, E3 0 of 57
+N8 at risk, the false 'effects' of (b) by gene pair: pair 7 6/32, pair 4 5/32, pair 1 5/32, pair 0 1/35, pair 3 1/29
+N8 at risk, the false 'effects' of (d) by gene pair: pair 7 6/32, pair 4 3/32, pair 1 1/32, pair 3 1/29
+
