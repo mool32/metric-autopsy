@@ -13,10 +13,10 @@
 #   (requirements-select.txt); the TMS FACS datasets must be the audit's, and case 1's units and
 #   their cells are checked against the audit's per-mouse table; the cases' cells and select.json go
 #   to the artifact pilot2-data;
-# - run: three parallel jobs (case 1's mi_3bin claims 1a and 1a-floor, its norm_pearson claim 1b, and
-#   case 2), each in v1's analysis environment (requirements-panel.txt, v1's numerical settings) with
-#   the engine of the tag v0.3.0-prereg from a worktree (src/ the tag's byte for byte: its git tree
-#   and the sha256 that DEVIATIONS.md D1 records);
+# - run: four parallel jobs (case 1's claims 1a, 1a-floor and 1b, one each, and case 2), each in v1's
+#   analysis environment (requirements-panel.txt, v1's numerical settings) with the engine of the tag
+#   v0.3.0-prereg from a worktree (src/ the tag's byte for byte: its git tree and the sha256 that
+#   DEVIATIONS.md D1 records);
 # - collect: once the analyses have started, whatever they produced is merged and committed with the
 #   selection, the cells and the run's facts to the new branch results/real-pilot-2, failures included.
 # A second start finds the branch and stops. If the extraction fails, no analysis starts and nothing
@@ -85,10 +85,10 @@ jobs:
       - name: The second run's whole path on a fabricated Census (SYNTHETIC)
         run: |
           "$RUNNER_TEMP/venv-select/bin/python" validation/exploratory/real_pilot_select.py --synthetic --second --out-dir dry/data
-          for part in case1a case1b case2; do
+          for part in case1a case1f case1b case2; do
             "$RUNNER_TEMP/venv-panel/bin/python" validation/exploratory/real_pilot.py --data dry/data --out "dry/part-$part" --part "$part" > "dry/$part.stdout"
           done
-          "$RUNNER_TEMP/venv-panel/bin/python" validation/exploratory/real_pilot.py --merge dry/part-* --out dry/merged --expect case1a case1b case2
+          "$RUNNER_TEMP/venv-panel/bin/python" validation/exploratory/real_pilot.py --merge dry/part-* --out dry/merged --expect case1a case1f case1b case2
           if grep -n "EXCEPTION\|MISMATCH\|MISSING\|INCOMPLETE" dry/merged/real_pilot.log; then exit 1; fi
 
   check:
@@ -148,7 +148,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [case1a, case1b, case2]
+        part: [case1a, case1f, case1b, case2]
     steps:
       - name: One attempt
         run: test "$GITHUB_RUN_ATTEMPT" = 1
@@ -229,7 +229,7 @@ jobs:
       - name: Merge the parts (a part that is missing is recorded as missing)
         run: |
           mkdir -p parts merged
-          python validation/exploratory/real_pilot.py --merge parts parts/* --out merged --expect case1a case1b case2
+          python validation/exploratory/real_pilot.py --merge parts parts/* --out merged --expect case1a case1f case1b case2
       - name: Commit everything, as it is, to results/real-pilot-2 (a second start finds the branch and stops)
         if: always()
         run: |
@@ -251,7 +251,7 @@ jobs:
             echo
             echo "- Workflow run ${{ github.run_id }} (attempt $GITHUB_RUN_ATTEMPT) of \`.github/workflows/real-pilot-2.yml\` (blob $workflow_blob), at the pull request's head ${{ github.event.pull_request.head.sha }}; the plan: \`validation/exploratory/real_pilot_plan.md\` there, its section \"Deviation: a second run of cases 1 and 2\". The first run is on the branch results/real-pilot."
             echo "- The engine: the tag $FROZEN_TAG, src/ git tree $SRC_TREE (sha256 of its files' sha256 list $SRC_SHA256), installed from a worktree."
-            echo "- The jobs: select ${{ needs.select.result }}; run (the three parts) ${{ needs.run.result }}."
+            echo "- The jobs: select ${{ needs.select.result }}; run (the four parts) ${{ needs.run.result }}."
             echo "- select/: the extraction's log, select.json (every choice and the facts that decided it), the environment. data/: the cells of each case (panel.save_npz; files over 45 MB split into .part-NN, to be concatenated). run/: the merged log and JSON (real_pilot.log, real_pilot.json), the engine's reports (reports/) and each part's own outputs (parts/)."
             echo "- Data: the CELLxGENE Census, release 2025-11-08 (CC BY 4.0); the datasets' ids and DOIs are in select/select.json."
           } > "$pub/README.md"

@@ -159,8 +159,8 @@ did not run there: the structure check's absolute threshold excluded the female 
 development data, so a deviation is admissible. Case 3 is not run again.
 
 - **One attempt**, outputs committed by its workflow (`.github/workflows/real-pilot-2.yml`, started
-  by the label `pilot-run-2`) to the new branch `results/real-pilot-2`; the analyses run as three
-  parallel jobs (case 1's `mi_3bin` claims, its `norm_pearson` claim, case 2). Everything else is as
+  by the label `pilot-run-2`) to the new branch `results/real-pilot-2`; the analyses run as four
+  parallel jobs (case 1's three claims, one each, and case 2). Everything else is as
   above: the engine of the tag `v0.3.0-prereg`, v1's environments, the Census release 2025-11-08,
   the analyses (a), (b) and (d) and their comparison.
 - **Case 2: the sex of a mouse by contrast**, fixed here before the run. A mouse is female where a

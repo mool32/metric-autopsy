@@ -555,7 +555,8 @@ def summary_lines(results: dict) -> list:
 
 PARTS = {"case1": ("case1", ""), "case2": ("case2", ""), "case3a": ("case3", "3a"), "case3b": ("case3", "3b"),
          "case3c": ("case3", "3c"),  # the workflow's parallel jobs: a case, or a case's claims by prefix
-         "case1a": ("case1", "1a"), "case1b": ("case1", "1b")}  # the second run: case 1's mi_3bin claims, its norm_pearson one
+         "case1a": ("case1", ("1a",)), "case1f": ("case1", ("1a-floor",)),  # the second run: case 1's claims
+         "case1b": ("case1", ("1b",))}                                       # one by one (a tuple: exact ids)
 FIRST_RUN_PARTS = ("case1", "case2", "case3a", "case3b", "case3c")  # what a merge expects by default
 
 
@@ -647,6 +648,7 @@ def main(argv=None) -> int:
                    estimand="composition"),
                cases={})
     want_case, prefix = PARTS[args.part] if args.part else (None, "")
+    picks = (lambda cid: cid in prefix) if isinstance(prefix, tuple) else (lambda cid: cid.startswith(prefix))
     stem = args.part or "real_pilot"
 
     def save(complete: bool):
@@ -661,7 +663,7 @@ def main(argv=None) -> int:
             out["cases"][name] = dict(status=case.get("status"), reason=case.get("reason") or case.get("error"))
             log(f"## {name}: not run ({out['cases'][name]['reason']})", "")
             continue
-        case = dict(case, claims=[c for c in case["claims"] if c["id"].startswith(prefix)])
+        case = dict(case, claims=[c for c in case["claims"] if picks(c["id"])])
 
         def partial_save(res, name=name):
             out["cases"][name] = res
@@ -674,7 +676,8 @@ def main(argv=None) -> int:
             log(f"## {name}: EXCEPTION {exc!r}", *res["traceback"])
         res["seconds"] = round(time.time() - t1, 1)
         out["cases"][name] = res
-        log(f"{name}{' ' + prefix if prefix else ''}: {res['seconds']} s", "")
+        log(f"{name}{' ' + ', '.join(prefix) if isinstance(prefix, tuple) else ' ' + prefix if prefix else ''}: "
+            f"{res['seconds']} s", "")
     out["seconds"] = round(time.time() - t0, 1)
     if not args.part:
         log(*summary_lines(out["cases"]))
