@@ -1,0 +1,58 @@
+# The pilot's tallies (from real_pilot.json, sha256 f4436ba146e2c22345de7319a39de26c94940c3ba7228ccb175d8bc23801e790)
+engine 0.3.0.dev0 (/home/runner/work/_temp/engine/src/metric_autopsy); python 3.13.16; numpy 2.5.3
+parts: case1a 422.9 s, complete True; case1f 865.7 s, complete True; case1b 508.1 s, complete True; case2 293.1 s, complete True
+
+## case1: run
+claims: 3; cells 76797, genes 2000
+(a) conclusions: {'against': 1, 'none': 2}
+(b) conclusions: {'absence': 1, 'against': 1, 'none': 1}
+(d) conclusions: {'against': 1, 'none': 2}
+(d) under the known issue: {'against': 1, 'none': 2}
+(d) verdicts: {'NOT SUPPORTED': 3}; causes: {'metric_invalid_gate4': 2, 'opposite_direction': 1}
+raw_detected among (d)'s SUPPORTED: []
+(a) differs from (b) on 1 of 3
+(d) changes (b) on 1 of 3:
+  1a: (b) absence -> (d) none [metric_invalid_gate4]; changed by GATE 4 (no response to the injected signal)
+the known issue changes the comparison on 0 of 3
+(b)'s per-donor values (the metric per donor, or per donor the first group minus the second where every donor is in both), min to max:
+  1a mi_3bin: +0.0049 to +0.0469 over 17 donors; SESOI 0.1
+  1a-floor mi_3bin: +0.0049 to +0.0469 over 17 donors; SESOI floor (0.01568)
+  1b norm_pearson: -0.4023 to +0.9700 over 17 donors; SESOI 0.1
+(b)'s design floor (v0.4's change 4, by hand) and the SESOI used:
+  1a mi_3bin: floor 0.01568 (SE 0.003988, df 13); SESOI 0.1, used 0.1; (b) absence, (d) NOT SUPPORTED with SESOI 0.1 (construct scale)
+  1a-floor mi_3bin: floor 0.01568 (SE 0.003988, df 13); SESOI floor, used 0.01568; (b) none, (d) NOT SUPPORTED with SESOI 0.01568 (observed scale)
+  1b norm_pearson: floor 0.4719 (SE 0.12, df 13); SESOI 0.1, used 0.1; (b) against, (d) NOT SUPPORTED with SESOI 0.1 (construct scale)
+(b) per stratum (the exact permutation within each):
+  1a mi_3bin female: 5 against 3, means 0.01186 against 0.0136, p 0.6786 (exact, 56)
+  1a mi_3bin male: 5 against 4, means 0.02859 against 0.008844, p 0.01587 (exact, 126)
+  1a-floor mi_3bin female: 5 against 3, means 0.01186 against 0.0136, p 0.6786 (exact, 56)
+  1a-floor mi_3bin male: 5 against 4, means 0.02859 against 0.008844, p 0.01587 (exact, 126)
+  1b norm_pearson female: 5 against 3, means -0.043 against 0.608, p 0.08929 (exact, 56)
+  1b norm_pearson male: 5 against 4, means -0.04354 against 0.08693, p 0.04762 (exact, 126)
+1a: (b)'s per-mouse values against the audit's section E: 17 mice, max |diff| 0.00e+00, only here none, only in the audit none
+1a-floor: (b)'s per-mouse values against the audit's section E: 17 mice, max |diff| 0.00e+00, only here none, only in the audit none
+(d) seconds per claim: mi_3bin n=2 median 632 (min 411, max 853); norm_pearson n=1 median 501 (min 501, max 501); all 1765 s
+
+## case2: run
+claims: 2; cells 2088, genes 2000
+(a) conclusions: {'effect': 2}
+(b) conclusions: {'effect': 2}
+(d) conclusions: {'none': 2}
+(d) under the known issue: {'none': 2}
+(d) verdicts: {'NOT SUPPORTED': 2}; causes: {'metric_invalid_gate4': 2}
+raw_detected among (d)'s SUPPORTED: []
+(a) differs from (b) on 0 of 2
+(d) changes (b) on 2 of 2:
+  2a: (b) effect -> (d) none [metric_invalid_gate4]; changed by GATE 4 (no response to the injected signal)
+  2b: (b) effect -> (d) none [metric_invalid_gate4]; changed by GATE 4 (no response to the injected signal)
+the known issue changes the comparison on 0 of 2
+effects found by (b) or (d), against the SESOI (Delta second - first; (d) corrected, first - second):
+  2a log_cp10k_mean(Xist): (b) effect, Delta -0.2215, 90% CI [-0.3371, -0.1059], p 0.02857; (d) NOT SUPPORTED, effect +nan, CI [], p None, TOST equivalent None within +-none; SESOI 0.5; |Delta| / SESOI 0.44
+  2b log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty): (b) effect, Delta +0.6700, 90% CI [+0.6185, +0.7215], p 0.02857; (d) NOT SUPPORTED, effect +nan, CI [], p None, TOST equivalent None within +-none; SESOI 0.5; |Delta| / SESOI 1.34
+(b)'s per-donor values (the metric per donor, or per donor the first group minus the second where every donor is in both), min to max:
+  2a log_cp10k_mean: +0.0000 to +0.3036 over 7 donors; SESOI 0.5
+  2b log_cp10k_mean: +0.0000 to +0.7291 over 7 donors; SESOI 0.5
+(b)'s design floor (v0.4's change 4, by hand) and the SESOI used:
+  2a log_cp10k_mean: floor 0.2846 (SE 0.04034, df 2.057); SESOI 0.5, used 0.5; (b) effect, (d) NOT SUPPORTED with SESOI 0.5 (construct scale)
+  2b log_cp10k_mean: floor 0.1211 (SE 0.02188, df 3); SESOI 0.5, used 0.5; (b) effect, (d) NOT SUPPORTED with SESOI 0.5 (construct scale)
+(d) seconds per claim: log_cp10k_mean n=2 median 146 (min 146, max 146); all 292 s
