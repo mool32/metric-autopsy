@@ -1,0 +1,179 @@
+# The pilot's extraction (validation/exploratory/real_pilot_plan.md)
+
+Census release 2025-11-08: {'census_schema_version': '2.4.0', 'census_build_date': '2025-11-08', 'dataset_schema_version': '7.0.0', 'total_cell_count': '217768036', 'unique_cell_count': '125463259'}
+TMS FACS datasets: 17; the same as the audit's: True
+TMS FACS: 110,824 primary Smart-seq2 cells of 17 datasets with the named genes read in 16 s; named genes missing: none; raw: True
+Cells and donor ids per sex and stage (composite ids included here):
+| sex | development_stage | cells | mice |
+|---|---|---|---|
+| female | 18-month-old stage | 19163 | 2 |
+| female | 20-month-old stage and over | 728 | 3 |
+| female | 3-month-old stage | 19315 | 5 |
+| male | 18-month-old stage | 14864 | 2 |
+| male | 20-month-old stage and over | 31551 | 4 |
+| male | 3-month-old stage | 25203 | 5 |
+
+## Case 1: MI coupling on Tabula Muris Senis (FACS), young (3 months) against old ('20-month-old stage and over'), within sex
+Eligible cell types (a sex is eligible with >= 3 young and >= 3 old mice of >= 20 cells), by the rule:
+| cell_type | sexes | mice | cells | codetected |
+|---|---|---|---|---|
+| mesenchymal stem cell of adipose tissue | male | male: 4 young, 4 old | 2478 | 996 |
+| fibroblast of cardiac tissue | male | male: 4 young, 4 old | 1660 | 543 |
+| fibroblast | male | male: 3 young, 4 old | 754 | 285 |
+| mesenchymal stem cell | male | male: 3 young, 4 old | 757 | 126 |
+| microglial cell | male | male: 3 young, 4 old | 6522 | 53 |
+| basal cell of epidermis | male | male: 4 young, 4 old | 2446 | 51 |
+| hematopoietic stem cell | male | male: 3 young, 4 old | 2130 | 35 |
+| basal cell | female | female: 4 young, 3 old | 1713 | 29 |
+| enterocyte of epithelium of large intestine | male | male: 4 young, 4 old | 1173 | 27 |
+| myeloid cell | male | male: 4 young, 4 old | 1425 | 26 |
+| intestinal crypt stem cell | male | male: 4 young, 3 old | 767 | 22 |
+| skeletal muscle satellite cell | male | male: 4 young, 4 old | 1467 | 20 |
+| endothelial cell | male | male: 4 young, 4 old | 2115 | 16 |
+| keratinocyte | male | male: 3 young, 4 old | 809 | 15 |
+| granulocyte | male | male: 3 young, 4 old | 1527 | 14 |
+| ... 22 more rows |  |  |  |  |
+Chosen: 'mesenchymal stem cell of adipose tissue' within male; 8 mice, 2478 cells (996 with Smad3 and Col1a1 both detected); extracted 2478 cells (at most 500 per mouse)
+Cells per mouse (extracted):
+| sex | age | mouse | cells |
+|---|---|---|---|
+| male | old | 24_58_M | 265 |
+| male | old | 24_59_M | 310 |
+| male | old | 24_60_M | 416 |
+| male | old | 24_61_M | 262 |
+| male | young | 3_10_M | 133 |
+| male | young | 3_11_M | 367 |
+| male | young | 3_8_M | 332 |
+| male | young | 3_9_M | 393 |
+Tissues of the extracted cells, per sex and age:
+| sex | age | tissue | cells |
+|---|---|---|---|
+| male | old | brown adipose tissue | 101 |
+| male | old | gonadal fat pad | 444 |
+| male | old | mesenteric fat pad | 323 |
+| male | old | subcutaneous adipose tissue | 385 |
+| male | young | brown adipose tissue | 57 |
+| male | young | gonadal fat pad | 425 |
+| male | young | mesenteric fat pad | 365 |
+| male | young | subcutaneous adipose tissue | 378 |
+case1.npz: 2478 cells x 2000 genes (21025 of 53384 genes measured in all 1 datasets read); named genes missing: none; sha256 aa1df57c37d52583c888e5541e7389c5eb7cdc3a8b56fddca9f1cce27c8448ce
+case1: run (49.6 s)
+
+## Case 2: Xist and the Y genes on Tabula Muris Senis (FACS), female against male, 3 months
+Structure per mouse of the 3-month stratum (all its cells), checked before any metric (female: Xist in >= 50% of cells and a Y gene in <= 5%; male: the reverse):
+| mouse | sex | cells | xist_share | y_share | call | kept | excluded_because | tissues |
+|---|---|---|---|---|---|---|---|---|
+| 3_10_M | male | 7244 | 0.0137 | 0.7022 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,pancreas,skin of body,spleen,subcutaneous adipose tissue,tongue,trachea |
+| 3_11_M | male | 3817 | 0.0147 | 0.5832 | male | True |  | aorta,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus |
+| 3_38_F | female | 7814 | 0.4213 | 0.0154 | neither | False | neither call | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_39_F | female | 7985 | 0.5781 | 0.01 | female | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_56_F | female | 3041 | 0.5886 | 0.0079 | female | True |  | bladder lumen,brain,brown adipose tissue,gonadal fat pad,heart,large intestine,liver,mammary gland,mesenteric fat pad,subcutaneous adipose tissue |
+| 3_57_F | female | 400 | 0.67 | 0.01 | female | True |  | liver,mammary gland |
+| 3_8_M | male | 7071 | 0.0117 | 0.715 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_9_M | male | 7008 | 0.0147 | 0.6983 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+Cell types over the kept mice:
+| cell_type | mice | female | male | every | cells |
+|---|---|---|---|---|---|
+| B cell | 6 | 2 | 4 | False | 1698 |
+| Bergmann glial cell | 0 | 0 | 0 | False | 0 |
+| CD4-positive, alpha-beta T cell | 6 | 2 | 4 | False | 306 |
+| CD8-positive, alpha-beta T cell | 6 | 2 | 4 | False | 201 |
+| DN4 thymocyte | 4 | 1 | 3 | False | 288 |
+| Kupffer cell | 1 | 0 | 1 | False | 33 |
+| T cell | 6 | 2 | 4 | False | 337 |
+| adventitial cell | 4 | 0 | 4 | False | 133 |
+| aortic endothelial cell | 3 | 1 | 2 | False | 175 |
+| astrocyte | 5 | 2 | 3 | False | 434 |
+| basal cell | 3 | 3 | 0 | False | 798 |
+| basal cell of epidermis | 5 | 1 | 4 | False | 1534 |
+| basal epithelial cell of tracheobronchial tree | 2 | 1 | 1 | False | 42 |
+| basophil | 0 | 0 | 0 | False | 0 |
+| bladder cell | 5 | 2 | 3 | False | 634 |
+| ... 98 more rows |  |  |  |  |  |
+Case 2 does not run: no type has at least 20 cells in 3 mice of each sex.
+case2: not run (0.2 s)
+
+## Case 3: a negative control, the same donors in two technical conditions
+mus_musculus: 17,673,096 cells counted (is_primary_data == True and disease == 'normal' and tissue_type == 'tissue') in 4 s
+homo_sapiens: 59,076,311 cells counted (is_primary_data == True and disease == 'normal' and tissue_type == 'tissue') in 15 s
+Qualifying sets (>= 4 donors with >= 50 cells in both conditions), by the rule; excluded ones are not chosen:
+| organism | collection_name | tissue | cell_type | condition_1 | condition_2 | donors | cells | excluded |
+|---|---|---|---|---|---|---|---|---|
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | L2/3-6 intratelencephalic projecting glutamatergic neuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 16 | 178419 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | VIP GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 15 | 22983 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | pvalb GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 15 | 20159 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | lamp5 GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 15 | 13643 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | sst GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 15 | 11702 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | oligodendrocyte | 10x 3' v3 | nucleus | 10x multiome | nucleus | 14 | 23687 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | near-projecting glutamatergic cortical neuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 14 | 4411 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | dorsolateral prefrontal cortex | L2/3-6 intratelencephalic projecting glutamatergic neuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 117295 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | dorsolateral prefrontal cortex | pvalb GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 19858 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | dorsolateral prefrontal cortex | VIP GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 17801 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | dorsolateral prefrontal cortex | lamp5 GABAergic cortical interneuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 14020 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | astrocyte of the cerebral cortex | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 13653 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | dorsolateral prefrontal cortex | astrocyte of the cerebral cortex | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 13118 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | microglial cell | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 7235 | - |
+| homo_sapiens | SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas | middle temporal gyrus | corticothalamic-projecting glutamatergic cortical neuron | 10x 3' v3 | nucleus | 10x multiome | nucleus | 13 | 4014 | - |
+| ... 84 more rows |  |  |  |  |  |  |  |  |
+Rank 1: 'SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas' (1ca90a2d-2943-483d-b678-b809bf464c30, DOI 10.1038/s41593-024-01774-5), homo_sapiens, 'middle temporal gyrus', 'L2/3-6 intratelencephalic projecting glutamatergic neuron': A = "10x 3' v3 | nucleus", B = '10x multiome | nucleus'; 16 qualifying donors; extracting 15711 cells
+Cells per donor and condition (extracted):
+| donor | group | sex | development_stage | cells |
+|---|---|---|---|---|
+| H20.33.001 | A | male | 82-year-old stage | 500 |
+| H20.33.001 | B | male | 82-year-old stage | 500 |
+| H20.33.002 | A | female | 80 year-old and over stage | 500 |
+| H20.33.002 | B | female | 80 year-old and over stage | 500 |
+| H20.33.005 | A | female | 80 year-old and over stage | 500 |
+| H20.33.005 | B | female | 80 year-old and over stage | 500 |
+| H20.33.008 | A | female | 80 year-old and over stage | 500 |
+| H20.33.008 | B | female | 80 year-old and over stage | 500 |
+| H20.33.012 | A | female | 80 year-old and over stage | 500 |
+| H20.33.012 | B | female | 80 year-old and over stage | 500 |
+| H20.33.013 | A | male | 80 year-old and over stage | 500 |
+| H20.33.013 | B | male | 80 year-old and over stage | 500 |
+| H20.33.014 | A | female | 82-year-old stage | 500 |
+| H20.33.014 | B | female | 82-year-old stage | 500 |
+| H20.33.019 | A | female | 87-year-old stage | 500 |
+| H20.33.019 | B | female | 87-year-old stage | 500 |
+| H20.33.025 | A | male | 80 year-old and over stage | 500 |
+| H20.33.025 | B | male | 80 year-old and over stage | 500 |
+| H20.33.027 | A | female | 80 year-old and over stage | 500 |
+| H20.33.027 | B | female | 80 year-old and over stage | 500 |
+| H20.33.039 | A | female | 80 year-old and over stage | 500 |
+| H20.33.039 | B | female | 80 year-old and over stage | 500 |
+| H20.33.043 | A | male | 85-year-old stage | 500 |
+| H20.33.043 | B | male | 85-year-old stage | 500 |
+| H20.33.044 | A | male | 81-year-old stage | 500 |
+| H20.33.044 | B | male | 81-year-old stage | 211 |
+| H21.33.003 | A | male | 78-year-old stage | 500 |
+| H21.33.003 | B | male | 78-year-old stage | 500 |
+| H21.33.006 | A | male | 80 year-old and over stage | 500 |
+| H21.33.006 | B | male | 80 year-old and over stage | 500 |
+| H21.33.019 | A | male | 75-year-old stage | 500 |
+| H21.33.019 | B | male | 75-year-old stage | 500 |
+case3.npz: 15711 cells x 2000 genes (35483 of 61497 genes measured in all 1 datasets read); sha256 31c297fe83adac9d93ff905695301bf69f09d583f9306ef980ae4210bedc8568
+Claims, chosen on the pooled cells of both conditions (two-sided; no difference exists by construction):
+  3a1: norm_pearson(HS6ST3, DGKB); pooled r 0.7378
+  3a2: norm_pearson(SYN3, PDZD2); pooled r 0.7357
+  3a3: norm_pearson(LRP1B, DPP10); pooled r 0.6382
+  3a4: norm_pearson(LSAMP, KAZN); pooled r 0.6370
+  3a5: norm_pearson(PTPRD, CNTNAP2); pooled r 0.6160
+  3a6: norm_pearson(LRRTM4, ADGRL3); pooled r 0.5568
+  3a7: norm_pearson(NKAIN2, MDGA2); pooled r 0.5311
+  3a8: norm_pearson(CNTN5, TAFA2); pooled r 0.5080
+  3b1: norm_pearson(RASGRF2, KIAA1217); pooled r 0.5662
+  3b2: norm_pearson(GALNT13, PDE8B); pooled r 0.5472
+  3b3: norm_pearson(TRHDE, SLC44A5); pooled r 0.4326
+  3b4: norm_pearson(ENSG00000254394, SLC35F1); pooled r 0.4094
+  3b5: norm_pearson(TLN2, DIAPH2); pooled r 0.4080
+  3b6: norm_pearson(CUX2, DAPK1); pooled r 0.3660
+  3b7: norm_pearson(CALN1, PTPRR); pooled r 0.3626
+  3b8: norm_pearson(STXBP5-AS1, ZMAT4); pooled r 0.3370
+  3c1: log_cp10k_mean(MALAT1); mean CP10k 324.50
+  3c2: log_cp10k_mean(KCNIP4); mean CP10k 199.99
+  3c3: log_cp10k_mean(RBFOX1); mean CP10k 94.02
+  3c4: log_cp10k_mean(CSMD1); mean CP10k 79.34
+  top_genes: ['MALAT1', 'KCNIP4', 'RBFOX1', 'CSMD1', 'SNHG14', 'CADM2', 'ADGRB3', 'PCDH9', 'PTPRD', 'SYT1']
+case3: run (210.0 s)
+
+extraction: 281.2 s in all; failed cases: none

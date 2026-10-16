@@ -1,0 +1,31 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case1
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case1: 2478 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=4
+### 1a: mi_3bin(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.0018, p 0.721 over 1 strata -> none (0.78 s)
+- (b) donors (nested, {'young': 4, 'old': 4}): Delta -0.0001, p 1 (exact, 70; min attainable 0.0286), 90% CI [-0.0077, +0.0075], TOST at +-0.1: True -> absence (0.87 s)
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters [cause metric_invalid_gate4] -> none (16.89 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 PASS
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+### 1b: norm_pearson(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.1373, p 0.029 over 1 strata -> against (0.05 s)
+- (b) donors (nested, {'young': 4, 'old': 4}): Delta +0.0839, p 0.4286 (exact, 70; min attainable 0.0286), 90% CI [-0.1167, +0.2846], TOST at +-0.1: False -> none (0.01 s)
+- (d) engine: NOT SUPPORTED — metric invalid: controls: 1/1 strata fail controls (e.g. {'sex': 'male'}: negative control -0.118 outside the null (p=0.0498, null centre 0.0415)) [cause metric_invalid_gate5] -> none (18.91 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 PASS; 5 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): same; under the known issue: same
+case1: 37.7 s
+
+
+analyses (case1): 37.7 s in all

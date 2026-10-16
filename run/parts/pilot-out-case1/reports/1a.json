@@ -1,0 +1,318 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "mi_3bin",
+ "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters",
+ "cause": "metric_invalid_gate4",
+ "fields": {
+  "metric_validity": {
+   "status": "FAIL",
+   "reason": "injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": "PASS",
+    "gate4": "FAIL",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": 4
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 4, 'old': 4}",
+   "flags": [],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "permutation",
+    "replication": {
+     "kind": "nested",
+     "counts": {
+      "young": 4,
+      "old": 4
+     },
+     "n_eff": 4
+    },
+    "power": null,
+    "attenuation": {},
+    "equalization": null,
+    "notes": []
+   }
+  },
+  "effect": {
+   "status": "NOT_RUN",
+   "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+   "flags": [],
+   "detail": {}
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation",
+   "detail": {
+    "baseline": 0.008083064510696254,
+    "baseline_sd": 0.002330139164643119,
+    "null_center": 0.0047607543699456694,
+    "null_sd": 0.002217220608407866,
+    "signal": 0.003322310140750584,
+    "has_signal": false,
+    "immaterial_signal": true,
+    "scale": 0.1,
+    "scale_source": "effect",
+    "effect_scale": 0.1,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.004198135064083689,
+      "shift": -0.0038849294466125643,
+      "z": 8.989605879120395,
+      "shift_std": -0.03884929446612564,
+      "rel_change": 0.03884929446612564,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.0072277853074872835,
+      "shift": -0.0008552792032089701,
+      "z": 2.504518205813664,
+      "shift_std": -0.0085527920320897,
+      "rel_change": 0.0085527920320897,
+      "classification": "none",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.009692203327588769,
+      "shift": 0.001609138816892515,
+      "z": 3.6029828547306235,
+      "shift_std": 0.01609138816892515,
+      "rel_change": 0.01609138816892515,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {},
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.1,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.05,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.24x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": {
+       "sex": "male"
+      },
+      "n_a": 1225,
+      "n_b": 1253,
+      "median_n_genes_a": 1534.0,
+      "median_n_genes_b": 1237.0,
+      "n_genes_ratio": 1.2400970088924819,
+      "overlap": 0.35984182776801377,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       0.20516140910291294,
+       0.22521780996651483
+      ],
+      "ratio_ci": [
+       1.22772321467387,
+       1.2525955142687353
+      ],
+      "overlap_upper": 0.40921232536496827
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.2400970088924819,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "shape change between groups is likely dropout-driven (zero-frac 0.50 vs 0.69) \u2014 inspect the scatter",
+   "detail": {
+    "group_a": {
+     "n": 1225,
+     "zero_frac": 0.5036734693877551
+    },
+    "group_b": {
+     "n": 1253,
+     "zero_frac": 0.690343176376696
+    },
+    "dropout_gap": 0.1866697069889408,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "FAIL",
+   "message": "responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters",
+   "detail": {
+    "injection": "coupling(Smad3, Col1a1, strength=1.0)",
+    "direction": "increase",
+    "base": 0.007098182606949069,
+    "reference": "sham",
+    "delta_min": 0.05,
+    "alpha": 0.05,
+    "outcome": "FAIL",
+    "mean_response": 0.002461383097588353,
+    "sd_response": 0.0020196952609845896,
+    "n_rep": 200,
+    "ci": [
+     0.0021797600532859327,
+     0.002743006141890773
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.0021797600532859327,
+    "signed_upper": 0.002743006141890773,
+    "z": 17.23488402457517
+   }
+  },
+  {
+   "gate": 5,
+   "name": "Controls",
+   "status": "PASS",
+   "message": "positive fires and negative stays inside the empirical null in all 1 strata; null centre 0.011..0.011",
+   "detail": {
+    "rows": [
+     {
+      "stratum": {
+       "sex": "male"
+      },
+      "n_cells": 2478,
+      "pos": 0.1320624692098229,
+      "neg": 0.001301150704114525,
+      "null_center": 0.011027563176445987,
+      "null_sd": 0.0057785579521777075,
+      "pos_null_center": 0.09745414383254025,
+      "n_null": [
+       200,
+       200
+      ],
+      "n_pairs_available": 4950,
+      "p_neg": 0.06467661691542288,
+      "p_pos": 0.004975124378109453,
+      "method": "empirical/empirical",
+      "pos_fires": true,
+      "neg_ok": true,
+      "ok": true
+     }
+    ],
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "n_null": 200,
+    "legacy_band": false,
+    "pos_min": null,
+    "neg_max": null,
+    "pos_demonstrated": true,
+    "n_pos_fires": 1,
+    "pos_dose": 2.0,
+    "delta_min": 0.05,
+    "direction": "increase",
+    "n_rep": 200,
+    "neg_test_unattainable": [],
+    "controls_tied": true,
+    "metric_value": 0.007098182606949069,
+    "pair_metric_value": 0.007098182606949069
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "decrease",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "mi_3bin",
+  "group_col": "age",
+  "groups": [
+   "young",
+   "old"
+  ],
+  "within": [
+   "sex"
+  ],
+  "gene_pair": [
+   "Smad3",
+   "Col1a1"
+  ],
+  "pair_metric": "mi_3bin",
+  "pos_pair": [
+   "Actb",
+   "Gapdh"
+  ],
+  "neg_pair": [
+   "Tst",
+   "Lrrc42"
+  ],
+  "replicate_col": "mouse",
+  "signal_test": "coupling(Smad3, Col1a1, strength=1.0)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-16T11:21:56+00:00",
+  "environment": {
+   "metric_autopsy": "0.3.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "30fe1a607fb26c5df8d0c12dda9b3c6b07844307b4972673068003f951a746b1",
+  "data_shape": [
+   2478,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "798363099e7555bdbb18ba8ae06ebda11ab180fe360fa51e9ca90c0e567511ea",
+  "claim_id": "ffe84e527dea3eda1200671cf3cc73d8f3653636cefa6a69faaa1738bc5402e3",
+  "log": null
+ }
+}

@@ -1,0 +1,343 @@
+{
+ "synthetic": false,
+ "part": "case1",
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286",
+ "settings": {
+  "alpha": 0.05,
+  "cell_perms": 999,
+  "donor_perms": 9999,
+  "donor_max_exact": 20000,
+  "tost_level": 0.9,
+  "seed": 20261015,
+  "engine_seed": 0,
+  "judgment_pending": false,
+  "estimand": "composition"
+ },
+ "cases": {
+  "case1": {
+   "cells": 2478,
+   "genes": 2000,
+   "design": [
+    {
+     "sex": "male",
+     "age": "old",
+     "donors": 4
+    },
+    {
+     "sex": "male",
+     "age": "young",
+     "donors": 4
+    }
+   ],
+   "claims": [
+    {
+     "id": "1a",
+     "metric": "mi_3bin",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "seconds_check": 0.02,
+     "a": {
+      "delta": 0.0017761028250177155,
+      "p": 0.721,
+      "strata": 1,
+      "per_stratum": [
+       0.0017761028250177155
+      ],
+      "conclusion": "none",
+      "seconds": 0.78
+     },
+     "b": {
+      "design": "nested",
+      "delta": -9.84991148479334e-05,
+      "se": 0.0038498500157752888,
+      "df": 5.589991062956267,
+      "t_method": "welch",
+      "p": 1.0,
+      "perm_method": "exact",
+      "perm_n": 70,
+      "min_attainable_p": 0.02857142857142857,
+      "ci90": [
+       -0.007678876569264155,
+       0.007481878339568288
+      ],
+      "tost": true,
+      "counts": {
+       "young": 4,
+       "old": 4
+      },
+      "per_stratum": {
+       "male": {
+        "young": 4,
+        "old": 4
+       }
+      },
+      "values": {
+       "24_58_M": 0.008579361048163741,
+       "24_59_M": 0.006440667927404111,
+       "24_60_M": 0.00648169289993083,
+       "24_61_M": 0.016248505436247316,
+       "3_10_M": 0.014824196839811716,
+       "3_11_M": 0.0007390370065874646,
+       "3_8_M": 0.010423299112060495,
+       "3_9_M": 0.012157690812678059
+      },
+      "conclusion": "absence",
+      "seconds": 0.87
+     },
+     "d": {
+      "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters",
+      "label": "NOT SUPPORTED",
+      "cause": "metric_invalid_gate4",
+      "conclusion": "none",
+      "known_issue_label": "NOT SUPPORTED",
+      "known_issue_conclusion": "none",
+      "raw_detected": null,
+      "fields": {
+       "metric_validity": {
+        "status": "FAIL",
+        "reason": "injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 4, 'old': 4}",
+        "flags": []
+       },
+       "effect": {
+        "status": "NOT_RUN",
+        "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {},
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.24x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "shape change between groups is likely dropout-driven (zero-frac 0.50 vs 0.69) \u2014 inspect the scatter"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "FAIL",
+        "message": "responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters"
+       },
+       {
+        "gate": 5,
+        "name": "Controls",
+        "status": "PASS",
+        "message": "positive fires and negative stays inside the empirical null in all 1 strata; null centre 0.011..0.011"
+       }
+      ],
+      "report": "reports/1a.json",
+      "report_sha256": "19cabfb314cb50c1902ab7f0efc89274a730fe13d7fcdd4ec650938e96589c76",
+      "seconds": 16.89
+     },
+     "d_vs_b": "changed by GATE 4 (no response to the injected signal)",
+     "d_known_vs_b": "changed by GATE 4 (no response to the injected signal)"
+    },
+    {
+     "id": "1b",
+     "metric": "norm_pearson",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "seconds_check": 0.02,
+     "a": {
+      "delta": 0.13731320706949451,
+      "p": 0.029,
+      "strata": 1,
+      "per_stratum": [
+       0.13731320706949451
+      ],
+      "conclusion": "against",
+      "seconds": 0.05
+     },
+     "b": {
+      "design": "nested",
+      "delta": 0.08394881081997227,
+      "se": 0.10327432617866678,
+      "df": 5.999612949929585,
+      "t_method": "welch",
+      "p": 0.42857142857142855,
+      "perm_method": "exact",
+      "perm_n": 70,
+      "min_attainable_p": 0.02857142857142857,
+      "ci90": [
+       -0.11673414188719791,
+       0.2846317635271425
+      ],
+      "tost": false,
+      "counts": {
+       "young": 4,
+       "old": 4
+      },
+      "per_stratum": {
+       "male": {
+        "young": 4,
+        "old": 4
+       }
+      },
+      "values": {
+       "24_58_M": -0.10561683747369299,
+       "24_59_M": 0.047877132491214405,
+       "24_60_M": 0.24794587632085144,
+       "24_61_M": 0.016602037917666394,
+       "3_10_M": 0.16744902044079724,
+       "3_11_M": -0.15951889335566913,
+       "3_8_M": -0.019569255266392558,
+       "3_9_M": -0.11734790584258532
+      },
+      "conclusion": "none",
+      "seconds": 0.01
+     },
+     "d": {
+      "verdict": "NOT SUPPORTED \u2014 metric invalid: controls: 1/1 strata fail controls (e.g. {'sex': 'male'}: negative control -0.118 outside the null (p=0.0498, null centre 0.0415))",
+      "label": "NOT SUPPORTED",
+      "cause": "metric_invalid_gate5",
+      "conclusion": "none",
+      "known_issue_label": "NOT SUPPORTED",
+      "known_issue_conclusion": "none",
+      "raw_detected": null,
+      "fields": {
+       "metric_validity": {
+        "status": "FAIL",
+        "reason": "controls: 1/1 strata fail controls (e.g. {'sex': 'male'}: negative control -0.118 outside the null (p=0.0498, null centre 0.0415))",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 4, 'old': 4}",
+        "flags": []
+       },
+       "effect": {
+        "status": "NOT_RUN",
+        "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {},
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.24x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "shape change between groups is likely dropout-driven (zero-frac 0.50 vs 0.69) \u2014 inspect the scatter"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(Smad3, Col1a1, strength=1.0): +0.07292 against the sham (95% CI [+0.06991, +0.07593], 200 injections, expected increase)"
+       },
+       {
+        "gate": 5,
+        "name": "Controls",
+        "status": "FAIL",
+        "message": "1/1 strata fail controls (e.g. {'sex': 'male'}: negative control -0.118 outside the null (p=0.0498, null centre 0.0415))"
+       }
+      ],
+      "report": "reports/1b.json",
+      "report_sha256": "afe2c2a35db8e3f1ca1e655d9a869b1eb11068ff371192e2c09497b0412c7ff8",
+      "seconds": 18.91
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    }
+   ],
+   "data_sha256": "aa1df57c37d52583c888e5541e7389c5eb7cdc3a8b56fddca9f1cce27c8448ce",
+   "status": "run",
+   "seconds": 37.7
+  }
+ },
+ "complete": true,
+ "seconds": 37.7
+}

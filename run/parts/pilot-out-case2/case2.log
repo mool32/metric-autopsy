@@ -1,0 +1,9 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case2
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case2: not run (no type has at least 20 cells in 3 mice of each sex)
+
+
+analyses (case2): 0.0 s in all

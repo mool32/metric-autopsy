@@ -1,0 +1,615 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "norm_pearson",
+ "verdict": "SUPPORTED (provisional until replicated) [non-directional claim]",
+ "cause": "provisional",
+ "fields": {
+  "metric_validity": {
+   "status": "PASS",
+   "reason": "no nuisance bias; responds to coupling(SYN3, PDZD2, strength=1.0): +0.1982 against the sham (95% CI [+0.1974, +0.199], 200 injections, expected increase).",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": null,
+    "gate4": "PASS",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22126% -> \u03bb=0.93 at the analysed depth; MDE 0.03285 vs attenuated SESOI 0.09258 (SESOI 0.1 x \u03bb 0.93)",
+   "flags": [
+    "ATTENUATION"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "permutation",
+    "replication": {
+     "kind": "paired",
+     "counts": {
+      "pairs": 16
+     },
+     "n_eff": 16
+    },
+    "power": {
+     "mde": 0.03285260679079599,
+     "power": 0.8,
+     "sesoi": 0.1,
+     "lambda_": 0.9258397615613971,
+     "effective_sesoi": 0.09258397615613972,
+     "attenuation": {
+      "model": "reliability: noise \u221d 1/depth",
+      "a_half": 0.06467625823548903,
+      "k_over_depth": 0.07428524110967942,
+      "depth_ratio": 0.9274003342566952
+     }
+    },
+    "attenuation": {
+     "depth_downsample": 0.06467625823548903
+    },
+    "equalization": {
+     "strata": [
+      {
+       "stratum": "pooled",
+       "thinned_group": "A",
+       "n_thinned": 8000,
+       "mean_before": 28231.011625,
+       "mean_after": 26181.449617429647,
+       "mean_other": 26181.449617429647,
+       "depth_ratio": 0.9274003342566952,
+       "ks_after": 0.05007298015821554
+      }
+     ],
+     "depth_ratio": 0.9274003342566952
+    },
+    "notes": []
+   }
+  },
+  "effect": {
+   "status": "DETECTED",
+   "reason": "effect +0.0239 [+0.0005375, +0.04726], p=0.047 (monte-carlo permutation)",
+   "flags": [],
+   "detail": {
+    "cell_level_raw": 0.03492745878051484,
+    "cell_level_corrected": 0.0321925673139841,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.1,
+    "alpha": 0.05,
+    "effect": 0.023896708329863674,
+    "raw_effect": 0.02724110526526581,
+    "se": 0.010959291076945123,
+    "df": 15.0,
+    "t_method": "paired",
+    "ci": [
+     0.000537532344251683,
+     0.047255884315475664
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     0.004684519209286593,
+     0.043108897450440754
+    ],
+    "p_t": 0.04555789540299515,
+    "p_perm": 0.04695304695304695,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.006689428849675577,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": true,
+    "p_raw": 0.030969030969030968,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": 0.062334498975508135,
+      "corrected": 0.05918874323172829,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": 0.07706428847156477,
+      "corrected": 0.07546689862876159,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": 0.035790090854405876,
+      "corrected": 0.027345256570459275,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": 0.004376415065744044,
+      "corrected": 0.0010389593618646443,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": 0.04007417597995533,
+      "corrected": 0.03547975607826863,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": 0.011829905710222799,
+      "corrected": 0.010442216824297601,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": -0.018497799737648757,
+      "corrected": -0.022979877151229,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.02610689220497331,
+      "corrected": 0.024034754041889084,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.028435324745206048,
+      "corrected": 0.030286849767527733,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": -0.021646680473698332,
+      "corrected": -0.022130413207102094,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.02223791976556011,
+      "corrected": 0.018400128065560305,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": -0.06251101777095891,
+      "corrected": -0.06796235595001784,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": 0.07451737339579567,
+      "corrected": 0.0663278503840409,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": 0.08560702956348232,
+      "corrected": 0.07979939356266355,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.09156842937442788,
+      "corrected": 0.08913981711929417,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": -0.021429161880287317,
+      "corrected": -0.02153064405018812,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "retained": 0.877229763519674,
+    "effective_sesoi": 0.09258397615613972,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias; attenuation depth_downsample \u22126% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+   "detail": {
+    "baseline": 0.7354766366721148,
+    "baseline_sd": 0.003413264574556719,
+    "null_center": 0.06038968135011978,
+    "null_sd": 0.009441959198449654,
+    "signal": 0.675086955321995,
+    "has_signal": true,
+    "immaterial_signal": false,
+    "scale": 0.675086955321995,
+    "scale_source": "signal above null",
+    "effect_scale": 0.1,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.7343340011888578,
+      "shift": -0.001142635483256993,
+      "z": 1.2971648725637048,
+      "shift_std": -0.0016925752664143719,
+      "rel_change": 0.0016925752664143719,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.6929177551288328,
+      "shift": -0.04255888154328202,
+      "z": 52.947742008008866,
+      "shift_std": -0.06304207362884502,
+      "rel_change": 0.06304207362884502,
+      "null_perturbed": 0.06149289806065318,
+      "null_shift": 0.0011032167105334,
+      "null_shift_std": 0.0016341846066440446,
+      "null_shift_z": 0.3418362861164461,
+      "signal": 0.675086955321995,
+      "signal_perturbed": 0.6314248570681796,
+      "null_construction": "depth-matched",
+      "signal_change": -0.06467625823548903,
+      "signal_loss": 0.06467625823548903,
+      "classification": "attenuation",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.7356980216797834,
+      "shift": 0.00022138500766855085,
+      "z": 0.5024049141644122,
+      "shift_std": 0.0003279355435966871,
+      "rel_change": 0.0003279355435966871,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {
+     "depth_downsample": 0.06467625823548903
+    },
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.1,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.05,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 8000,
+      "n_b": 7711,
+      "median_n_genes_a": 1878.0,
+      "median_n_genes_b": 1869.0,
+      "n_genes_ratio": 1.0048154093097914,
+      "overlap": 0.9940298507462687,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       0.002586476468533567,
+       0.007021228156756914
+      ],
+      "ratio_ci": [
+       1.0025898242845215,
+       1.00704593476891
+      ],
+      "overlap_upper": 0.9997090420769909
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.0048154093097914,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw +0.02724 -> corrected +0.0239",
+   "detail": {
+    "cell_level_raw": 0.03492745878051484,
+    "cell_level_corrected": 0.0321925673139841,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.1,
+    "alpha": 0.05,
+    "effect": 0.023896708329863674,
+    "raw_effect": 0.02724110526526581,
+    "se": 0.010959291076945123,
+    "df": 15.0,
+    "t_method": "paired",
+    "ci": [
+     0.000537532344251683,
+     0.047255884315475664
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     0.004684519209286593,
+     0.043108897450440754
+    ],
+    "p_t": 0.04555789540299515,
+    "p_perm": 0.04695304695304695,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.006689428849675577,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": true,
+    "p_raw": 0.030969030969030968,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": 0.062334498975508135,
+      "corrected": 0.05918874323172829,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": 0.07706428847156477,
+      "corrected": 0.07546689862876159,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": 0.035790090854405876,
+      "corrected": 0.027345256570459275,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": 0.004376415065744044,
+      "corrected": 0.0010389593618646443,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": 0.04007417597995533,
+      "corrected": 0.03547975607826863,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": 0.011829905710222799,
+      "corrected": 0.010442216824297601,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": -0.018497799737648757,
+      "corrected": -0.022979877151229,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.02610689220497331,
+      "corrected": 0.024034754041889084,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.028435324745206048,
+      "corrected": 0.030286849767527733,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": -0.021646680473698332,
+      "corrected": -0.022130413207102094,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.02223791976556011,
+      "corrected": 0.018400128065560305,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": -0.06251101777095891,
+      "corrected": -0.06796235595001784,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": 0.07451737339579567,
+      "corrected": 0.0663278503840409,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": 0.08560702956348232,
+      "corrected": 0.07979939356266355,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.09156842937442788,
+      "corrected": 0.08913981711929417,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": -0.021429161880287317,
+      "corrected": -0.02153064405018812,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "retained": 0.877229763519674,
+    "effective_sesoi": 0.09258397615613972,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "zero-fractions comparable (0.09 vs 0.12) \u2014 inspect the scatter for real coupling",
+   "detail": {
+    "group_a": {
+     "n": 8000,
+     "zero_frac": 0.092125
+    },
+    "group_b": {
+     "n": 7711,
+     "zero_frac": 0.12164440409804175
+    },
+    "dropout_gap": 0.029519404098041754,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "PASS",
+   "message": "responds to coupling(SYN3, PDZD2, strength=1.0): +0.1982 against the sham (95% CI [+0.1974, +0.199], 200 injections, expected increase)",
+   "detail": {
+    "injection": "coupling(SYN3, PDZD2, strength=1.0)",
+    "direction": "increase",
+    "base": 0.7356980216797834,
+    "reference": "sham",
+    "delta_min": 0.05,
+    "alpha": 0.05,
+    "outcome": "PASS",
+    "mean_response": 0.19820668817209042,
+    "sd_response": 0.005951262337535464,
+    "n_rep": 200,
+    "ci": [
+     0.1973768537662197,
+     0.19903652257796114
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.1973768537662197,
+    "signed_upper": 0.19903652257796114,
+    "z": 471.0035798591694
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "two-sided",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "norm_pearson",
+  "group_col": "group",
+  "groups": [
+   "A",
+   "B"
+  ],
+  "within": [],
+  "gene_pair": [
+   "SYN3",
+   "PDZD2"
+  ],
+  "pair_metric": null,
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "donor",
+  "signal_test": "coupling(SYN3, PDZD2, strength=1.0)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-16T11:25:34+00:00",
+  "environment": {
+   "metric_autopsy": "0.3.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "1c42ee003e3463814ae82bedc713c12df55a2b4c14805095f19dbb2d3c4018c2",
+  "data_shape": [
+   15711,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "29762e7a01a6461c5da7d02ead54841af659f91db868787bdc9f8e9cbcbae6bf",
+  "claim_id": "d7e2f6c227bfbd4e1a889344e5b183c11a1623b6ea4cdcdd5c5712c8b15b76ed",
+  "log": null
+ }
+}

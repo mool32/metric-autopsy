@@ -1,0 +1,1373 @@
+{
+ "synthetic": false,
+ "part": "case3a",
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286",
+ "settings": {
+  "alpha": 0.05,
+  "cell_perms": 999,
+  "donor_perms": 9999,
+  "donor_max_exact": 20000,
+  "tost_level": 0.9,
+  "seed": 20261015,
+  "engine_seed": 0,
+  "judgment_pending": false,
+  "estimand": "composition"
+ },
+ "cases": {
+  "case3": {
+   "cells": 15711,
+   "genes": 2000,
+   "design": [
+    {
+     "group": "A",
+     "donors": 16
+    },
+    {
+     "group": "B",
+     "donors": 16
+    }
+   ],
+   "claims": [
+    {
+     "id": "3a1",
+     "metric": "norm_pearson",
+     "genes": [
+      "HS6ST3",
+      "DGKB"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.7377533091701021,
+     "pooled_r_diff": 1.2212453270876722e-14,
+     "seconds_check": 0.13,
+     "a": {
+      "delta": -0.006071004674367497,
+      "p": 0.493,
+      "strata": 1,
+      "per_stratum": [
+       -0.006071004674367497
+      ],
+      "conclusion": "none",
+      "seconds": 0.24
+     },
+     "b": {
+      "design": "paired",
+      "delta": -0.008674025082993954,
+      "se": 0.017529006328410368,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.6239,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.03940325586195109,
+       0.022055205695963188
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": -0.01671574844851742,
+       "H20.33.002": 0.024869310760673002,
+       "H20.33.005": 0.094470682517095,
+       "H20.33.008": 0.08934387103160424,
+       "H20.33.012": -0.008541402967898737,
+       "H20.33.013": -0.005189564022606841,
+       "H20.33.014": -0.13832520216656152,
+       "H20.33.019": -0.010111721705711396,
+       "H20.33.025": 0.061200075118458375,
+       "H20.33.027": 0.06333763874579923,
+       "H20.33.039": -0.14384571877746632,
+       "H20.33.043": 0.042160824802574215,
+       "H20.33.044": -0.0053083383380650995,
+       "H21.33.003": 0.007352368653277042,
+       "H21.33.006": -0.002470021473951367,
+       "H21.33.019": 0.08655734759920086
+      },
+      "conclusion": "absence",
+      "seconds": 0.68
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.005282 [-0.03228, +0.04284]: the 90% interval lies within \u00b10.09155 (SESOI 0.1 x attenuation 0.92; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(HS6ST3, DGKB, strength=1.0): +0.2443 against the sham (95% CI [+0.2434, +0.2452], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127% -> \u03bb=0.92 at the analysed depth; MDE 0.05282 vs attenuated SESOI 0.09155 (SESOI 0.1 x \u03bb 0.92)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect +0.005282 [-0.03228, +0.04284]: the 90% interval lies within \u00b10.09155 (SESOI 0.1 x attenuation 0.92; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": 0.005282375819365642,
+       "raw_effect": 0.008674025082993954,
+       "ci": [
+        -0.03227521685056789,
+        0.04283996848929918
+       ],
+       "p_perm": 0.7872127872127872,
+       "p_raw": 0.6063936063936064,
+       "p_t": 0.7684570686879941,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09155458597894002,
+       "explained_by_depth": false,
+       "retained": 0.6089878423019686,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw +0.008674 -> corrected +0.005282"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.11 vs 0.13) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(HS6ST3, DGKB, strength=1.0): +0.2443 against the sham (95% CI [+0.2434, +0.2452], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a1.json",
+      "report_sha256": "4f4fb6e1935535a738fdc95bb6f937d811c94a3d3537e6000e37a04e2cb11c68",
+      "seconds": 117.28
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a2",
+     "metric": "norm_pearson",
+     "genes": [
+      "SYN3",
+      "PDZD2"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.7356980216797834,
+     "pooled_r_diff": 4.3298697960381105e-15,
+     "seconds_check": 0.12,
+     "a": {
+      "delta": -0.03492745878051484,
+      "p": 0.001,
+      "strata": 1,
+      "per_stratum": [
+       -0.03492745878051484
+      ],
+      "conclusion": "effect",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": -0.02724110526526581,
+      "se": 0.01107279795887541,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.0263,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.04665227766558433,
+       -0.007829932864947289
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": 0.08560702956348232,
+       "H20.33.002": 0.07451737339579567,
+       "H20.33.005": -0.021429161880287317,
+       "H20.33.008": 0.02610689220497331,
+       "H20.33.012": 0.004376415065744044,
+       "H20.33.013": 0.07706428847156477,
+       "H20.33.014": 0.035790090854405876,
+       "H20.33.019": 0.04007417597995533,
+       "H20.33.025": 0.09156842937442788,
+       "H20.33.027": 0.011829905710222799,
+       "H20.33.039": -0.06251101777095891,
+       "H20.33.043": -0.021646680473698332,
+       "H20.33.044": -0.018497799737648757,
+       "H21.33.003": 0.02223791976556011,
+       "H21.33.006": 0.062334498975508135,
+       "H21.33.019": 0.028435324745206048
+      },
+      "conclusion": "effect",
+      "seconds": 0.07
+     },
+     "d": {
+      "verdict": "SUPPORTED (provisional until replicated) [non-directional claim]",
+      "label": "SUPPORTED",
+      "cause": "provisional",
+      "conclusion": "effect",
+      "known_issue_label": "SUPPORTED",
+      "known_issue_conclusion": "effect",
+      "raw_detected": true,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(SYN3, PDZD2, strength=1.0): +0.1982 against the sham (95% CI [+0.1974, +0.199], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22126% -> \u03bb=0.93 at the analysed depth; MDE 0.03285 vs attenuated SESOI 0.09258 (SESOI 0.1 x \u03bb 0.93)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "DETECTED",
+        "reason": "effect +0.0239 [+0.0005375, +0.04726], p=0.047 (monte-carlo permutation)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": 0.023896708329863674,
+       "raw_effect": 0.02724110526526581,
+       "ci": [
+        0.000537532344251683,
+        0.047255884315475664
+       ],
+       "p_perm": 0.04695304695304695,
+       "p_raw": 0.030969030969030968,
+       "p_t": 0.04555789540299515,
+       "raw_detected": true,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09258397615613972,
+       "explained_by_depth": false,
+       "retained": 0.877229763519674,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22126% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw +0.02724 -> corrected +0.0239"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.09 vs 0.12) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(SYN3, PDZD2, strength=1.0): +0.1982 against the sham (95% CI [+0.1974, +0.199], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a2.json",
+      "report_sha256": "d77288d0da71e552fefd7df9ba88a845c5a8c17f752b8e34ffeedaa88576a445",
+      "seconds": 116.9
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a3",
+     "metric": "norm_pearson",
+     "genes": [
+      "LRP1B",
+      "DPP10"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.6381844989163329,
+     "pooled_r_diff": 1.2101430968414206e-14,
+     "seconds_check": 0.13,
+     "a": {
+      "delta": 0.009827456307704985,
+      "p": 0.33,
+      "strata": 1,
+      "per_stratum": [
+       0.009827456307704985
+      ],
+      "conclusion": "none",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": 0.02214467368218275,
+      "se": 0.011283496178394647,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.0705,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       0.002364136693192239,
+       0.04192521067117326
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": 0.005087861959814144,
+       "H20.33.002": 0.007779988252549885,
+       "H20.33.005": -0.013678204172712594,
+       "H20.33.008": 0.026916790168943217,
+       "H20.33.012": -0.07004884023973768,
+       "H20.33.013": -0.018807249224135125,
+       "H20.33.014": -0.0028419042340124268,
+       "H20.33.019": 0.015432673695884747,
+       "H20.33.025": 0.059691133867420976,
+       "H20.33.027": -0.005140337681196705,
+       "H20.33.039": -0.08310778226558824,
+       "H20.33.043": -0.052886814667920556,
+       "H20.33.044": -0.07294185886883653,
+       "H21.33.003": -0.03425391369077979,
+       "H21.33.006": -0.10990356842117022,
+       "H21.33.019": -0.005612753393447134
+      },
+      "conclusion": "absence",
+      "seconds": 0.07
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.0237 [-0.04752, +0.0001245]: the 90% interval lies within \u00b10.09662 (SESOI 0.1 x attenuation 0.97; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(LRP1B, DPP10, strength=1.0): +0.2044 against the sham (95% CI [+0.2036, +0.2053], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22123% -> \u03bb=0.97 at the analysed depth; MDE 0.03351 vs attenuated SESOI 0.09662 (SESOI 0.1 x \u03bb 0.97)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect -0.0237 [-0.04752, +0.0001245]: the 90% interval lies within \u00b10.09662 (SESOI 0.1 x attenuation 0.97; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": -0.023698916597715634,
+       "raw_effect": -0.02214467368218275,
+       "ci": [
+        -0.04752229641280803,
+        0.00012446321737676416
+       ],
+       "p_perm": 0.05094905094905095,
+       "p_raw": 0.07992007992007992,
+       "p_t": 0.05106274435847746,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09662028189534162,
+       "explained_by_depth": false,
+       "retained": 1.070185857684749,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22123% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw -0.02214 -> corrected -0.0237"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.02 vs 0.03) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(LRP1B, DPP10, strength=1.0): +0.2044 against the sham (95% CI [+0.2036, +0.2053], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a3.json",
+      "report_sha256": "f030af25f9bd2c43d40ace6ea1629dc05c92791448ac91047f06a5c9f2f335d8",
+      "seconds": 118.07
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a4",
+     "metric": "norm_pearson",
+     "genes": [
+      "LSAMP",
+      "KAZN"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.6370062887053005,
+     "pooled_r_diff": 4.807265696626928e-14,
+     "seconds_check": 0.13,
+     "a": {
+      "delta": -0.004182546661344988,
+      "p": 0.647,
+      "strata": 1,
+      "per_stratum": [
+       -0.004182546661344988
+      ],
+      "conclusion": "none",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": -0.001931190892497485,
+      "se": 0.016290780675675704,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.9161,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.030489749750500457,
+       0.026627367965505487
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": -0.04049217164110308,
+       "H20.33.002": 0.007421697623295365,
+       "H20.33.005": 0.028233821519613955,
+       "H20.33.008": 0.033366200968269366,
+       "H20.33.012": 0.0194842193584297,
+       "H20.33.013": 0.04150858793271239,
+       "H20.33.014": 0.06274001777215976,
+       "H20.33.019": 0.007509399641206893,
+       "H20.33.025": 0.0381649258875838,
+       "H20.33.027": 0.09169036063334335,
+       "H20.33.039": -0.18586956900662033,
+       "H20.33.043": 0.047593133073797755,
+       "H20.33.044": 0.014562782681124431,
+       "H21.33.003": -0.06459156627032192,
+       "H21.33.006": -0.05122070157188052,
+       "H21.33.019": -0.01920208432165116
+      },
+      "conclusion": "absence",
+      "seconds": 0.07
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.001614 [-0.03645, +0.03322]: the 90% interval lies within \u00b10.09465 (SESOI 0.1 x attenuation 0.95; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(LSAMP, KAZN, strength=1.0): +0.2329 against the sham (95% CI [+0.232, +0.2337], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22125% -> \u03bb=0.95 at the analysed depth; MDE 0.04899 vs attenuated SESOI 0.09465 (SESOI 0.1 x \u03bb 0.95)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect -0.001614 [-0.03645, +0.03322]: the 90% interval lies within \u00b10.09465 (SESOI 0.1 x attenuation 0.95; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": -0.0016141070428662679,
+       "raw_effect": 0.001931190892497485,
+       "ci": [
+        -0.036449475024492535,
+        0.033221260938759996
+       ],
+       "p_perm": 0.9460539460539461,
+       "p_raw": 0.9230769230769231,
+       "p_t": 0.9226354972956234,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09464594151511607,
+       "explained_by_depth": false,
+       "retained": -0.8358091626969342,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22125% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw +0.001931 -> corrected -0.001614"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.02 vs 0.04) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(LSAMP, KAZN, strength=1.0): +0.2329 against the sham (95% CI [+0.232, +0.2337], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a4.json",
+      "report_sha256": "647fa619da6b8ccd296870f6ebc5080a256bfa59a3d7ad7769db7e2fed6ba031",
+      "seconds": 118.26
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a5",
+     "metric": "norm_pearson",
+     "genes": [
+      "PTPRD",
+      "CNTNAP2"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.6160385304198867,
+     "pooled_r_diff": 1.2212453270876722e-15,
+     "seconds_check": 0.12,
+     "a": {
+      "delta": -0.018257304227587645,
+      "p": 0.056,
+      "strata": 1,
+      "per_stratum": [
+       -0.018257304227587645
+      ],
+      "conclusion": "none",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": 0.002554278427398103,
+      "se": 0.01581125801804986,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.8666,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.025163653065091232,
+       0.03027220991988744
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": -0.12353792279912201,
+       "H20.33.002": 0.01606925966486583,
+       "H20.33.005": -0.02507851020085028,
+       "H20.33.008": -0.0015193429805357983,
+       "H20.33.012": -0.07707435148466601,
+       "H20.33.013": 0.03795778175302977,
+       "H20.33.014": -0.013263174256229582,
+       "H20.33.019": 0.017150144093007302,
+       "H20.33.025": 0.09639257449340555,
+       "H20.33.027": 0.055624315926438905,
+       "H20.33.039": -0.10301119897071398,
+       "H20.33.043": 0.0386536986624636,
+       "H20.33.044": -0.06584251452373735,
+       "H21.33.003": -0.007454620083736985,
+       "H21.33.006": 0.0759239448224549,
+       "H21.33.019": 0.03814146104555649
+      },
+      "conclusion": "absence",
+      "seconds": 0.07
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.005513 [-0.03955, +0.02852]: the 90% interval lies within \u00b10.09592 (SESOI 0.1 x attenuation 0.96; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(PTPRD, CNTNAP2, strength=1.0): +0.4077 against the sham (95% CI [+0.4067, +0.4086], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22124% -> \u03bb=0.96 at the analysed depth; MDE 0.04787 vs attenuated SESOI 0.09592 (SESOI 0.1 x \u03bb 0.96)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect -0.005513 [-0.03955, +0.02852]: the 90% interval lies within \u00b10.09592 (SESOI 0.1 x attenuation 0.96; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": -0.005512932179084154,
+       "raw_effect": -0.002554278427398103,
+       "ci": [
+        -0.03954725480630519,
+        0.028521390448136882
+       ],
+       "p_perm": 0.7022977022977023,
+       "p_raw": 0.8871128871128872,
+       "p_t": 0.734696187323979,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.0959185285373783,
+       "explained_by_depth": false,
+       "retained": 2.158312938773813,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22124% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw -0.002554 -> corrected -0.005513"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.00 vs 0.00) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(PTPRD, CNTNAP2, strength=1.0): +0.4077 against the sham (95% CI [+0.4067, +0.4086], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a5.json",
+      "report_sha256": "7135c889518819fb949f8ed8848f2195a5768df65c69f7e256d1460c306f2b86",
+      "seconds": 116.26
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a6",
+     "metric": "norm_pearson",
+     "genes": [
+      "LRRTM4",
+      "ADGRL3"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.5567676157957255,
+     "pooled_r_diff": 8.948397578478762e-14,
+     "seconds_check": 0.12,
+     "a": {
+      "delta": -0.03230523982661748,
+      "p": 0.001,
+      "strata": 1,
+      "per_stratum": [
+       -0.03230523982661748
+      ],
+      "conclusion": "effect",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": -0.024627819666031937,
+      "se": 0.01125004582255716,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.0455,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.044349716496823496,
+       -0.0049059228352403735
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": 0.010507221082764473,
+       "H20.33.002": 0.015514938447410698,
+       "H20.33.005": 0.07173116502758664,
+       "H20.33.008": 0.09408072808910278,
+       "H20.33.012": 0.022599675120592466,
+       "H20.33.013": 0.020493787945284336,
+       "H20.33.014": -0.03611825898312393,
+       "H20.33.019": 0.018004223016568344,
+       "H20.33.025": 0.04865142771107367,
+       "H20.33.027": 0.06582997808273205,
+       "H20.33.039": -0.06421772546434723,
+       "H20.33.043": -0.004548151627561392,
+       "H20.33.044": 0.03772155422859219,
+       "H21.33.003": -0.021528273083400218,
+       "H21.33.006": 0.01412159673761082,
+       "H21.33.019": 0.10120122832562528
+      },
+      "conclusion": "effect",
+      "seconds": 0.08
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.02033 [-0.003506, +0.04416]: the 90% interval lies within \u00b10.09301 (SESOI 0.1 x attenuation 0.93; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": true,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(LRRTM4, ADGRL3, strength=1.0): +0.4356 against the sham (95% CI [+0.4346, +0.4366], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22126% -> \u03bb=0.93 at the analysed depth; MDE 0.03352 vs attenuated SESOI 0.09301 (SESOI 0.1 x \u03bb 0.93)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect +0.02033 [-0.003506, +0.04416]: the 90% interval lies within \u00b10.09301 (SESOI 0.1 x attenuation 0.93; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": 0.020328715839565897,
+       "raw_effect": 0.024627819666031937,
+       "ci": [
+        -0.003506011673975344,
+        0.04416344335310714
+       ],
+       "p_perm": 0.0939060939060939,
+       "p_raw": 0.03396603396603397,
+       "p_t": 0.08910184962551249,
+       "raw_detected": true,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09301367649392957,
+       "explained_by_depth": false,
+       "retained": 0.8254370916806897,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22126% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw +0.02463 -> corrected +0.02033"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.00 vs 0.00) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(LRRTM4, ADGRL3, strength=1.0): +0.4356 against the sham (95% CI [+0.4346, +0.4366], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a6.json",
+      "report_sha256": "c6fe06fa985bc14ec6b4dc5c5e0f735d5cd25e179fa910d52e9ce673772d0fd7",
+      "seconds": 115.46
+     },
+     "d_vs_b": "changed by the effect field (equivalence at the effective SESOI, after the correction of depth)",
+     "d_known_vs_b": "changed by the effect field (equivalence at the effective SESOI, after the correction of depth)"
+    },
+    {
+     "id": "3a7",
+     "metric": "norm_pearson",
+     "genes": [
+      "NKAIN2",
+      "MDGA2"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.5310799773845296,
+     "pooled_r_diff": 6.827871601444713e-14,
+     "seconds_check": 0.11,
+     "a": {
+      "delta": -0.01756661741971932,
+      "p": 0.124,
+      "strata": 1,
+      "per_stratum": [
+       -0.01756661741971932
+      ],
+      "conclusion": "none",
+      "seconds": 0.25
+     },
+     "b": {
+      "design": "paired",
+      "delta": -0.01851635329989901,
+      "se": 0.013494105274330594,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.1848,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.04217219935081727,
+       0.005139492751019249
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": -0.04560041431387035,
+       "H20.33.002": 0.06121201834177792,
+       "H20.33.005": -0.04312279876567293,
+       "H20.33.008": 0.1290960263004015,
+       "H20.33.012": -0.0817876562764479,
+       "H20.33.013": 0.0005529773645284175,
+       "H20.33.014": 0.02662935273475997,
+       "H20.33.019": 0.010958504729154328,
+       "H20.33.025": -0.038967376019131916,
+       "H20.33.027": 0.07249187308199134,
+       "H20.33.039": 0.07426509718891672,
+       "H20.33.043": 0.018740106866955986,
+       "H20.33.044": 0.0009516728509623151,
+       "H21.33.003": 0.017269979480049824,
+       "H21.33.006": 0.0468876017482307,
+       "H21.33.019": 0.04668468748577825
+      },
+      "conclusion": "absence",
+      "seconds": 0.06
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.01254 [-0.01607, +0.04116]: the 90% interval lies within \u00b10.09227 (SESOI 0.1 x attenuation 0.92; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(NKAIN2, MDGA2, strength=1.0): +0.3887 against the sham (95% CI [+0.3875, +0.3898], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127% -> \u03bb=0.92 at the analysed depth; MDE 0.04024 vs attenuated SESOI 0.09227 (SESOI 0.1 x \u03bb 0.92)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect +0.01254 [-0.01607, +0.04116]: the 90% interval lies within \u00b10.09227 (SESOI 0.1 x attenuation 0.92; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": 0.012543827079303188,
+       "raw_effect": 0.01851635329989901,
+       "ci": [
+        -0.01607056853242344,
+        0.04115822269102981
+       ],
+       "p_perm": 0.3836163836163836,
+       "p_raw": 0.16683316683316685,
+       "p_t": 0.3649100552028619,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09226834414191457,
+       "explained_by_depth": false,
+       "retained": 0.6774458704766452,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw +0.01852 -> corrected +0.01254"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.01 vs 0.01) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(NKAIN2, MDGA2, strength=1.0): +0.3887 against the sham (95% CI [+0.3875, +0.3898], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a7.json",
+      "report_sha256": "68e3ef59687b3520177679706fa12169481347efadf43beb924b5f502cca0452",
+      "seconds": 114.78
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    },
+    {
+     "id": "3a8",
+     "metric": "norm_pearson",
+     "genes": [
+      "CNTN5",
+      "TAFA2"
+     ],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "pooled_r_engine": 0.5079688872333241,
+     "pooled_r_diff": 1.7208456881689926e-14,
+     "seconds_check": 0.12,
+     "a": {
+      "delta": 0.016631535978131495,
+      "p": 0.186,
+      "strata": 1,
+      "per_stratum": [
+       0.016631535978131495
+      ],
+      "conclusion": "none",
+      "seconds": 0.24
+     },
+     "b": {
+      "design": "paired",
+      "delta": 0.009086658999724832,
+      "se": 0.02919061464591135,
+      "df": 15.0,
+      "t_method": "paired",
+      "p": 0.757,
+      "perm_method": "monte-carlo",
+      "perm_n": 9999,
+      "min_attainable_p": 0.0001,
+      "ci90": [
+       -0.04208595838817486,
+       0.06025927638762453
+      ],
+      "tost": true,
+      "counts": {
+       "pairs": 16
+      },
+      "per_stratum": {},
+      "values": {
+       "H20.33.001": -0.11852635360034236,
+       "H20.33.002": 0.12651956783882445,
+       "H20.33.005": -0.08858226805898872,
+       "H20.33.008": -0.0592211898420173,
+       "H20.33.012": 0.09523051636670676,
+       "H20.33.013": -0.14360173283336736,
+       "H20.33.014": 0.0403364470024038,
+       "H20.33.019": 0.0821680511966364,
+       "H20.33.025": -0.13339209529120233,
+       "H20.33.027": -0.19573130502560881,
+       "H20.33.039": 0.254087747715466,
+       "H20.33.043": 0.024164106798360507,
+       "H20.33.044": -0.046745406792344346,
+       "H21.33.003": -0.013674646737877327,
+       "H21.33.006": 0.04914546103632211,
+       "H21.33.019": -0.017563443768568776
+      },
+      "conclusion": "absence",
+      "seconds": 0.06
+     },
+     "d": {
+      "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.01199 [-0.07395, +0.04996]: the 90% interval lies within \u00b10.09357 (SESOI 0.1 x attenuation 0.94; TOST)",
+      "label": "NO DETECTABLE EFFECT",
+      "cause": "no_detectable_effect",
+      "conclusion": "absence",
+      "known_issue_label": "NO DETECTABLE EFFECT",
+      "known_issue_conclusion": "absence",
+      "raw_detected": false,
+      "fields": {
+       "metric_validity": {
+        "status": "PASS",
+        "reason": "no nuisance bias; responds to coupling(CNTN5, TAFA2, strength=1.0): +0.2144 against the sham (95% CI [+0.2133, +0.2155], 200 injections, expected increase).",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) extra_dropout \u22122%, depth_downsample \u22126% -> \u03bb=0.94 at the analysed depth; MDE 0.08714 vs attenuated SESOI 0.09357 (SESOI 0.1 x \u03bb 0.94)",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NO_DETECTABLE_EFFECT",
+        "reason": "effect -0.01199 [-0.07395, +0.04996]: the 90% interval lies within \u00b10.09357 (SESOI 0.1 x attenuation 0.94; TOST)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {
+       "effect": -0.011992263374348142,
+       "raw_effect": -0.009086658999724832,
+       "ci": [
+        -0.07394943989433443,
+        0.049964913145638154
+       ],
+       "p_perm": 0.6863136863136863,
+       "p_raw": 0.7732267732267732,
+       "p_t": 0.6857670101225106,
+       "raw_detected": false,
+       "tost_equivalent": true,
+       "sesoi": 0.1,
+       "effective_sesoi": 0.09357393399917285,
+       "explained_by_depth": false,
+       "retained": 1.3197659750092197,
+       "reversed_by_correction": false,
+       "tier": "permutation",
+       "test": "monte-carlo permutation over replicates (n=1000)",
+       "correction": "depth_thinning",
+       "n_replicates": {
+        "pairs": 16
+       },
+       "design_kind": "paired"
+      },
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation extra_dropout \u22122%, depth_downsample \u22126% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 2,
+        "name": "Estimand-dependent correction",
+        "status": "PASS",
+        "message": "depth_thinning: raw -0.009087 -> corrected -0.01199"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.09 vs 0.10) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "PASS",
+        "message": "responds to coupling(CNTN5, TAFA2, strength=1.0): +0.2144 against the sham (95% CI [+0.2133, +0.2155], 200 injections, expected increase)"
+       }
+      ],
+      "report": "reports/3a8.json",
+      "report_sha256": "393de48da5f355ba765fc70664d69cb3d4487a7959d2cd97dbe8df539fad8321",
+      "seconds": 129.1
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    }
+   ],
+   "data_sha256": "31c297fe83adac9d93ff905695301bf69f09d583f9306ef980ae4210bedc8568",
+   "status": "run",
+   "seconds": 950.6
+  }
+ },
+ "complete": true,
+ "seconds": 950.6
+}

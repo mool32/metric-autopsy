@@ -1,0 +1,49 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case3c
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case3: 15711 cells x 2000 genes; groups 'A' -> 'B'; the unit: donor
+Donors per group:
+  group=A, donors=16
+  group=B, donors=16
+### 3c1: log_cp10k_mean(MALAT1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0659, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0545, p 0.5498 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.2087, +0.0996], TOST at +-0.5: True -> absence (1.04 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.05437 [-0.1331, +0.2419]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1168.83 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0544, raw +0.0545; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3c2: log_cp10k_mean(KCNIP4), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0261, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0308, p 0.2043 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0698, +0.0082], TOST at +-0.5: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.03054 [-0.01692, +0.07799]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1167.83 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0305, raw +0.0308; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3c3: log_cp10k_mean(RBFOX1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.1223, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.1214, p 0.0003 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.1593, -0.0835], TOST at +-0.5: True -> effect (0.06 s)
+- (d) engine: SUPPORTED (provisional until replicated) [non-directional claim] [cause provisional] -> effect (1184.16 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN; raw_detected True; corrected effect (first - second) +0.1213, raw +0.1214; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: SUPPORTED -> effect
+- (d) against (b): same; under the known issue: same
+### 3c4: log_cp10k_mean(CSMD1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0439, p 0.001 over 1 strata -> effect (0.27 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0462, p 0.1002 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0928, +0.0005], TOST at +-0.5: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.04577 [-0.01093, +0.1025]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1174.34 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0458, raw +0.0462; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+case3 3c: 4698.3 s
+
+
+analyses (case3c): 4698.3 s in all

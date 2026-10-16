@@ -1,0 +1,38 @@
+{
+ "synthetic": false,
+ "part": "case2",
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286",
+ "settings": {
+  "alpha": 0.05,
+  "cell_perms": 999,
+  "donor_perms": 9999,
+  "donor_max_exact": 20000,
+  "tost_level": 0.9,
+  "seed": 20261015,
+  "engine_seed": 0,
+  "judgment_pending": false,
+  "estimand": "composition"
+ },
+ "cases": {
+  "case2": {
+   "status": "not run",
+   "reason": "no type has at least 20 cells in 3 mice of each sex"
+  }
+ },
+ "seconds": 0.0,
+ "complete": true
+}
