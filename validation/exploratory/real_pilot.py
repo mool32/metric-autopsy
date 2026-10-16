@@ -160,13 +160,15 @@ class Kernel:
         """The metric on every row of a boolean matrix of cell subsets."""
         if self.kind == "mi_3bin":
             return np.array([self.value(m) for m in masks])
+        def dot(M, v):  # by einsum's own loops, not BLAS (see real_pilot_select.pooled_pairs)
+            return np.einsum("pc,c->p", M, v, optimize=False)
         if self.kind == "log_cp10k_mean":
             M = masks.astype(np.float64)
-            return (M @ self.s) / M.sum(axis=1)
+            return dot(M, self.s) / M.sum(axis=1)
         M = (masks & self.both).astype(np.float64)
         n = M.sum(axis=1)
-        sa, sb = M @ self.a, M @ self.b
-        saa, sbb, sab = M @ (self.a ** 2), M @ (self.b ** 2), M @ (self.a * self.b)
+        sa, sb = dot(M, self.a), dot(M, self.b)
+        saa, sbb, sab = dot(M, self.a ** 2), dot(M, self.b ** 2), dot(M, self.a * self.b)
         va, vb = n * saa - sa ** 2, n * sbb - sb ** 2
         ok = (n >= 3) & (va > 1e-12 * np.maximum(n * saa, 1e-300)) & (vb > 1e-12 * np.maximum(n * sbb, 1e-300))
         r = np.zeros(len(n))

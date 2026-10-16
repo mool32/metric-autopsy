@@ -63,6 +63,7 @@ jobs:
           test "$sum" = "$SRC_SHA256" || { echo "src/ sha256 $sum, D1 records $SRC_SHA256"; exit 1; }
       - name: The two environments, the selection's and the analyses'
         run: |
+          lscpu | grep -E "Model name|^Flags" | cut -c1-400
           python -m venv "$RUNNER_TEMP/venv-select"
           python -m venv "$RUNNER_TEMP/venv-panel"
           "$RUNNER_TEMP/venv-select/bin/python" -m pip install -q pip==26.2.1
@@ -164,6 +165,7 @@ jobs:
           test "$sum" = "$SRC_SHA256" || { echo "src/ sha256 $sum, D1 records $SRC_SHA256"; exit 1; }
       - name: v1's analysis environment and the engine
         run: |
+          lscpu | grep -E "Model name|^Flags" | cut -c1-400
           python -m pip install -q pip==26.2.1
           pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install -q --no-deps -e "$RUNNER_TEMP/engine"

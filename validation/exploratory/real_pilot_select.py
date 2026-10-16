@@ -633,10 +633,12 @@ def pooled_pairs(X: np.ndarray, genes: list, idx, k: int) -> list:
     sub = X[:, idx].astype(float)
     D = (sub > 0).astype(float)
     L = np.log1p(sub / tot[:, None] * 1e4) * D
-    N = D.T @ D
-    SA = L.T @ D
-    SAA = (L * L).T @ D
-    SAB = L.T @ L
+    # sums over the cells by einsum's own loops, not BLAS: OpenBLAS's dgemm of these transposed
+    # products crashed on a GitHub runner with v1's OPENBLAS_CORETYPE=Haswell (the dry run of 0cd81db)
+    N = np.einsum("ci,cj->ij", D, D, optimize=False)
+    SA = np.einsum("ci,cj->ij", L, D, optimize=False)
+    SAA = np.einsum("ci,cj->ij", L * L, D, optimize=False)
+    SAB = np.einsum("ci,cj->ij", L, L, optimize=False)
     va = N * SAA - SA ** 2
     vb = va.T
     with np.errstate(invalid="ignore", divide="ignore"):
