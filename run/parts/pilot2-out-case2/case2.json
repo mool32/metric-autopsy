@@ -1,0 +1,326 @@
+{
+ "synthetic": false,
+ "run": "second",
+ "part": "case2",
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac",
+ "settings": {
+  "alpha": 0.05,
+  "cell_perms": 999,
+  "donor_perms": 9999,
+  "donor_max_exact": 20000,
+  "tost_level": 0.9,
+  "floor_power": 0.95,
+  "seed": 20261015,
+  "engine_seed": 0,
+  "judgment_pending": false,
+  "estimand": "composition"
+ },
+ "cases": {
+  "case2": {
+   "cells": 2088,
+   "genes": 2000,
+   "design": [
+    {
+     "sex": "female",
+     "donors": 3
+    },
+    {
+     "sex": "male",
+     "donors": 4
+    }
+   ],
+   "claims": [
+    {
+     "id": "2a",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Xist"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.5,
+     "signal": {
+      "kind": "module",
+      "fold": 2.0,
+      "frac": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "seconds_check": 0.02,
+     "a": {
+      "delta": -0.20965145181183,
+      "p": 0.001,
+      "strata": 1,
+      "per_stratum": [
+       -0.20965145181183
+      ],
+      "conclusion": "effect",
+      "seconds": 0.04
+     },
+     "b": {
+      "design": "nested",
+      "delta": -0.2214970620277963,
+      "se": 0.04033622993670258,
+      "df": 2.0568610448969054,
+      "t_method": "welch",
+      "p": 0.02857142857142857,
+      "perm_method": "exact",
+      "perm_n": 35,
+      "min_attainable_p": 0.02857142857142857,
+      "ci90": [
+       -0.3370875501544706,
+       -0.10590657390112197
+      ],
+      "floor": 0.284625706325577,
+      "sesoi_used": 0.5,
+      "tost": true,
+      "counts": {
+       "female": 3,
+       "male": 4
+      },
+      "per_stratum": {
+       "": {
+        "female": 3,
+        "male": 4
+       }
+      },
+      "by_stratum": {},
+      "values": {
+       "3_10_M": 0.0,
+       "3_11_M": 0.00011551791284644573,
+       "3_38_F": 0.16831322871757795,
+       "3_39_F": 0.209238119635367,
+       "3_56_F": 0.30358934995024645,
+       "3_8_M": 0.0023128815022201345,
+       "3_9_M": 0.0197709502113368
+      },
+      "conclusion": "effect",
+      "seconds": 0.9
+     },
+     "d": {
+      "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.05827 against the sham (95% CI [+0.05821, +0.05834], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters",
+      "label": "NOT SUPPORTED",
+      "cause": "metric_invalid_gate4",
+      "conclusion": "none",
+      "known_issue_label": "NOT SUPPORTED",
+      "known_issue_conclusion": "none",
+      "raw_detected": null,
+      "fields": {
+       "metric_validity": {
+        "status": "FAIL",
+        "reason": "injected signal: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.05827 against the sham (95% CI [+0.05821, +0.05834], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}",
+        "flags": [
+         "PARAMETRIC_ONLY"
+        ]
+       },
+       "effect": {
+        "status": "NOT_RUN",
+        "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {},
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; level shift gene_subsample +127% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "FAIL",
+        "message": "responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.05827 against the sham (95% CI [+0.05821, +0.05834], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters"
+       }
+      ],
+      "prereg": {
+       "estimand": "composition",
+       "direction": "decrease",
+       "sesoi": 0.5,
+       "judgment_pending": false
+      },
+      "report": "reports/2a.json",
+      "report_sha256": "d1a343333a3669e4a514aa4e2a0ce5c99f6a6f23e940e8e2c54678aeba5295ce",
+      "seconds": 145.98
+     },
+     "sesoi_used": 0.5,
+     "d_vs_b": "changed by GATE 4 (no response to the injected signal)",
+     "d_known_vs_b": "changed by GATE 4 (no response to the injected signal)"
+    },
+    {
+     "id": "2b",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Ddx3y",
+      "Eif2s3y",
+      "Kdm5d",
+      "Uty"
+     ],
+     "direction": "increase",
+     "sesoi": 0.5,
+     "signal": {
+      "kind": "module",
+      "fold": 2.0,
+      "frac": 1.0
+     },
+     "controls": null,
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "seconds_check": 0.01,
+     "a": {
+      "delta": 0.6703219155857344,
+      "p": 0.001,
+      "strata": 1,
+      "per_stratum": [
+       0.6703219155857344
+      ],
+      "conclusion": "effect",
+      "seconds": 0.03
+     },
+     "b": {
+      "design": "nested",
+      "delta": 0.6700100694565088,
+      "se": 0.021877761081534376,
+      "df": 3.0000174066163745,
+      "t_method": "welch",
+      "p": 0.02857142857142857,
+      "perm_method": "exact",
+      "perm_n": 35,
+      "min_attainable_p": 0.02857142857142857,
+      "ci90": [
+       0.6185238682784877,
+       0.7214962706345298
+      ],
+      "floor": 0.12111077256316752,
+      "sesoi_used": 0.5,
+      "tost": false,
+      "counts": {
+       "female": 3,
+       "male": 4
+      },
+      "per_stratum": {
+       "": {
+        "female": 3,
+        "male": 4
+       }
+      },
+      "by_stratum": {},
+      "values": {
+       "3_10_M": 0.67587461134233,
+       "3_11_M": 0.629804093969431,
+       "3_38_F": 0.00011179058049313502,
+       "3_39_F": 0.0,
+       "3_56_F": 0.0,
+       "3_8_M": 0.64543476893881,
+       "3_9_M": 0.7290758576827883
+      },
+      "conclusion": "effect",
+      "seconds": 0.01
+     },
+     "d": {
+      "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to module(4 genes, fold=2.0, frac=1.0): +0.1141 against the sham (95% CI [+0.114, +0.1143], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters",
+      "label": "NOT SUPPORTED",
+      "cause": "metric_invalid_gate4",
+      "conclusion": "none",
+      "known_issue_label": "NOT SUPPORTED",
+      "known_issue_conclusion": "none",
+      "raw_detected": null,
+      "fields": {
+       "metric_validity": {
+        "status": "FAIL",
+        "reason": "injected signal: responds, but less than delta_min to module(4 genes, fold=2.0, frac=1.0): +0.1141 against the sham (95% CI [+0.114, +0.1143], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}",
+        "flags": [
+         "PARAMETRIC_ONLY"
+        ]
+       },
+       "effect": {
+        "status": "NOT_RUN",
+        "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {},
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; level shift gene_subsample +350% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "FAIL",
+        "message": "responds, but less than delta_min to module(4 genes, fold=2.0, frac=1.0): +0.1141 against the sham (95% CI [+0.114, +0.1143], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters"
+       }
+      ],
+      "prereg": {
+       "estimand": "composition",
+       "direction": "increase",
+       "sesoi": 0.5,
+       "judgment_pending": false
+      },
+      "report": "reports/2b.json",
+      "report_sha256": "c17a36bff174ec10eca7326959619ca2cc7d214d8b99c5d64ca206835708bf79",
+      "seconds": 145.99
+     },
+     "sesoi_used": 0.5,
+     "d_vs_b": "changed by GATE 4 (no response to the injected signal)",
+     "d_known_vs_b": "changed by GATE 4 (no response to the injected signal)"
+    }
+   ],
+   "data_sha256": "7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb",
+   "status": "run",
+   "seconds": 293.1
+  }
+ },
+ "complete": true,
+ "seconds": 293.1
+}

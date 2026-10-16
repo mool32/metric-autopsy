@@ -1,0 +1,28 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1f
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1a-floor: mi_3bin(Smad3, Col1a1), decrease, SESOI floor
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0045, p 0.108 over 2 strata -> none (7.68 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta -0.0099, p 0.05357 (exact, 7056; min attainable 0.000142), 90% CI [-0.0170, -0.0029], TOST at +-0.01568 (the design's floor): False -> none (1.6 s)
+    the design's floor (v0.4's change 4, by hand): 0.01568 = SE 0.003988 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.01568
+    stratum female: 5 against 3 donors, means 0.01186 against 0.0136, Delta +0.0017, p 0.6786 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means 0.02859 against 0.008844, Delta -0.0197, p 0.01587 (exact, 126; min attainable 0.00794)
+    against the audit's per-mouse mi_3bin (section E): 17 mice compared, max |diff| 0.00e+00; only here none, only in the audit none
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.007838, the smallest response that matters [cause metric_invalid_gate4] -> none (852.63 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 PASS
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): same; under the known issue: same
+case1 1a-floor: 865.7 s
+
+
+analyses (case1f): 865.7 s in all

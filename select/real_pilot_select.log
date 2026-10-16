@@ -1,0 +1,176 @@
+# The pilot's extraction (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2")
+
+Census release 2025-11-08: {'census_schema_version': '2.4.0', 'census_build_date': '2025-11-08', 'dataset_schema_version': '7.0.0', 'total_cell_count': '217768036', 'unique_cell_count': '125463259'}
+TMS FACS datasets: 17; the same as the audit's: True
+TMS FACS: 110,824 primary Smart-seq2 cells of 17 datasets with the named genes read in 14 s; named genes missing: none; raw: True
+Cells and donor ids per sex and stage (composite ids included here):
+| sex | development_stage | cells | mice |
+|---|---|---|---|
+| female | 18-month-old stage | 19163 | 2 |
+| female | 20-month-old stage and over | 728 | 3 |
+| female | 3-month-old stage | 19315 | 5 |
+| male | 18-month-old stage | 14864 | 2 |
+| male | 20-month-old stage and over | 31551 | 4 |
+| male | 3-month-old stage | 25203 | 5 |
+
+## Case 1, second run: section 4's setup as the flagship audit reproduced it: every TMS FACS cell at '3-month-old stage' and '20-month-old stage and over', both sexes, every cell type and tissue, no cap per mouse; the units are the donor ids as the Census gives them, composite ids included; young against old within sex
+Units (donor ids) by sex and age:
+| donor_id | sex | age | cells | tissues | composite |
+|---|---|---|---|---|---|
+| 3_38_F | female | young | 7814 | 21 | False |
+| 3_38_F/3_39_F | female | young | 75 | 1 | True |
+| 3_39_F | female | young | 7985 | 21 | False |
+| 3_56_F | female | young | 3041 | 10 | False |
+| 3_57_F | female | young | 400 | 2 | False |
+| 21_48_F | female | old | 222 | 1 | False |
+| 21_54_F | female | old | 267 | 1 | False |
+| 21_55_F | female | old | 239 | 1 | False |
+| 3_10_M | male | young | 7244 | 18 | False |
+| 3_10_M/3_11_M | male | young | 63 | 1 | True |
+| 3_11_M | male | young | 3817 | 16 | False |
+| 3_8_M | male | young | 7071 | 19 | False |
+| 3_9_M | male | young | 7008 | 19 | False |
+| 24_58_M | male | old | 8031 | 20 | False |
+| 24_59_M | male | old | 7897 | 20 | False |
+| 24_60_M | male | old | 8353 | 20 | False |
+| 24_61_M | male | old | 7270 | 18 | False |
+Units per sex, young against old: female 5 against 3; male 5 against 4
+The units and their cells are the audit's section E (audit_results.json, E.mice): True (17 units here, 17 there)
+Extracting 76797 cells of 1 datasets, 10000 at a time
+Cells per mouse (extracted):
+| sex | age | mouse | cells |
+|---|---|---|---|
+| female | old | 21_48_F | 222 |
+| female | old | 21_54_F | 267 |
+| female | old | 21_55_F | 239 |
+| female | young | 3_38_F | 7814 |
+| female | young | 3_38_F/3_39_F | 75 |
+| female | young | 3_39_F | 7985 |
+| female | young | 3_56_F | 3041 |
+| female | young | 3_57_F | 400 |
+| male | old | 24_58_M | 8031 |
+| male | old | 24_59_M | 7897 |
+| male | old | 24_60_M | 8353 |
+| male | old | 24_61_M | 7270 |
+| male | young | 3_10_M | 7244 |
+| male | young | 3_10_M/3_11_M | 63 |
+| male | young | 3_11_M | 3817 |
+| male | young | 3_8_M | 7071 |
+| male | young | 3_9_M | 7008 |
+Tissues of the extracted cells, per sex and age:
+| sex | age | tissue | cells |
+|---|---|---|---|
+| female | old | mammary gland | 728 |
+| female | young | aorta | 87 |
+| female | young | bladder lumen | 328 |
+| female | young | bone marrow | 1649 |
+| female | young | brain | 2960 |
+| female | young | brown adipose tissue | 278 |
+| female | young | diaphragm | 435 |
+| female | young | gonadal fat pad | 562 |
+| female | young | heart | 2499 |
+| female | young | kidney | 189 |
+| female | young | large intestine | 1979 |
+| female | young | limb muscle | 524 |
+| female | young | liver | 161 |
+| female | young | lung | 716 |
+| female | young | mammary gland | 1912 |
+| female | young | mesenteric fat pad | 539 |
+| female | young | pancreas | 733 |
+| female | young | skin of body | 696 |
+| female | young | spleen | 624 |
+| female | young | subcutaneous adipose tissue | 788 |
+| female | young | thymus | 668 |
+| female | young | tongue | 403 |
+| female | young | trachea | 585 |
+| male | old | aorta | 224 |
+| male | old | bladder lumen | 434 |
+| male | old | bone marrow | 4664 |
+| male | old | brain | 5180 |
+| male | old | brown adipose tissue | 848 |
+| male | old | diaphragm | 705 |
+| male | old | gonadal fat pad | 1067 |
+| male | old | heart | 3185 |
+| male | old | kidney | 663 |
+| male | old | large intestine | 1955 |
+| male | old | limb muscle | 1232 |
+| male | old | liver | 948 |
+| male | old | lung | 1877 |
+| male | old | mesenteric fat pad | 773 |
+| male | old | pancreas | 963 |
+| male | old | skin of body | 1122 |
+| male | old | spleen | 1110 |
+| male | old | subcutaneous adipose tissue | 1002 |
+| male | old | thymus | 1242 |
+| male | old | tongue | 1358 |
+| male | old | trachea | 999 |
+| male | young | aorta | 279 |
+| male | young | bladder lumen | 978 |
+| male | young | bone marrow | 3420 |
+| male | young | brain | 5014 |
+| male | young | brown adipose tissue | 435 |
+| male | young | diaphragm | 468 |
+| male | young | gonadal fat pad | 902 |
+| male | young | heart | 1934 |
+| male | young | kidney | 313 |
+| male | young | large intestine | 2008 |
+| male | young | limb muscle | 578 |
+| male | young | liver | 570 |
+| male | young | lung | 665 |
+| male | young | mesenteric fat pad | 648 |
+| male | young | pancreas | 855 |
+| male | young | skin of body | 1650 |
+| male | young | spleen | 1078 |
+| male | young | subcutaneous adipose tissue | 933 |
+| male | young | thymus | 691 |
+| male | young | tongue | 1015 |
+| male | young | trachea | 769 |
+case1.npz: 76797 cells x 2000 genes (21025 of 53384 genes measured in all 1 datasets read); named genes missing: none; sha256 13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44
+case1: run (327.5 s)
+
+## Case 2: Xist and the Y genes on Tabula Muris Senis (FACS), female against male, 3 months
+Structure per mouse of the 3-month stratum (all its cells), checked before any metric (by contrast: female where a Y gene is in <= 5% of cells and Xist in >= 10 times that share and >= 5%; male: the reverse):
+| mouse | sex | cells | xist_share | y_share | call | kept | excluded_because | tissues |
+|---|---|---|---|---|---|---|---|---|
+| 3_10_M | male | 7244 | 0.0137 | 0.7022 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,pancreas,skin of body,spleen,subcutaneous adipose tissue,tongue,trachea |
+| 3_11_M | male | 3817 | 0.0147 | 0.5832 | male | True |  | aorta,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus |
+| 3_38_F | female | 7814 | 0.4213 | 0.0154 | female | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_39_F | female | 7985 | 0.5781 | 0.01 | female | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_56_F | female | 3041 | 0.5886 | 0.0079 | female | True |  | bladder lumen,brain,brown adipose tissue,gonadal fat pad,heart,large intestine,liver,mammary gland,mesenteric fat pad,subcutaneous adipose tissue |
+| 3_57_F | female | 400 | 0.67 | 0.01 | female | True |  | liver,mammary gland |
+| 3_8_M | male | 7071 | 0.0117 | 0.715 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+| 3_9_M | male | 7008 | 0.0147 | 0.6983 | male | True |  | aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea |
+Cell types over the kept mice:
+| cell_type | mice | female | male | every | cells |
+|---|---|---|---|---|---|
+| fibroblast of cardiac tissue | 7 | 3 | 4 | False | 2183 |
+| mesenchymal stem cell of adipose tissue | 7 | 3 | 4 | False | 2109 |
+| B cell | 7 | 3 | 4 | False | 2044 |
+| endothelial cell | 7 | 3 | 4 | False | 1865 |
+| oligodendrocyte | 7 | 3 | 4 | False | 1396 |
+| endothelial cell of coronary artery | 7 | 3 | 4 | False | 1177 |
+| enterocyte of epithelium of large intestine | 7 | 3 | 4 | False | 1176 |
+| myeloid cell | 7 | 3 | 4 | False | 1062 |
+| epithelial cell of large intestine | 7 | 3 | 4 | False | 878 |
+| intestinal crypt stem cell | 7 | 3 | 4 | False | 853 |
+| large intestine goblet cell | 7 | 3 | 4 | False | 692 |
+| macrophage | 7 | 3 | 4 | False | 659 |
+| monocyte | 7 | 3 | 4 | False | 484 |
+| T cell | 7 | 3 | 4 | False | 403 |
+| CD4-positive, alpha-beta T cell | 7 | 3 | 4 | False | 363 |
+| ... 101 more rows |  |  |  |  |  |
+Chosen: 'fibroblast of cardiac tissue' (no type in every kept mouse: the most mice with at least 20 cells, then the most cells); 7 mice, 2183 cells; extracted 2088 cells (at most 500 per mouse)
+Cells per mouse (extracted):
+| sex | mouse | cells |
+|---|---|---|
+| female | 3_38_F | 466 |
+| female | 3_39_F | 500 |
+| female | 3_56_F | 293 |
+| male | 3_10_M | 126 |
+| male | 3_11_M | 154 |
+| male | 3_8_M | 319 |
+| male | 3_9_M | 230 |
+case2.npz: 2088 cells x 2000 genes (21025 of 53384 genes measured in all 1 datasets read); named genes missing: none; sha256 7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb
+case2: run (40.0 s)
+
+extraction: 386.5 s in all; failed cases: none

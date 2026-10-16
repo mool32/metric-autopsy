@@ -1,0 +1,278 @@
+{
+ "synthetic": false,
+ "run": "second",
+ "part": "case1f",
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac",
+ "settings": {
+  "alpha": 0.05,
+  "cell_perms": 999,
+  "donor_perms": 9999,
+  "donor_max_exact": 20000,
+  "tost_level": 0.9,
+  "floor_power": 0.95,
+  "seed": 20261015,
+  "engine_seed": 0,
+  "judgment_pending": false,
+  "estimand": "composition"
+ },
+ "cases": {
+  "case1": {
+   "cells": 76797,
+   "genes": 2000,
+   "design": [
+    {
+     "sex": "female",
+     "age": "old",
+     "donors": 3
+    },
+    {
+     "sex": "female",
+     "age": "young",
+     "donors": 5
+    },
+    {
+     "sex": "male",
+     "age": "old",
+     "donors": 4
+    },
+    {
+     "sex": "male",
+     "age": "young",
+     "donors": 5
+    }
+   ],
+   "claims": [
+    {
+     "id": "1a-floor",
+     "metric": "mi_3bin",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "sesoi": "floor",
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "sesoi_scale": "observed",
+     "sesoi_note": "the design's floor by v0.4's change 4, computed by real_pilot.py from (b) before (d)",
+     "seed_id": "1a",
+     "kernel_max_diff": 0.0,
+     "kernel_ok": true,
+     "seconds_check": 0.78,
+     "a": {
+      "delta": -0.004488778060809528,
+      "p": 0.108,
+      "strata": 2,
+      "per_stratum": [
+       0.002877208113459073,
+       -0.011854764235078129
+      ],
+      "conclusion": "none",
+      "seconds": 7.68
+     },
+     "b": {
+      "design": "nested",
+      "delta": -0.009917075984997654,
+      "se": 0.0039875151174414685,
+      "df": 13.0,
+      "t_method": "pooled-stratified",
+      "p": 0.05357142857142857,
+      "perm_method": "exact",
+      "perm_n": 7056,
+      "min_attainable_p": 0.0001417233560090703,
+      "ci90": [
+       -0.016978699673477267,
+       -0.0028554522965180415
+      ],
+      "floor": 0.015676126365371707,
+      "sesoi_used": 0.015676126365371707,
+      "tost": false,
+      "counts": {
+       "young": 10,
+       "old": 7
+      },
+      "per_stratum": {
+       "female": {
+        "young": 5,
+        "old": 3
+       },
+       "male": {
+        "young": 5,
+        "old": 4
+       }
+      },
+      "by_stratum": {
+       "female": {
+        "n": {
+         "young": 5,
+         "old": 3
+        },
+        "mean": {
+         "young": 0.011862498628919915,
+         "old": 0.01359607154979986
+        },
+        "delta": 0.0017335729208799444,
+        "p": 0.6785714285714286,
+        "method": "exact",
+        "n_relabelings": 56,
+        "min_attainable_p": 0.017857142857142856
+       },
+       "male": {
+        "n": {
+         "young": 5,
+         "old": 4
+        },
+        "mean": {
+         "young": 0.028591573495737144,
+         "old": 0.008844262496405264
+        },
+        "delta": -0.019747310999331878,
+        "p": 0.015873015873015872,
+        "method": "exact",
+        "n_relabelings": 126,
+        "min_attainable_p": 0.007936507936507936
+       }
+      },
+      "values": {
+       "21_48_F": 0.02126603652114765,
+       "21_54_F": 0.009891695696576226,
+       "21_55_F": 0.009630482431675701,
+       "24_58_M": 0.0072395731320595205,
+       "24_59_M": 0.01112434189219214,
+       "24_60_M": 0.006265352010074675,
+       "24_61_M": 0.01074778295129472,
+       "3_10_M": 0.016562863987525704,
+       "3_10_M/3_11_M": 0.04692125067323071,
+       "3_11_M": 0.031368831094429686,
+       "3_38_F": 0.004896318558931145,
+       "3_38_F/3_39_F": 0.022003085229320297,
+       "3_39_F": 0.0070049301437961845,
+       "3_56_F": 0.016362026898759423,
+       "3_57_F": 0.009046132313792527,
+       "3_8_M": 0.026035638404892772,
+       "3_9_M": 0.022069283318606848
+      },
+      "conclusion": "none",
+      "seconds": 1.6
+     },
+     "d": {
+      "verdict": "NOT SUPPORTED \u2014 metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.007838, the smallest response that matters",
+      "label": "NOT SUPPORTED",
+      "cause": "metric_invalid_gate4",
+      "conclusion": "none",
+      "known_issue_label": "NOT SUPPORTED",
+      "known_issue_conclusion": "none",
+      "raw_detected": null,
+      "fields": {
+       "metric_validity": {
+        "status": "FAIL",
+        "reason": "injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.007838, the smallest response that matters",
+        "flags": []
+       },
+       "design_adequacy": {
+        "status": "ADEQUATE",
+        "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 10, 'old': 7}; attenuation (GATE 0) extra_dropout \u221244%, depth_downsample \u22125%, library_scale \u22123%; the SESOI is on the observed scale, not attenuated",
+        "flags": [
+         "ATTENUATION"
+        ]
+       },
+       "effect": {
+        "status": "NOT_RUN",
+        "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+        "flags": []
+       },
+       "replication": {
+        "status": "NOT_RUN",
+        "reason": "no independent dataset supplied",
+        "flags": []
+       }
+      },
+      "effect": {},
+      "gates": [
+       {
+        "gate": 0,
+        "name": "Mathematical independence",
+        "status": "PASS",
+        "message": "no bias; attenuation extra_dropout \u221244%, depth_downsample \u22125%, library_scale \u22123% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+       },
+       {
+        "gate": 1,
+        "name": "QC parity",
+        "status": "PASS",
+        "message": "no confident QC imbalance in 2 assessable strata (worst point ratio 1.32x; alpha 0.05 Bonferroni)"
+       },
+       {
+        "gate": 3,
+        "name": "Raw visibility",
+        "status": "JUDGMENT",
+        "message": "zero-fractions comparable (0.92 vs 0.97) \u2014 inspect the scatter for real coupling"
+       },
+       {
+        "gate": 4,
+        "name": "Construct response (injected signal)",
+        "status": "FAIL",
+        "message": "responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.007838, the smallest response that matters"
+       },
+       {
+        "gate": 5,
+        "name": "Controls",
+        "status": "PASS",
+        "message": "positive fires and negative stays inside the empirical null in all 2 strata; null centre 0.00491..0.0126"
+       }
+      ],
+      "prereg": {
+       "estimand": "composition",
+       "direction": "decrease",
+       "sesoi": 0.015676126365371707,
+       "judgment_pending": false,
+       "sesoi_scale": "observed"
+      },
+      "report": "reports/1a-floor.json",
+      "report_sha256": "64d6bfa75ea1e6660164d59adb5ab94e957914650c66f006eb414ce46a913548",
+      "seconds": 852.63
+     },
+     "sesoi_used": 0.015676126365371707,
+     "b_vs_audit": {
+      "compared": 17,
+      "only_here": [],
+      "only_audit": [],
+      "max_abs_diff": 0.0
+     },
+     "d_vs_b": "same",
+     "d_known_vs_b": "same"
+    }
+   ],
+   "data_sha256": "13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44",
+   "status": "run",
+   "seconds": 865.7
+  }
+ },
+ "complete": true,
+ "seconds": 865.7
+}

@@ -1,0 +1,27 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1b
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1b: norm_pearson(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.4562, p 0.001 over 2 strata -> against (2.11 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta +0.3687, p 0.004535 (exact, 7056; min attainable 0.000142), 90% CI [+0.1561, +0.5812], TOST at +-0.1: False -> against (1.65 s)
+    the design's floor (v0.4's change 4, by hand): 0.4719 = SE 0.12 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.1
+    stratum female: 5 against 3 donors, means -0.043 against 0.608, Delta +0.6510, p 0.08929 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means -0.04354 against 0.08693, Delta +0.1305, p 0.04762 (exact, 126; min attainable 0.00794)
+- (d) engine: NOT SUPPORTED — the effect is in the direction opposite to the pre-registered one: the metric shows an increase from young to old, the claim was a decrease [underpowered relative to the SESOI] [cause opposite_direction] -> against (501.21 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN; raw_detected True; corrected effect (first - second) -0.3664, raw -0.3687; effective SESOI 0.1
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+    under the known issue: NOT SUPPORTED -> against
+- (d) against (b): same; under the known issue: same
+case1 1b: 508.1 s
+
+
+analyses (case1b): 508.1 s in all

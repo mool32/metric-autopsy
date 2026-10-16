@@ -1,0 +1,33 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case2
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case2: 2088 cells x 2000 genes; groups 'female' -> 'male'; the unit: mouse
+Donors per group:
+  sex=female, donors=3
+  sex=male, donors=4
+### 2a: log_cp10k_mean(Xist), decrease, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.2097, p 0.001 over 1 strata -> effect (0.04 s)
+- (b) donors (nested, {'female': 3, 'male': 4}): Delta -0.2215, p 0.02857 (exact, 35; min attainable 0.0286), 90% CI [-0.3371, -0.1059], TOST at +-0.5: True -> effect (0.9 s)
+    the design's floor (v0.4's change 4, by hand): 0.2846 = SE 0.04034 x (t_0.95 + t_0.975 at df 2.057); the SESOI used 0.5
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.05827 against the sham (95% CI [+0.05821, +0.05834], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters [cause metric_invalid_gate4] -> none (145.98 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 4 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+### 2b: log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty), increase, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.6703, p 0.001 over 1 strata -> effect (0.03 s)
+- (b) donors (nested, {'female': 3, 'male': 4}): Delta +0.6700, p 0.02857 (exact, 35; min attainable 0.0286), 90% CI [+0.6185, +0.7215], TOST at +-0.5: False -> effect (0.01 s)
+    the design's floor (v0.4's change 4, by hand): 0.1211 = SE 0.02188 x (t_0.95 + t_0.975 at df 3); the SESOI used 0.5
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to module(4 genes, fold=2.0, frac=1.0): +0.1141 against the sham (95% CI [+0.114, +0.1143], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters [cause metric_invalid_gate4] -> none (145.99 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 4 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+case2: 293.1 s
+
+
+analyses (case2): 293.1 s in all

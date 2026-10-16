@@ -1,0 +1,1577 @@
+{
+ "synthetic": false,
+ "release": "2025-11-08",
+ "seed": 20261015,
+ "rules": {
+  "max_cells": 500,
+  "n_genes": 2000,
+  "min_mouse_cells": 20,
+  "min_group_mice": 3,
+  "neg_min_donors": 4,
+  "neg_min_cells": 50,
+  "neg_max_donors": 24,
+  "excluded_names": [
+   "tabula muris",
+   "multiplexed droplet single-cell rna-sequencing using natural genetic variation",
+   "age-related loss of gene-to-gene transcriptional coordination"
+  ],
+  "excluded_dois": [
+   "10.1038/nbt.4042",
+   "10.1038/s42255-020-00304-4"
+  ],
+  "sex_call": "contrast",
+  "call_share": 0.05,
+  "call_ratio": 10.0,
+  "chunk_cells": 10000,
+  "case1": "section 4 as the flagship audit reproduced it"
+ },
+ "python": "3.13.16",
+ "run": "second",
+ "cases": {
+  "case1": {
+   "status": "run",
+   "run": "second",
+   "setup": "section 4 as the flagship audit reproduced it",
+   "data": {
+    "file": "case1.npz",
+    "sha256": "13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44",
+    "cells": 76797,
+    "genes": 2000,
+    "datasets": [
+     "98e5ea9f-16d6-47ec-a529-686e76515e39"
+    ],
+    "measured_genes": 21025,
+    "var_genes": 53384,
+    "missing_named": []
+   },
+   "group_col": "age",
+   "groups": [
+    "young",
+    "old"
+   ],
+   "within": [
+    "sex"
+   ],
+   "replicate": "mouse",
+   "claims": [
+    {
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "skip": "",
+     "id": "1a",
+     "metric": "mi_3bin",
+     "sesoi": 0.1,
+     "sesoi_note": "AGENTS.md's example, wrong in scale for mi_3bin"
+    },
+    {
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "skip": "",
+     "id": "1a-floor",
+     "metric": "mi_3bin",
+     "sesoi": "floor",
+     "sesoi_scale": "observed",
+     "seed_id": "1a",
+     "sesoi_note": "the design's floor by v0.4's change 4, computed by real_pilot.py from (b) before (d)"
+    },
+    {
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "direction": "decrease",
+     "signal": {
+      "kind": "coupling",
+      "strength": 1.0
+     },
+     "controls": {
+      "pos": [
+       "Actb",
+       "Gapdh"
+      ],
+      "neg": [
+       "Tst",
+       "Lrrc42"
+      ]
+     },
+     "skip": "",
+     "id": "1b",
+     "metric": "norm_pearson",
+     "sesoi": 0.1
+    }
+   ],
+   "units": [
+    {
+     "donor_id": "3_38_F",
+     "sex": "female",
+     "age": "young",
+     "cells": 7814,
+     "tissues": 21,
+     "composite": false
+    },
+    {
+     "donor_id": "3_38_F/3_39_F",
+     "sex": "female",
+     "age": "young",
+     "cells": 75,
+     "tissues": 1,
+     "composite": true
+    },
+    {
+     "donor_id": "3_39_F",
+     "sex": "female",
+     "age": "young",
+     "cells": 7985,
+     "tissues": 21,
+     "composite": false
+    },
+    {
+     "donor_id": "3_56_F",
+     "sex": "female",
+     "age": "young",
+     "cells": 3041,
+     "tissues": 10,
+     "composite": false
+    },
+    {
+     "donor_id": "3_57_F",
+     "sex": "female",
+     "age": "young",
+     "cells": 400,
+     "tissues": 2,
+     "composite": false
+    },
+    {
+     "donor_id": "21_48_F",
+     "sex": "female",
+     "age": "old",
+     "cells": 222,
+     "tissues": 1,
+     "composite": false
+    },
+    {
+     "donor_id": "21_54_F",
+     "sex": "female",
+     "age": "old",
+     "cells": 267,
+     "tissues": 1,
+     "composite": false
+    },
+    {
+     "donor_id": "21_55_F",
+     "sex": "female",
+     "age": "old",
+     "cells": 239,
+     "tissues": 1,
+     "composite": false
+    },
+    {
+     "donor_id": "3_10_M",
+     "sex": "male",
+     "age": "young",
+     "cells": 7244,
+     "tissues": 18,
+     "composite": false
+    },
+    {
+     "donor_id": "3_10_M/3_11_M",
+     "sex": "male",
+     "age": "young",
+     "cells": 63,
+     "tissues": 1,
+     "composite": true
+    },
+    {
+     "donor_id": "3_11_M",
+     "sex": "male",
+     "age": "young",
+     "cells": 3817,
+     "tissues": 16,
+     "composite": false
+    },
+    {
+     "donor_id": "3_8_M",
+     "sex": "male",
+     "age": "young",
+     "cells": 7071,
+     "tissues": 19,
+     "composite": false
+    },
+    {
+     "donor_id": "3_9_M",
+     "sex": "male",
+     "age": "young",
+     "cells": 7008,
+     "tissues": 19,
+     "composite": false
+    },
+    {
+     "donor_id": "24_58_M",
+     "sex": "male",
+     "age": "old",
+     "cells": 8031,
+     "tissues": 20,
+     "composite": false
+    },
+    {
+     "donor_id": "24_59_M",
+     "sex": "male",
+     "age": "old",
+     "cells": 7897,
+     "tissues": 20,
+     "composite": false
+    },
+    {
+     "donor_id": "24_60_M",
+     "sex": "male",
+     "age": "old",
+     "cells": 8353,
+     "tissues": 20,
+     "composite": false
+    },
+    {
+     "donor_id": "24_61_M",
+     "sex": "male",
+     "age": "old",
+     "cells": 7270,
+     "tissues": 18,
+     "composite": false
+    }
+   ],
+   "audit_check": {
+    "same": true,
+    "units": 17,
+    "audit_units": 17,
+    "differences": []
+   },
+   "audit_mice": [
+    {
+     "donor_id": "24_60_M",
+     "sex": "male",
+     "age": "20m",
+     "n_cells": 8353,
+     "median_nnz": 1670.0,
+     "mi_3bin": 0.006265352010074675
+    },
+    {
+     "donor_id": "24_59_M",
+     "sex": "male",
+     "age": "20m",
+     "n_cells": 7897,
+     "median_nnz": 1574.0,
+     "mi_3bin": 0.01112434189219214
+    },
+    {
+     "donor_id": "24_61_M",
+     "sex": "male",
+     "age": "20m",
+     "n_cells": 7270,
+     "median_nnz": 1975.0,
+     "mi_3bin": 0.01074778295129472
+    },
+    {
+     "donor_id": "24_58_M",
+     "sex": "male",
+     "age": "20m",
+     "n_cells": 8031,
+     "median_nnz": 1598.0,
+     "mi_3bin": 0.0072395731320595205
+    },
+    {
+     "donor_id": "3_39_F",
+     "sex": "female",
+     "age": "3m",
+     "n_cells": 7985,
+     "median_nnz": 2626.0,
+     "mi_3bin": 0.0070049301437961845
+    },
+    {
+     "donor_id": "3_38_F",
+     "sex": "female",
+     "age": "3m",
+     "n_cells": 7814,
+     "median_nnz": 2100.0,
+     "mi_3bin": 0.004896318558931145
+    },
+    {
+     "donor_id": "3_56_F",
+     "sex": "female",
+     "age": "3m",
+     "n_cells": 3041,
+     "median_nnz": 3025.0,
+     "mi_3bin": 0.016362026898759423
+    },
+    {
+     "donor_id": "3_9_M",
+     "sex": "male",
+     "age": "3m",
+     "n_cells": 7008,
+     "median_nnz": 2830.0,
+     "mi_3bin": 0.022069283318606848
+    },
+    {
+     "donor_id": "3_10_M",
+     "sex": "male",
+     "age": "3m",
+     "n_cells": 7244,
+     "median_nnz": 2867.5,
+     "mi_3bin": 0.016562863987525704
+    },
+    {
+     "donor_id": "3_8_M",
+     "sex": "male",
+     "age": "3m",
+     "n_cells": 7071,
+     "median_nnz": 3018.0,
+     "mi_3bin": 0.026035638404892772
+    },
+    {
+     "donor_id": "3_11_M",
+     "sex": "male",
+     "age": "3m",
+     "n_cells": 3817,
+     "median_nnz": 2327.0,
+     "mi_3bin": 0.031368831094429686
+    },
+    {
+     "donor_id": "3_10_M/3_11_M",
+     "sex": "male",
+     "age": "3m",
+     "n_cells": 63,
+     "median_nnz": 3970.0,
+     "mi_3bin": 0.04692125067323071
+    },
+    {
+     "donor_id": "3_57_F",
+     "sex": "female",
+     "age": "3m",
+     "n_cells": 400,
+     "median_nnz": 3679.0,
+     "mi_3bin": 0.009046132313792527
+    },
+    {
+     "donor_id": "3_38_F/3_39_F",
+     "sex": "female",
+     "age": "3m",
+     "n_cells": 75,
+     "median_nnz": 4239.0,
+     "mi_3bin": 0.022003085229320297
+    },
+    {
+     "donor_id": "21_55_F",
+     "sex": "female",
+     "age": "20m",
+     "n_cells": 239,
+     "median_nnz": 3303.0,
+     "mi_3bin": 0.009630482431675701
+    },
+    {
+     "donor_id": "21_48_F",
+     "sex": "female",
+     "age": "20m",
+     "n_cells": 222,
+     "median_nnz": 3367.5,
+     "mi_3bin": 0.02126603652114765
+    },
+    {
+     "donor_id": "21_54_F",
+     "sex": "female",
+     "age": "20m",
+     "n_cells": 267,
+     "median_nnz": 3507.0,
+     "mi_3bin": 0.009891695696576226
+    }
+   ],
+   "audit_tests": {
+    "female:median_nnz": {
+     "n_young": 5,
+     "n_old": 3,
+     "mean_young": 3133.8,
+     "mean_old": 3392.5,
+     "p_exact": 0.6428571428571429,
+     "min_attainable_p": 0.017857142857142856
+    },
+    "female:mi_3bin": {
+     "n_young": 5,
+     "n_old": 3,
+     "mean_young": 0.011862498628919915,
+     "mean_old": 0.01359607154979986,
+     "p_exact": 0.6785714285714286,
+     "min_attainable_p": 0.017857142857142856
+    },
+    "male:median_nnz": {
+     "n_young": 5,
+     "n_old": 4,
+     "mean_young": 3002.5,
+     "mean_old": 1704.25,
+     "p_exact": 0.015873015873015872,
+     "min_attainable_p": 0.007936507936507936
+    },
+    "male:mi_3bin": {
+     "n_young": 5,
+     "n_old": 4,
+     "mean_young": 0.028591573495737144,
+     "mean_old": 0.008844262496405264,
+     "p_exact": 0.015873015873015872,
+     "min_attainable_p": 0.007936507936507936
+    }
+   },
+   "seconds": 327.5
+  },
+  "case2": {
+   "status": "run",
+   "choice": {
+    "cell_type": "fibroblast of cardiac tissue",
+    "units": [
+     "3_10_M",
+     "3_11_M",
+     "3_38_F",
+     "3_39_F",
+     "3_56_F",
+     "3_8_M",
+     "3_9_M"
+    ],
+    "cells": 2183,
+    "rule": "no type in every kept mouse: the most mice with at least 20 cells, then the most cells"
+   },
+   "data": {
+    "file": "case2.npz",
+    "sha256": "7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb",
+    "cells": 2088,
+    "genes": 2000,
+    "datasets": [
+     "98e5ea9f-16d6-47ec-a529-686e76515e39"
+    ],
+    "measured_genes": 21025,
+    "var_genes": 53384,
+    "missing_named": []
+   },
+   "group_col": "sex",
+   "groups": [
+    "female",
+    "male"
+   ],
+   "within": [],
+   "replicate": "mouse",
+   "claims": [
+    {
+     "id": "2a",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Xist"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.5,
+     "signal": {
+      "kind": "module",
+      "fold": 2.0,
+      "frac": 1.0
+     },
+     "skip": ""
+    },
+    {
+     "id": "2b",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Ddx3y",
+      "Eif2s3y",
+      "Kdm5d",
+      "Uty"
+     ],
+     "direction": "increase",
+     "sesoi": 0.5,
+     "signal": {
+      "kind": "module",
+      "fold": 2.0,
+      "frac": 1.0
+     },
+     "skip": ""
+    }
+   ],
+   "structure": [
+    {
+     "mouse": "3_10_M",
+     "sex": "male",
+     "cells": 7244,
+     "xist_share": 0.0137,
+     "y_share": 0.7022,
+     "call": "male",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,pancreas,skin of body,spleen,subcutaneous adipose tissue,tongue,trachea"
+    },
+    {
+     "mouse": "3_11_M",
+     "sex": "male",
+     "cells": 3817,
+     "xist_share": 0.0147,
+     "y_share": 0.5832,
+     "call": "male",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus"
+    },
+    {
+     "mouse": "3_38_F",
+     "sex": "female",
+     "cells": 7814,
+     "xist_share": 0.4213,
+     "y_share": 0.0154,
+     "call": "female",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea"
+    },
+    {
+     "mouse": "3_39_F",
+     "sex": "female",
+     "cells": 7985,
+     "xist_share": 0.5781,
+     "y_share": 0.01,
+     "call": "female",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,bladder lumen,bone marrow,brain,brown adipose tissue,diaphragm,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mammary gland,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea"
+    },
+    {
+     "mouse": "3_56_F",
+     "sex": "female",
+     "cells": 3041,
+     "xist_share": 0.5886,
+     "y_share": 0.0079,
+     "call": "female",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "bladder lumen,brain,brown adipose tissue,gonadal fat pad,heart,large intestine,liver,mammary gland,mesenteric fat pad,subcutaneous adipose tissue"
+    },
+    {
+     "mouse": "3_57_F",
+     "sex": "female",
+     "cells": 400,
+     "xist_share": 0.67,
+     "y_share": 0.01,
+     "call": "female",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "liver,mammary gland"
+    },
+    {
+     "mouse": "3_8_M",
+     "sex": "male",
+     "cells": 7071,
+     "xist_share": 0.0117,
+     "y_share": 0.715,
+     "call": "male",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,lung,mesenteric fat pad,pancreas,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea"
+    },
+    {
+     "mouse": "3_9_M",
+     "sex": "male",
+     "cells": 7008,
+     "xist_share": 0.0147,
+     "y_share": 0.6983,
+     "call": "male",
+     "kept": true,
+     "excluded_because": "",
+     "tissues": "aorta,bladder lumen,bone marrow,brain,brown adipose tissue,gonadal fat pad,heart,kidney,large intestine,limb muscle,liver,lung,mesenteric fat pad,skin of body,spleen,subcutaneous adipose tissue,thymus,tongue,trachea"
+    }
+   ],
+   "types": [
+    {
+     "cell_type": "fibroblast of cardiac tissue",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 2183
+    },
+    {
+     "cell_type": "mesenchymal stem cell of adipose tissue",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 2109
+    },
+    {
+     "cell_type": "B cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 2044
+    },
+    {
+     "cell_type": "endothelial cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 1865
+    },
+    {
+     "cell_type": "oligodendrocyte",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 1396
+    },
+    {
+     "cell_type": "endothelial cell of coronary artery",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 1177
+    },
+    {
+     "cell_type": "enterocyte of epithelium of large intestine",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 1176
+    },
+    {
+     "cell_type": "myeloid cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 1062
+    },
+    {
+     "cell_type": "epithelial cell of large intestine",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 878
+    },
+    {
+     "cell_type": "intestinal crypt stem cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 853
+    },
+    {
+     "cell_type": "large intestine goblet cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 692
+    },
+    {
+     "cell_type": "macrophage",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 659
+    },
+    {
+     "cell_type": "monocyte",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 484
+    },
+    {
+     "cell_type": "T cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 403
+    },
+    {
+     "cell_type": "CD4-positive, alpha-beta T cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 363
+    },
+    {
+     "cell_type": "CD8-positive, alpha-beta T cell",
+     "mice": 7,
+     "female": 3,
+     "male": 4,
+     "every": false,
+     "cells": 251
+    },
+    {
+     "cell_type": "microglial cell",
+     "mice": 6,
+     "female": 3,
+     "male": 3,
+     "every": false,
+     "cells": 4488
+    },
+    {
+     "cell_type": "basal cell of epidermis",
+     "mice": 6,
+     "female": 2,
+     "male": 4,
+     "every": false,
+     "cells": 1748
+    },
+    {
+     "cell_type": "keratinocyte stem cell",
+     "mice": 6,
+     "female": 2,
+     "male": 4,
+     "every": false,
+     "cells": 1398
+    },
+    {
+     "cell_type": "skeletal muscle satellite cell",
+     "mice": 6,
+     "female": 2,
+     "male": 4,
+     "every": false,
+     "cells": 976
+    },
+    {
+     "cell_type": "bladder urothelial cell",
+     "mice": 6,
+     "female": 3,
+     "male": 3,
+     "every": false,
+     "cells": 656
+    },
+    {
+     "cell_type": "natural killer cell",
+     "mice": 6,
+     "female": 3,
+     "male": 3,
+     "every": false,
+     "cells": 322
+    },
+    {
+     "cell_type": "epidermal cell",
+     "mice": 6,
+     "female": 2,
+     "male": 4,
+     "every": false,
+     "cells": 260
+    },
+    {
+     "cell_type": "hematopoietic stem cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 1363
+    },
+    {
+     "cell_type": "granulocyte",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 760
+    },
+    {
+     "cell_type": "naive B cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 675
+    },
+    {
+     "cell_type": "bladder cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 634
+    },
+    {
+     "cell_type": "DN4 thymocyte",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 581
+    },
+    {
+     "cell_type": "fibroblast",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 566
+    },
+    {
+     "cell_type": "mesenchymal stem cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 490
+    },
+    {
+     "cell_type": "precursor B cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 489
+    },
+    {
+     "cell_type": "astrocyte",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 434
+    },
+    {
+     "cell_type": "bronchial smooth muscle cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 406
+    },
+    {
+     "cell_type": "immature B cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 383
+    },
+    {
+     "cell_type": "keratinocyte",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 348
+    },
+    {
+     "cell_type": "promonocyte",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 343
+    },
+    {
+     "cell_type": "late pro-B cell",
+     "mice": 5,
+     "female": 2,
+     "male": 3,
+     "every": false,
+     "cells": 276
+    },
+    {
+     "cell_type": "oligodendrocyte precursor cell",
+     "mice": 5,
+     "female": 1,
+     "male": 4,
+     "every": false,
+     "cells": 183
+    },
+    {
+     "cell_type": "basal cell",
+     "mice": 4,
+     "female": 4,
+     "male": 0,
+     "every": false,
+     "cells": 1186
+    },
+    {
+     "cell_type": "thymocyte",
+     "mice": 4,
+     "female": 1,
+     "male": 3,
+     "every": false,
+     "cells": 724
+    },
+    {
+     "cell_type": "type B pancreatic cell",
+     "mice": 4,
+     "female": 2,
+     "male": 2,
+     "every": false,
+     "cells": 522
+    },
+    {
+     "cell_type": "luminal epithelial cell of mammary gland",
+     "mice": 4,
+     "female": 4,
+     "male": 0,
+     "every": false,
+     "cells": 452
+    },
+    {
+     "cell_type": "hepatocyte",
+     "mice": 4,
+     "female": 2,
+     "male": 2,
+     "every": false,
+     "cells": 401
+    },
+    {
+     "cell_type": "pancreatic A cell",
+     "mice": 4,
+     "female": 2,
+     "male": 2,
+     "every": false,
+     "cells": 364
+    },
+    {
+     "cell_type": "secretory cell",
+     "mice": 4,
+     "female": 1,
+     "male": 3,
+     "every": false,
+     "cells": 251
+    },
+    {
+     "cell_type": "pancreatic acinar cell",
+     "mice": 4,
+     "female": 2,
+     "male": 2,
+     "every": false,
+     "cells": 191
+    },
+    {
+     "cell_type": "pancreatic ductal cell",
+     "mice": 4,
+     "female": 2,
+     "male": 2,
+     "every": false,
+     "cells": 163
+    },
+    {
+     "cell_type": "adventitial cell",
+     "mice": 4,
+     "female": 0,
+     "male": 4,
+     "every": false,
+     "cells": 133
+    },
+    {
+     "cell_type": "stromal cell",
+     "mice": 3,
+     "female": 3,
+     "male": 0,
+     "every": false,
+     "cells": 244
+    },
+    {
+     "cell_type": "chondrocyte",
+     "mice": 3,
+     "female": 2,
+     "male": 1,
+     "every": false,
+     "cells": 236
+    },
+    {
+     "cell_type": "aortic endothelial cell",
+     "mice": 3,
+     "female": 1,
+     "male": 2,
+     "every": false,
+     "cells": 175
+    },
+    {
+     "cell_type": "granulocytopoietic cell",
+     "mice": 3,
+     "female": 0,
+     "male": 3,
+     "every": false,
+     "cells": 166
+    },
+    {
+     "cell_type": "brain pericyte",
+     "mice": 3,
+     "female": 1,
+     "male": 2,
+     "every": false,
+     "cells": 142
+    },
+    {
+     "cell_type": "endocardial cell",
+     "mice": 3,
+     "female": 3,
+     "male": 0,
+     "every": false,
+     "cells": 115
+    },
+    {
+     "cell_type": "cardiac valve cell",
+     "mice": 3,
+     "female": 0,
+     "male": 3,
+     "every": false,
+     "cells": 106
+    },
+    {
+     "cell_type": "pancreatic D cell",
+     "mice": 3,
+     "female": 1,
+     "male": 2,
+     "every": false,
+     "cells": 105
+    },
+    {
+     "cell_type": "mature alpha-beta T cell",
+     "mice": 3,
+     "female": 1,
+     "male": 2,
+     "every": false,
+     "cells": 80
+    },
+    {
+     "cell_type": "pulmonary alveolar type 2 cell",
+     "mice": 3,
+     "female": 2,
+     "male": 1,
+     "every": false,
+     "cells": 76
+    },
+    {
+     "cell_type": "basal epithelial cell of tracheobronchial tree",
+     "mice": 3,
+     "female": 2,
+     "male": 1,
+     "every": false,
+     "cells": 66
+    },
+    {
+     "cell_type": "endothelial cell of hepatic sinusoid",
+     "mice": 2,
+     "female": 0,
+     "male": 2,
+     "every": false,
+     "cells": 189
+    },
+    {
+     "cell_type": "neuron",
+     "mice": 2,
+     "female": 0,
+     "male": 2,
+     "every": false,
+     "cells": 109
+    },
+    {
+     "cell_type": "fibroblast of lung",
+     "mice": 2,
+     "female": 2,
+     "male": 0,
+     "every": false,
+     "cells": 86
+    },
+    {
+     "cell_type": "fenestrated endothelial cell",
+     "mice": 2,
+     "female": 1,
+     "male": 1,
+     "every": false,
+     "cells": 63
+    },
+    {
+     "cell_type": "kidney collecting duct epithelial cell",
+     "mice": 2,
+     "female": 1,
+     "male": 1,
+     "every": false,
+     "cells": 59
+    },
+    {
+     "cell_type": "smooth muscle cell of trachea",
+     "mice": 2,
+     "female": 0,
+     "male": 2,
+     "every": false,
+     "cells": 56
+    },
+    {
+     "cell_type": "myeloid dendritic cell",
+     "mice": 2,
+     "female": 2,
+     "male": 0,
+     "every": false,
+     "cells": 50
+    },
+    {
+     "cell_type": "medium spiny neuron",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 55
+    },
+    {
+     "cell_type": "neural stem cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 42
+    },
+    {
+     "cell_type": "epithelial cell",
+     "mice": 1,
+     "female": 1,
+     "male": 0,
+     "every": false,
+     "cells": 34
+    },
+    {
+     "cell_type": "Kupffer cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 33
+    },
+    {
+     "cell_type": "granulocyte monocyte progenitor cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 31
+    },
+    {
+     "cell_type": "interneuron",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 31
+    },
+    {
+     "cell_type": "mature NK T cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 28
+    },
+    {
+     "cell_type": "kidney loop of Henle ascending limb epithelial cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 27
+    },
+    {
+     "cell_type": "tuft cell of large intestine",
+     "mice": 1,
+     "female": 1,
+     "male": 0,
+     "every": false,
+     "cells": 25
+    },
+    {
+     "cell_type": "leukocyte",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 24
+    },
+    {
+     "cell_type": "smooth muscle cell of the pulmonary artery",
+     "mice": 1,
+     "female": 1,
+     "male": 0,
+     "every": false,
+     "cells": 24
+    },
+    {
+     "cell_type": "pancreatic PP cell",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 23
+    },
+    {
+     "cell_type": "classical monocyte",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 22
+    },
+    {
+     "cell_type": "endothelial cell of lymphatic vessel",
+     "mice": 1,
+     "female": 0,
+     "male": 1,
+     "every": false,
+     "cells": 22
+    },
+    {
+     "cell_type": "regular atrial cardiac myocyte",
+     "mice": 1,
+     "female": 1,
+     "male": 0,
+     "every": false,
+     "cells": 21
+    },
+    {
+     "cell_type": "enteroendocrine cell",
+     "mice": 1,
+     "female": 1,
+     "male": 0,
+     "every": false,
+     "cells": 20
+    },
+    {
+     "cell_type": "Bergmann glial cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "basophil",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "club cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "dendritic cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "early pro-B cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "ependymal cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "epithelial cell of proximal tubule",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "epithelial cell of thymus",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "fibrocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "intermediate monocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "kidney collecting duct principal cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "lung macrophage",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "lymphocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "megakaryocyte-erythroid progenitor cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "mesangial cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "mucus secreting cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "multiciliated columnar cell of tracheobronchial tree",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "myeloid leukocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "neuroepithelial stem cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "neutrophil",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "non-classical monocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "pancreatic stellate cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "pericyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "plasmacytoid dendritic cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "proerythroblast",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "professional antigen presenting cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "pulmonary alveolar type 1 cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "pulmonary interstitial fibroblast",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "pulmonary neuroendocrine cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "regular ventricular cardiac myocyte",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "regulatory T cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "respiratory basal cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "smooth muscle cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    },
+    {
+     "cell_type": "vein endothelial cell",
+     "mice": 0,
+     "female": 0,
+     "male": 0,
+     "every": false,
+     "cells": 0
+    }
+   ],
+   "sex_rule": "contrast",
+   "seconds": 40.0
+  }
+ },
+ "census_summary": {
+  "census_schema_version": "2.4.0",
+  "census_build_date": "2025-11-08",
+  "dataset_schema_version": "7.0.0",
+  "total_cell_count": "217768036",
+  "unique_cell_count": "125463259"
+ },
+ "tms_dataset_ids": [
+  "524179b0-b406-4723-9c46-293ffa77ca81",
+  "de4e7a0c-91b2-44e4-b382-87da74c9efb6",
+  "e80d4e1c-672f-496a-8f32-37eab34f727d",
+  "ec6c52b8-3368-4f72-a416-1ade0dab97bf",
+  "4546e757-34d0-4d17-be06-538318925fcd",
+  "170ce19f-7a2f-4926-a1cc-adcad99e7474",
+  "3f4fe86f-aced-4d10-b174-ee35b9f46b9d",
+  "bf12f9c6-4211-4c91-9c71-22019f29f516",
+  "bc7466d7-ff13-4ff2-9c3d-7a1d208bd492",
+  "05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b",
+  "e3b8c485-7811-407e-99ed-c7d574be9d7c",
+  "c9096ac4-ea44-4cf9-82f4-af05cb83eb24",
+  "1d29fd10-c8b3-4611-b0ac-3c578125adbf",
+  "1efd4700-87dd-4b45-8762-11ba3fea7a65",
+  "c08f8441-4a10-4748-872a-e70c0bcccdba",
+  "db55b719-6102-493a-9251-404bc501d0de",
+  "98e5ea9f-16d6-47ec-a529-686e76515e39"
+ ],
+ "tms_ids_as_audit": true,
+ "seconds": 386.5
+}
