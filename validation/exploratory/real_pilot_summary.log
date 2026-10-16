@@ -1,0 +1,39 @@
+# The pilot's tallies (from real_pilot.json, sha256 0263a4ee3d2aa4adfc126427bdc5f1f40c40bff6db3c57eccad1cfe86167ea43)
+engine 0.3.0.dev0 (/home/runner/work/_temp/engine/src/metric_autopsy); python 3.13.16; numpy 2.5.3
+parts: case1 37.7 s, complete True; case2 0.0 s, complete True; case3a 950.6 s, complete True; case3b 1118.3 s, complete True; case3c 4698.3 s, complete True
+
+## case1: run
+claims: 2; cells 2478, genes 2000
+(a) conclusions: {'against': 1, 'none': 1}
+(b) conclusions: {'absence': 1, 'none': 1}
+(d) conclusions: {'none': 2}
+(d) under the known issue: {'none': 2}
+(d) verdicts: {'NOT SUPPORTED': 2}; causes: {'metric_invalid_gate4': 1, 'metric_invalid_gate5': 1}
+raw_detected among (d)'s SUPPORTED: []
+(a) differs from (b) on 2 of 2
+(d) changes (b) on 1 of 2:
+  1a: (b) absence -> (d) none [metric_invalid_gate4]; changed by GATE 4 (no response to the injected signal)
+the known issue changes the comparison on 0 of 2
+(d) seconds per claim: mi_3bin n=1 median 17 (min 17, max 17); norm_pearson n=1 median 19 (min 19, max 19); all 36 s
+
+## case2: not run (no type has at least 20 cells in 3 mice of each sex)
+
+## case3: run
+claims: 20; cells 15711, genes 2000
+(a) conclusions: {'effect': 7, 'none': 13}
+(b) conclusions: {'absence': 17, 'effect': 3}
+(d) conclusions: {'absence': 16, 'effect': 2, 'none': 2}
+(d) under the known issue: {'absence': 16, 'effect': 2, 'none': 2}
+(d) verdicts: {'NO DETECTABLE EFFECT': 16, 'SUPPORTED': 2, 'INCONCLUSIVE': 2}; causes: {'no_detectable_effect': 16, 'provisional': 2, 'effect_inconclusive': 2}
+raw_detected among (d)'s SUPPORTED: [True, True]
+(a) differs from (b) on 17 of 20
+(d) changes (b) on 3 of 20:
+  3a6: (b) effect -> (d) absence [no_detectable_effect]; changed by the effect field (equivalence at the effective SESOI, after the correction of depth)
+  3b4: (b) absence -> (d) none [effect_inconclusive]; changed by the effect field (after the correction of depth: neither detected nor equivalent)
+  3b6: (b) absence -> (d) none [effect_inconclusive]; changed by the effect field (after the correction of depth: neither detected nor equivalent)
+the known issue changes the comparison on 0 of 20
+effects found by (b) or (d), against the SESOI (Delta second - first; (d) corrected, first - second):
+  3a2 norm_pearson(SYN3, PDZD2): (b) effect, Delta -0.0272, 90% CI [-0.0467, -0.0078], p 0.0263; (d) SUPPORTED, effect +0.0239, CI [0.0005, 0.0473], p 0.04695304695304695, TOST equivalent True within +-0.09258; SESOI 0.1; |Delta| / SESOI 0.27
+  3a6 norm_pearson(LRRTM4, ADGRL3): (b) effect, Delta -0.0246, 90% CI [-0.0443, -0.0049], p 0.0455; (d) NO DETECTABLE EFFECT, effect +0.0203, CI [-0.0035, 0.0442], p 0.0939060939060939, TOST equivalent True within +-0.09301; SESOI 0.1; |Delta| / SESOI 0.25
+  3c3 log_cp10k_mean(RBFOX1): (b) effect, Delta -0.1214, 90% CI [-0.1593, -0.0835], p 0.0003; (d) SUPPORTED, effect +0.1213, CI [0.0751, 0.1674], p 0.000999000999000999, TOST equivalent True within +-0.5; SESOI 0.5; |Delta| / SESOI 0.24
+(d) seconds per claim: norm_pearson n=16 median 133 (min 115, max 140); log_cp10k_mean n=4 median 1172 (min 1168, max 1184); all 6754 s
