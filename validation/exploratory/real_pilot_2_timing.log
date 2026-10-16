@@ -1,0 +1,36 @@
+# The time and memory of case 1's first claim on fabricated counts of its size (real_pilot_2_timing.py; nothing real)
+# make: zeros and size as printed below; then real_pilot.py --part case1 (all three claims in one process; the analysis code of a2f6db5),
+# run as __main__ on one core, stopped by hand after claim 1a; resident memory sampled by ps every 5 s
+
+## make
+zeros 0.17078758284828835 cells (76797, 2000)
+npz MB 165.270464
+
+## run (real_pilot.py's output up to claim 1a)
+# SYNTHETIC The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1
+
+engine 0.3.0.dev0 from /home/user/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 ecb4bcd025b86cf431130cd2631a245cbef2a4abe97cbc60886a7c962a7d3ee0; Census release SYNTHETIC
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1a: mi_3bin(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.0073, p 0.326 over 2 strata -> none (28.23 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta -0.0037, p 0.8716 (exact, 7056; min attainable 0.000142), 90% CI [-0.0243, +0.0170], TOST at +-0.1: True -> absence (2.27 s)
+    the design's floor (v0.4's change 4, by hand): 0.04581 = SE 0.01165 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.1
+    stratum female: 5 against 3 donors, means 0.0755 against 0.08434, Delta +0.0088, p 0.4643 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means 0.08281 against 0.06857, Delta -0.0142, p 0.9127 (exact, 126; min attainable 0.00794)
+    against the audit's per-mouse mi_3bin (section E): 17 mice compared, max |diff| 1.03e-01; only here none, only in the audit none
+- (d) engine: NOT SUPPORTED — metric invalid: controls: 2/2 strata fail controls (e.g. {'sex': 'female'}: positive control 0.0191 inside its null (p=0.463) and the metric is blind to a coupling of dose 2 injected into its genes: response +0.04847 (97.5% CI [+0.0481, +0.04883]), the bound in the declared direction below delta_min 0.05) [cause metric_invalid_gate5] -> none (3585.67 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 5 (the controls); under the known issue: changed by GATE 5 (the controls)
+
+## resident memory (ps, every 5 s, 701 samples from 15:27:07 to 16:25:37 UTC)
+peak 10.89 GB at 15:58:47
