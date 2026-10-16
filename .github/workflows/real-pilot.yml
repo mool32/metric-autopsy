@@ -1,0 +1,267 @@
+# The pilot on real data with v0.3.0's engine (validation/exploratory/real_pilot_plan.md): exploratory,
+# on development data only.
+#
+# On every push to the pilot's pull request: the dry run. The pilot's tests, and the whole path on a
+# fabricated Census (real_pilot_select.py --synthetic), in the two environments of the real run.
+# Nothing is committed.
+#
+# The real run, once, started by the label "pilot-run" on the pull request:
+# - check: the run's first attempt, and the branch results/real-pilot must not exist;
+# - select: the CELLxGENE Census, release 2025-11-08, in v1's selection environment
+#   (requirements-select.txt); the TMS FACS datasets must be the audit's; the cases' cells and
+#   select.json go to the artifact pilot-data;
+# - run: five parallel jobs (case 1, case 2, and case 3's claims 3a, 3b, 3c), each in v1's analysis
+#   environment (requirements-panel.txt, v1's numerical settings) with the engine of the tag
+#   v0.3.0-prereg from a worktree (src/ the tag's byte for byte: its git tree and the sha256 that
+#   DEVIATIONS.md D1 records);
+# - collect: once the analyses have started, whatever they produced is merged and committed with the
+#   selection, the cells and the run's facts to the new branch results/real-pilot, failures included.
+# A second start finds the branch and stops. If the extraction fails, no analysis starts and nothing
+# is committed: a fix and a second start are then recorded in the pilot's report.
+name: Real-data pilot (exploratory, v0.3.0's engine)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+env:
+  FROZEN_TAG: v0.3.0-prereg
+  SRC_TREE: 97cbab3c437c9ddb118a0690e6e0d24f8a16069f
+  SRC_SHA256: 17e9a04f6fdd82e98606da89ad98cdce9a7f22fc35c1b31235efcb0637b132e8
+  RESULTS_BRANCH: results/real-pilot
+  AUDIT_BRANCH: results/flagship-audit
+  # the numerical environment of v1's jobs (validation.yml)
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_CORETYPE: Haswell
+  NPY_DISABLE_CPU_FEATURES: "X86_V4 AVX512_ICL AVX512_SPR"
+  PYTHONHASHSEED: "0"
+
+jobs:
+  dry:
+    if: github.event.action != 'labeled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The engine of the tag from a worktree, src/ the tag's byte for byte
+        run: |
+          git fetch -q origin "refs/tags/$FROZEN_TAG:refs/tags/$FROZEN_TAG"
+          git worktree add -q "$RUNNER_TEMP/engine" "$FROZEN_TAG"
+          test "$(git -C "$RUNNER_TEMP/engine" rev-parse HEAD:src)" = "$SRC_TREE"
+          sum=$(cd "$RUNNER_TEMP/engine" && find src -type f | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+          test "$sum" = "$SRC_SHA256" || { echo "src/ sha256 $sum, D1 records $SRC_SHA256"; exit 1; }
+      - name: The two environments, the selection's and the analyses'
+        run: |
+          python -m venv "$RUNNER_TEMP/venv-select"
+          python -m venv "$RUNNER_TEMP/venv-panel"
+          "$RUNNER_TEMP/venv-select/bin/python" -m pip install -q pip==26.2.1
+          "$RUNNER_TEMP/venv-select/bin/pip" install -q --no-deps -r validation/prereg/requirements-select.txt
+          "$RUNNER_TEMP/venv-select/bin/pip" check
+          "$RUNNER_TEMP/venv-panel/bin/python" -m pip install -q pip==26.2.1
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps -r validation/prereg/requirements-panel.txt
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps pytest==9.1.1 pluggy==1.6.0 iniconfig==2.3.1 pygments==2.21.0
+          "$RUNNER_TEMP/venv-panel/bin/pip" check
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps -e "$RUNNER_TEMP/engine"
+          "$RUNNER_TEMP/venv-panel/bin/python" -c "import metric_autopsy as m, pathlib, sys; p = pathlib.Path(m.__file__).resolve(); print(m.__version__, p); sys.exit(0 if str(p).startswith(str(pathlib.Path('$RUNNER_TEMP/engine').resolve())) else 1)"
+      - name: The pilot's tests
+        run: |
+          cd validation/exploratory
+          "$RUNNER_TEMP/venv-panel/bin/python" -m pytest -q -p no:cacheprovider test_real_pilot.py
+      - name: The whole path on a fabricated Census (SYNTHETIC)
+        run: |
+          "$RUNNER_TEMP/venv-select/bin/python" validation/exploratory/real_pilot_select.py --synthetic --out-dir dry/data
+          for part in case1 case2 case3a case3b case3c; do
+            "$RUNNER_TEMP/venv-panel/bin/python" validation/exploratory/real_pilot.py --data dry/data --out "dry/part-$part" --part "$part" > "dry/$part.stdout"
+          done
+          "$RUNNER_TEMP/venv-panel/bin/python" validation/exploratory/real_pilot.py --merge dry/part-* --out dry/merged
+          if grep -n "EXCEPTION\|MISMATCH" dry/merged/real_pilot.log; then exit 1; fi
+
+  check:
+    if: github.event.action == 'labeled' && github.event.label.name == 'pilot-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: One run, one attempt
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "the pilot runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: the pilot has run"; exit 1
+          fi
+
+  select:
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's selection environment
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-select.txt && pip check
+      - name: The audit's record of the TMS FACS datasets
+        run: |
+          git fetch -q origin "refs/heads/$AUDIT_BRANCH:refs/remotes/origin/$AUDIT_BRANCH"
+          git show "origin/$AUDIT_BRANCH:out/audit_results.json" > "$RUNNER_TEMP/audit_results.json"
+      - name: The extraction (the Census, release 2025-11-08)
+        run: |
+          python validation/exploratory/real_pilot_select.py --out-dir pilot-data --audit-results "$RUNNER_TEMP/audit_results.json"
+      - name: The selection's environment, as installed
+        if: always()
+        run: |
+          mkdir -p pilot-data
+          pip freeze > pilot-data/select-freeze.txt
+          echo "PR head ${{ github.event.pull_request.head.sha }}; workflow run ${{ github.run_id }}" > pilot-data/select-run.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pilot-data
+          path: pilot-data
+          if-no-files-found: error
+
+  run:
+    needs: select
+    runs-on: ubuntu-24.04
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [case1, case2, case3a, case3b, case3c]
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The engine of the tag from a worktree, src/ the tag's byte for byte
+        run: |
+          git fetch -q origin "refs/tags/$FROZEN_TAG:refs/tags/$FROZEN_TAG"
+          git worktree add -q "$RUNNER_TEMP/engine" "$FROZEN_TAG"
+          test "$(git -C "$RUNNER_TEMP/engine" rev-parse HEAD:src)" = "$SRC_TREE"
+          sum=$(cd "$RUNNER_TEMP/engine" && find src -type f | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+          test "$sum" = "$SRC_SHA256" || { echo "src/ sha256 $sum, D1 records $SRC_SHA256"; exit 1; }
+      - name: v1's analysis environment and the engine
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps -e "$RUNNER_TEMP/engine"
+          python -c "import metric_autopsy as m, pathlib, sys; p = pathlib.Path(m.__file__).resolve(); print(m.__version__, p); sys.exit(0 if str(p).startswith(str(pathlib.Path('$RUNNER_TEMP/engine').resolve())) else 1)"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot-data
+          path: pilot-data
+      - name: The analyses of ${{ matrix.part }}
+        timeout-minutes: 330
+        run: python validation/exploratory/real_pilot.py --data pilot-data --out "out-${{ matrix.part }}" --part "${{ matrix.part }}"
+      - name: The analysis environment, as installed
+        if: always()
+        run: |
+          mkdir -p "out-${{ matrix.part }}"
+          pip freeze > "out-${{ matrix.part }}/panel-freeze-${{ matrix.part }}.txt"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pilot-out-${{ matrix.part }}
+          path: out-${{ matrix.part }}
+          if-no-files-found: warn
+
+  collect:
+    needs: [select, run]
+    if: always() && needs.select.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment and the engine (the merge imports the analysis script)
+        run: |
+          git fetch -q origin "refs/tags/$FROZEN_TAG:refs/tags/$FROZEN_TAG"
+          git worktree add -q "$RUNNER_TEMP/engine" "$FROZEN_TAG"
+          test "$(git -C "$RUNNER_TEMP/engine" rev-parse HEAD:src)" = "$SRC_TREE"
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps -e "$RUNNER_TEMP/engine"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot-data
+          path: pilot-data
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: pilot-out-*
+          path: parts
+      - name: Merge the parts (a part that is missing is recorded as missing)
+        run: |
+          mkdir -p parts merged
+          python validation/exploratory/real_pilot.py --merge parts parts/* --out merged
+      - name: Commit everything, as it is, to results/real-pilot (a second start finds the branch and stops)
+        if: always()
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: nothing is pushed"; exit 1
+          fi
+          pub="$RUNNER_TEMP/pub"
+          mkdir -p "$pub/select" "$pub/data" "$pub/run/parts"
+          for f in select.json real_pilot_select.log select-freeze.txt select-run.txt; do
+            cp "pilot-data/$f" "$pub/select/" || echo "missing: pilot-data/$f"
+          done
+          for f in pilot-data/case*.npz; do [ -f "$f" ] && cp "$f" "$pub/data/"; done
+          [ -d merged ] && cp -r merged/. "$pub/run/"
+          for d in parts/*; do if [ -d "$d" ]; then cp -r "$d" "$pub/run/parts/"; fi; done
+          workflow_blob=$(git rev-parse "HEAD:.github/workflows/real-pilot.yml")
+          {
+            echo "# The pilot on real data with v0.3.0's engine (exploratory, development data)"
+            echo
+            echo "- Workflow run ${{ github.run_id }} (attempt $GITHUB_RUN_ATTEMPT) of \`.github/workflows/real-pilot.yml\` (blob $workflow_blob), at the pull request's head ${{ github.event.pull_request.head.sha }}; the plan: \`validation/exploratory/real_pilot_plan.md\` there."
+            echo "- The engine: the tag $FROZEN_TAG, src/ git tree $SRC_TREE (sha256 of its files' sha256 list $SRC_SHA256), installed from a worktree."
+            echo "- The jobs: select ${{ needs.select.result }}; run (the five parts) ${{ needs.run.result }}."
+            echo "- select/: the extraction's log, select.json (every choice and the facts that decided it), the environment. data/: the cells of each case (panel.save_npz; files over 45 MB split into .part-NN, to be concatenated). run/: the merged log and JSON (real_pilot.log, real_pilot.json), the engine's reports (reports/) and each part's own outputs (parts/)."
+            echo "- Data: the CELLxGENE Census, release 2025-11-08 (CC BY 4.0); the datasets' ids and DOIs are in select/select.json."
+          } > "$pub/README.md"
+          cd "$pub"
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in data/*.npz; do
+            [ -f "$f" ] || continue
+            if [ "$(stat -c %s "$f")" -gt 45000000 ]; then split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; fi
+          done
+          git init -q -b "$RESULTS_BRANCH"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "The real-data pilot with v0.3.0's engine (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/$RESULTS_BRANCH" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/$RESULTS_BRANCH" | cut -f1)" = "$(git rev-parse HEAD)"
+          echo "----- real_pilot.log -----"
+          cat run/real_pilot.log || true

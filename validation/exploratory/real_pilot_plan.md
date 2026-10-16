@@ -119,3 +119,33 @@ selection and of the structure. Nothing is tuned: the settings are those above, 
 
 v0.4, v2, the claims of level B and the controls of the confirmatory set. No rule of rightness is
 applied; the pilot informs it.
+
+## Clarified before the run (2026-10-16)
+
+Found while the code was written (`real_pilot_select.py`, `real_pilot.py`, `test_real_pilot.py`,
+`.github/workflows/real-pilot.yml`), before any real data were read:
+
+- **The judgment gates resolved.** (d) marks them resolved (`judgment_pending=False`, the command
+  line's `--resolve-judgment`), as v1's panel and anchor R1 did: without it the engine cannot give
+  SUPPORTED. The SESOI is on the engine's default scale (construct), as the command line takes it.
+- **Only the qualifying donors are extracted:** for cases 1 and 2, the mice with at least 20 cells of
+  the type; for case 3, the donors with at least 50 cells in both conditions, at most 24 of them (B1's
+  minimum in v1) for the runners' time and memory, a sample of the sorted ids drawn with the seed
+  where more qualify. In case 1 the co-detected cells are counted over the qualifying mice of the
+  eligible sexes.
+- **Case 3's search, in detail.** Primary cells with `disease == "normal"` and, where the Census has
+  the column, `tissue_type == "tissue"`. A condition is the assay with the suspension type. A donor is
+  one id within the collection with one sex and one development stage, the same in both conditions.
+  Tabula Muris is excluded with Tabula Muris Senis (its 3-month mice are TMS's); Kang et al. 2018 and
+  Levy et al. 2020 by DOI, title or citation. The datasets that Levy et al. reanalysed are not known
+  here and are not excluded by name: the chosen collection is reported. Raw counts are checked on the
+  extraction, and the next set in order is taken if they are not raw (at most 5), as in v1.
+- **"Most correlated"** (3a, 3b) is the highest `norm_pearson` over the pooled cells, as the engine
+  computes it (0 below 3 co-detected cells), ties by the columns' order.
+- **(b) uses the engine's replicate-level statistics** (`stats.nested_t` and
+  `permutation_test_nested` within strata, or `paired_t` and `permutation_test_paired`), so that (b)
+  and (d) differ only by the gates and the correction of depth. (a)'s permutations use vectorized
+  kernels of the metrics, checked against the engine's metric on the observed groups and donors.
+- **The jobs.** Every push to the pull request runs the dry run on a fabricated Census. The real run
+  starts with the label `pilot-run`; its analyses run as five parallel jobs (case 1, case 2, and case
+  3's claims 3a, 3b and 3c); whatever they produce is merged and committed to `results/real-pilot`.
