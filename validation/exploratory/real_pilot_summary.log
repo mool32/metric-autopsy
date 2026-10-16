@@ -14,6 +14,9 @@ raw_detected among (d)'s SUPPORTED: []
 (d) changes (b) on 1 of 2:
   1a: (b) absence -> (d) none [metric_invalid_gate4]; changed by GATE 4 (no response to the injected signal)
 the known issue changes the comparison on 0 of 2
+(b)'s per-donor values (the metric per donor, or per donor the first group minus the second where every donor is in both), min to max:
+  1a mi_3bin: +0.0007 to +0.0162 over 8 donors; SESOI 0.1
+  1b norm_pearson: -0.1595 to +0.2479 over 8 donors; SESOI 0.1
 (d) seconds per claim: mi_3bin n=1 median 17 (min 17, max 17); norm_pearson n=1 median 19 (min 19, max 19); all 36 s
 
 ## case2: not run (no type has at least 20 cells in 3 mice of each sex)
@@ -36,4 +39,25 @@ effects found by (b) or (d), against the SESOI (Delta second - first; (d) correc
   3a2 norm_pearson(SYN3, PDZD2): (b) effect, Delta -0.0272, 90% CI [-0.0467, -0.0078], p 0.0263; (d) SUPPORTED, effect +0.0239, CI [0.0005, 0.0473], p 0.04695304695304695, TOST equivalent True within +-0.09258; SESOI 0.1; |Delta| / SESOI 0.27
   3a6 norm_pearson(LRRTM4, ADGRL3): (b) effect, Delta -0.0246, 90% CI [-0.0443, -0.0049], p 0.0455; (d) NO DETECTABLE EFFECT, effect +0.0203, CI [-0.0035, 0.0442], p 0.0939060939060939, TOST equivalent True within +-0.09301; SESOI 0.1; |Delta| / SESOI 0.25
   3c3 log_cp10k_mean(RBFOX1): (b) effect, Delta -0.1214, 90% CI [-0.1593, -0.0835], p 0.0003; (d) SUPPORTED, effect +0.1213, CI [0.0751, 0.1674], p 0.000999000999000999, TOST equivalent True within +-0.5; SESOI 0.5; |Delta| / SESOI 0.24
+(b)'s per-donor values (the metric per donor, or per donor the first group minus the second where every donor is in both), min to max:
+  3a1 norm_pearson: -0.1438 to +0.0945 over 16 donors; SESOI 0.1
+  3a2 norm_pearson: -0.0625 to +0.0916 over 16 donors; SESOI 0.1
+  3a3 norm_pearson: -0.1099 to +0.0597 over 16 donors; SESOI 0.1
+  3a4 norm_pearson: -0.1859 to +0.0917 over 16 donors; SESOI 0.1
+  3a5 norm_pearson: -0.1235 to +0.0964 over 16 donors; SESOI 0.1
+  3a6 norm_pearson: -0.0642 to +0.1012 over 16 donors; SESOI 0.1
+  3a7 norm_pearson: -0.0818 to +0.1291 over 16 donors; SESOI 0.1
+  3a8 norm_pearson: -0.1957 to +0.2541 over 16 donors; SESOI 0.1
+  3b1 norm_pearson: -0.1498 to +0.1563 over 16 donors; SESOI 0.1
+  3b2 norm_pearson: -0.1254 to +0.1139 over 16 donors; SESOI 0.1
+  3b3 norm_pearson: -0.1415 to +0.1227 over 16 donors; SESOI 0.1
+  3b4 norm_pearson: -0.1947 to +0.2203 over 16 donors; SESOI 0.1
+  3b5 norm_pearson: -0.1757 to +0.2008 over 16 donors; SESOI 0.1
+  3b6 norm_pearson: -0.1308 to +0.2208 over 16 donors; SESOI 0.1
+  3b7 norm_pearson: -0.1756 to +0.1266 over 16 donors; SESOI 0.1
+  3b8 norm_pearson: -0.1793 to +0.1485 over 16 donors; SESOI 0.1
+  3c1 log_cp10k_mean: -0.4248 to +0.8256 over 16 donors; SESOI 0.5
+  3c2 log_cp10k_mean: -0.0830 to +0.2317 over 16 donors; SESOI 0.5
+  3c3 log_cp10k_mean: +0.0320 to +0.3138 over 16 donors; SESOI 0.5
+  3c4 log_cp10k_mean: -0.1056 to +0.2510 over 16 donors; SESOI 0.5
 (d) seconds per claim: norm_pearson n=16 median 133 (min 115, max 140); log_cp10k_mean n=4 median 1172 (min 1168, max 1184); all 6754 s

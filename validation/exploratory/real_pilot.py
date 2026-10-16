@@ -27,6 +27,13 @@ It writes OUT/real_pilot.json, OUT/real_pilot.log and OUT/reports/<claim>.json (
 reports). (a) uses vectorized kernels of the metrics for its permutations; each kernel is checked
 against the engine's metric (R1's metric for the means) on the observed groups and donors, and the
 check is reported. Every exception is caught per analysis and reported with its traceback.
+
+The second run (the plan's section "Deviation: a second run of cases 1 and 2") adds three things.
+(b) reports the design's floor of every claim, v0.4's change 4 computed by hand (design_floor); a
+claim whose SESOI is "floor" takes it as its SESOI, in (b)'s TOST and in (d) on the observed scale,
+computed before (d) runs. Where the design has several strata, (b) also tests each stratum on its
+own (the exact permutation within the stratum). Where select.json carries the flagship audit's
+per-mouse table, (b)'s per-mouse values of mi_3bin(Smad3, Col1a1) are compared with it.
 """
 from __future__ import annotations
 
@@ -54,6 +61,7 @@ from metric_autopsy import SimpleData, injected_signal, metrics, run_autopsy, st
 from anchors import log_cp10k_mean  # noqa: E402  (R1's metric, the same function)
 
 ALPHA = 0.05
+FLOOR_POWER = 0.95  # the design's floor: absence confirmed by the TOST with this power when there is no effect
 CELL_PERMS = 999
 DONOR_PERMS, DONOR_MAX_EXACT = 9999, 20000
 TOST_LEVEL = 0.90
@@ -219,9 +227,38 @@ def cells_test(kern: Kernel, group: np.ndarray, strata: np.ndarray, groups, dire
                 conclusion=call(delta, p, direction))
 
 
+def design_floor(te) -> float:
+    """The design's floor (v0.4's change 4, by hand: v0.3.0 has no such rule): the smallest SESOI at
+    which the TOST (the 90% t interval inside +-SESOI) confirms absence with power 0.95 when there is
+    no effect, from the replicate-level difference's SE and df: SE x (t_0.95,df + t_0.975,df)."""
+    if not (np.isfinite(te.se) and te.se > 0 and te.df > 0):
+        return float("nan")
+    return float(te.se * (stats.t_ppf(0.5 + TOST_LEVEL / 2, te.df) + stats.t_ppf(0.5 + FLOOR_POWER / 2, te.df)))
+
+
+def stratum_tests(y, g, s, labels, groups, rng) -> dict:
+    """Each stratum on its own: the exact permutation of the group labels within it (the engine's
+    permutation_test_nested on the stratum's donors), the group means and Delta (second - first)."""
+    g0, g1 = groups
+    out = {}
+    for st, i in labels.items():
+        m = s == i
+        a, b = y[m & (g == 1)], y[m & (g == 0)]
+        if not len(a) or not len(b):
+            continue
+        pr = stats.permutation_test_nested(y[m], g[m], np.zeros(int(m.sum()), int), n_perm=DONOR_PERMS, rng=rng,
+                                           max_exact=DONOR_MAX_EXACT)
+        out[st] = dict(n={str(g0): len(a), str(g1): len(b)}, mean={str(g0): float(a.mean()), str(g1): float(b.mean())},
+                       delta=float(b.mean() - a.mean()), p=float(pr.p), method=pr.method, n_relabelings=int(pr.n),
+                       min_attainable_p=float(pr.min_attainable_p))
+    return out
+
+
 def donors_test(metric, data, group, donor, strata, groups, direction, sesoi, rng) -> dict:
     """(b): one value per donor (or per donor and group where every donor is in both groups); the
-    engine's replicate-level statistics on the uncorrected data, without gates; TOST at the SESOI."""
+    engine's replicate-level statistics on the uncorrected data, without gates; TOST at the SESOI
+    (at the design's floor where the SESOI is "floor"); each stratum on its own where there are
+    several."""
     g0, g1 = groups
     reps = sorted(set(donor))
     member = {r: set(group[donor == r]) & {g0, g1} for r in reps}
@@ -238,6 +275,7 @@ def donors_test(metric, data, group, donor, strata, groups, direction, sesoi, rn
         counts = {str(g0): int(g.sum()), str(g1): int((1 - g).sum())}
         per_stratum = {st: {str(g0): int(((s == i) & (g == 1)).sum()), str(g1): int(((s == i) & (g == 0)).sum())}
                        for st, i in labels.items()}
+        by_stratum = stratum_tests(y, g, s, labels, groups, rng) if len(labels) > 1 else {}
     elif all(len(m) == 2 for m in member.values()):
         design = "paired"
         vals = {r: float(metric(data[(donor == r) & (group == g0)])) - float(metric(data[(donor == r) & (group == g1)]))
@@ -245,20 +283,22 @@ def donors_test(metric, data, group, donor, strata, groups, direction, sesoi, rn
         d = np.array([vals[r] for r in reps])
         te = stats.paired_t(d)
         perm = stats.permutation_test_paired(d, n_perm=DONOR_PERMS, rng=rng, max_exact=DONOR_MAX_EXACT)
-        counts, per_stratum = dict(pairs=len(d)), {}
+        counts, per_stratum, by_stratum = dict(pairs=len(d)), {}, {}
     else:
         return dict(design="mixed", conclusion="none", note="donors partly in both groups")
     delta = -float(te.est)  # the engine's estimate is first - second; Delta is second - first
     lo, hi = te.ci(TOST_LEVEL)
     ci = (-hi, -lo)
-    tost = bool(np.isfinite(lo) and np.isfinite(hi) and -sesoi < lo and hi < sesoi)
+    floor = design_floor(te)
+    use = floor if sesoi == "floor" else float(sesoi)
+    tost = bool(np.isfinite(lo) and np.isfinite(hi) and np.isfinite(use) and -use < lo and hi < use)
     concl = call(delta, perm.p, direction)
     if concl == "none" and tost:
         concl = "absence"
     return dict(design=design, delta=delta, se=float(te.se), df=float(te.df), t_method=te.method, p=float(perm.p),
                 perm_method=perm.method, perm_n=int(perm.n), min_attainable_p=float(perm.min_attainable_p),
-                ci90=[float(ci[0]), float(ci[1])], tost=tost, counts=counts, per_stratum=per_stratum,
-                values={r: vals[r] for r in reps}, conclusion=concl)
+                ci90=[float(ci[0]), float(ci[1])], floor=floor, sesoi_used=use, tost=tost, counts=counts,
+                per_stratum=per_stratum, by_stratum=by_stratum, values={r: vals[r] for r in reps}, conclusion=concl)
 
 
 def label_of(verdict: str) -> str:
@@ -286,8 +326,10 @@ def engine_run(claim: dict, case: dict, X: np.ndarray, obs: pd.DataFrame, genes:
     ctl = claim.get("controls")
     cols = list(dict.fromkeys([case["group_col"], case["replicate"], *case["within"]]))
     data = SimpleData(X.copy(), obs[cols].astype(str).reset_index(drop=True), list(genes))
-    prereg = dict(estimand="composition", direction=claim["direction"], sesoi=claim["sesoi"],
+    prereg = dict(estimand="composition", direction=claim["direction"], sesoi=float(claim["sesoi"]),
                   judgment_pending=False)
+    if claim.get("sesoi_scale"):
+        prereg["sesoi_scale"] = claim["sesoi_scale"]
     a = run_autopsy(metric, data, group_col=case["group_col"], groups=tuple(case["groups"]), gene_pair=gene_pair,
                     within=list(case["within"]), pair_metric=pair_metric if ctl else None,
                     pos_pair=tuple(ctl["pos"]) if ctl else None, neg_pair=tuple(ctl["neg"]) if ctl else None,
@@ -312,7 +354,8 @@ def engine_run(claim: dict, case: dict, X: np.ndarray, obs: pd.DataFrame, genes:
                                           for k, v in rep["fields"].items()},
                 effect={k: ef.get(k) for k in keep if k in ef},
                 gates=[dict(gate=g["gate"], name=g["name"], status=g["status"], message=g["message"]) for g in rep["gates"]],
-                report=f"reports/{claim['id']}.json", report_sha256=hashlib.sha256(text.encode()).hexdigest())
+                prereg=prereg, report=f"reports/{claim['id']}.json",
+                report_sha256=hashlib.sha256(text.encode()).hexdigest())
 
 
 def gate_of(d: dict) -> str:
@@ -369,6 +412,9 @@ def run_case(name: str, case: dict, data_dir: Path, out_dir: Path, log, on_claim
     for claim in case["claims"]:
         rec = dict(id=claim["id"], metric=claim["metric"], genes=claim["genes"], direction=claim["direction"],
                    sesoi=claim["sesoi"], signal=claim["signal"], controls=claim.get("controls"))
+        for k in ("sesoi_scale", "sesoi_note", "seed_id"):
+            if claim.get(k):
+                rec[k] = claim[k]
         if claim.get("skip"):
             rec["skipped"] = claim["skip"]
             records.append(rec)
@@ -386,18 +432,29 @@ def run_case(name: str, case: dict, data_dir: Path, out_dir: Path, log, on_claim
         except Exception as exc:
             rec["kernel_error"] = dict(error=repr(exc), traceback=traceback.format_exc().splitlines())
         rec["seconds_check"] = round(time.time() - t0, 2)
-        cs = claim_seed(claim["id"])
+        cs = claim_seed(claim.get("seed_id") or claim["id"])  # a SESOI variant shares its claim's permutations
+
+        def engine_claim(claim=claim, rec=rec):  # the floor, from (b), before the engine runs the claim
+            if claim["sesoi"] != "floor":
+                return engine_run(claim, case, X, obs, genes, out_dir)
+            floor = rec["b"].get("floor", float("nan"))
+            if not np.isfinite(floor):
+                raise ValueError("no design floor: (b) has no finite SE")
+            return engine_run(dict(claim, sesoi=floor), case, X, obs, genes, out_dir)
         for an, fn in (("a", lambda: cells_test(kern, group, strata, groups, claim["direction"],
                                                 np.random.default_rng([SEED, cs, 1]))),
                        ("b", lambda: donors_test(metric, data, group, donor, strata, groups, claim["direction"],
                                                  claim["sesoi"], np.random.default_rng([SEED, cs, 2]))),
-                       ("d", lambda: engine_run(claim, case, X, obs, genes, out_dir))):
+                       ("d", engine_claim)):
             t0 = time.time()
             try:
                 rec[an] = fn()
             except Exception as exc:  # reported as it is
                 rec[an] = dict(error=repr(exc), traceback=traceback.format_exc().splitlines(), conclusion="error")
             rec[an]["seconds"] = round(time.time() - t0, 2)
+        rec["sesoi_used"] = rec["b"].get("sesoi_used", claim["sesoi"])
+        if case.get("audit_mice") and claim["metric"] == "mi_3bin" and "values" in rec["b"]:
+            rec["b_vs_audit"] = against_audit(rec["b"]["values"], case["audit_mice"], claim["genes"])
         b, d, dk = rec["b"].get("conclusion"), rec["d"].get("conclusion"), rec["d"].get("known_issue_conclusion")
         rec["d_vs_b"] = "same" if d == b else f"changed by {gate_of(rec['d'])}"
         rec["d_known_vs_b"] = ("same" if dk == b else
@@ -409,6 +466,18 @@ def run_case(name: str, case: dict, data_dir: Path, out_dir: Path, log, on_claim
             on_claim(dict(cells=int(len(obs)), genes=int(len(genes)), claims=records, data_sha256=got, status="running"))
     return dict(cells=int(len(obs)), genes=int(len(genes)), design=json.loads(design.to_json(orient="records")),
                 claims=records, data_sha256=got)
+
+
+def against_audit(values: dict, audit_mice: list, genes) -> dict:
+    """(b)'s per-mouse values of mi_3bin against the flagship audit's (section E: Smad3, Col1a1, the
+    same cells by its own selection)."""
+    if list(genes) != ["Smad3", "Col1a1"]:
+        return dict(note="the audit's table is of mi_3bin(Smad3, Col1a1) only")
+    theirs = {str(m["donor_id"]): float(m["mi_3bin"]) for m in audit_mice}
+    both = sorted(set(values) & set(theirs))
+    diffs = [abs(values[k] - theirs[k]) for k in both]
+    return dict(compared=len(both), only_here=sorted(set(values) - set(theirs)), only_audit=sorted(set(theirs) - set(values)),
+                max_abs_diff=float(max(diffs)) if diffs else float("nan"))
 
 
 def fmt(x, nd=4) -> str:
@@ -433,10 +502,25 @@ def claim_lines(rec: dict) -> list:
     elif b.get("design") == "mixed":
         out.append("- (b) donors: mixed design, no test")
     else:
+        use = b.get("sesoi_used", rec["sesoi"])
         out.append(f"- (b) donors ({b['design']}, {b['counts']}): Delta {fmt(b['delta'])}, p {b['p']:.4g} "
                    f"({b['perm_method']}, {b['perm_n']}; min attainable {b['min_attainable_p']:.3g}), 90% CI "
-                   f"[{fmt(b['ci90'][0])}, {fmt(b['ci90'][1])}], TOST at +-{rec['sesoi']}: {b['tost']} -> "
+                   f"[{fmt(b['ci90'][0])}, {fmt(b['ci90'][1])}], TOST at +-{use:.4g}"
+                   + (" (the design's floor)" if rec["sesoi"] == "floor" else "") + f": {b['tost']} -> "
                    f"{b['conclusion']} ({b['seconds']} s)")
+        if "floor" in b:
+            out.append(f"    the design's floor (v0.4's change 4, by hand): {b['floor']:.4g} = SE {b['se']:.4g} x "
+                       f"(t_0.95 + t_0.975 at df {b['df']:.4g}); the SESOI used {use:.4g}")
+        for st, r in (b.get("by_stratum") or {}).items():
+            g0, g1 = list(r["n"])
+            out.append(f"    stratum {st}: {r['n'][g0]} against {r['n'][g1]} donors, means {r['mean'][g0]:.4g} against "
+                       f"{r['mean'][g1]:.4g}, Delta {fmt(r['delta'])}, p {r['p']:.4g} ({r['method']}, {r['n_relabelings']}; "
+                       f"min attainable {r['min_attainable_p']:.3g})")
+        if rec.get("b_vs_audit"):
+            v = rec["b_vs_audit"]
+            out.append("    against the audit's per-mouse mi_3bin (section E): " + (
+                v["note"] if "note" in v else f"{v['compared']} mice compared, max |diff| {v['max_abs_diff']:.2e}; "
+                f"only here {v['only_here'] or 'none'}, only in the audit {v['only_audit'] or 'none'}"))
     if "error" in d:
         out.append(f"- (d) EXCEPTION {d['error']}")
         out += [f"    {ln}" for ln in d["traceback"][-6:]]
@@ -470,7 +554,9 @@ def summary_lines(results: dict) -> list:
 
 
 PARTS = {"case1": ("case1", ""), "case2": ("case2", ""), "case3a": ("case3", "3a"), "case3b": ("case3", "3b"),
-         "case3c": ("case3", "3c")}  # the workflow's parallel jobs: a case, or a case's claims by prefix
+         "case3c": ("case3", "3c"),  # the workflow's parallel jobs: a case, or a case's claims by prefix
+         "case1a": ("case1", "1a"), "case1b": ("case1", "1b")}  # the second run: case 1's mi_3bin claims, its norm_pearson one
+FIRST_RUN_PARTS = ("case1", "case2", "case3a", "case3b", "case3c")  # what a merge expects by default
 
 
 def claim_seed(claim_id: str) -> int:
@@ -478,9 +564,11 @@ def claim_seed(claim_id: str) -> int:
     return int(hashlib.sha256(claim_id.encode()).hexdigest()[:8], 16)
 
 
-def merge(dirs, out_dir: Path) -> int:
+def merge(dirs, out_dir: Path, expect=None) -> int:
     """The parts' outputs (each a directory with <part>.json, <part>.log and reports/) into one
-    real_pilot.json and real_pilot.log; a part that is missing is recorded as missing."""
+    real_pilot.json and real_pilot.log; a part of `expect` (by default the first run's five) that is
+    missing is recorded as missing."""
+    expect = list(expect or FIRST_RUN_PARTS)
     (out_dir / "reports").mkdir(parents=True, exist_ok=True)
     found = {}
     for d in dirs:
@@ -494,7 +582,8 @@ def merge(dirs, out_dir: Path) -> int:
     merged = {k: v for k, v in meta.items() if k not in ("cases", "seconds", "part")}
     merged.update(parts={}, cases={})
     text = []
-    for part, (case_name, _) in PARTS.items():
+    for part in expect:
+        case_name = PARTS[part][0]
         if part not in found:
             merged["parts"][part] = dict(status="missing (the job did not finish or wrote nothing)")
             text += [f"## {part}: MISSING (the job did not finish or wrote nothing)", ""]
@@ -513,7 +602,7 @@ def merge(dirs, out_dir: Path) -> int:
     text += summary_lines(merged["cases"])
     text += ["", "Time per part (s): " + "; ".join(f"{p} {v.get('seconds', v.get('status'))}"
                                                   for p, v in merged["parts"].items())]
-    text.append(f"{tag}merged {len(found)} of {len(PARTS)} parts")
+    text.append(f"{tag}merged {len(set(found) & set(expect))} of {len(expect)} parts")
     (out_dir / "real_pilot.json").write_text(json.dumps(merged, indent=1, default=str))
     (out_dir / "real_pilot.log").write_text("\n".join(text) + "\n")
     print("\n".join(text[-(len(summary_lines(merged['cases'])) + 3):]))
@@ -526,9 +615,11 @@ def main(argv=None) -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--part", choices=sorted(PARTS), help="only this part (the workflow runs the parts in parallel)")
     p.add_argument("--merge", nargs="+", type=Path, metavar="PART_DIR", help="merge the parts' outputs into OUT")
+    p.add_argument("--expect", nargs="+", choices=sorted(PARTS),
+                   help="the parts the merge expects (default: the first run's five)")
     args = p.parse_args(argv)
     if args.merge:
-        return merge(args.merge, args.out)
+        return merge(args.merge, args.out, args.expect)
     if args.data is None:
         p.error("--data is required")
     (args.out / "reports").mkdir(parents=True, exist_ok=True)
@@ -542,16 +633,18 @@ def main(argv=None) -> int:
             lines.append(str(m))
     tag = "SYNTHETIC " if spec.get("synthetic") else ""
     t0 = time.time()
-    log(f"# {tag}The pilot's analyses (validation/exploratory/real_pilot_plan.md)" + (f": {args.part}" if args.part else ""),
+    second = ", second run (the plan's section \"Deviation: a second run of cases 1 and 2\")" if spec.get("run") == "second" else ""
+    log(f"# {tag}The pilot's analyses (validation/exploratory/real_pilot_plan.md){second}" + (f": {args.part}" if args.part else ""),
         "", f"engine {MA.__version__} from {Path(MA.__file__).resolve().parent}; python {platform.python_version()}; "
         f"numpy {np.__version__}; pandas {pd.__version__}; numerics {NUMERICS}",
         f"select.json sha256 {hashlib.sha256(spec_bytes).hexdigest()}; Census release {spec.get('release')}", "")
-    out = dict(synthetic=spec.get("synthetic"), part=args.part,
+    out = dict(synthetic=spec.get("synthetic"), run=spec.get("run", "first"), part=args.part,
                engine=dict(version=MA.__version__, path=str(Path(MA.__file__).resolve().parent)),
                python=platform.python_version(), numpy=np.__version__, pandas=pd.__version__, numerics=NUMERICS,
                select_sha256=hashlib.sha256(spec_bytes).hexdigest(), settings=dict(
                    alpha=ALPHA, cell_perms=CELL_PERMS, donor_perms=DONOR_PERMS, donor_max_exact=DONOR_MAX_EXACT,
-                   tost_level=TOST_LEVEL, seed=SEED, engine_seed=0, judgment_pending=False, estimand="composition"),
+                   tost_level=TOST_LEVEL, floor_power=FLOOR_POWER, seed=SEED, engine_seed=0, judgment_pending=False,
+                   estimand="composition"),
                cases={})
     want_case, prefix = PARTS[args.part] if args.part else (None, "")
     stem = args.part or "real_pilot"

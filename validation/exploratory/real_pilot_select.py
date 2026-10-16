@@ -27,6 +27,15 @@ and memory).
 An exception in a case is printed with its traceback, and the script exits with 1 after the other
 cases, so that the analyses do not start; a case that does not qualify by its rule is recorded and
 does not run.
+
+The second run (--second; the plan's section "Deviation: a second run of cases 1 and 2", decided by
+the owner on 2026-10-16 and written before it) extracts cases 1 and 2 only, with two changes. Case 1
+is preprint section 4's setup as the flagship audit reproduced it (validation/flagship_audit,
+section E): every primary Smart-seq2 TMS FACS cell at the 3-month stage and the "20-month-old stage
+and over" stage, both sexes, every cell type and tissue, no cap per mouse, and the donor ids as the
+Census gives them for units, composite ids included; with --audit-results, its units and their
+cells are checked against the audit's per-mouse table. Case 2 calls a mouse's sex by the contrast of
+the sex genes (sex_call, "contrast"), not by the plan's thresholds.
 """
 from __future__ import annotations
 
@@ -62,6 +71,9 @@ SEX_GENES = ("Xist",) + Y_GENES
 TMS_GENES = PAIR + POS_PAIR + NEG_PAIR + SEX_GENES
 YOUNG, OLD = "3-month-old stage", "20-month-old stage and over"
 CALL_MIN, CALL_MAX = 0.50, 0.05       # case 2: a female has Xist in >= 50% of cells and a Y gene in <= 5%
+CALL_SHARE, CALL_RATIO = 0.05, 10.0   # case 2, second run: the other sex's genes in <= 5% of cells, the own in >= 10x that share and >= 5%
+CHUNK_CELLS = 10000                   # case 1, second run: the cells read per call to the Census
+AUDIT_AGE = {"3m": "young", "20m": "old"}  # the audit's age tokens (flagship_audit/audit_tms.py)
 # Case 3 leaves out, by collection name, title or DOI: Tabula Muris Senis and Tabula Muris (their
 # mice by FACS and by droplet are a candidate truth for v2), and the confirmatory set's Kang et al.
 # 2018 and Levy et al. 2020.
@@ -381,6 +393,8 @@ class SyntheticCensus:
             lam[:, ix["Tst"]], lam[:, ix["Lrrc42"]] = lib * 1.0, lib * 1.0
             female = (obs["sex"] == "female").to_numpy()
             lam[:, ix["Xist"]] = lib * 15.0 * female
+            low = (obs["donor_id"] == "3_38_F").to_numpy()  # Xist in about 40% of its cells, as the real 3_38_F
+            lam[low, ix["Xist"]] = lib[low] * 0.5
             for s in Y_GENES:
                 lam[:, ix[s]] = lib * 3.0 * ~female
             odd = (obs["donor_id"] == "3_57_F").to_numpy()  # labelled female; half its cells carry Y genes
@@ -512,10 +526,25 @@ def case1_rule(tms: pd.DataFrame):
     return choice, table
 
 
-def case2_structure(tms: pd.DataFrame) -> pd.DataFrame:
+def sex_call(xs: float, ys: float, rule: str = "threshold") -> str:
+    """The sex that a mouse's shares of cells with Xist (xs) and with a Y gene (ys) call, or "neither".
+    "threshold" (the plan): female where xs >= 0.50 and ys <= 0.05, male the reverse. "contrast" (the
+    second run, fixed before it): female where ys <= 0.05 and xs is at least ten times ys and at least
+    0.05; male the reverse."""
+    if rule == "threshold":
+        return ("female" if xs >= CALL_MIN and ys <= CALL_MAX else
+                "male" if ys >= CALL_MIN and xs <= CALL_MAX else "neither")
+    if rule == "contrast":
+        def over(own, other):
+            return other <= CALL_SHARE and own >= CALL_RATIO * other and own >= CALL_SHARE
+        return "female" if over(xs, ys) else "male" if over(ys, xs) else "neither"
+    raise ValueError(f"unknown rule {rule!r}")
+
+
+def case2_structure(tms: pd.DataFrame, rule: str = "threshold") -> pd.DataFrame:
     """Case 2's structure, per mouse of the 3-month stratum (all its cells): cells, the share with
     Xist > 0, the share with any Y gene > 0, the annotated sex, the tissues, the call by the sex
-    genes and whether the mouse is kept (a call that matches the annotation)."""
+    genes (sex_call with `rule`) and whether the mouse is kept (a call that matches the annotation)."""
     t = tms[units(tms["donor_id"]) & (tms["development_stage"] == YOUNG).to_numpy()].copy()
     t["xist"] = t["g_Xist"] > 0
     t["y"] = t[[f"g_{g}" for g in Y_GENES]].sum(axis=1) > 0
@@ -523,8 +552,7 @@ def case2_structure(tms: pd.DataFrame) -> pd.DataFrame:
     for donor, g in t.groupby("donor_id", sort=True):
         sexes = sorted(set(g["sex"]))
         xs, ys = float(g["xist"].mean()), float(g["y"].mean())
-        call = ("female" if xs >= CALL_MIN and ys <= CALL_MAX else
-                "male" if ys >= CALL_MIN and xs <= CALL_MAX else "neither")
+        call = sex_call(xs, ys, rule)
         label = sexes[0] if len(sexes) == 1 else "/".join(sexes)
         if call == "neither":
             why = "neither call"
@@ -537,6 +565,32 @@ def case2_structure(tms: pd.DataFrame) -> pd.DataFrame:
                          tissues=",".join(sorted(set(g["tissue"])))))
     return pd.DataFrame(rows, columns=["mouse", "sex", "cells", "xist_share", "y_share", "call", "kept",
                                        "excluded_because", "tissues"])
+
+
+def case1_audit(tms: pd.DataFrame, audit_mice=None):
+    """Case 1 of the second run: section 4's setup as the flagship audit reproduced it
+    (flagship_audit/audit_tms.py, section E): every cell of `tms` (TMS FACS, primary, Smart-seq2) at
+    the 3-month stage or the "20-month-old stage and over" stage, both sexes, every cell type and
+    tissue, no cap; the units are the donor ids as the Census gives them, composite ids included.
+    Returns the cells, the table of units and, with the audit's per-mouse table (audit_results.json,
+    E.mice), whether each unit's sex, age and cells are the audit's (None without it)."""
+    t = tms[tms["development_stage"].isin([YOUNG, OLD]).to_numpy()].copy()
+    t["age"] = _age(t["development_stage"])
+    per = (t.groupby("donor_id", sort=True)
+           .agg(sex=("sex", lambda v: "/".join(sorted(set(v)))), age=("age", lambda v: "/".join(sorted(set(v)))),
+                cells=("soma_joinid", "size"), tissues=("tissue", "nunique"))
+           .reset_index())
+    per["composite"] = per["donor_id"].astype(str).str.contains("/", regex=False)
+    per = per.sort_values(["sex", "age", "donor_id"], ascending=[True, False, True], kind="mergesort").reset_index(drop=True)
+    check = None
+    if audit_mice is not None:
+        want = {str(m["donor_id"]): (str(m["sex"]), AUDIT_AGE.get(str(m["age"]), str(m["age"])), int(m["n_cells"]))
+                for m in audit_mice}
+        got = {str(r.donor_id): (str(r.sex), str(r.age), int(r.cells)) for r in per.itertuples()}
+        diff = sorted(set(want) ^ set(got)) + sorted(k for k in set(want) & set(got) if want[k] != got[k])
+        check = dict(same=not diff, units=len(got), audit_units=len(want),
+                     differences=[dict(donor=k, audit=want.get(k), here=got.get(k)) for k in diff])
+    return t, per, check
 
 
 def case2_rule(tms: pd.DataFrame, structure: pd.DataFrame):
@@ -695,22 +749,51 @@ def present_genes(census, organism: str, datasets: pd.DataFrame, ids) -> np.ndar
     return np.where(every)[0]
 
 
-def extract(census, organism: str, datasets: pd.DataFrame, joinids: np.ndarray, dataset_ids, named=()) -> dict:
+def read_blocks(census, organism: str, joinids: np.ndarray, present: np.ndarray, chunk: int):
+    """The counts of `joinids` over the genes `present`, read `chunk` cells at a time (sorted joinids
+    in sorted blocks) and stacked: int32 CSR (the counts must be raw), obs, var. None for the
+    counts where a block is not raw."""
+    from scipy import sparse
+    blocks = np.array_split(np.asarray(joinids, dtype=np.int64), max(1, int(np.ceil(len(joinids) / chunk))))
+    Xs, obs, var = [], [], None
+    for b in blocks:
+        Xb, ob, vb = census.counts(organism, obs_joinids=b, var_joinids=present, obs_cols=OBS_COLS)
+        if Xb.shape[0] != len(b) or not np.array_equal(ob["soma_joinid"].to_numpy(np.int64), b):
+            raise ValueError(f"{len(b)} cells asked, {Xb.shape[0]} read, or not those")
+        if var is None:
+            var = vb
+        elif not np.array_equal(vb["soma_joinid"].to_numpy(), var["soma_joinid"].to_numpy()):
+            raise ValueError("the genes read differ between blocks")
+        if not raw_counts(Xb):
+            return None, None, var
+        Xs.append(sparse.csr_matrix(Xb).astype(np.int32))
+        obs.append(ob)
+    return sparse.vstack(Xs, format="csr"), pd.concat(obs, ignore_index=True), var
+
+
+def extract(census, organism: str, datasets: pd.DataFrame, joinids: np.ndarray, dataset_ids, named=(),
+            chunk: int | None = None) -> dict:
     """The cells' counts over the genes measured in every dataset they come from (`dataset_ids`), cut
-    by D1's rule."""
+    by D1's rule; with `chunk`, read that many cells at a time (read_blocks)."""
     ids = sorted(set(map(str, dataset_ids)))
     var = census.var(organism)
     present = present_genes(census, organism, datasets, ids)
     if len(present) and present.max() >= len(var):
         raise ValueError("the presence matrix has more genes than the var table")
-    X, obs, v = census.counts(organism, obs_joinids=joinids, var_joinids=present, obs_cols=OBS_COLS)
+    if chunk:
+        X, obs, v = read_blocks(census, organism, joinids, present, chunk)
+        if X is None:
+            return dict(raw=False, cells=int(len(joinids)), datasets=ids)
+    else:
+        X, obs, v = census.counts(organism, obs_joinids=joinids, var_joinids=present, obs_cols=OBS_COLS)
     if X.shape[0] != len(joinids):
         raise ValueError(f"{len(joinids)} cells asked, {X.shape[0]} read")
     if sorted(set(obs["dataset_id"].astype(str))) != ids:
         raise ValueError("the cells read come from other datasets than their obs said")
     if not raw_counts(X):
         return dict(raw=False, cells=int(X.shape[0]), datasets=ids)
-    X = X.astype(np.int64)
+    if not chunk:
+        X = X.astype(np.int64)
     dense, genes, missing = cut_genes(X, list(v["feature_name"].astype(str)), named)
     for c in OBS_COLS:
         obs[c] = obs[c].astype(str)
@@ -779,18 +862,75 @@ def run_case1(census, tms, datasets, out_dir, log) -> dict:
                 within=["sex"], replicate="mouse", claims=claims, eligible=_records(table))
 
 
-def run_case2(census, tms, datasets, out_dir, log) -> dict:
+def run_case1_audit(census, tms, datasets, out_dir, log, audit=None, chunk: int = CHUNK_CELLS) -> dict:
+    """Case 1 of the second run: section 4's setup as the flagship audit reproduced it (case1_audit)."""
+    log("## Case 1, second run: section 4's setup as the flagship audit reproduced it: every TMS FACS cell at "
+        f"{YOUNG!r} and {OLD!r}, both sexes, every cell type and tissue, no cap per mouse; the units are the donor "
+        "ids as the Census gives them, composite ids included; young against old within sex")
+    t, per, check = case1_audit(tms, audit["E"]["mice"] if audit else None)
+    log("Units (donor ids) by sex and age:", *md_table(per, max_rows=60))
+    n = per.groupby(["sex", "age"]).size()
+    log("Units per sex, young against old: " + "; ".join(
+        f"{sx} {int(n.get((sx, 'young'), 0))} against {int(n.get((sx, 'old'), 0))}" for sx in sorted(set(per["sex"]))))
+    if check is not None:
+        log(f"The units and their cells are the audit's section E (audit_results.json, E.mice): {check['same']} "
+            f"({check['units']} units here, {check['audit_units']} there)"
+            + "".join(f"; {d['donor']}: audit {d['audit']}, here {d['here']}" for d in check["differences"]))
+    mixed = per[per["sex"].str.contains("/", regex=False) | per["age"].str.contains("/", regex=False)]
+    if len(mixed):
+        log(f"Donor ids with two sexes or two ages: {list(mixed['donor_id'])}: case 1 does not run.")
+        return dict(status="not run", reason="a donor id with two sexes or ages", units=_records(per), audit_check=check)
+    ids = np.sort(t["soma_joinid"].to_numpy(np.int64))
+    log(f"Extracting {len(ids)} cells of {t['dataset_id'].nunique()} datasets, {chunk} at a time")
+    rec = extract(census, "mus_musculus", datasets, ids, t["dataset_id"], named=PAIR + POS_PAIR + NEG_PAIR, chunk=chunk)
+    if not rec["raw"]:
+        log("The counts are not raw (non-negative integers): case 1 does not run.")
+        return dict(status="not run", reason="counts not raw", units=_records(per), audit_check=check)
+    o = rec["obs"]
+    obs = pd.DataFrame(dict(mouse=o["donor_id"], age=_age(o["development_stage"]), sex=o["sex"], tissue=o["tissue"],
+                            cell_type=o["cell_type"], dataset_id=o["dataset_id"], development_stage=o["development_stage"],
+                            soma_joinid=o["soma_joinid"].astype(np.int64)))
+    log("Cells per mouse (extracted):", *per_unit_table(obs, ["sex", "age", "mouse"]))
+    log("Tissues of the extracted cells, per sex and age:", *md_table(
+        obs.groupby(["sex", "age", "tissue"]).size().rename("cells").reset_index(), max_rows=100))
+    f = write_case(out_dir, "case1", rec, obs)
+    log(f"case1.npz: {f['cells']} cells x {f['genes']} genes ({f['measured_genes']} of {f['var_genes']} genes "
+        f"measured in all {len(f['datasets'])} datasets read); named genes missing: {f['missing_named'] or 'none'}; "
+        f"sha256 {f['sha256']}")
+    missing = set(f["missing_named"]) & set(PAIR + POS_PAIR + NEG_PAIR)
+    skip = f"named genes missing: {sorted(missing)}" if missing else ""
+    base = dict(genes=list(PAIR), direction="decrease", signal=dict(kind="coupling", strength=COUPLING_STRENGTH),
+                controls=dict(pos=list(POS_PAIR), neg=list(NEG_PAIR)), skip=skip)
+    claims = [dict(base, id="1a", metric="mi_3bin", sesoi=0.1,
+                   sesoi_note="AGENTS.md's example, wrong in scale for mi_3bin"),
+              dict(base, id="1a-floor", metric="mi_3bin", sesoi="floor", sesoi_scale="observed", seed_id="1a",
+                   sesoi_note="the design's floor by v0.4's change 4, computed by real_pilot.py from (b) before (d)"),
+              dict(base, id="1b", metric="norm_pearson", sesoi=0.1)]
+    out = dict(status="run", run="second", setup="section 4 as the flagship audit reproduced it", data=f,
+               group_col="age", groups=["young", "old"], within=["sex"], replicate="mouse", claims=claims,
+               units=_records(per), audit_check=check)
+    if audit:
+        out["audit_mice"] = [{k: m[k] for k in ("donor_id", "sex", "age", "n_cells", "median_nnz", "mi_3bin")}
+                             for m in audit["E"]["mice"]]
+        out["audit_tests"] = audit["E"]["tests"]
+    return out
+
+
+def run_case2(census, tms, datasets, out_dir, log, rule: str = "threshold") -> dict:
     log("## Case 2: Xist and the Y genes on Tabula Muris Senis (FACS), female against male, 3 months")
-    st = case2_structure(tms)
-    log("Structure per mouse of the 3-month stratum (all its cells), checked before any metric "
-        f"(female: Xist in >= {CALL_MIN:.0%} of cells and a Y gene in <= {CALL_MAX:.0%}; male: the reverse):")
+    st = case2_structure(tms, rule)
+    how = (f"female: Xist in >= {CALL_MIN:.0%} of cells and a Y gene in <= {CALL_MAX:.0%}; male: the reverse"
+           if rule == "threshold" else
+           f"by contrast: female where a Y gene is in <= {CALL_SHARE:.0%} of cells and Xist in >= {CALL_RATIO:g} times "
+           f"that share and >= {CALL_SHARE:.0%}; male: the reverse")
+    log(f"Structure per mouse of the 3-month stratum (all its cells), checked before any metric ({how}):")
     log(*md_table(st, max_rows=60))
     choice, table, why = case2_rule(tms, st)
     if len(table):
         log("Cell types over the kept mice:", *md_table(table, ["cell_type", "mice", "female", "male", "every", "cells"]))
     if choice is None:
         log(f"Case 2 does not run: {why}.")
-        return dict(status="not run", reason=why, structure=_records(st))
+        return dict(status="not run", reason=why, structure=_records(st), sex_rule=rule)
     t = tms[(tms["cell_type"] == choice["cell_type"]).to_numpy() & tms["donor_id"].isin(set(choice["units"])).to_numpy()
             & (tms["development_stage"] == YOUNG).to_numpy()]
     ids = sample_ids({u: g["soma_joinid"].to_numpy() for u, g in t.groupby("donor_id")}, MAX_CELLS)
@@ -818,7 +958,7 @@ def run_case2(census, tms, datasets, out_dir, log) -> dict:
                    direction="increase", sesoi=0.5, signal=dict(kind="module", fold=MODULE_FOLD, frac=MODULE_FRAC),
                    skip="no Y gene" if set(Y_GENES) <= missing else "")]
     return dict(status="run", choice=_public(choice), data=f, group_col="sex", groups=["female", "male"],
-                within=[], replicate="mouse", claims=claims, structure=_records(st), types=_records(table))
+                within=[], replicate="mouse", claims=claims, structure=_records(st), types=_records(table), sex_rule=rule)
 
 
 def run_case3(census, datasets, out_dir, log) -> dict:
@@ -920,6 +1060,9 @@ def main(argv=None) -> int:
     p.add_argument("--synthetic", action="store_true", help="a fabricated Census (offline): the code path only")
     p.add_argument("--audit-results", type=Path,
                    help="the audit's out/audit_results.json: its TMS dataset ids must be the ones resolved here")
+    p.add_argument("--second", action="store_true",
+                   help="the second run (the plan's deviation of 2026-10-16): cases 1 and 2 only, case 1 as the audit "
+                        "reproduced section 4, case 2 with the sex called by contrast")
     args = p.parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     lines = []
@@ -930,14 +1073,18 @@ def main(argv=None) -> int:
             lines.append(str(m))
     tag = "SYNTHETIC " if args.synthetic else ""
     t0 = time.time()
-    log(f"# {tag}The pilot's extraction (validation/exploratory/real_pilot_plan.md)", "")
+    log(f"# {tag}The pilot's extraction (validation/exploratory/real_pilot_plan.md)"
+        + (", second run (the plan's section \"Deviation: a second run of cases 1 and 2\")" if args.second else ""), "")
     census = SyntheticCensus() if args.synthetic else Census()
     spec = dict(synthetic=args.synthetic, release="SYNTHETIC" if args.synthetic else RELEASE, seed=SEED,
                 rules=dict(max_cells=MAX_CELLS, n_genes=N_GENES, min_mouse_cells=MIN_MOUSE_CELLS,
                            min_group_mice=MIN_GROUP_MICE, neg_min_donors=NEG_MIN_DONORS, neg_min_cells=NEG_MIN_CELLS,
                            neg_max_donors=NEG_MAX_DONORS,
                            excluded_names=list(EXCLUDED_NAMES), excluded_dois=list(EXCLUDED_DOIS)),
-                python=platform.python_version(), cases={})
+                python=platform.python_version(), run="second" if args.second else "first", cases={})
+    if args.second:
+        spec["rules"].update(sex_call="contrast", call_share=CALL_SHARE, call_ratio=CALL_RATIO, chunk_cells=CHUNK_CELLS,
+                             case1="section 4 as the flagship audit reproduced it")
     failed = []
     try:
         spec["census_summary"] = census.summary()
@@ -945,9 +1092,9 @@ def main(argv=None) -> int:
         datasets = census.datasets()
         ids = tms_dataset_ids(datasets)
         spec["tms_dataset_ids"] = ids
-        if args.audit_results:
-            audit = json.loads(args.audit_results.read_text())["meta"]["tms_dataset_ids"]
-            same = sorted(audit) == sorted(ids)
+        audit = json.loads(args.audit_results.read_text()) if args.audit_results else None
+        if audit:
+            same = sorted(audit["meta"]["tms_dataset_ids"]) == sorted(ids)
             spec["tms_ids_as_audit"] = same
             log(f"TMS FACS datasets: {len(ids)}; the same as the audit's: {same}")
             if not same:
@@ -959,9 +1106,15 @@ def main(argv=None) -> int:
         stages = tms.groupby(["sex", "development_stage"]).agg(cells=("soma_joinid", "size"),
                                                                mice=("donor_id", "nunique")).reset_index()
         log("Cells and donor ids per sex and stage (composite ids included here):", *md_table(stages, max_rows=40))
-        for name, fn in (("case1", lambda: run_case1(census, tms, datasets, args.out_dir, log)),
-                         ("case2", lambda: run_case2(census, tms, datasets, args.out_dir, log)),
-                         ("case3", lambda: run_case3(census, datasets, args.out_dir, log))):
+        if args.second:  # a small block on the fabricated Census, so that the blocks are stacked there too
+            cases = (("case1", lambda: run_case1_audit(census, tms, datasets, args.out_dir, log, audit,
+                                                       chunk=1000 if args.synthetic else CHUNK_CELLS)),
+                     ("case2", lambda: run_case2(census, tms, datasets, args.out_dir, log, rule="contrast")))
+        else:
+            cases = (("case1", lambda: run_case1(census, tms, datasets, args.out_dir, log)),
+                     ("case2", lambda: run_case2(census, tms, datasets, args.out_dir, log)),
+                     ("case3", lambda: run_case3(census, datasets, args.out_dir, log)))
+        for name, fn in cases:
             t1 = time.time()
             log("")
             try:

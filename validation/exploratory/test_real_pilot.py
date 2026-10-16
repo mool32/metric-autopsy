@@ -249,3 +249,148 @@ def test_d_conclusions_and_labels():
     assert RP.d_conclusion("NO DETECTABLE EFFECT", "no_detectable_effect") == "absence"
     assert RP.call(0.3, 0.01, "decrease") == "against" and RP.call(-0.3, 0.01, "two-sided") == "effect"
     assert RP.call(0.3, 0.2, "increase") == "none"
+
+
+# --------------------------------------------------------------------------- #
+# the second run (the plan's section "Deviation: a second run of cases 1 and 2")
+# --------------------------------------------------------------------------- #
+def test_sex_call_by_contrast():
+    assert RS.sex_call(0.4213, 0.0154, "threshold") == "neither"  # 3_38_F in the first run
+    assert RS.sex_call(0.4213, 0.0154, "contrast") == "female"    # and by the rule fixed for the second
+    assert RS.sex_call(0.0137, 0.7022, "contrast") == "male"
+    assert RS.sex_call(0.30, 0.06, "contrast") == "neither"       # a Y gene in more than 5% of cells
+    assert RS.sex_call(0.30, 0.04, "contrast") == "neither"       # Xist in less than ten times that share
+    assert RS.sex_call(0.04, 0.0, "contrast") == "neither"        # Xist in less than 5% of cells
+    assert RS.sex_call(0.05, 0.005, "contrast") == "female" and RS.sex_call(0.005, 0.05, "contrast") == "male"
+    with pytest.raises(ValueError):
+        RS.sex_call(0.5, 0.0, "other")
+
+
+def test_case2_structure_by_contrast_keeps_a_low_xist_female():
+    rows = [(f"f{i}", "female", Y, "A", 100, 0) for i in range(3)] + [(f"m{i}", "male", Y, "A", 100, 0) for i in range(3)]
+    t = _tms(rows)
+    low = (t["donor_id"] == "f0").to_numpy()
+    t.loc[low, "g_Xist"] = (np.arange(int(low.sum())) < 42).astype(int)  # Xist in 42% of f0's cells
+    t.loc[low, "g_Ddx3y"] = (np.arange(int(low.sum())) < 2).astype(int)  # a Y gene in 2%
+    by_threshold = RS.case2_structure(t).set_index("mouse")
+    by_contrast = RS.case2_structure(t, "contrast").set_index("mouse")
+    assert not by_threshold.loc["f0", "kept"] and by_contrast.loc["f0", "kept"]
+    assert by_contrast["kept"].all() and by_contrast.loc["f0", "call"] == "female"
+
+
+def test_case1_audit_takes_every_cell_and_composite_units():
+    rows = [("3_1_M", "male", Y, "A", 30, 3), ("3_1_M", "male", Y, "B", 10, 1), ("3_1_M/3_2_M", "male", Y, "A", 5, 0),
+            ("3_2_M", "male", Y, "B", 7, 0), ("24_1_M", "male", O, "A", 40, 4), ("21_1_F", "female", O, "C", 12, 0),
+            ("3_3_F", "female", Y, "C", 9, 0), ("18_1_M", "male", "18-month-old stage", "A", 50, 5)]
+    t, per, check = RS.case1_audit(_tms(rows))
+    assert len(t) == 30 + 10 + 5 + 7 + 40 + 12 + 9  # every cell of the two stages, no type rule, no cap
+    assert dict(zip(per["donor_id"], per["cells"])) == {"3_3_F": 9, "21_1_F": 12, "3_1_M": 40, "3_1_M/3_2_M": 5,
+                                                         "3_2_M": 7, "24_1_M": 40}
+    assert per.set_index("donor_id").loc["3_1_M/3_2_M", "composite"] and check is None
+    audit = [dict(donor_id=d, sex=sx, age=a, n_cells=n) for d, sx, a, n in
+             (("3_1_M", "male", "3m", 40), ("3_1_M/3_2_M", "male", "3m", 5), ("3_2_M", "male", "3m", 7),
+              ("24_1_M", "male", "20m", 40), ("21_1_F", "female", "20m", 12), ("3_3_F", "female", "3m", 9))]
+    assert RS.case1_audit(_tms(rows), audit)[2]["same"]
+    audit[0]["n_cells"] = 41
+    check = RS.case1_audit(_tms(rows), audit + [dict(donor_id="x", sex="male", age="3m", n_cells=1)])[2]
+    assert not check["same"] and [d["donor"] for d in check["differences"]] == ["x", "3_1_M"]
+
+
+def test_design_floor_is_the_tost_at_power_095():
+    """At the floor computed from the same SE, the TOST confirms absence exactly where the t test is
+    not significant at 5%: |Delta| / SE < t_0.975,df, which under no effect has probability 0.95."""
+    te = RP.stats.TEstimate(0.0, 0.004, 13.0, "pooled-stratified")
+    assert abs(RP.design_floor(te) - 0.004 * (RP.stats.t_ppf(0.95, 13) + RP.stats.t_ppf(0.975, 13))) < 1e-15
+    assert np.isnan(RP.design_floor(RP.stats.TEstimate(0.0, float("nan"), 0.0, "welch")))
+    rng = np.random.default_rng(6)
+    seen = set()
+    for k in range(40):
+        donor = np.repeat([f"m{i}" for i in range(9)], 30)
+        group = np.where(np.isin(donor, [f"m{i}" for i in range(5)]), "young", "old")
+        sex = np.where(np.isin(donor, ["m0", "m1", "m5"]), "female", "male")
+        X = rng.poisson(rng.gamma(2.0, 2.0, size=(len(donor), 1)) * np.ones((1, 6))).astype(float)
+        X[:, 0] += np.repeat(rng.normal(0, 3, 9).clip(-2, None), 30).round().clip(0, None)
+        genes = [f"G{j}" for j in range(6)]
+        data = SimpleData(X, pd.DataFrame(dict(age=group, mouse=donor, sex=sex)), genes)
+        fn, _, _ = RP.bind(dict(metric="log_cp10k_mean", genes=["G0"]), genes)
+        b = RP.donors_test(fn, data, group, donor, sex, ("young", "old"), "decrease", "floor", np.random.default_rng(k))
+        assert b["sesoi_used"] == b["floor"] and set(b["by_stratum"]) == {"female", "male"}
+        assert b["tost"] == (abs(b["delta"]) / b["se"] < RP.stats.t_ppf(0.975, b["df"]))
+        seen.add(b["tost"])
+    assert seen == {True, False}
+
+
+def test_stratum_tests_are_the_audits_exact_permutation():
+    import itertools
+    young = [0.022069283318606848, 0.016562863987525704, 0.026035638404892772, 0.031368831094429686, 0.04692125067323071]
+    old = [0.006265352010074675, 0.01112434189219214, 0.01074778295129472, 0.0072395731320595205]
+    y = np.array(young + old)
+    g = np.array([1] * 5 + [0] * 4)
+    r = RP.stratum_tests(y, g, np.zeros(9, int), {"male": 0}, ("young", "old"), np.random.default_rng(0))["male"]
+    obs = abs(np.mean(young) - np.mean(old))
+    splits = [abs(y[list(c)].mean() - np.delete(y, list(c)).mean()) for c in itertools.combinations(range(9), 5)]
+    assert r["method"] == "exact" and r["n_relabelings"] == 126
+    assert abs(r["p"] - np.mean(np.array(splits) >= obs - 1e-12)) < 1e-15 and abs(r["p"] - 2 / 126) < 1e-15
+    assert r["delta"] < 0 and r["n"] == {"young": 5, "old": 4}
+
+
+def test_against_audit_compares_per_mouse_values():
+    audit = [dict(donor_id="a", mi_3bin=0.01), dict(donor_id="b", mi_3bin=0.02), dict(donor_id="c", mi_3bin=0.03)]
+    v = RP.against_audit({"a": 0.01, "b": 0.0200001, "d": 0.5}, audit, ["Smad3", "Col1a1"])
+    assert v["compared"] == 2 and v["only_here"] == ["d"] and v["only_audit"] == ["c"] and abs(v["max_abs_diff"] - 1e-7) < 1e-12
+    assert "note" in RP.against_audit({}, audit, ["Actb", "Gapdh"])
+
+
+def test_merge_expects_only_the_parts_named(tmp_path):
+    import json
+    for part in ("case1", "case2"):
+        d = tmp_path / part
+        (d / "reports").mkdir(parents=True)
+        (d / f"{part}.json").write_text(json.dumps(dict(synthetic=True, part=part, complete=True, seconds=1.0,
+                                                        cases={part: dict(status="run", claims=[])})))
+        (d / f"{part}.log").write_text(f"# {part}\n")
+    RP.merge([tmp_path / "case1", tmp_path / "case2"], tmp_path / "m2", expect=["case1", "case2"])
+    text = (tmp_path / "m2" / "real_pilot.log").read_text()
+    assert "MISSING" not in text and "merged 2 of 2 parts" in text
+    RP.merge([tmp_path / "case1", tmp_path / "case2"], tmp_path / "m5")
+    text = (tmp_path / "m5" / "real_pilot.log").read_text()
+    assert text.count("MISSING") == 3 and "merged 2 of 5 parts" in text
+
+
+def test_a_floor_claim_reaches_the_engine_with_its_floor(tmp_path):
+    """1a-floor: (a) and (b) are 1a's (the same permutations), and (d) runs with (b)'s floor as its
+    SESOI on the observed scale (delta_min 0.5 x the floor, the engine's default)."""
+    import hashlib
+    import json
+    rng = np.random.default_rng(8)
+    mice = [(f"y{i}", "young", "male" if i < 3 else "female") for i in range(5)] + \
+           [(f"o{i}", "old", "male" if i < 2 else "female") for i in range(4)]
+    rows, blocks = [], []
+    for m, age, sex in mice:
+        n = 60
+        z = rng.normal(0, 1, n)
+        lam = np.exp(rng.normal(1.0, 0.5, (n, 12)))
+        lam[:, 0] *= np.exp(0.6 * z)
+        lam[:, 1] *= np.exp(0.6 * z)
+        blocks.append(rng.poisson(lam))
+        rows += [dict(mouse=m, age=age, sex=sex)] * n
+    X = np.vstack(blocks).astype(np.int32)
+    genes = ["Smad3", "Col1a1", "Actb", "Gapdh", "Tst", "Lrrc42"] + [f"G{j}" for j in range(6)]
+    RS.P.save_npz(tmp_path / "case1.npz", X, pd.DataFrame(rows), genes)
+    sha = hashlib.sha256((tmp_path / "case1.npz").read_bytes()).hexdigest()
+    base = dict(metric="mi_3bin", genes=["Smad3", "Col1a1"], direction="decrease",
+                signal=dict(kind="coupling", strength=1.0), controls=dict(pos=["Actb", "Gapdh"], neg=["Tst", "Lrrc42"]))
+    case = dict(data=dict(file="case1.npz", sha256=sha), group_col="age", groups=["young", "old"], within=["sex"],
+                replicate="mouse", claims=[dict(base, id="1a", sesoi=0.1),
+                                           dict(base, id="1a-floor", sesoi="floor", sesoi_scale="observed", seed_id="1a")])
+    (tmp_path / "out" / "reports").mkdir(parents=True)
+    res = RP.run_case("case1", case, tmp_path, tmp_path / "out", lambda *m: None)
+    one, fl = res["claims"]
+    assert json.dumps(one["a"], sort_keys=True, default=str).replace(str(one["a"]["seconds"]), "") == \
+        json.dumps(fl["a"], sort_keys=True, default=str).replace(str(fl["a"]["seconds"]), "")
+    assert one["b"]["p"] == fl["b"]["p"] and one["b"]["floor"] == fl["b"]["floor"] == fl["sesoi_used"]
+    assert "error" not in fl["d"], fl["d"].get("traceback")
+    assert fl["d"]["prereg"]["sesoi"] == fl["b"]["floor"] and fl["d"]["prereg"]["sesoi_scale"] == "observed"
+    assert one["d"]["prereg"]["sesoi"] == 0.1 and "sesoi_scale" not in one["d"]["prereg"]
+    report = json.loads((tmp_path / "out" / "reports" / "1a-floor.json").read_text())
+    assert abs(report["prereg"]["sesoi"] - fl["b"]["floor"]) < 1e-15

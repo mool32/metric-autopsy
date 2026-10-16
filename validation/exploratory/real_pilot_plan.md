@@ -149,3 +149,52 @@ Found while the code was written (`real_pilot_select.py`, `real_pilot.py`, `test
 - **The jobs.** Every push to the pull request runs the dry run on a fabricated Census. The real run
   starts with the label `pilot-run`; its analyses run as five parallel jobs (case 1, case 2, and case
   3's claims 3a, 3b and 3c); whatever they produce is merged and committed to `results/real-pilot`.
+
+## Deviation: a second run of cases 1 and 2 (the owner, 2026-10-16; written before it)
+
+The first run (workflow run 38892540972, `results/real-pilot` at 6133dfd) stays as it is. Case 2
+did not run there: the structure check's absolute threshold excluded the female 3_38_F (Xist in
+42.1% of her cells, a Y gene in 1.5%). Case 1 ran on one cell type, not on the setup of preprint
+§4. The owner decided a second run of these two cases, as a deviation from this plan: these are
+development data, so a deviation is admissible. Case 3 is not run again.
+
+- **One attempt**, outputs committed by its workflow (`.github/workflows/real-pilot-2.yml`, started
+  by the label `pilot-run-2`) to the new branch `results/real-pilot-2`; the analyses run as three
+  parallel jobs (case 1's `mi_3bin` claims, its `norm_pearson` claim, case 2). Everything else is as
+  above: the engine of the tag `v0.3.0-prereg`, v1's environments, the Census release 2025-11-08,
+  the analyses (a), (b) and (d) and their comparison.
+- **Case 2: the sex of a mouse by contrast**, fixed here before the run. A mouse is female where a
+  Y gene is detected in at most 5% of its cells, and Xist in at least ten times that share of its
+  cells and in at least 5% of them. A mouse is male where the reverse holds: Xist in at most 5% of
+  its cells, and a Y gene in at least ten times that share and in at least 5% of them. A mouse that
+  is neither, or whose call contradicts its label, is excluded. By this rule 3_38_F (42.1% against
+  1.5%) is female. The rest is as in the plan: composite ids excluded, the cell type by the rule,
+  the claims 2a and 2b with R1's settings.
+- **Case 1: §4's setup as the audit reproduced it** (`validation/flagship_audit/REPORT.md`, the
+  mouse as the unit), not one cell type by a rule. The cells are every primary Smart-seq2 cell of TMS
+  FACS at the 3-month stage and the "20-month-old stage and over" stage, both sexes, every cell type
+  and tissue, without a cap per mouse. The units are the donor ids as the Census gives them,
+  counted as the audit counted them, composite ids included: males 5 against 4, females 5 against 3,
+  within sex. The genes are D1's cut, named genes first. The question of this case: would the engine
+  have caught §4's error, a decrease of `mi_3bin` that follows the drop of detection in old males?
+  - (1a) `mi_3bin`, a decrease, at the documented SESOI of 0.1 (`AGENTS.md`'s example, which is
+    wrong in scale: per mouse `mi_3bin` was 0.0007 to 0.016 in the first run).
+  - (1a-floor) the same claim, with the SESOI in MI's units: the design's floor by v0.4's change 4,
+    computed here because v0.3.0 has no such rule. It is the smallest SESOI at which this design
+    confirms absence by the TOST with power 0.95 when there is no effect: SE × (t₀.₉₅,df +
+    t₀.₉₇₅,df). SE and df are those of the replicate-level difference (`stats.nested_t` on the
+    uncorrected per-mouse values within sex). The analysis script computes the floor before the
+    engine runs the claim, and delta_min is 0.5 × the floor. The floor is a difference of
+    `mi_3bin` as measured, so (d) takes it on the observed scale (`sesoi_scale="observed"`, no
+    attenuation); 1a and 1b keep the plan's default construct scale. (a) and (b) of 1a-floor are
+    1a's (the same permutations); only (b)'s TOST and (d) use the floor.
+  - (1b) `norm_pearson`, a decrease, at a SESOI of 0.1, as in the plan.
+  - Otherwise as in the plan: GATE 4's coupling probe at strength 1.0; GATE 5's controls Actb–Gapdh
+    and Tst–Lrrc42; the composition estimand.
+- **(b) is also reported per stratum** (an exact permutation within each sex), next to the audit's
+  section E: males p = 0.016, females p = 0.68.
+- **Checks against the audit.** The extraction compares case 1's units, their sex, age and cells
+  with the audit's per-mouse table (`audit_results.json`, E.mice, on `results/flagship-audit`), and
+  (b)'s per-mouse `mi_3bin` of Smad3 and Col1a1 is compared with the audit's values; a difference is
+  reported, not corrected. Case 1's cells (about 77,000) are read from the Census in blocks of
+  10,000. The design's floor is reported for every claim, beside its SESOI.

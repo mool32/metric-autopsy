@@ -21,6 +21,8 @@ then believe**, never "compute → believe."
 1. **This repo, directly (you're here).** Use the CLI or the Python API.
    - Fastest check: `python scripts/run_gates.py --demo --no-stop` (reference `mi_3bin` failure, no data).
    - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --replicate-col mouse --estimand composition --direction decrease --sesoi 0.1 --pos-pair Actb Gapdh --neg-pair G1 G2 --json autopsy.json`
+     **Wrong in scale:** the SESOI of 0.1 in this example does not fit `mi_3bin`. On real data its values are of the order of 0.01
+     (0.0007 to 0.0162 per mouse in the pilot, `validation/exploratory/real_pilot_summary.log`). A SESOI is in the metric's own units.
    - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(..., replicate_col="mouse", prereg={"estimand": "composition", "direction": "decrease", "sesoi": 0.1})` → `.to_markdown()` / `.save_json(path)`.
 2. **As a Claude Code skill.** `SKILL.md` — elicit a pre-registration first, then run the gates, then emit the autopsy. This is the skill's required behavior; follow it verbatim when invoked.
 3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"` then `metric-autopsy-mcp` (not on PyPI yet). Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
