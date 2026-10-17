@@ -1,0 +1,293 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case1
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case1: 2478 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=4
+### 1a: mi_3bin(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.0018, p 0.721 over 1 strata -> none (0.78 s)
+- (b) donors (nested, {'young': 4, 'old': 4}): Delta -0.0001, p 1 (exact, 70; min attainable 0.0286), 90% CI [-0.0077, +0.0075], TOST at +-0.1: True -> absence (0.87 s)
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.002461 against the sham (95% CI [+0.00218, +0.002743], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters [cause metric_invalid_gate4] -> none (16.89 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 PASS
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+### 1b: norm_pearson(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.1373, p 0.029 over 1 strata -> against (0.05 s)
+- (b) donors (nested, {'young': 4, 'old': 4}): Delta +0.0839, p 0.4286 (exact, 70; min attainable 0.0286), 90% CI [-0.1167, +0.2846], TOST at +-0.1: False -> none (0.01 s)
+- (d) engine: NOT SUPPORTED — metric invalid: controls: 1/1 strata fail controls (e.g. {'sex': 'male'}: negative control -0.118 outside the null (p=0.0498, null centre 0.0415)) [cause metric_invalid_gate5] -> none (18.91 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 PASS; 5 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): same; under the known issue: same
+case1: 37.7 s
+
+
+analyses (case1): 37.7 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case2
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case2: not run (no type has at least 20 cells in 3 mice of each sex)
+
+
+analyses (case2): 0.0 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case3a
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case3: 15711 cells x 2000 genes; groups 'A' -> 'B'; the unit: donor
+Donors per group:
+  group=A, donors=16
+  group=B, donors=16
+### 3a1: norm_pearson(HS6ST3, DGKB), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.737753 (|diff| from the selection 1.2e-14)
+- (a) cells: Delta -0.0061, p 0.493 over 1 strata -> none (0.24 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0087, p 0.6239 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0394, +0.0221], TOST at +-0.1: True -> absence (0.68 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.005282 [-0.03228, +0.04284]: the 90% interval lies within ±0.09155 (SESOI 0.1 x attenuation 0.92; TOST) [cause no_detectable_effect] -> absence (117.28 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0053, raw +0.0087; effective SESOI 0.09155458597894002
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3a2: norm_pearson(SYN3, PDZD2), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.735698 (|diff| from the selection 4.3e-15)
+- (a) cells: Delta -0.0349, p 0.001 over 1 strata -> effect (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0272, p 0.0263 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0467, -0.0078], TOST at +-0.1: True -> effect (0.07 s)
+- (d) engine: SUPPORTED (provisional until replicated) [non-directional claim] [cause provisional] -> effect (116.9 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN; raw_detected True; corrected effect (first - second) +0.0239, raw +0.0272; effective SESOI 0.09258397615613972
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: SUPPORTED -> effect
+- (d) against (b): same; under the known issue: same
+### 3a3: norm_pearson(LRP1B, DPP10), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.638184 (|diff| from the selection 1.2e-14)
+- (a) cells: Delta +0.0098, p 0.33 over 1 strata -> none (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0221, p 0.0705 (monte-carlo, 9999; min attainable 0.0001), 90% CI [+0.0024, +0.0419], TOST at +-0.1: True -> absence (0.07 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.0237 [-0.04752, +0.0001245]: the 90% interval lies within ±0.09662 (SESOI 0.1 x attenuation 0.97; TOST) [cause no_detectable_effect] -> absence (118.07 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0237, raw -0.0221; effective SESOI 0.09662028189534162
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3a4: norm_pearson(LSAMP, KAZN), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.637006 (|diff| from the selection 4.8e-14)
+- (a) cells: Delta -0.0042, p 0.647 over 1 strata -> none (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0019, p 0.9161 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0305, +0.0266], TOST at +-0.1: True -> absence (0.07 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.001614 [-0.03645, +0.03322]: the 90% interval lies within ±0.09465 (SESOI 0.1 x attenuation 0.95; TOST) [cause no_detectable_effect] -> absence (118.26 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0016, raw +0.0019; effective SESOI 0.09464594151511607
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3a5: norm_pearson(PTPRD, CNTNAP2), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.616039 (|diff| from the selection 1.2e-15)
+- (a) cells: Delta -0.0183, p 0.056 over 1 strata -> none (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0026, p 0.8666 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0252, +0.0303], TOST at +-0.1: True -> absence (0.07 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.005513 [-0.03955, +0.02852]: the 90% interval lies within ±0.09592 (SESOI 0.1 x attenuation 0.96; TOST) [cause no_detectable_effect] -> absence (116.26 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0055, raw -0.0026; effective SESOI 0.0959185285373783
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3a6: norm_pearson(LRRTM4, ADGRL3), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.556768 (|diff| from the selection 8.9e-14)
+- (a) cells: Delta -0.0323, p 0.001 over 1 strata -> effect (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0246, p 0.0455 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0443, -0.0049], TOST at +-0.1: True -> effect (0.08 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.02033 [-0.003506, +0.04416]: the 90% interval lies within ±0.09301 (SESOI 0.1 x attenuation 0.93; TOST) [cause no_detectable_effect] -> absence (115.46 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected True; corrected effect (first - second) +0.0203, raw +0.0246; effective SESOI 0.09301367649392957
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): changed by the effect field (equivalence at the effective SESOI, after the correction of depth); under the known issue: changed by the effect field (equivalence at the effective SESOI, after the correction of depth)
+### 3a7: norm_pearson(NKAIN2, MDGA2), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.531080 (|diff| from the selection 6.8e-14)
+- (a) cells: Delta -0.0176, p 0.124 over 1 strata -> none (0.25 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0185, p 0.1848 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0422, +0.0051], TOST at +-0.1: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.01254 [-0.01607, +0.04116]: the 90% interval lies within ±0.09227 (SESOI 0.1 x attenuation 0.92; TOST) [cause no_detectable_effect] -> absence (114.78 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0125, raw +0.0185; effective SESOI 0.09226834414191457
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3a8: norm_pearson(CNTN5, TAFA2), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.507969 (|diff| from the selection 1.7e-14)
+- (a) cells: Delta +0.0166, p 0.186 over 1 strata -> none (0.24 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0091, p 0.757 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0421, +0.0603], TOST at +-0.1: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.01199 [-0.07395, +0.04996]: the 90% interval lies within ±0.09357 (SESOI 0.1 x attenuation 0.94; TOST) [cause no_detectable_effect] -> absence (129.1 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0120, raw -0.0091; effective SESOI 0.09357393399917285
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+case3 3a: 950.6 s
+
+
+analyses (case3a): 950.6 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case3b
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case3: 15711 cells x 2000 genes; groups 'A' -> 'B'; the unit: donor
+Donors per group:
+  group=A, donors=16
+  group=B, donors=16
+### 3b1: norm_pearson(RASGRF2, KIAA1217), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.566232 (|diff| from the selection 5.7e-15)
+- (a) cells: Delta -0.0071, p 0.588 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0048, p 0.8323 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0441, +0.0346], TOST at +-0.1: True -> absence (0.85 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.002027 [-0.04898, +0.04492]: the 90% interval lies within ±0.0685 (SESOI 0.1 x attenuation 0.68; TOST) [cause no_detectable_effect] -> absence (139.52 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0020, raw +0.0048; effective SESOI 0.06849955501741675
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3b2: norm_pearson(GALNT13, PDE8B), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.547196 (|diff| from the selection 2.9e-15)
+- (a) cells: Delta -0.0051, p 0.696 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0037, p 0.8059 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0303, +0.0229], TOST at +-0.1: True -> absence (0.09 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.001615 [-0.03384, +0.03061]: the 90% interval lies within ±0.07748 (SESOI 0.1 x attenuation 0.77; TOST) [cause no_detectable_effect] -> absence (139.73 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0016, raw +0.0037; effective SESOI 0.07748395449830965
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3b3: norm_pearson(TRHDE, SLC44A5), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.432557 (|diff| from the selection 3.9e-16)
+- (a) cells: Delta +0.0155, p 0.317 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0163, p 0.38 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0153, +0.0479], TOST at +-0.1: True -> absence (0.08 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.02156 [-0.05949, +0.01638]: the 90% interval lies within ±0.0793 (SESOI 0.1 x attenuation 0.79; TOST) [cause no_detectable_effect] -> absence (139.92 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0216, raw -0.0163; effective SESOI 0.07930024700761885
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3b4: norm_pearson(ENSG00000254394, SLC35F1), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.409399 (|diff| from the selection 6.3e-15)
+- (a) cells: Delta +0.0178, p 0.387 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0225, p 0.4474 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0284, +0.0734], TOST at +-0.1: True -> absence (0.08 s)
+- (d) engine: INCONCLUSIVE — effect -0.03269 [-0.09333, +0.02795], p=0.268 (monte-carlo permutation); neither detected nor equivalent within ±0.06631 [underpowered relative to the SESOI] [cause effect_inconclusive] -> none (138.71 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect INCONCLUSIVE; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0327, raw -0.0225; effective SESOI 0.06631285498747456
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: INCONCLUSIVE -> none
+- (d) against (b): changed by the effect field (after the correction of depth: neither detected nor equivalent); under the known issue: changed by the effect field (after the correction of depth: neither detected nor equivalent)
+### 3b5: norm_pearson(TLN2, DIAPH2), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.407961 (|diff| from the selection 2.2e-14)
+- (a) cells: Delta -0.0045, p 0.74 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0031, p 0.8899 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0353, +0.0416], TOST at +-0.1: True -> absence (0.09 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.01233 [-0.05902, +0.03435]: the 90% interval lies within ±0.06198 (SESOI 0.1 x attenuation 0.62; TOST) [underpowered relative to the SESOI] [cause no_detectable_effect] -> absence (138.71 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0123, raw -0.0031; effective SESOI 0.06198093694363224
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3b6: norm_pearson(CUX2, DAPK1), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.365965 (|diff| from the selection 2.1e-15)
+- (a) cells: Delta -0.0431, p 0.019 over 1 strata -> effect (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0481, p 0.0715 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0905, -0.0057], TOST at +-0.1: True -> absence (0.09 s)
+- (d) engine: INCONCLUSIVE — effect +0.03311 [-0.01731, +0.08353], p=0.175 (monte-carlo permutation); neither detected nor equivalent within ±0.04533 [underpowered relative to the SESOI] [cause effect_inconclusive] -> none (138.98 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect INCONCLUSIVE; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0331, raw +0.0481; effective SESOI 0.045327392749712134
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: INCONCLUSIVE -> none
+- (d) against (b): changed by the effect field (after the correction of depth: neither detected nor equivalent); under the known issue: changed by the effect field (after the correction of depth: neither detected nor equivalent)
+### 3b7: norm_pearson(CALN1, PTPRR), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.362578 (|diff| from the selection 1.8e-14)
+- (a) cells: Delta -0.0140, p 0.322 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0043, p 0.851 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0430, +0.0345], TOST at +-0.1: True -> absence (0.09 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.001586 [-0.04523, +0.04841]: the 90% interval lies within ±0.06374 (SESOI 0.1 x attenuation 0.64; TOST) [underpowered relative to the SESOI] [cause no_detectable_effect] -> absence (139.59 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0016, raw +0.0043; effective SESOI 0.06373685839527754
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3b8: norm_pearson(STXBP5-AS1, ZMAT4), two-sided, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok); pooled r +0.336963 (|diff| from the selection 7.2e-15)
+- (a) cells: Delta -0.0009, p 0.943 over 1 strata -> none (0.33 s)
+- (b) donors (paired, {'pairs': 16}): Delta +0.0047, p 0.8178 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0279, +0.0372], TOST at +-0.1: True -> absence (0.08 s)
+- (d) engine: NO DETECTABLE EFFECT — effect -0.009478 [-0.04741, +0.02845]: the 90% interval lies within ±0.06997 (SESOI 0.1 x attenuation 0.70; TOST) [cause no_detectable_effect] -> absence (137.29 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) -0.0095, raw -0.0047; effective SESOI 0.06997091743422261
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+case3 3b: 1118.3 s
+
+
+analyses (case3b): 1118.3 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md): case3c
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286; Census release 2025-11-08
+
+## case3: 15711 cells x 2000 genes; groups 'A' -> 'B'; the unit: donor
+Donors per group:
+  group=A, donors=16
+  group=B, donors=16
+### 3c1: log_cp10k_mean(MALAT1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0659, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0545, p 0.5498 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.2087, +0.0996], TOST at +-0.5: True -> absence (1.04 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.05437 [-0.1331, +0.2419]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1168.83 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0544, raw +0.0545; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3c2: log_cp10k_mean(KCNIP4), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0261, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0308, p 0.2043 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0698, +0.0082], TOST at +-0.5: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.03054 [-0.01692, +0.07799]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1167.83 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0305, raw +0.0308; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+### 3c3: log_cp10k_mean(RBFOX1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.1223, p 0.001 over 1 strata -> effect (0.26 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.1214, p 0.0003 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.1593, -0.0835], TOST at +-0.5: True -> effect (0.06 s)
+- (d) engine: SUPPORTED (provisional until replicated) [non-directional claim] [cause provisional] -> effect (1184.16 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN; raw_detected True; corrected effect (first - second) +0.1213, raw +0.1214; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: SUPPORTED -> effect
+- (d) against (b): same; under the known issue: same
+### 3c4: log_cp10k_mean(CSMD1), two-sided, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0439, p 0.001 over 1 strata -> effect (0.27 s)
+- (b) donors (paired, {'pairs': 16}): Delta -0.0462, p 0.1002 (monte-carlo, 9999; min attainable 0.0001), 90% CI [-0.0928, +0.0005], TOST at +-0.5: True -> absence (0.06 s)
+- (d) engine: NO DETECTABLE EFFECT — effect +0.04577 [-0.01093, +0.1025]: the 90% interval lies within ±0.5 (SESOI 0.5 x attenuation 1.00; TOST) [cause no_detectable_effect] -> absence (1174.34 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect NO_DETECTABLE_EFFECT; replication NOT_RUN; raw_detected False; corrected effect (first - second) +0.0458, raw +0.0462; effective SESOI 0.5
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    under the known issue: NO DETECTABLE EFFECT -> absence
+- (d) against (b): same; under the known issue: same
+case3 3c: 4698.3 s
+
+
+analyses (case3c): 4698.3 s in all
+
+## Summary
+
+| case | claim | metric | (a) | (b) | (d) verdict | cause | (d) | (d) known issue | (d) against (b) | s (a/b/d) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| case1 | 1a | mi_3bin(Smad3, Col1a1) | none | absence | NOT SUPPORTED | metric_invalid_gate4 | none | none | changed by GATE 4 (no response to the injected signal) | 0.78/0.87/16.89 |
+| case1 | 1b | norm_pearson(Smad3, Col1a1) | against | none | NOT SUPPORTED | metric_invalid_gate5 | none | none | same | 0.05/0.01/18.91 |
+| case3 | 3a1 | norm_pearson(HS6ST3, DGKB) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.24/0.68/117.28 |
+| case3 | 3a2 | norm_pearson(SYN3, PDZD2) | effect | effect | SUPPORTED | provisional | effect | effect | same | 0.25/0.07/116.9 |
+| case3 | 3a3 | norm_pearson(LRP1B, DPP10) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.25/0.07/118.07 |
+| case3 | 3a4 | norm_pearson(LSAMP, KAZN) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.25/0.07/118.26 |
+| case3 | 3a5 | norm_pearson(PTPRD, CNTNAP2) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.25/0.07/116.26 |
+| case3 | 3a6 | norm_pearson(LRRTM4, ADGRL3) | effect | effect | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | changed by the effect field (equivalence at the effective SESOI, after the correction of depth) | 0.25/0.08/115.46 |
+| case3 | 3a7 | norm_pearson(NKAIN2, MDGA2) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.25/0.06/114.78 |
+| case3 | 3a8 | norm_pearson(CNTN5, TAFA2) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.24/0.06/129.1 |
+| case3 | 3b1 | norm_pearson(RASGRF2, KIAA1217) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.85/139.52 |
+| case3 | 3b2 | norm_pearson(GALNT13, PDE8B) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.09/139.73 |
+| case3 | 3b3 | norm_pearson(TRHDE, SLC44A5) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.08/139.92 |
+| case3 | 3b4 | norm_pearson(ENSG00000254394, SLC35F1) | none | absence | INCONCLUSIVE | effect_inconclusive | none | none | changed by the effect field (after the correction of depth: neither detected nor equivalent) | 0.33/0.08/138.71 |
+| case3 | 3b5 | norm_pearson(TLN2, DIAPH2) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.09/138.71 |
+| case3 | 3b6 | norm_pearson(CUX2, DAPK1) | effect | absence | INCONCLUSIVE | effect_inconclusive | none | none | changed by the effect field (after the correction of depth: neither detected nor equivalent) | 0.33/0.09/138.98 |
+| case3 | 3b7 | norm_pearson(CALN1, PTPRR) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.09/139.59 |
+| case3 | 3b8 | norm_pearson(STXBP5-AS1, ZMAT4) | none | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.33/0.08/137.29 |
+| case3 | 3c1 | log_cp10k_mean(MALAT1) | effect | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.26/1.04/1168.83 |
+| case3 | 3c2 | log_cp10k_mean(KCNIP4) | effect | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.26/0.06/1167.83 |
+| case3 | 3c3 | log_cp10k_mean(RBFOX1) | effect | effect | SUPPORTED | provisional | effect | effect | same | 0.26/0.06/1184.16 |
+| case3 | 3c4 | log_cp10k_mean(CSMD1) | effect | absence | NO DETECTABLE EFFECT | no_detectable_effect | absence | absence | same | 0.27/0.06/1174.34 |
+
+Time per part (s): case1 37.7; case2 0.0; case3a 950.6; case3b 1118.3; case3c 4698.3
+merged 5 of 5 parts

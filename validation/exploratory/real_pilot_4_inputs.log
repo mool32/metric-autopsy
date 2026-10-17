@@ -1,0 +1,7 @@
+case1.npz: sha256 13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44, as the second run's SHA256SUMS
+case2.npz: sha256 7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb, as the second run's SHA256SUMS
+select.json: sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac, as the second run's SHA256SUMS
+real_pilot.json: sha256 f4436ba146e2c22345de7319a39de26c94940c3ba7228ccb175d8bc23801e790, as the second run's SHA256SUMS
+ededc5cefddea16013c4d8f7d5a1080efea22d4b3f1f090c27019eb1d5209c08  ./10090.protein.info.v12.0.txt.gz
+803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d  ./10090.protein.links.v12.0.txt.gz
+PR head c46e22cac7e36af8cd414b6952e383f6a8d2eafb; workflow run 39041129662

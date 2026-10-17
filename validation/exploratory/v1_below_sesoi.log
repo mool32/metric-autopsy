@@ -1,0 +1,49 @@
+# The outcome 'effect below the SESOI' on validation v1's reports (exploratory, post hoc; v1 and the engine unchanged)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; 10540 cards
+
+## 1. What the rule changes (a SUPPORTED whose own TOST shows the effect within the effective SESOI)
+SUPPORTED cards: 329; with tost_equivalent true: 73
+
+False SUPPORTED on null data (every one is an error):
+  all null cards: 54 -> 14 SUPPORTED (40 become EFFECT BELOW SESOI)
+  metric at risk: 54 -> 14 SUPPORTED (40 become EFFECT BELOW SESOI)
+  blind or useless metric: 0 -> 0 SUPPORTED (0 become EFFECT BELOW SESOI)
+  by condition, variant and level:
+    N1 null high: 5 -> 2 SUPPORTED (3 become EFFECT BELOW SESOI)
+    N2 c=0.3 high: 2 -> 0 SUPPORTED (2 become EFFECT BELOW SESOI)
+    N2 c=0.5 high: 6 -> 1 SUPPORTED (5 become EFFECT BELOW SESOI)
+    N2 c=0.7 high: 1 -> 0 SUPPORTED (1 become EFFECT BELOW SESOI)
+    N2 c=0.9 high: 2 -> 0 SUPPORTED (2 become EFFECT BELOW SESOI)
+    N3 f=0.1 high: 1 -> 0 SUPPORTED (1 become EFFECT BELOW SESOI)
+    N3 f=0.2 high: 3 -> 2 SUPPORTED (1 become EFFECT BELOW SESOI)
+    N3 f=0.4 high: 7 -> 3 SUPPORTED (4 become EFFECT BELOW SESOI)
+    N4 3v3 high: 3 -> 2 SUPPORTED (1 become EFFECT BELOW SESOI)
+    N5 sham high: 8 -> 1 SUPPORTED (7 become EFFECT BELOW SESOI)
+    N7 mice high: 5 -> 2 SUPPORTED (3 become EFFECT BELOW SESOI)
+    N8 beta(2,2) high: 11 -> 1 SUPPORTED (10 become EFFECT BELOW SESOI)
+  S1's key cells (false SUPPORTED of 790, limit 29):
+    N1: 5 -> 2 SUPPORTED (3 become EFFECT BELOW SESOI)
+    N2: 6 -> 1 SUPPORTED (5 become EFFECT BELOW SESOI)
+    N5: 8 -> 1 SUPPORTED (7 become EFFECT BELOW SESOI)
+    N6c: 0 -> 0 SUPPORTED (0 become EFFECT BELOW SESOI)
+    N8: 11 -> 1 SUPPORTED (10 become EFFECT BELOW SESOI)
+  |corrected effect| / effective SESOI of those the rule changes: 0.24 to 0.63, median 0.46
+
+True SUPPORTED on the real effects:
+  all real effects: 275 -> 242 SUPPORTED (33 become EFFECT BELOW SESOI)
+  |Δ*| >= SESOI (each change is a loss): 118 -> 116 SUPPORTED (2 become EFFECT BELOW SESOI)
+  |Δ*| < SESOI (the new outcome describes the effect): 157 -> 126 SUPPORTED (31 become EFFECT BELOW SESOI)
+  valid metric and |Δ*| >= SESOI: 118 -> 116 SUPPORTED (2 become EFFECT BELOW SESOI)
+  by condition and level:
+    E1 high: 195 -> 170 SUPPORTED (25 become EFFECT BELOW SESOI)
+    E2 high: 23 -> 20 SUPPORTED (3 become EFFECT BELOW SESOI)
+    E3 high: 57 -> 52 SUPPORTED (5 become EFFECT BELOW SESOI)
+  |Δ*| / SESOI of those the rule changes: 0.33 to 1.19, median 0.69
+  |corrected effect| / effective SESOI of those the rule changes: 0.40 to 0.71, median 0.53
+
+## 2. Together with change 6's rule (SUPPORTED stands only where the raw and the corrected test detect the effect in one direction)
+  null data: SUPPORTED 54; change 6 removes 18, the new outcome 40, both 13; SUPPORTED left under both rules 9
+  null data, metric at risk: SUPPORTED 54; change 6 removes 18, the new outcome 40, both 13; SUPPORTED left under both rules 9
+  real effects: SUPPORTED 275; change 6 removes 3, the new outcome 33, both 1; SUPPORTED left under both rules 240
+  real effects, |Δ*| >= SESOI: SUPPORTED 118; change 6 removes 0, the new outcome 2, both 0; SUPPORTED left under both rules 116
+  the outcomes of the changed cards under both rules: EFFECT BELOW SESOI (effect) 32, EFFECT BELOW SESOI (null) 27, INCONCLUSIVE (effect) 3, INCONCLUSIVE (null) 18 (where both apply, change 6 is applied first: the raw test does not support the effect)

@@ -1,0 +1,12 @@
+# The second diagnostics' extraction (validation/exploratory/real_pilot_diagnostics_2_plan.md, check (ii′))
+
+python 3.13.16; numpy 2.5.3; pandas 2.3.3; Census release 2025-11-08
+
+STRING 10090.protein.info.v12.0.txt.gz ededc5cefddea16013c4d8f7d5a1080efea22d4b3f1f090c27019eb1d5209c08; 10090.protein.links.v12.0.txt.gz 803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d (as the first diagnostics')
+## case 1, males: 56754 cells x 21025 measured genes (225 s); the claim genes' counts as case1.npz's: {'Smad3': True, 'Col1a1': True}
+1a-males: 1000 pairs drawn from 9979 eligible (16996 candidates; 21 pairs excluded by STRING >= 400; 17021 of 21025 genes mapped to STRING); matched: {'Smad3': {'mean': 31.29464002537266, 'detection': 0.21207315783909506, 'mean_range': [26.805300066955635, 35.99592980230468], 'detection_range': [0.20301652746942947, 0.22065405081580153]}, 'Col1a1': {'mean': 191.97371110406314, 'detection': 0.14906438312718046, 'mean_range': [92.81217182929838, 362.80047221341226], 'detection_range': [0.10561370123691723, 0.1886386862599993]}}
+## case 2: 2088 cells x 21025 measured genes (39 s); the claim genes' counts as case2.npz's: {'Xist': True, 'Ddx3y': True, 'Eif2s3y': True, 'Kdm5d': True, 'Uty': True}
+2a: 1000 genes drawn (18851 candidates); matched: {'Xist': {'mean': 22.439655172413794, 'detection': 0.19348659003831417, 'mean_range': [8.57183908045977, 56.39894636015325], 'detection_range': [0.13840996168582376, 0.24856321839080459]}}
+2b: 1000 sets drawn in 1001 draws (18851 candidates); matched: {'Ddx3y': {'mean': 20.302681992337163, 'detection': 0.21168582375478928, 'mean_range': [16.310823754789272, 25.4477969348659], 'detection_range': [0.19827586206896552, 0.2231800766283525]}, 'Eif2s3y': {'mean': 17.828065134099617, 'detection': 0.13793103448275862, 'mean_range': [15.416187739463602, 20.649425287356323], 'detection_range': [0.12978927203065135, 0.1460727969348659]}, 'Kdm5d': {'mean': 2.613984674329502, 'detection': 0.040708812260536395, 'mean_range': [2.1455938697318007, 3.1724137931034484], 'detection_range': [0.029693486590038315, 0.05076628352490421]}, 'Uty': {'mean': 2.3692528735632186, 'detection': 0.05795019157088123, 'mean_range': [1.806992337164751, 3.153735632183908], 'detection_range': [0.041666666666666664, 0.07279693486590039]}}
+
+extraction: 276.1 s

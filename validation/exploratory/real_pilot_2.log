@@ -1,0 +1,132 @@
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1a
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1a: mi_3bin(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0045, p 0.108 over 2 strata -> none (7.52 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta -0.0099, p 0.05357 (exact, 7056; min attainable 0.000142), 90% CI [-0.0170, -0.0029], TOST at +-0.1: True -> absence (1.06 s)
+    the design's floor (v0.4's change 4, by hand): 0.01568 = SE 0.003988 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.1
+    stratum female: 5 against 3 donors, means 0.01186 against 0.0136, Delta +0.0017, p 0.6786 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means 0.02859 against 0.008844, Delta -0.0197, p 0.01587 (exact, 126; min attainable 0.00794)
+    against the audit's per-mouse mi_3bin (section E): 17 mice compared, max |diff| 0.00e+00; only here none, only in the audit none
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.05, the smallest response that matters [cause metric_invalid_gate4] -> none (411.14 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 PASS
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+case1 1a: 422.9 s
+
+
+analyses (case1a): 422.9 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1f
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1a-floor: mi_3bin(Smad3, Col1a1), decrease, SESOI floor
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.0045, p 0.108 over 2 strata -> none (7.68 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta -0.0099, p 0.05357 (exact, 7056; min attainable 0.000142), 90% CI [-0.0170, -0.0029], TOST at +-0.01568 (the design's floor): False -> none (1.6 s)
+    the design's floor (v0.4's change 4, by hand): 0.01568 = SE 0.003988 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.01568
+    stratum female: 5 against 3 donors, means 0.01186 against 0.0136, Delta +0.0017, p 0.6786 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means 0.02859 against 0.008844, Delta -0.0197, p 0.01587 (exact, 126; min attainable 0.00794)
+    against the audit's per-mouse mi_3bin (section E): 17 mice compared, max |diff| 0.00e+00; only here none, only in the audit none
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to coupling(Smad3, Col1a1, strength=1.0): +0.0004785 against the sham (95% CI [+0.0004395, +0.0005174], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.007838, the smallest response that matters [cause metric_invalid_gate4] -> none (852.63 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 3 JUDGMENT; 4 FAIL; 5 PASS
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): same; under the known issue: same
+case1 1a-floor: 865.7 s
+
+
+analyses (case1f): 865.7 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case1b
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case1: 76797 cells x 2000 genes; groups 'young' -> 'old' within ['sex']; the unit: mouse
+Donors per group and stratum:
+  sex=female, age=old, donors=3
+  sex=female, age=young, donors=5
+  sex=male, age=old, donors=4
+  sex=male, age=young, donors=5
+### 1b: norm_pearson(Smad3, Col1a1), decrease, SESOI 0.1
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.4562, p 0.001 over 2 strata -> against (2.11 s)
+- (b) donors (nested, {'young': 10, 'old': 7}): Delta +0.3687, p 0.004535 (exact, 7056; min attainable 0.000142), 90% CI [+0.1561, +0.5812], TOST at +-0.1: False -> against (1.65 s)
+    the design's floor (v0.4's change 4, by hand): 0.4719 = SE 0.12 x (t_0.95 + t_0.975 at df 13); the SESOI used 0.1
+    stratum female: 5 against 3 donors, means -0.043 against 0.608, Delta +0.6510, p 0.08929 (exact, 56; min attainable 0.0179)
+    stratum male: 5 against 4 donors, means -0.04354 against 0.08693, Delta +0.1305, p 0.04762 (exact, 126; min attainable 0.00794)
+- (d) engine: NOT SUPPORTED — the effect is in the direction opposite to the pre-registered one: the metric shows an increase from young to old, the claim was a decrease [underpowered relative to the SESOI] [cause opposite_direction] -> against (501.21 s)
+    fields: metric_validity PASS; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN; raw_detected True; corrected effect (first - second) -0.3664, raw -0.3687; effective SESOI 0.1
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+    under the known issue: NOT SUPPORTED -> against
+- (d) against (b): same; under the known issue: same
+case1 1b: 508.1 s
+
+
+analyses (case1b): 508.1 s in all
+
+# The pilot's analyses (validation/exploratory/real_pilot_plan.md), second run (the plan's section "Deviation: a second run of cases 1 and 2"): case2
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; Census release 2025-11-08
+
+## case2: 2088 cells x 2000 genes; groups 'female' -> 'male'; the unit: mouse
+Donors per group:
+  sex=female, donors=3
+  sex=male, donors=4
+### 2a: log_cp10k_mean(Xist), decrease, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta -0.2097, p 0.001 over 1 strata -> effect (0.04 s)
+- (b) donors (nested, {'female': 3, 'male': 4}): Delta -0.2215, p 0.02857 (exact, 35; min attainable 0.0286), 90% CI [-0.3371, -0.1059], TOST at +-0.5: True -> effect (0.9 s)
+    the design's floor (v0.4's change 4, by hand): 0.2846 = SE 0.04034 x (t_0.95 + t_0.975 at df 2.057); the SESOI used 0.5
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to module(1 genes, fold=2.0, frac=1.0): +0.05827 against the sham (95% CI [+0.05821, +0.05834], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters [cause metric_invalid_gate4] -> none (145.98 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 4 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+### 2b: log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty), increase, SESOI 0.5
+- kernel against the engine's metric: max |diff| 0.00e+00 (ok)
+- (a) cells: Delta +0.6703, p 0.001 over 1 strata -> effect (0.03 s)
+- (b) donors (nested, {'female': 3, 'male': 4}): Delta +0.6700, p 0.02857 (exact, 35; min attainable 0.0286), 90% CI [+0.6185, +0.7215], TOST at +-0.5: False -> effect (0.01 s)
+    the design's floor (v0.4's change 4, by hand): 0.1211 = SE 0.02188 x (t_0.95 + t_0.975 at df 3); the SESOI used 0.5
+- (d) engine: NOT SUPPORTED — metric invalid: injected signal: responds, but less than delta_min to module(4 genes, fold=2.0, frac=1.0): +0.1141 against the sham (95% CI [+0.114, +0.1143], 200 injections, expected increase); the bound in the declared direction is below delta_min 0.25, the smallest response that matters [cause metric_invalid_gate4] -> none (145.99 s)
+    fields: metric_validity FAIL; design_adequacy ADEQUATE; effect NOT_RUN; replication NOT_RUN; raw_detected None; corrected effect (first - second) nan, raw nan; effective SESOI None
+    gates: 0 PASS; 1 PASS; 4 FAIL
+    under the known issue: NOT SUPPORTED -> none
+- (d) against (b): changed by GATE 4 (no response to the injected signal); under the known issue: changed by GATE 4 (no response to the injected signal)
+case2: 293.1 s
+
+
+analyses (case2): 293.1 s in all
+
+## Summary
+
+| case | claim | metric | (a) | (b) | (d) verdict | cause | (d) | (d) known issue | (d) against (b) | s (a/b/d) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| case1 | 1a | mi_3bin(Smad3, Col1a1) | none | absence | NOT SUPPORTED | metric_invalid_gate4 | none | none | changed by GATE 4 (no response to the injected signal) | 7.52/1.06/411.14 |
+| case1 | 1a-floor | mi_3bin(Smad3, Col1a1) | none | none | NOT SUPPORTED | metric_invalid_gate4 | none | none | same | 7.68/1.6/852.63 |
+| case1 | 1b | norm_pearson(Smad3, Col1a1) | against | against | NOT SUPPORTED | opposite_direction | against | against | same | 2.11/1.65/501.21 |
+| case2 | 2a | log_cp10k_mean(Xist) | effect | effect | NOT SUPPORTED | metric_invalid_gate4 | none | none | changed by GATE 4 (no response to the injected signal) | 0.04/0.9/145.98 |
+| case2 | 2b | log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty) | effect | effect | NOT SUPPORTED | metric_invalid_gate4 | none | none | changed by GATE 4 (no response to the injected signal) | 0.03/0.01/145.99 |
+
+Time per part (s): case1a 422.9; case1f 865.7; case1b 508.1; case2 293.1
+merged 4 of 4 parts

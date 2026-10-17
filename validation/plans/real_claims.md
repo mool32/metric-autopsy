@@ -121,6 +121,10 @@ data; a control dataset is one unit, its claims taken together.
 On every claim, three analyses: (a) the paper's own, as published (cells or pooled, its statistic);
 (b) a test over donors (the donor-level analogue of the paper's metric, a permutation over donors, a
 TOST at the SESOI for absence); (d) v0.4 with its own rules, never with settings fitted to the claim.
+(b) has v0.4's logic of the verdict for a detected effect smaller than the SESOI (change 14; the
+owner, 2026-10-17): where it detects an effect in the claimed direction whose 90% interval lies
+inside ±SESOI, its conclusion is EFFECT BELOW SESOI, as in v2 (`v2_requirements.md`, section 1), so
+that the comparison measures what the gates add, not the logic of the verdict.
 A paper is one unit: it counts as changed where (d) changes (b)'s conclusion on more than half of
 its selected claims (claims of one paper are not independent; the owner, 2026-10-12).
 
@@ -144,6 +148,10 @@ v2's primary outcome (`v2_requirements.md`, section 1), the engine against (b), 
   conclusion on a positive control, and an effect in the wrong direction too, so the engine's
   refusal or detection where (b) claims an absence removes one;
 - **π\*_real = r / (r + l/4 − r₁)**, with its interval over the control datasets.
+
+EFFECT BELOW SESOI counts as in v2: on a negative control it is no false effect; on a positive
+control, whose effect lies above the SESOI by selection, it is a false conclusion (of (b) and of
+(d) alike).
 
 π, the share of true effects among the selected papers' claims, is estimated from their
 independent verdicts, with its interval. **The gates are justified on real data if π is below

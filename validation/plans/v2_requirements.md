@@ -18,8 +18,9 @@ what the engine does where the truth is known, and the real track says how often
 The main question is what the gates add over a careful test at the level of the donors, so the
 comparison is v2's primary outcome, not a secondary one (the owner, 2026-10-11; requirement 18).
 Every card of v2 is run through (b) a test over donors without gates, here with a TOST at the SESOI
-for its claims of absence, so that it can make the same errors as the engine; (c) the engine with
-GATE 0, 2, 4 and 5 off; and the engine, v0.4. (a), the test over cells, is reported, not compared.
+for its claims of absence and the outcome EFFECT BELOW SESOI (below), so that it can make the same
+errors as the engine; (c) the engine with GATE 0, 2, 4 and 5 off; and the engine, v0.4. (a), the
+test over cells, is reported, not compared.
 
 **Errors:** false definite conclusions, counted per null card and per effect card apart: a claim of
 an effect, in either direction, on null data or against the true direction on a real effect; a claim
@@ -27,6 +28,14 @@ of absence (NO DETECTABLE EFFECT) on a real effect with |Δ\*| ≥ SESOI or on a
 metric. Counted separately on the cards at risk (a valid or ambiguous metric) and on blind and
 useless metrics. A claim of absence on null data with a blind or useless metric is true of the data
 but not shown by the metric; it is reported next to the errors, not among them.
+
+**EFFECT BELOW SESOI** (v0.4 change 14; the owner, 2026-10-17): a detected effect whose 90%
+interval lies inside ± the (effective) SESOI. It is decided after change 6's rule: an effect that
+rule does not support is INCONCLUSIVE, not EFFECT BELOW SESOI. Scored on null data as no false
+effect; on a real effect with |Δ\*| ≥ SESOI as a false conclusion; on a real effect with
+|Δ\*| < SESOI as correct. **(b) gets the same rule:** its TOST, and EFFECT BELOW SESOI where it
+detects an effect in the claimed direction whose 90% interval lies inside ±SESOI, so that the
+comparison measures what the gates add, not a difference in the logic of the verdict.
 
 **Sensitivity:** effects found in the true direction per effect card at risk, and on the valid
 cards with |Δ\*| ≥ SESOI.
