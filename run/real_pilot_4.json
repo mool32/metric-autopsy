@@ -1,0 +1,5577 @@
+{
+ "synthetic": false,
+ "engine": {
+  "version": "0.3.0.dev0",
+  "path": "/home/runner/work/_temp/engine/src/metric_autopsy"
+ },
+ "python": "3.13.16",
+ "numpy": "2.5.3",
+ "pandas": "2.3.3",
+ "numerics": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "OPENBLAS_CORETYPE": "Haswell",
+  "NPY_DISABLE_CPU_FEATURES": "X86_V4 AVX512_ICL AVX512_SPR"
+ },
+ "select_sha256": "63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac",
+ "selection_sha256": "87c0ea295031f4ca665c391fbcb88bfbc0dcd2abd9f88e675e3170348c925a58",
+ "run2_sha256": "f4436ba146e2c22345de7319a39de26c94940c3ba7228ccb175d8bc23801e790",
+ "full_files": {
+  "full_case1.npz": "e02c6b138a5e61b783824c901e0036ec7d719f4bc013e3f8faaa54ba2ef63d61",
+  "full_case2.npz": "8745704d3116eb6e62aabc5627a09f4d9a4ff7af566e8c4cbb608a9784737ca8"
+ },
+ "settings": {
+  "alpha": 0.05,
+  "min_cells": 20,
+  "min_units": 3,
+  "fibroblast_like": [
+   "fibroblast",
+   "mesenchymal",
+   "stromal"
+  ],
+  "k": 1000,
+  "seed": 20261018
+ },
+ "composition": {
+  "fibroblast_like_labels": {
+   "fibroblast": 987,
+   "fibroblast of cardiac tissue": 3015,
+   "fibroblast of lung": 314,
+   "kidney interstitial fibroblast": 16,
+   "mesenchymal stem cell": 1036,
+   "mesenchymal stem cell of adipose tissue": 3362,
+   "pulmonary interstitial fibroblast": 46,
+   "stromal cell": 287
+  },
+  "sexes": {
+   "female": {
+    "units": [
+     "21_48_F",
+     "21_54_F",
+     "21_55_F",
+     "3_38_F",
+     "3_38_F/3_39_F",
+     "3_39_F",
+     "3_56_F",
+     "3_57_F"
+    ],
+    "groups": {
+     "21_48_F": "old",
+     "21_54_F": "old",
+     "21_55_F": "old",
+     "3_38_F": "young",
+     "3_38_F/3_39_F": "young",
+     "3_39_F": "young",
+     "3_56_F": "young",
+     "3_57_F": "young"
+    },
+    "mi_all": {
+     "21_48_F": 0.02126603652114765,
+     "21_54_F": 0.009891695696576226,
+     "21_55_F": 0.009630482431675701,
+     "3_38_F": 0.004896318558931145,
+     "3_38_F/3_39_F": 0.022003085229320297,
+     "3_39_F": 0.0070049301437961845,
+     "3_56_F": 0.016362026898759423,
+     "3_57_F": 0.009046132313792527
+    },
+    "pearson_all": {
+     "21_48_F": 0.9700318670031435,
+     "21_54_F": 0.8538440776387964,
+     "21_55_F": 0.0,
+     "3_38_F": 0.03186384437406594,
+     "3_38_F/3_39_F": 0.0,
+     "3_39_F": 0.041822417189351334,
+     "3_56_F": 0.11363599922114755,
+     "3_57_F": -0.4023076784106322
+    },
+    "delta_all": 0.0017335729208799444,
+    "mi_vs_run2_max_abs_diff": 0.0,
+    "mi_vs_run2_units": 8,
+    "cell_type": {
+     "tvd": 0.7757195080338055,
+     "tvd_p": 0.05357142857142857,
+     "relabelings": 56,
+     "by_level": [
+      {
+       "level": "basal cell",
+       "young": 0.14654211597169892,
+       "old": 0.7236138164397298,
+       "diff": 0.5770717004680308,
+       "p": 0.017857142857142856
+      },
+      {
+       "level": "luminal epithelial cell of mammary gland",
+       "young": 0.050104739803832676,
+       "old": 0.23068833018999912,
+       "diff": 0.18058359038616645,
+       "p": 0.017857142857142856
+      },
+      {
+       "level": "regular atrial cardiac myocyte",
+       "young": 0.12144317572720568,
+       "old": 0.0,
+       "diff": -0.12144317572720568,
+       "p": 0.44642857142857145
+      },
+      {
+       "level": "regular ventricular cardiac myocyte",
+       "young": 0.07475748146924888,
+       "old": 0.0,
+       "diff": -0.07475748146924888,
+       "p": 0.5535714285714286
+      },
+      {
+       "level": "microglial cell",
+       "young": 0.06854990196435184,
+       "old": 0.0,
+       "diff": -0.06854990196435184,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "fibroblast of cardiac tissue",
+       "young": 0.046100229955903564,
+       "old": 0.0,
+       "diff": -0.046100229955903564,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "hepatocyte",
+       "young": 0.04489296284117067,
+       "old": 0.0,
+       "diff": -0.04489296284117067,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "mesenchymal stem cell of adipose tissue",
+       "young": 0.03381844961238324,
+       "old": 0.0,
+       "diff": -0.03381844961238324,
+       "p": 0.375
+      },
+      {
+       "level": "endothelial cell of coronary artery",
+       "young": 0.026112950139745926,
+       "old": 0.0,
+       "diff": -0.026112950139745926,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "B cell",
+       "young": 0.023274985766096434,
+       "old": 0.0,
+       "diff": -0.023274985766096434,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "large intestine goblet cell",
+       "young": 0.02149573952622764,
+       "old": 0.0,
+       "diff": -0.02149573952622764,
+       "p": 0.375
+      },
+      {
+       "level": "enterocyte of epithelium of large intestine",
+       "young": 0.02102306142434914,
+       "old": 0.0,
+       "diff": -0.02102306142434914,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "myeloid cell",
+       "young": 0.020265011696673073,
+       "old": 0.0,
+       "diff": -0.020265011696673073,
+       "p": 0.375
+      },
+      {
+       "level": "stromal cell",
+       "young": 0.016155630988808352,
+       "old": 0.03421984816841664,
+       "diff": 0.018064217179608287,
+       "p": 0.16071428571428573
+      },
+      {
+       "level": "intestinal crypt stem cell",
+       "young": 0.016223131571353865,
+       "old": 0.0,
+       "diff": -0.016223131571353865,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "basal cell of epidermis",
+       "young": 0.0137428461575077,
+       "old": 0.0,
+       "diff": -0.0137428461575077,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "skeletal muscle satellite cell",
+       "young": 0.012253183318671318,
+       "old": 0.0,
+       "diff": -0.012253183318671318,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "epithelial cell of large intestine",
+       "young": 0.011532344802514336,
+       "old": 0.0,
+       "diff": -0.011532344802514336,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "monocyte",
+       "young": 0.011433351188162869,
+       "old": 0.0,
+       "diff": -0.011433351188162869,
+       "p": 0.125
+      },
+      {
+       "level": "endothelial cell",
+       "young": 0.021848471437578273,
+       "old": 0.011478005201854574,
+       "diff": -0.0103704662357237,
+       "p": 0.42857142857142855
+      },
+      {
+       "level": "hematopoietic stem cell",
+       "young": 0.010302642255867838,
+       "old": 0.0,
+       "diff": -0.010302642255867838,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "keratinocyte stem cell",
+       "young": 0.009589268591175641,
+       "old": 0.0,
+       "diff": -0.009589268591175641,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "macrophage",
+       "young": 0.009558969644490305,
+       "old": 0.0,
+       "diff": -0.009558969644490305,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "bladder urothelial cell",
+       "young": 0.008838966048042502,
+       "old": 0.0,
+       "diff": -0.008838966048042502,
+       "p": 0.375
+      },
+      {
+       "level": "DN4 thymocyte",
+       "young": 0.008376003829806944,
+       "old": 0.0,
+       "diff": -0.008376003829806944,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "thymocyte",
+       "young": 0.007820133700265679,
+       "old": 0.0,
+       "diff": -0.007820133700265679,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "type B pancreatic cell",
+       "young": 0.007114385672265263,
+       "old": 0.0,
+       "diff": -0.007114385672265263,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "naive B cell",
+       "young": 0.006973588660207046,
+       "old": 0.0,
+       "diff": -0.006973588660207046,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "bronchial smooth muscle cell",
+       "young": 0.006757317397814785,
+       "old": 0.0,
+       "diff": -0.006757317397814785,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "bladder cell",
+       "young": 0.006701102697207103,
+       "old": 0.0,
+       "diff": -0.006701102697207103,
+       "p": 0.5535714285714286
+      },
+      {
+       "level": "mesenchymal stem cell",
+       "young": 0.006639589619582021,
+       "old": 0.0,
+       "diff": -0.006639589619582021,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "fibroblast",
+       "young": 0.005896784010331632,
+       "old": 0.0,
+       "diff": -0.005896784010331632,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "oligodendrocyte",
+       "young": 0.005628022473804302,
+       "old": 0.0,
+       "diff": -0.005628022473804302,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "granulocyte",
+       "young": 0.0054411722517216585,
+       "old": 0.0,
+       "diff": -0.0054411722517216585,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "T cell",
+       "young": 0.005296664307264317,
+       "old": 0.0,
+       "diff": -0.005296664307264317,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "endocardial cell",
+       "young": 0.004807985012728963,
+       "old": 0.0,
+       "diff": -0.004807985012728963,
+       "p": 0.375
+      },
+      {
+       "level": "natural killer cell",
+       "young": 0.004667371480859175,
+       "old": 0.0,
+       "diff": -0.004667371480859175,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "pancreatic A cell",
+       "young": 0.004587216336492198,
+       "old": 0.0,
+       "diff": -0.004587216336492198,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "promonocyte",
+       "young": 0.004338391073998325,
+       "old": 0.0,
+       "diff": -0.004338391073998325,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "CD4-positive, alpha-beta T cell",
+       "young": 0.004126812682920446,
+       "old": 0.0,
+       "diff": -0.004126812682920446,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "astrocyte",
+       "young": 0.003905704750160397,
+       "old": 0.0,
+       "diff": -0.003905704750160397,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "CD8-positive, alpha-beta T cell",
+       "young": 0.0037222244152141206,
+       "old": 0.0,
+       "diff": -0.0037222244152141206,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "immature B cell",
+       "young": 0.003651160617737474,
+       "old": 0.0,
+       "diff": -0.003651160617737474,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "precursor B cell",
+       "young": 0.0036080256059840892,
+       "old": 0.0,
+       "diff": -0.0036080256059840892,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "chondrocyte",
+       "young": 0.00356779788825317,
+       "old": 0.0,
+       "diff": -0.00356779788825317,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pancreatic acinar cell",
+       "young": 0.0025408724029682603,
+       "old": 0.0,
+       "diff": -0.0025408724029682603,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "epidermal cell",
+       "young": 0.002265355809355236,
+       "old": 0.0,
+       "diff": -0.002265355809355236,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "fibroblast of lung",
+       "young": 0.0021732231168660075,
+       "old": 0.0,
+       "diff": -0.0021732231168660075,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "keratinocyte",
+       "young": 0.002143791172307816,
+       "old": 0.0,
+       "diff": -0.002143791172307816,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "enteroendocrine cell",
+       "young": 0.0016693030094364907,
+       "old": 0.0,
+       "diff": -0.0016693030094364907,
+       "p": 0.5535714285714286
+      },
+      {
+       "level": "oligodendrocyte precursor cell",
+       "young": 0.001651556721708191,
+       "old": 0.0,
+       "diff": -0.001651556721708191,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "late pro-B cell",
+       "young": 0.0015900173716427285,
+       "old": 0.0,
+       "diff": -0.0015900173716427285,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "aortic endothelial cell",
+       "young": 0.001510491500973078,
+       "old": 0.0,
+       "diff": -0.001510491500973078,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "fenestrated endothelial cell",
+       "young": 0.001449601801688891,
+       "old": 0.0,
+       "diff": -0.001449601801688891,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pancreatic ductal cell",
+       "young": 0.0014430243294351979,
+       "old": 0.0,
+       "diff": -0.0014430243294351979,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "smooth muscle cell",
+       "young": 0.001355101538062502,
+       "old": 0.0,
+       "diff": -0.001355101538062502,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "cardiac valve cell",
+       "young": 0.0013429878749827463,
+       "old": 0.0,
+       "diff": -0.0013429878749827463,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "interneuron",
+       "young": 0.001301387303396814,
+       "old": 0.0,
+       "diff": -0.001301387303396814,
+       "p": 0.375
+      },
+      {
+       "level": "pulmonary alveolar type 2 cell",
+       "young": 0.001288357569598359,
+       "old": 0.0,
+       "diff": -0.001288357569598359,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "myeloid dendritic cell",
+       "young": 0.0012655030972938605,
+       "old": 0.0,
+       "diff": -0.0012655030972938605,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "epithelial cell",
+       "young": 0.0011833981994976114,
+       "old": 0.0,
+       "diff": -0.0011833981994976114,
+       "p": 0.375
+      },
+      {
+       "level": "basal epithelial cell of tracheobronchial tree",
+       "young": 0.0011152213189594836,
+       "old": 0.0,
+       "diff": -0.0011152213189594836,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "secretory cell",
+       "young": 0.0010926933248113807,
+       "old": 0.0,
+       "diff": -0.0010926933248113807,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "tuft cell of large intestine",
+       "young": 0.001053833366664487,
+       "old": 0.0,
+       "diff": -0.001053833366664487,
+       "p": 0.375
+      },
+      {
+       "level": "pancreatic D cell",
+       "young": 0.0010395323071044874,
+       "old": 0.0,
+       "diff": -0.0010395323071044874,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "smooth muscle cell of the pulmonary artery",
+       "young": 0.0010362435709776409,
+       "old": 0.0,
+       "diff": -0.0010362435709776409,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "kidney collecting duct epithelial cell",
+       "young": 0.0010144853440487579,
+       "old": 0.0,
+       "diff": -0.0010144853440487579,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "brain pericyte",
+       "young": 0.0009233389690391742,
+       "old": 0.0,
+       "diff": -0.0009233389690391742,
+       "p": 0.5535714285714286
+      },
+      {
+       "level": "granulocytopoietic cell",
+       "young": 0.0007852258177325382,
+       "old": 0.0,
+       "diff": -0.0007852258177325382,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "vein endothelial cell",
+       "young": 0.0007612751000524243,
+       "old": 0.0,
+       "diff": -0.0007612751000524243,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "kidney collecting duct principal cell",
+       "young": 0.000735680014308887,
+       "old": 0.0,
+       "diff": -0.000735680014308887,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pancreatic PP cell",
+       "young": 0.0007067961924385033,
+       "old": 0.0,
+       "diff": -0.0007067961924385033,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "classical monocyte",
+       "young": 0.0006844898428218125,
+       "old": 0.0,
+       "diff": -0.0006844898428218125,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "kidney loop of Henle ascending limb epithelial cell",
+       "young": 0.0006572503890148521,
+       "old": 0.0,
+       "diff": -0.0006572503890148521,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "mature alpha-beta T cell",
+       "young": 0.0006539616528880056,
+       "old": 0.0,
+       "diff": -0.0006539616528880056,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "mucus secreting cell",
+       "young": 0.0006365884074615845,
+       "old": 0.0,
+       "diff": -0.0006365884074615845,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "neuron",
+       "young": 0.0006296793627805089,
+       "old": 0.0,
+       "diff": -0.0006296793627805089,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "granulocyte monocyte progenitor cell",
+       "young": 0.00047972915687351464,
+       "old": 0.0,
+       "diff": -0.00047972915687351464,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "smooth muscle cell of trachea",
+       "young": 0.00045632656188120834,
+       "old": 0.0,
+       "diff": -0.00045632656188120834,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "neutrophil",
+       "young": 0.0004552303165055928,
+       "old": 0.0,
+       "diff": -0.0004552303165055928,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "leukocyte",
+       "young": 0.00042799086269863237,
+       "old": 0.0,
+       "diff": -0.00042799086269863237,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "professional antigen presenting cell",
+       "young": 0.00042799086269863237,
+       "old": 0.0,
+       "diff": -0.00042799086269863237,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "neural stem cell",
+       "young": 0.0004254667995200188,
+       "old": 0.0,
+       "diff": -0.0004254667995200188,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "multiciliated columnar cell of tracheobronchial tree",
+       "young": 0.0004056845130819416,
+       "old": 0.0,
+       "diff": -0.0004056845130819416,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "basophil",
+       "young": 0.00037734881389936566,
+       "old": 0.0,
+       "diff": -0.00037734881389936566,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "mesangial cell",
+       "young": 0.0003555905869704826,
+       "old": 0.0,
+       "diff": -0.0003555905869704826,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "medium spiny neuron",
+       "young": 0.00028154594317890966,
+       "old": 0.0,
+       "diff": -0.00028154594317890966,
+       "p": 1.0
+      },
+      {
+       "level": "early pro-B cell",
+       "young": 0.00025540273474756466,
+       "old": 0.0,
+       "diff": -0.00025540273474756466,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "non-classical monocyte",
+       "young": 0.0002537583666841414,
+       "old": 0.0,
+       "diff": -0.0002537583666841414,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "dendritic cell",
+       "young": 0.0002526621213085259,
+       "old": 0.0,
+       "diff": -0.0002526621213085259,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pancreatic stellate cell",
+       "young": 0.00020256819519706695,
+       "old": 0.0,
+       "diff": -0.00020256819519706695,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "epithelial cell of thymus",
+       "young": 0.0001780693548291452,
+       "old": 0.0,
+       "diff": -0.0001780693548291452,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "adventitial cell",
+       "young": 0.00017642498676572193,
+       "old": 0.0,
+       "diff": -0.00017642498676572193,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "ependymal cell",
+       "young": 0.00015247426908560793,
+       "old": 0.0,
+       "diff": -0.00015247426908560793,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "proerythroblast",
+       "young": 0.00015247426908560793,
+       "old": 0.0,
+       "diff": -0.00015247426908560793,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "Bergmann glial cell",
+       "young": 0.00013153567905294311,
+       "old": 0.0,
+       "diff": -0.00013153567905294311,
+       "p": 1.0
+      },
+      {
+       "level": "mature NK T cell",
+       "young": 0.0001279754287176862,
+       "old": 0.0,
+       "diff": -0.0001279754287176862,
+       "p": 1.0
+      },
+      {
+       "level": "pulmonary interstitial fibroblast",
+       "young": 0.0001268791833420707,
+       "old": 0.0,
+       "diff": -0.0001268791833420707,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pericyte",
+       "young": 0.00012633106065426295,
+       "old": 0.0,
+       "diff": -0.00012633106065426295,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "endothelial cell of lymphatic vessel",
+       "young": 7.678525723061172e-05,
+       "old": 0.0,
+       "diff": -7.678525723061172e-05,
+       "p": 1.0
+      },
+      {
+       "level": "respiratory basal cell",
+       "young": 7.623713454280396e-05,
+       "old": 0.0,
+       "diff": -7.623713454280396e-05,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "club cell",
+       "young": 7.568901185499622e-05,
+       "old": 0.0,
+       "diff": -7.568901185499622e-05,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "epithelial cell of proximal tubule",
+       "young": 7.568901185499622e-05,
+       "old": 0.0,
+       "diff": -7.568901185499622e-05,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "lymphocyte",
+       "young": 5.064204879926674e-05,
+       "old": 0.0,
+       "diff": -5.064204879926674e-05,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "pulmonary alveolar type 1 cell",
+       "young": 5.064204879926674e-05,
+       "old": 0.0,
+       "diff": -5.064204879926674e-05,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "intermediate monocyte",
+       "young": 5.009392611145899e-05,
+       "old": 0.0,
+       "diff": -5.009392611145899e-05,
+       "p": 1.0
+      },
+      {
+       "level": "megakaryocyte-erythroid progenitor cell",
+       "young": 2.5595085743537238e-05,
+       "old": 0.0,
+       "diff": -2.5595085743537238e-05,
+       "p": 1.0
+      },
+      {
+       "level": "plasmacytoid dendritic cell",
+       "young": 2.5595085743537238e-05,
+       "old": 0.0,
+       "diff": -2.5595085743537238e-05,
+       "p": 1.0
+      },
+      {
+       "level": "pulmonary neuroendocrine cell",
+       "young": 2.5595085743537238e-05,
+       "old": 0.0,
+       "diff": -2.5595085743537238e-05,
+       "p": 1.0
+      },
+      {
+       "level": "regulatory T cell",
+       "young": 2.5595085743537238e-05,
+       "old": 0.0,
+       "diff": -2.5595085743537238e-05,
+       "p": 1.0
+      },
+      {
+       "level": "lung macrophage",
+       "young": 2.5046963055729494e-05,
+       "old": 0.0,
+       "diff": -2.5046963055729494e-05,
+       "p": 1.0
+      }
+     ],
+     "per_unit": {
+      "21_48_F": {
+       "basal cell": 0.7162162162162162,
+       "endothelial cell": 0.013513513513513514,
+       "luminal epithelial cell of mammary gland": 0.22972972972972974,
+       "stromal cell": 0.04054054054054054
+      },
+      "21_54_F": {
+       "basal cell": 0.7265917602996255,
+       "luminal epithelial cell of mammary gland": 0.23220973782771537,
+       "stromal cell": 0.04119850187265917
+      },
+      "21_55_F": {
+       "basal cell": 0.7280334728033473,
+       "endothelial cell": 0.02092050209205021,
+       "luminal epithelial cell of mammary gland": 0.2301255230125523,
+       "stromal cell": 0.02092050209205021
+      },
+      "3_38_F": {
+       "B cell": 0.044279498336319424,
+       "CD4-positive, alpha-beta T cell": 0.0072945994369081136,
+       "CD8-positive, alpha-beta T cell": 0.0063987714358843106,
+       "DN4 thymocyte": 0.03749680061428206,
+       "T cell": 0.008446378295367289,
+       "adventitial cell": 0.0002559508574353724,
+       "aortic endothelial cell": 0.0017916560020476069,
+       "astrocyte": 0.0016636805733299207,
+       "basal cell": 0.04965446634246225,
+       "basal cell of epidermis": 0.027386741745584847,
+       "basal epithelial cell of tracheobronchial tree": 0.0030714102892244687,
+       "basophil": 0.0003839262861530586,
+       "bladder cell": 0.002047606859482979,
+       "bladder urothelial cell": 0.006270796007166624,
+       "brain pericyte": 0.0035833120040952137,
+       "bronchial smooth muscle cell": 0.022139749168159712,
+       "cardiac valve cell": 0.000639877143588431,
+       "chondrocyte": 0.008446378295367289,
+       "classical monocyte": 0.001919631430765293,
+       "club cell": 0.0001279754287176862,
+       "dendritic cell": 0.0005119017148707448,
+       "early pro-B cell": 0.001151778858459176,
+       "endocardial cell": 0.0031993857179421553,
+       "endothelial cell": 0.04901458919887382,
+       "endothelial cell of coronary artery": 0.014589198873816227,
+       "endothelial cell of lymphatic vessel": 0.0003839262861530586,
+       "enterocyte of epithelium of large intestine": 0.018044535449193756,
+       "enteroendocrine cell": 0.0007678525723061172,
+       "ependymal cell": 0.0005119017148707448,
+       "epidermal cell": 0.008446378295367289,
+       "epithelial cell": 0.0043511645764013306,
+       "epithelial cell of large intestine": 0.011005886869721013,
+       "epithelial cell of proximal tubule": 0.0001279754287176862,
+       "epithelial cell of thymus": 0.000639877143588431,
+       "fenestrated endothelial cell": 0.005119017148707448,
+       "fibroblast": 0.014205272587663168,
+       "fibroblast of cardiac tissue": 0.05963654978244177,
+       "fibroblast of lung": 0.004479140005119018,
+       "granulocyte": 0.01894036345021756,
+       "granulocyte monocyte progenitor cell": 0.0008958280010238034,
+       "granulocytopoietic cell": 0.002047606859482979,
+       "hematopoietic stem cell": 0.025339134886101868,
+       "immature B cell": 0.010366009726132582,
+       "interneuron": 0.001151778858459176,
+       "intestinal crypt stem cell": 0.010877911441003328,
+       "keratinocyte": 0.0034553365753775276,
+       "keratinocyte stem cell": 0.02252367545431277,
+       "kidney collecting duct epithelial cell": 0.0029434348605067826,
+       "kidney collecting duct principal cell": 0.0021755822882006653,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0014077297158945482,
+       "large intestine goblet cell": 0.02661888917327873,
+       "late pro-B cell": 0.0028154594317890964,
+       "leukocyte": 0.0005119017148707448,
+       "luminal epithelial cell of mammary gland": 0.01881238802149987,
+       "lymphocyte": 0.0001279754287176862,
+       "macrophage": 0.01817251087791144,
+       "mature NK T cell": 0.000639877143588431,
+       "mature alpha-beta T cell": 0.000639877143588431,
+       "medium spiny neuron": 0.0014077297158945482,
+       "megakaryocyte-erythroid progenitor cell": 0.0001279754287176862,
+       "mesangial cell": 0.001151778858459176,
+       "mesenchymal stem cell": 0.018044535449193756,
+       "mesenchymal stem cell of adipose tissue": 0.03570514461223445,
+       "microglial cell": 0.13962119273099566,
+       "monocyte": 0.0037112874328129,
+       "mucus secreting cell": 0.002431533145636038,
+       "multiciliated columnar cell of tracheobronchial tree": 0.001151778858459176,
+       "myeloid cell": 0.025211159457384183,
+       "myeloid dendritic cell": 0.0030714102892244687,
+       "naive B cell": 0.025851036600972613,
+       "natural killer cell": 0.004095213718965958,
+       "neural stem cell": 0.000639877143588431,
+       "neuron": 0.0015357051446122344,
+       "neutrophil": 0.0010238034297414896,
+       "non-classical monocyte": 0.0007678525723061172,
+       "oligodendrocyte": 0.0053749680061428206,
+       "oligodendrocyte precursor cell": 0.0017916560020476069,
+       "pancreatic A cell": 0.012541592014333249,
+       "pancreatic D cell": 0.0029434348605067826,
+       "pancreatic PP cell": 0.001279754287176862,
+       "pancreatic acinar cell": 0.008446378295367289,
+       "pancreatic ductal cell": 0.0035833120040952137,
+       "pancreatic stellate cell": 0.0005119017148707448,
+       "pericyte": 0.0002559508574353724,
+       "plasmacytoid dendritic cell": 0.0001279754287176862,
+       "precursor B cell": 0.006142820578448937,
+       "proerythroblast": 0.0005119017148707448,
+       "professional antigen presenting cell": 0.0005119017148707448,
+       "promonocyte": 0.012925518300486306,
+       "pulmonary alveolar type 1 cell": 0.0001279754287176862,
+       "pulmonary alveolar type 2 cell": 0.002559508574353724,
+       "pulmonary interstitial fibroblast": 0.0003839262861530586,
+       "pulmonary neuroendocrine cell": 0.0001279754287176862,
+       "regular atrial cardiac myocyte": 0.000639877143588431,
+       "regulatory T cell": 0.0001279754287176862,
+       "respiratory basal cell": 0.0002559508574353724,
+       "skeletal muscle satellite cell": 0.030458152034809317,
+       "smooth muscle cell": 0.001279754287176862,
+       "smooth muscle cell of the pulmonary artery": 0.0021755822882006653,
+       "smooth muscle cell of trachea": 0.001279754287176862,
+       "stromal cell": 0.015613002303557716,
+       "thymocyte": 0.001279754287176862,
+       "tuft cell of large intestine": 0.001151778858459176,
+       "type B pancreatic cell": 0.01778858459175838,
+       "vein endothelial cell": 0.002303557716918352
+      },
+      "3_38_F/3_39_F": {
+       "monocyte": 0.02666666666666667,
+       "regular atrial cardiac myocyte": 0.6,
+       "regular ventricular cardiac myocyte": 0.37333333333333335
+      },
+      "3_39_F": {
+       "B cell": 0.04809016906700063,
+       "CD4-positive, alpha-beta T cell": 0.006762680025046963,
+       "CD8-positive, alpha-beta T cell": 0.005635566687539136,
+       "DN4 thymocyte": 0.004383218534752661,
+       "T cell": 0.007514088916718848,
+       "adventitial cell": 0.0006261740763932373,
+       "aortic endothelial cell": 0.005760801502817783,
+       "astrocyte": 0.007013149655604258,
+       "basal cell": 0.04308077645585473,
+       "basal cell of epidermis": 0.041327489041953665,
+       "basal epithelial cell of tracheobronchial tree": 0.002504696305572949,
+       "basophil": 0.0015028177833437697,
+       "bladder cell": 0.003506574827802129,
+       "bladder urothelial cell": 0.007013149655604258,
+       "brain pericyte": 0.0003757044458359424,
+       "bronchial smooth muscle cell": 0.011646837820914214,
+       "cardiac valve cell": 0.002128991859737007,
+       "chondrocyte": 0.00939261114589856,
+       "classical monocyte": 0.0015028177833437697,
+       "club cell": 0.0002504696305572949,
+       "dendritic cell": 0.0007514088916718848,
+       "early pro-B cell": 0.00012523481527864746,
+       "endocardial cell": 0.005385097056981841,
+       "endothelial cell": 0.021289918597370068,
+       "endothelial cell of coronary artery": 0.03606762680025047,
+       "enterocyte of epithelium of large intestine": 0.03018159048215404,
+       "enteroendocrine cell": 0.0010018785222291797,
+       "ependymal cell": 0.0002504696305572949,
+       "epidermal cell": 0.0028804007514088917,
+       "epithelial cell": 0.0002504696305572949,
+       "epithelial cell of large intestine": 0.026925485284909206,
+       "epithelial cell of proximal tubule": 0.0002504696305572949,
+       "epithelial cell of thymus": 0.0002504696305572949,
+       "fenestrated endothelial cell": 0.002128991859737007,
+       "fibroblast": 0.015278647463994991,
+       "fibroblast of cardiac tissue": 0.07451471509079524,
+       "fibroblast of lung": 0.006386975579211021,
+       "granulocyte": 0.008265497808390733,
+       "granulocyte monocyte progenitor cell": 0.0015028177833437697,
+       "granulocytopoietic cell": 0.001878522229179712,
+       "hematopoietic stem cell": 0.02617407639323732,
+       "immature B cell": 0.00788979336255479,
+       "intermediate monocyte": 0.0002504696305572949,
+       "interneuron": 0.0007514088916718848,
+       "intestinal crypt stem cell": 0.028804007514088917,
+       "keratinocyte": 0.007263619286161553,
+       "keratinocyte stem cell": 0.025422667501565435,
+       "kidney collecting duct epithelial cell": 0.002128991859737007,
+       "kidney collecting duct principal cell": 0.0015028177833437697,
+       "kidney loop of Henle ascending limb epithelial cell": 0.001878522229179712,
+       "large intestine goblet cell": 0.011145898559799625,
+       "late pro-B cell": 0.005134627426424546,
+       "leukocyte": 0.001628052598622417,
+       "luminal epithelial cell of mammary gland": 0.016656230432060114,
+       "lung macrophage": 0.00012523481527864746,
+       "lymphocyte": 0.00012523481527864746,
+       "macrophage": 0.015153412648716343,
+       "mature alpha-beta T cell": 0.002629931120851597,
+       "mesangial cell": 0.0006261740763932373,
+       "mesenchymal stem cell": 0.015153412648716343,
+       "mesenchymal stem cell of adipose tissue": 0.040325610519724484,
+       "microglial cell": 0.10644959298685035,
+       "monocyte": 0.012648716343143395,
+       "mucus secreting cell": 0.0007514088916718848,
+       "multiciliated columnar cell of tracheobronchial tree": 0.0008766437069505323,
+       "myeloid cell": 0.015278647463994991,
+       "myeloid dendritic cell": 0.003256105197244834,
+       "naive B cell": 0.009016906700062617,
+       "natural killer cell": 0.011020663744520976,
+       "neural stem cell": 0.0005009392611145899,
+       "neuron": 0.0006261740763932373,
+       "neutrophil": 0.0012523481527864746,
+       "non-classical monocyte": 0.0005009392611145899,
+       "oligodendrocyte": 0.010269254852849092,
+       "oligodendrocyte precursor cell": 0.003506574827802129,
+       "pancreatic A cell": 0.010394489668127739,
+       "pancreatic D cell": 0.0022542266750156543,
+       "pancreatic PP cell": 0.0022542266750156543,
+       "pancreatic acinar cell": 0.004257983719474014,
+       "pancreatic ductal cell": 0.0036318096430807763,
+       "pancreatic stellate cell": 0.0005009392611145899,
+       "pericyte": 0.0003757044458359424,
+       "precursor B cell": 0.011897307451471509,
+       "proerythroblast": 0.0002504696305572949,
+       "professional antigen presenting cell": 0.001628052598622417,
+       "promonocyte": 0.008766437069505322,
+       "pulmonary alveolar type 1 cell": 0.00012523481527864746,
+       "pulmonary alveolar type 2 cell": 0.003882279273638071,
+       "pulmonary interstitial fibroblast": 0.0002504696305572949,
+       "regular atrial cardiac myocyte": 0.002629931120851597,
+       "regular ventricular cardiac myocyte": 0.00012523481527864746,
+       "respiratory basal cell": 0.00012523481527864746,
+       "secretory cell": 0.005134627426424546,
+       "skeletal muscle satellite cell": 0.030807764558547276,
+       "smooth muscle cell": 0.001878522229179712,
+       "smooth muscle cell of the pulmonary artery": 0.0030056355666875393,
+       "smooth muscle cell of trachea": 0.0010018785222291797,
+       "stromal cell": 0.012273011897307451,
+       "thymocyte": 0.037820914214151534,
+       "tuft cell of large intestine": 0.0031308703819661866,
+       "type B pancreatic cell": 0.01778334376956794,
+       "vein endothelial cell": 0.0015028177833437697
+      },
+      "3_56_F": {
+       "B cell": 0.024005261427162118,
+       "Bergmann glial cell": 0.0006576783952647156,
+       "CD4-positive, alpha-beta T cell": 0.006576783952647156,
+       "CD8-positive, alpha-beta T cell": 0.006576783952647156,
+       "T cell": 0.01052285432423545,
+       "astrocyte": 0.010851693521867807,
+       "basal cell": 0.07497533706017757,
+       "bladder cell": 0.027951331798750412,
+       "bladder urothelial cell": 0.030910884577441632,
+       "brain pericyte": 0.0006576783952647156,
+       "cardiac valve cell": 0.003946070371588293,
+       "endocardial cell": 0.015455442288720816,
+       "endothelial cell": 0.028937849391647483,
+       "endothelial cell of coronary artery": 0.07990792502466294,
+       "enterocyte of epithelium of large intestine": 0.056889181190397896,
+       "enteroendocrine cell": 0.006576783952647156,
+       "epithelial cell": 0.0013153567905294311,
+       "epithelial cell of large intestine": 0.019730351857941468,
+       "fibroblast of cardiac tissue": 0.09634988490628082,
+       "hepatocyte": 0.026964814205853338,
+       "interneuron": 0.0046037487668530086,
+       "intestinal crypt stem cell": 0.04143373890167708,
+       "large intestine goblet cell": 0.06971390989805985,
+       "luminal epithelial cell of mammary gland": 0.03255508056560342,
+       "macrophage": 0.014468924695823742,
+       "mesenchymal stem cell of adipose tissue": 0.09306149292995725,
+       "microglial cell": 0.09667872410391319,
+       "monocyte": 0.014140085498191384,
+       "myeloid cell": 0.06083525156198619,
+       "natural killer cell": 0.008220979940808944,
+       "neural stem cell": 0.0009865175928970734,
+       "neuron": 0.0009865175928970734,
+       "oligodendrocyte": 0.012495889510029596,
+       "oligodendrocyte precursor cell": 0.00295955277869122,
+       "regular atrial cardiac myocyte": 0.003946070371588293,
+       "regular ventricular cardiac myocyte": 0.0003288391976323578,
+       "secretory cell": 0.0003288391976323578,
+       "smooth muscle cell": 0.0036172311739559354,
+       "stromal cell": 0.007892140743176587,
+       "tuft cell of large intestine": 0.0009865175928970734
+      },
+      "3_57_F": {
+       "basal cell": 0.565,
+       "endothelial cell": 0.01,
+       "hepatocyte": 0.1975,
+       "luminal epithelial cell of mammary gland": 0.1825,
+       "stromal cell": 0.045
+      }
+     }
+    },
+    "tissue": {
+     "tvd": 0.7847929850261727,
+     "tvd_p": 0.017857142857142856,
+     "relabelings": 56,
+     "by_level": [
+      {
+       "level": "mammary gland",
+       "young": 0.2152070149738273,
+       "old": 1.0,
+       "diff": 0.7847929850261727,
+       "p": 0.017857142857142856
+      },
+      {
+       "level": "heart",
+       "young": 0.2884796530404752,
+       "old": 0.0,
+       "diff": -0.2884796530404752,
+       "p": 0.3392857142857143
+      },
+      {
+       "level": "brain",
+       "young": 0.09123310158433351,
+       "old": 0.0,
+       "diff": -0.09123310158433351,
+       "p": 0.19642857142857142
+      },
+      {
+       "level": "large intestine",
+       "young": 0.07409010702535734,
+       "old": 0.0,
+       "diff": -0.07409010702535734,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "liver",
+       "young": 0.04489296284117067,
+       "old": 0.0,
+       "diff": -0.04489296284117067,
+       "p": 0.7321428571428571
+      },
+      {
+       "level": "bone marrow",
+       "young": 0.04178424192148095,
+       "old": 0.0,
+       "diff": -0.04178424192148095,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "subcutaneous adipose tissue",
+       "young": 0.029471945910257164,
+       "old": 0.0,
+       "diff": -0.029471945910257164,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "mesenteric fat pad",
+       "young": 0.022673701274253187,
+       "old": 0.0,
+       "diff": -0.022673701274253187,
+       "p": 0.375
+      },
+      {
+       "level": "gonadal fat pad",
+       "young": 0.02207216474301029,
+       "old": 0.0,
+       "diff": -0.02207216474301029,
+       "p": 0.375
+      },
+      {
+       "level": "pancreas",
+       "young": 0.018567710541216663,
+       "old": 0.0,
+       "diff": -0.018567710541216663,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "lung",
+       "young": 0.01814191216926926,
+       "old": 0.0,
+       "diff": -0.01814191216926926,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "skin of body",
+       "young": 0.017623432982144825,
+       "old": 0.0,
+       "diff": -0.017623432982144825,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "thymus",
+       "young": 0.016905674335950166,
+       "old": 0.0,
+       "diff": -0.016905674335950166,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "spleen",
+       "young": 0.0157986748573078,
+       "old": 0.0,
+       "diff": -0.0157986748573078,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "bladder lumen",
+       "young": 0.015540068745249607,
+       "old": 0.0,
+       "diff": -0.015540068745249607,
+       "p": 0.5535714285714286
+      },
+      {
+       "level": "trachea",
+       "young": 0.014819650807383117,
+       "old": 0.0,
+       "diff": -0.014819650807383117,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "limb muscle",
+       "young": 0.013301652269364157,
+       "old": 0.0,
+       "diff": -0.013301652269364157,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "brown adipose tissue",
+       "young": 0.01125722413273321,
+       "old": 0.0,
+       "diff": -0.01125722413273321,
+       "p": 0.375
+      },
+      {
+       "level": "diaphragm",
+       "young": 0.010983676681979377,
+       "old": 0.0,
+       "diff": -0.010983676681979377,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "tongue",
+       "young": 0.01016847079700084,
+       "old": 0.0,
+       "diff": -0.01016847079700084,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "kidney",
+       "young": 0.004797458249318573,
+       "old": 0.0,
+       "diff": -0.004797458249318573,
+       "p": 0.4642857142857143
+      },
+      {
+       "level": "aorta",
+       "young": 0.002189500116916813,
+       "old": 0.0,
+       "diff": -0.002189500116916813,
+       "p": 0.7321428571428571
+      }
+     ],
+     "per_unit": {
+      "21_48_F": {
+       "mammary gland": 1.0
+      },
+      "21_54_F": {
+       "mammary gland": 1.0
+      },
+      "21_55_F": {
+       "mammary gland": 1.0
+      },
+      "3_38_F": {
+       "aorta": 0.002431533145636038,
+       "bladder lumen": 0.008318402866649604,
+       "bone marrow": 0.11249040184284617,
+       "brain": 0.1881238802149987,
+       "brown adipose tissue": 0.01382134630151011,
+       "diaphragm": 0.02060404402354748,
+       "gonadal fat pad": 0.022395700025595086,
+       "heart": 0.08420783209623753,
+       "kidney": 0.0148451497312516,
+       "large intestine": 0.06846685436396212,
+       "limb muscle": 0.041336063475812646,
+       "lung": 0.04863066291272076,
+       "mammary gland": 0.08420783209623753,
+       "mesenteric fat pad": 0.021627847453288968,
+       "pancreas": 0.04863066291272076,
+       "skin of body": 0.0445354491937548,
+       "spleen": 0.03954440747376504,
+       "subcutaneous adipose tissue": 0.03864857947274123,
+       "thymus": 0.040696186332224216,
+       "tongue": 0.017404658305605322,
+       "trachea": 0.03903250575889429
+      },
+      "3_38_F/3_39_F": {
+       "heart": 1.0
+      },
+      "3_39_F": {
+       "aorta": 0.008515967438948028,
+       "bladder lumen": 0.010519724483406387,
+       "bone marrow": 0.09643080776455855,
+       "brain": 0.13650594865372573,
+       "brown adipose tissue": 0.008265497808390733,
+       "diaphragm": 0.0343143393863494,
+       "gonadal fat pad": 0.02417031934877896,
+       "heart": 0.13688165309956168,
+       "kidney": 0.009142141515341266,
+       "large intestine": 0.1063243581715717,
+       "limb muscle": 0.02517219787100814,
+       "lung": 0.04207889793362555,
+       "mammary gland": 0.07226048841577959,
+       "mesenteric fat pad": 0.018409517845961176,
+       "pancreas": 0.044207889793362556,
+       "skin of body": 0.04358171571696932,
+       "spleen": 0.039448966812773954,
+       "subcutaneous adipose tissue": 0.03143393863494051,
+       "thymus": 0.043832185347526614,
+       "tongue": 0.033437695679398874,
+       "trachea": 0.03506574827802129
+      },
+      "3_56_F": {
+       "bladder lumen": 0.058862216376192045,
+       "brain": 0.1315356790529431,
+       "brown adipose tissue": 0.03419927655376521,
+       "gonadal fat pad": 0.06379480434067741,
+       "heart": 0.22130878000657678,
+       "large intestine": 0.19565932259125288,
+       "liver": 0.026964814205853338,
+       "mammary gland": 0.11706675435711937,
+       "mesenteric fat pad": 0.07333114107201578,
+       "subcutaneous adipose tissue": 0.07727721144360408
+      },
+      "3_57_F": {
+       "liver": 0.1975,
+       "mammary gland": 0.8025
+      }
+     }
+    },
+    "within": {
+     "mi_3bin": {
+      "types": {
+       "basal cell": {
+        "values": {
+         "21_48_F": 0.013123374352457709,
+         "21_54_F": 0.01260956009650321,
+         "21_55_F": 0.0,
+         "3_38_F": 0.007572479302651716,
+         "3_39_F": 0.00873749857846335,
+         "3_56_F": 0.013177557716271833,
+         "3_57_F": 0.004497115750330745
+        },
+        "delta": 8.148197939089608e-05,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "luminal epithelial cell of mammary gland": {
+        "values": {
+         "21_48_F": 0.0,
+         "21_54_F": 0.0,
+         "21_55_F": 0.0,
+         "3_38_F": 0.014335621659436113,
+         "3_39_F": 0.014164318255039823,
+         "3_56_F": 0.0,
+         "3_57_F": 0.01378757864545504
+        },
+        "delta": -0.010571879639982743,
+        "p": 0.14285714285714285,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      "combined": {
+       "delta": -0.0052451988302959236,
+       "p": 0.10714285714285714,
+       "types": 2,
+       "relabelings": 56
+      }
+     },
+     "norm_pearson": {
+      "types": {
+       "basal cell": {
+        "values": {
+         "21_48_F": 0.0,
+         "21_54_F": 0.12410268496794037,
+         "21_55_F": 0.0,
+         "3_38_F": -0.48622063022644413,
+         "3_39_F": 0.15587498165581798,
+         "3_56_F": 0.43106789840246085,
+         "3_57_F": 0.4042729947782899
+        },
+        "delta": -0.08488124949655101,
+        "p": 0.8571428571428571,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "luminal epithelial cell of mammary gland": {
+        "values": {
+         "21_48_F": 0.0,
+         "21_54_F": 0.0,
+         "21_55_F": 0.0,
+         "3_38_F": -0.3631051024878722,
+         "3_39_F": 0.0,
+         "3_56_F": 0.0,
+         "3_57_F": 0.0
+        },
+        "delta": 0.09077627562196805,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      "combined": {
+       "delta": 0.0029475130627085178,
+       "p": 1.0,
+       "types": 2,
+       "relabelings": 56
+      }
+     }
+    },
+    "fibroblast_like_share": {
+     "21_48_F": 0.04054054054054054,
+     "21_54_F": 0.04119850187265917,
+     "21_55_F": 0.02092050209205021,
+     "3_38_F": 0.14806757102636295,
+     "3_38_F/3_39_F": 0.0,
+     "3_39_F": 0.16418284283030682,
+     "3_56_F": 0.19730351857941467,
+     "3_57_F": 0.045
+    },
+    "association": {
+     "pearson": {
+      "r": -0.3619953309422896,
+      "p": 0.377405753968254
+     },
+     "spearman": {
+      "r": -0.5238095238095238,
+      "p": 0.19662698412698412
+     },
+     "orderings": 40320
+    }
+   },
+   "male": {
+    "units": [
+     "24_58_M",
+     "24_59_M",
+     "24_60_M",
+     "24_61_M",
+     "3_10_M",
+     "3_10_M/3_11_M",
+     "3_11_M",
+     "3_8_M",
+     "3_9_M"
+    ],
+    "groups": {
+     "24_58_M": "old",
+     "24_59_M": "old",
+     "24_60_M": "old",
+     "24_61_M": "old",
+     "3_10_M": "young",
+     "3_10_M/3_11_M": "young",
+     "3_11_M": "young",
+     "3_8_M": "young",
+     "3_9_M": "young"
+    },
+    "mi_all": {
+     "24_58_M": 0.0072395731320595205,
+     "24_59_M": 0.01112434189219214,
+     "24_60_M": 0.006265352010074675,
+     "24_61_M": 0.01074778295129472,
+     "3_10_M": 0.016562863987525704,
+     "3_10_M/3_11_M": 0.04692125067323071,
+     "3_11_M": 0.031368831094429686,
+     "3_8_M": 0.026035638404892772,
+     "3_9_M": 0.022069283318606848
+    },
+    "pearson_all": {
+     "24_58_M": -0.010262514721374474,
+     "24_59_M": 0.06774081622595916,
+     "24_60_M": 0.16824745468610888,
+     "24_61_M": 0.122013672576696,
+     "3_10_M": 0.031000575739110647,
+     "3_10_M/3_11_M": 0.0,
+     "3_11_M": -0.1451051592690107,
+     "3_8_M": -0.0861493255757991,
+     "3_9_M": -0.017421810245675136
+    },
+    "delta_all": -0.019747310999331878,
+    "mi_vs_run2_max_abs_diff": 0.0,
+    "mi_vs_run2_units": 9,
+    "cell_type": {
+     "tvd": 0.3411406508058573,
+     "tvd_p": 0.031746031746031744,
+     "relabelings": 126,
+     "by_level": [
+      {
+       "level": "regular atrial cardiac myocyte",
+       "young": 0.12211188368046351,
+       "old": 0.004474000195185745,
+       "diff": -0.11763788348527776,
+       "p": 0.9365079365079365
+      },
+      {
+       "level": "microglial cell",
+       "young": 0.06322231666716575,
+       "old": 0.13490405037915199,
+       "diff": 0.07168173371198623,
+       "p": 0.07142857142857142
+      },
+      {
+       "level": "regular ventricular cardiac myocyte",
+       "young": 0.050793650793650794,
+       "old": 0.0031926403756368906,
+       "diff": -0.0476010104180139,
+       "p": 1.0
+      },
+      {
+       "level": "oligodendrocyte",
+       "young": 0.035756872271427834,
+       "old": 0.004010535137076499,
+       "diff": -0.031746337134351335,
+       "p": 0.11904761904761904
+      },
+      {
+       "level": "naive B cell",
+       "young": 0.011303562787964327,
+       "old": 0.03727459611188649,
+       "diff": 0.025971033323922164,
+       "p": 0.031746031746031744
+      },
+      {
+       "level": "bronchial smooth muscle cell",
+       "young": 0.005416726365520205,
+       "old": 0.023907217357939835,
+       "diff": 0.01849049099241963,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "keratinocyte stem cell",
+       "young": 0.034331574378781496,
+       "old": 0.0172336540334427,
+       "diff": -0.017097920345338795,
+       "p": 0.20634920634920634
+      },
+      {
+       "level": "macrophage",
+       "young": 0.011065364081299524,
+       "old": 0.028110955382735718,
+       "diff": 0.017045591301436194,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "granulocyte",
+       "young": 0.015448105387623779,
+       "old": 0.031093066378682716,
+       "diff": 0.015644960991058936,
+       "p": 0.07142857142857142
+      },
+      {
+       "level": "endothelial cell",
+       "young": 0.042984136835412176,
+       "old": 0.027973064667743214,
+       "diff": -0.015011072167668962,
+       "p": 0.5
+      },
+      {
+       "level": "B cell",
+       "young": 0.04402454661788725,
+       "old": 0.05636807846289263,
+       "diff": 0.012343531845005376,
+       "p": 0.5396825396825397
+      },
+      {
+       "level": "bladder cell",
+       "young": 0.014719821700590215,
+       "old": 0.0027224659889548285,
+       "diff": -0.011997355711635387,
+       "p": 0.19047619047619047
+      },
+      {
+       "level": "skeletal muscle satellite cell",
+       "young": 0.018991013067394653,
+       "old": 0.03066793619671767,
+       "diff": 0.011676923129323016,
+       "p": 0.35714285714285715
+      },
+      {
+       "level": "hematopoietic stem cell",
+       "young": 0.026891271607566936,
+       "old": 0.037298500586979984,
+       "diff": 0.010407228979413048,
+       "p": 0.42857142857142855
+      },
+      {
+       "level": "large intestine goblet cell",
+       "young": 0.005963515778624982,
+       "old": 0.015891254916800802,
+       "diff": 0.00992773913817582,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "keratinocyte",
+       "young": 0.0073931532488820785,
+       "old": 0.017288357011470863,
+       "diff": 0.009895203762588786,
+       "p": 0.07142857142857142
+      },
+      {
+       "level": "endothelial cell of coronary artery",
+       "young": 0.024276670712507057,
+       "old": 0.033432141292810566,
+       "diff": 0.009155470580303509,
+       "p": 0.07936507936507936
+      },
+      {
+       "level": "astrocyte",
+       "young": 0.010080177679518267,
+       "old": 0.000927810367532623,
+       "diff": -0.009152367311985644,
+       "p": 0.12698412698412698
+      },
+      {
+       "level": "epithelial cell of large intestine",
+       "young": 0.018068031753335177,
+       "old": 0.008976969270108836,
+       "diff": -0.009091062483226341,
+       "p": 0.2777777777777778
+      },
+      {
+       "level": "monocyte",
+       "young": 0.023002029673246563,
+       "old": 0.014187966024187891,
+       "diff": -0.008814063649058672,
+       "p": 0.8174603174603174
+      },
+      {
+       "level": "T cell",
+       "young": 0.007798220109439827,
+       "old": 0.01620879590473238,
+       "diff": 0.008410575795292554,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "promonocyte",
+       "young": 0.004836617079757796,
+       "old": 0.013176228882327636,
+       "diff": 0.00833961180256984,
+       "p": 0.015873015873015872
+      },
+      {
+       "level": "DN4 thymocyte",
+       "young": 0.010098281464483634,
+       "old": 0.018102524110095174,
+       "diff": 0.00800424264561154,
+       "p": 0.30158730158730157
+      },
+      {
+       "level": "myeloid cell",
+       "young": 0.020011992501531718,
+       "old": 0.02782637562257522,
+       "diff": 0.007814383121043503,
+       "p": 0.42063492063492064
+      },
+      {
+       "level": "mesenchymal stem cell",
+       "young": 0.008813735220120555,
+       "old": 0.01662135492789524,
+       "diff": 0.007807619707774686,
+       "p": 0.15873015873015872
+      },
+      {
+       "level": "CD8-positive, alpha-beta T cell",
+       "young": 0.004735359148526587,
+       "old": 0.012535832772366143,
+       "diff": 0.007800473623839557,
+       "p": 0.023809523809523808
+      },
+      {
+       "level": "type B pancreatic cell",
+       "young": 0.006756456423179862,
+       "old": 0.014449708865893546,
+       "diff": 0.0076932524427136845,
+       "p": 0.4444444444444444
+      },
+      {
+       "level": "epithelial cell",
+       "young": 0.0011619013392033233,
+       "old": 0.008614695271868339,
+       "diff": 0.007452793932665016,
+       "p": 0.03968253968253968
+      },
+      {
+       "level": "myeloid dendritic cell",
+       "young": 5.682335528291323e-05,
+       "old": 0.0068782788621022375,
+       "diff": 0.006821455506819324,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "endothelial cell of hepatic sinusoid",
+       "young": 0.009282747932524885,
+       "old": 0.0030564890162939743,
+       "diff": -0.006226258916230911,
+       "p": 0.8809523809523809
+      },
+      {
+       "level": "epithelial cell of proximal tubule",
+       "young": 0.0014775959639108135,
+       "old": 0.007106651928736242,
+       "diff": 0.005629055964825429,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "immature B cell",
+       "young": 0.006711432229517418,
+       "old": 0.0014114440811045068,
+       "diff": -0.005299988148412911,
+       "p": 0.16666666666666666
+      },
+      {
+       "level": "CD4-positive, alpha-beta T cell",
+       "young": 0.00802654021703975,
+       "old": 0.013161015185163417,
+       "diff": 0.005134474968123668,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "oligodendrocyte precursor cell",
+       "young": 0.004944448285383211,
+       "old": 0.0003591524003352089,
+       "diff": -0.0045852958850480015,
+       "p": 0.047619047619047616
+      },
+      {
+       "level": "late pro-B cell",
+       "young": 0.006012104595655361,
+       "old": 0.0016059373737165098,
+       "diff": -0.004406167221938851,
+       "p": 0.19047619047619047
+      },
+      {
+       "level": "precursor B cell",
+       "young": 0.009685786176740556,
+       "old": 0.005352320221400055,
+       "diff": -0.004333465955340501,
+       "p": 0.47619047619047616
+      },
+      {
+       "level": "pancreatic acinar cell",
+       "young": 0.0025468738981854868,
+       "old": 0.006868571464329053,
+       "diff": 0.004321697566143566,
+       "p": 0.36507936507936506
+      },
+      {
+       "level": "fibroblast of lung",
+       "young": 0.0016703300422014275,
+       "old": 0.005921409535268211,
+       "diff": 0.004251079493066783,
+       "p": 0.023809523809523808
+      },
+      {
+       "level": "fibroblast",
+       "young": 0.009385188873389903,
+       "old": 0.01340002523543999,
+       "diff": 0.004014836362050087,
+       "p": 0.3888888888888889
+      },
+      {
+       "level": "mesenchymal stem cell of adipose tissue",
+       "young": 0.04350798754415878,
+       "old": 0.03952338254212458,
+       "diff": -0.003984605002034201,
+       "p": 0.8650793650793651
+      },
+      {
+       "level": "fibroblast of cardiac tissue",
+       "young": 0.03030920446413951,
+       "old": 0.026365924881045326,
+       "diff": -0.003943279583094185,
+       "p": 0.5873015873015873
+      },
+      {
+       "level": "basal cell of epidermis",
+       "young": 0.03582546859840518,
+       "old": 0.03956201160325046,
+       "diff": 0.003736543004845279,
+       "p": 0.8095238095238095
+      },
+      {
+       "level": "brain pericyte",
+       "young": 0.004488485591096345,
+       "old": 0.0011971746677840297,
+       "diff": -0.003291310923312315,
+       "p": 0.2619047619047619
+      },
+      {
+       "level": "smooth muscle cell",
+       "young": 0.004113033727001716,
+       "old": 0.0009589904527004043,
+       "diff": -0.0031540432743013117,
+       "p": 0.6111111111111112
+      },
+      {
+       "level": "basal epithelial cell of tracheobronchial tree",
+       "young": 0.0010910334225708584,
+       "old": 0.004147096847823561,
+       "diff": 0.0030560634252527023,
+       "p": 0.03968253968253968
+      },
+      {
+       "level": "thymocyte",
+       "young": 0.013706555692087907,
+       "old": 0.010666405562691193,
+       "diff": -0.003040150129396714,
+       "p": 0.7380952380952381
+      },
+      {
+       "level": "myeloid leukocyte",
+       "young": 0.0007714601105604224,
+       "old": 0.00366065982099534,
+       "diff": 0.0028891997104349178,
+       "p": 0.40476190476190477
+      },
+      {
+       "level": "adventitial cell",
+       "young": 0.004313437268836026,
+       "old": 0.001608960787300553,
+       "diff": -0.002704476481535473,
+       "p": 0.11904761904761904
+      },
+      {
+       "level": "chondrocyte",
+       "young": 0.003019606704006743,
+       "old": 0.0003458683508808453,
+       "diff": -0.0026737383531258976,
+       "p": 0.6746031746031746
+      },
+      {
+       "level": "enterocyte of epithelium of large intestine",
+       "young": 0.019816965093681235,
+       "old": 0.01741614955767984,
+       "diff": -0.0024008155360013966,
+       "p": 0.8095238095238095
+      },
+      {
+       "level": "neuron",
+       "young": 0.004040314241958958,
+       "old": 0.006361472756617519,
+       "diff": 0.002321158514658561,
+       "p": 0.40476190476190477
+      },
+      {
+       "level": "epithelial cell of thymus",
+       "young": 0.00016629815140647964,
+       "old": 0.0023101439033420858,
+       "diff": 0.002143845751935606,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "neural stem cell",
+       "young": 0.0021545722776246763,
+       "old": 2.992936669460074e-05,
+       "diff": -0.0021246429109300757,
+       "p": 0.0873015873015873
+      },
+      {
+       "level": "medium spiny neuron",
+       "young": 0.0021971664191862803,
+       "old": 8.978810008380222e-05,
+       "diff": -0.002107378319102478,
+       "p": 0.2857142857142857
+      },
+      {
+       "level": "pancreatic A cell",
+       "young": 0.005095688356506432,
+       "old": 0.0029898037605117123,
+       "diff": -0.00210588459599472,
+       "p": 0.6428571428571429
+      },
+      {
+       "level": "natural killer cell",
+       "young": 0.005769067352052121,
+       "old": 0.007659342850936833,
+       "diff": 0.0018902754988847116,
+       "p": 0.6111111111111112
+      },
+      {
+       "level": "bladder urothelial cell",
+       "young": 0.012808028600057753,
+       "old": 0.011027216436689547,
+       "diff": -0.0017808121633682058,
+       "p": 0.8571428571428571
+      },
+      {
+       "level": "secretory cell",
+       "young": 0.006117235131041792,
+       "old": 0.004515715468944342,
+       "diff": -0.0016015196620974507,
+       "p": 0.6507936507936508
+      },
+      {
+       "level": "megakaryocyte-erythroid progenitor cell",
+       "young": 0.00011271695355073098,
+       "old": 0.0016650339200265309,
+       "diff": 0.0015523169664758,
+       "p": 0.06349206349206349
+      },
+      {
+       "level": "hepatocyte",
+       "young": 0.01038035201806865,
+       "old": 0.011830289387519146,
+       "diff": 0.0014499373694504963,
+       "p": 0.9206349206349206
+      },
+      {
+       "level": "smooth muscle cell of trachea",
+       "young": 0.0017030157927299192,
+       "old": 0.00026858612011879004,
+       "diff": -0.0014344296726111292,
+       "p": 0.36507936507936506
+      },
+      {
+       "level": "epidermal cell",
+       "young": 0.005478233770898925,
+       "old": 0.0041140045416984085,
+       "diff": -0.0013642292292005169,
+       "p": 0.5158730158730159
+      },
+      {
+       "level": "vein endothelial cell",
+       "young": 0.00032791584779497313,
+       "old": 0.001682758183252597,
+       "diff": 0.001354842335457624,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "dendritic cell",
+       "young": 0.0,
+       "old": 0.0013390003816844448,
+       "diff": 0.0013390003816844448,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "Kupffer cell",
+       "young": 0.002128650007237509,
+       "old": 0.003400004039683696,
+       "diff": 0.001271354032446187,
+       "p": 0.6031746031746031
+      },
+      {
+       "level": "pancreatic D cell",
+       "young": 0.0022956904493439227,
+       "old": 0.0010634640899471744,
+       "diff": -0.0012322263593967484,
+       "p": 0.48412698412698413
+      },
+      {
+       "level": "fenestrated endothelial cell",
+       "young": 0.0021367603373598745,
+       "old": 0.00331753130764496,
+       "diff": 0.0011807709702850856,
+       "p": 0.38095238095238093
+      },
+      {
+       "level": "kidney collecting duct epithelial cell",
+       "young": 0.003234848662145823,
+       "old": 0.002224261325984069,
+       "diff": -0.0010105873361617537,
+       "p": 0.7857142857142857
+      },
+      {
+       "level": "kidney collecting duct principal cell",
+       "young": 0.000998022390770995,
+       "old": 0.0019393702047814003,
+       "diff": 0.0009413478140104052,
+       "p": 0.29365079365079366
+      },
+      {
+       "level": "granulocytopoietic cell",
+       "young": 0.004666313960060562,
+       "old": 0.0037309931248553302,
+       "diff": -0.0009353208352052321,
+       "p": 0.6904761904761905
+      },
+      {
+       "level": "pulmonary interstitial fibroblast",
+       "young": 0.0011533195221610725,
+       "old": 0.00023252435631450943,
+       "diff": -0.0009207951658465631,
+       "p": 0.07936507936507936
+      },
+      {
+       "level": "leukocyte",
+       "young": 0.0010868854759499003,
+       "old": 0.0019541153406519396,
+       "diff": 0.0008672298647020393,
+       "p": 0.5555555555555556
+      },
+      {
+       "level": "professional antigen presenting cell",
+       "young": 0.0013891585845668538,
+       "old": 0.0005370026976480328,
+       "diff": -0.000852155886918821,
+       "p": 0.36507936507936506
+      },
+      {
+       "level": "neutrophil",
+       "young": 0.0005424709252544916,
+       "old": 0.001386321307615243,
+       "diff": 0.0008438503823607514,
+       "p": 0.20634920634920634
+      },
+      {
+       "level": "regulatory T cell",
+       "young": 0.0,
+       "old": 0.000817330130098115,
+       "diff": 0.000817330130098115,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "kidney loop of Henle ascending limb epithelial cell",
+       "young": 0.002030403320871275,
+       "old": 0.0012244675892935577,
+       "diff": -0.0008059357315777173,
+       "p": 0.9126984126984127
+      },
+      {
+       "level": "mature NK T cell",
+       "young": 0.001581276026619677,
+       "old": 0.0023679967068440727,
+       "diff": 0.0007867206802243958,
+       "p": 0.6031746031746031
+      },
+      {
+       "level": "enteroendocrine cell",
+       "young": 0.0010644925963202523,
+       "old": 0.001838287451516102,
+       "diff": 0.0007737948551958496,
+       "p": 0.19047619047619047
+      },
+      {
+       "level": "pancreatic ductal cell",
+       "young": 0.002958983274558179,
+       "old": 0.0022396264485689977,
+       "diff": -0.0007193568259891811,
+       "p": 0.8412698412698413
+      },
+      {
+       "level": "Bergmann glial cell",
+       "young": 0.0008640978779935575,
+       "old": 0.00026936430025140666,
+       "diff": -0.0005947335777421508,
+       "p": 0.23015873015873015
+      },
+      {
+       "level": "tuft cell of large intestine",
+       "young": 0.001109134100579398,
+       "old": 0.00170046467204508,
+       "diff": 0.000591330571465682,
+       "p": 0.5317460317460317
+      },
+      {
+       "level": "aortic endothelial cell",
+       "young": 0.004528304670885155,
+       "old": 0.005119311567184249,
+       "diff": 0.0005910068962990938,
+       "p": 0.8333333333333334
+      },
+      {
+       "level": "kidney interstitial fibroblast",
+       "young": 0.0,
+       "old": 0.0005502063273727648,
+       "diff": 0.0005502063273727648,
+       "p": 0.4444444444444444
+      },
+      {
+       "level": "mature alpha-beta T cell",
+       "young": 0.0020494177579869063,
+       "old": 0.002572131513272895,
+       "diff": 0.0005227137552859889,
+       "p": 0.6111111111111112
+      },
+      {
+       "level": "non-classical monocyte",
+       "young": 0.0013438383972848823,
+       "old": 0.0018602580941852228,
+       "diff": 0.0005164196969003406,
+       "p": 0.5634920634920635
+      },
+      {
+       "level": "basophil",
+       "young": 0.00039429872920787373,
+       "old": 0.0008774996554913308,
+       "diff": 0.0004832009262834571,
+       "p": 0.11904761904761904
+      },
+      {
+       "level": "pancreatic PP cell",
+       "young": 0.0007333716447539553,
+       "old": 0.00026172757738779123,
+       "diff": -0.0004716440673661641,
+       "p": 0.8809523809523809
+      },
+      {
+       "level": "multiciliated columnar cell of tracheobronchial tree",
+       "young": 0.0003056944037124078,
+       "old": 0.0007410192713511873,
+       "diff": 0.00043532486763877946,
+       "p": 0.2222222222222222
+      },
+      {
+       "level": "classical monocyte",
+       "young": 0.0012668942964029187,
+       "old": 0.0016934974164093694,
+       "diff": 0.00042660312000645075,
+       "p": 0.5476190476190477
+      },
+      {
+       "level": "pulmonary alveolar type 2 cell",
+       "young": 0.0014224859644623306,
+       "old": 0.0010374183339925047,
+       "diff": -0.0003850676304698259,
+       "p": 0.6507936507936508
+      },
+      {
+       "level": "pancreatic stellate cell",
+       "young": 0.0006451405836252178,
+       "old": 0.00026172757738779123,
+       "diff": -0.0003834130062374266,
+       "p": 0.5634920634920635
+      },
+      {
+       "level": "endocardial cell",
+       "young": 0.004765543626719311,
+       "old": 0.005120431796883156,
+       "diff": 0.00035488817016384507,
+       "p": 0.9682539682539683
+      },
+      {
+       "level": "early pro-B cell",
+       "young": 0.0005379225501499099,
+       "old": 0.0008585222118375557,
+       "diff": 0.0003205996616876457,
+       "p": 0.46825396825396826
+      },
+      {
+       "level": "cardiac valve cell",
+       "young": 0.00403653594819687,
+       "old": 0.003720490815509523,
+       "diff": -0.00031604513268734683,
+       "p": 0.873015873015873
+      },
+      {
+       "level": "intestinal crypt stem cell",
+       "young": 0.012324250513978575,
+       "old": 0.012030971229620454,
+       "diff": -0.00029327928435812084,
+       "p": 0.9761904761904762
+      },
+      {
+       "level": "plasma cell",
+       "young": 0.0,
+       "old": 0.0002828054521602035,
+       "diff": 0.0002828054521602035,
+       "p": 0.16666666666666666
+      },
+      {
+       "level": "endothelial cell of lymphatic vessel",
+       "young": 0.0013816191260273773,
+       "old": 0.0011261186929169401,
+       "diff": -0.00025550043311043714,
+       "p": 0.746031746031746
+      },
+      {
+       "level": "intermediate monocyte",
+       "young": 0.0002539727198868501,
+       "old": 0.0,
+       "diff": -0.0002539727198868501,
+       "p": 0.16666666666666666
+      },
+      {
+       "level": "lung macrophage",
+       "young": 0.0,
+       "old": 0.00025248022984984046,
+       "diff": 0.00025248022984984046,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "interneuron",
+       "young": 0.0015251153728816226,
+       "old": 0.0017706326629110473,
+       "diff": 0.00024551729002942474,
+       "p": 0.8571428571428571
+      },
+      {
+       "level": "fibrocyte",
+       "young": 0.0007086391841653057,
+       "old": 0.00046769868891299946,
+       "diff": -0.0002409404952523062,
+       "p": 0.8888888888888888
+      },
+      {
+       "level": "club cell",
+       "young": 0.0001094747961235664,
+       "old": 0.00034553806087528864,
+       "diff": 0.00023606326475172223,
+       "p": 0.21428571428571427
+      },
+      {
+       "level": "pericyte",
+       "young": 0.0003314122755100008,
+       "old": 0.0001253760025270009,
+       "diff": -0.00020603627298299988,
+       "p": 0.15079365079365079
+      },
+      {
+       "level": "mucus secreting cell",
+       "young": 0.0007068746963926782,
+       "old": 0.0005060168953265566,
+       "diff": -0.00020085780106612167,
+       "p": 0.7936507936507936
+      },
+      {
+       "level": "smooth muscle cell of the pulmonary artery",
+       "young": 0.00042187611503565766,
+       "old": 0.00028173780737547816,
+       "diff": -0.0001401383076601795,
+       "p": 0.626984126984127
+      },
+      {
+       "level": "pulmonary alveolar type 1 cell",
+       "young": 0.0001047943411055803,
+       "old": 0.0,
+       "diff": -0.0001047943411055803,
+       "p": 1.0
+      },
+      {
+       "level": "neuroepithelial stem cell",
+       "young": 0.00011043622308117064,
+       "old": 0.0002095055668622052,
+       "diff": 9.906934378103456e-05,
+       "p": 0.7222222222222222
+      },
+      {
+       "level": "plasmacytoid dendritic cell",
+       "young": 0.0,
+       "old": 9.497277447131822e-05,
+       "diff": 9.497277447131822e-05,
+       "p": 0.4444444444444444
+      },
+      {
+       "level": "lymphocyte",
+       "young": 0.0,
+       "old": 6.87757909215956e-05,
+       "diff": 6.87757909215956e-05,
+       "p": 0.4444444444444444
+      },
+      {
+       "level": "pulmonary neuroendocrine cell",
+       "young": 0.0,
+       "old": 6.431726215539853e-05,
+       "diff": 6.431726215539853e-05,
+       "p": 0.16666666666666666
+      },
+      {
+       "level": "ependymal cell",
+       "young": 0.0001665840916368514,
+       "old": 0.00011971746677840296,
+       "diff": -4.686662485844844e-05,
+       "p": 0.8809523809523809
+      },
+      {
+       "level": "mesangial cell",
+       "young": 0.0006507616940750995,
+       "old": 0.0006196279362293015,
+       "diff": -3.113375784579797e-05,
+       "p": 0.9206349206349206
+      },
+      {
+       "level": "respiratory basal cell",
+       "young": 2.82845424975251e-05,
+       "old": 0.0,
+       "diff": -2.82845424975251e-05,
+       "p": 1.0
+      },
+      {
+       "level": "proerythroblast",
+       "young": 0.0013116394069285536,
+       "old": 0.0013388354829770139,
+       "diff": 2.719607604846023e-05,
+       "p": 0.9761904761904762
+      },
+      {
+       "level": "granulocyte monocyte progenitor cell",
+       "young": 0.0014236057411324786,
+       "old": 0.0014497226931418801,
+       "diff": 2.6116952009401506e-05,
+       "p": 0.9603174603174603
+      }
+     ],
+     "per_unit": {
+      "24_58_M": {
+       "B cell": 0.058025152533931014,
+       "CD4-positive, alpha-beta T cell": 0.018304071722076952,
+       "CD8-positive, alpha-beta T cell": 0.009214294608392478,
+       "DN4 thymocyte": 0.018428589216784957,
+       "Kupffer cell": 0.0044826298094882335,
+       "T cell": 0.01581372182791682,
+       "adventitial cell": 0.0009961399576640518,
+       "aortic endothelial cell": 0.002365832399452123,
+       "basal cell of epidermis": 0.032623583613497695,
+       "basal epithelial cell of tracheobronchial tree": 0.002614867388868136,
+       "basophil": 0.0012451749470800647,
+       "bladder cell": 0.0037355248412401943,
+       "bladder urothelial cell": 0.022288631552733158,
+       "bronchial smooth muscle cell": 0.02191507906860914,
+       "cardiac valve cell": 0.0034864898518241812,
+       "chondrocyte": 0.0006225874735400323,
+       "classical monocyte": 0.0018677624206200972,
+       "club cell": 0.0008716224629560453,
+       "dendritic cell": 0.0006225874735400323,
+       "early pro-B cell": 0.0008716224629560453,
+       "endocardial cell": 0.007471049682480389,
+       "endothelial cell": 0.022164114058025153,
+       "endothelial cell of coronary artery": 0.03187647864524966,
+       "endothelial cell of hepatic sinusoid": 0.010833022039596563,
+       "endothelial cell of lymphatic vessel": 0.0004980699788320259,
+       "enterocyte of epithelium of large intestine": 0.018304071722076952,
+       "enteroendocrine cell": 0.0021167974100361102,
+       "epidermal cell": 0.0007471049682480389,
+       "epithelial cell": 0.017183414269704895,
+       "epithelial cell of large intestine": 0.008591707134852447,
+       "epithelial cell of proximal tubule": 0.006848462208940356,
+       "epithelial cell of thymus": 0.0012451749470800647,
+       "fenestrated endothelial cell": 0.003237454862408168,
+       "fibroblast": 0.014070476902004731,
+       "fibroblast of cardiac tissue": 0.036608143444153904,
+       "fibroblast of lung": 0.007097497198356369,
+       "fibrocyte": 0.00012451749470800648,
+       "granulocyte": 0.03735524841240194,
+       "granulocyte monocyte progenitor cell": 0.0012451749470800647,
+       "granulocytopoietic cell": 0.005727804756568298,
+       "hematopoietic stem cell": 0.02926161125638152,
+       "hepatocyte": 0.03212551363466567,
+       "immature B cell": 0.0014942099364960778,
+       "interneuron": 0.0004980699788320259,
+       "intestinal crypt stem cell": 0.012949819449632673,
+       "keratinocyte": 0.01942472917444901,
+       "keratinocyte stem cell": 0.007969119661312415,
+       "kidney collecting duct epithelial cell": 0.0021167974100361102,
+       "kidney collecting duct principal cell": 0.0008716224629560453,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0006225874735400323,
+       "large intestine goblet cell": 0.026024156393973354,
+       "late pro-B cell": 0.0021167974100361102,
+       "leukocyte": 0.0014942099364960778,
+       "lung macrophage": 0.00024903498941601296,
+       "macrophage": 0.020918939110945087,
+       "mature NK T cell": 0.006101357240692318,
+       "mature alpha-beta T cell": 0.0027393848835761425,
+       "megakaryocyte-erythroid progenitor cell": 0.00037355248412401944,
+       "mesangial cell": 0.00012451749470800648,
+       "mesenchymal stem cell": 0.02054538662682107,
+       "mesenchymal stem cell of adipose tissue": 0.03299713609762171,
+       "microglial cell": 0.15141327356493586,
+       "monocyte": 0.01768148424853692,
+       "mucus secreting cell": 0.00024903498941601296,
+       "multiciliated columnar cell of tracheobronchial tree": 0.00037355248412401944,
+       "myeloid cell": 0.022288631552733158,
+       "myeloid dendritic cell": 0.004607147304196239,
+       "myeloid leukocyte": 0.0027393848835761425,
+       "naive B cell": 0.01593823932262483,
+       "natural killer cell": 0.016062756817332834,
+       "neuron": 0.006474909724816336,
+       "neutrophil": 0.0027393848835761425,
+       "non-classical monocyte": 0.0004980699788320259,
+       "pericyte": 0.00012451749470800648,
+       "plasma cell": 0.0004980699788320259,
+       "precursor B cell": 0.009961399576640518,
+       "proerythroblast": 0.00012451749470800648,
+       "promonocyte": 0.010334952060764537,
+       "pulmonary alveolar type 2 cell": 0.0024903498941601294,
+       "regular atrial cardiac myocyte": 0.0022413149047441168,
+       "regular ventricular cardiac myocyte": 0.003984559830656207,
+       "regulatory T cell": 0.00037355248412401944,
+       "secretory cell": 0.00024903498941601296,
+       "skeletal muscle satellite cell": 0.03100485618229361,
+       "smooth muscle cell": 0.0017432449259120906,
+       "smooth muscle cell of trachea": 0.00024903498941601296,
+       "thymocyte": 0.017432449259120908,
+       "tuft cell of large intestine": 0.001618727431204084,
+       "vein endothelial cell": 0.0017432449259120906
+      },
+      "24_59_M": {
+       "B cell": 0.03874889198429783,
+       "CD4-positive, alpha-beta T cell": 0.01924781562618716,
+       "CD8-positive, alpha-beta T cell": 0.015828795745219705,
+       "DN4 thymocyte": 0.016208686843104978,
+       "Kupffer cell": 0.00911738634924655,
+       "T cell": 0.01760162086868431,
+       "adventitial cell": 0.002405976953273395,
+       "aortic endothelial cell": 0.0016461947575028492,
+       "basal cell of epidermis": 0.05242497150816766,
+       "basal epithelial cell of tracheobronchial tree": 0.0022793465873116375,
+       "basophil": 0.0003798910978852729,
+       "bladder cell": 0.004558693174623275,
+       "bladder urothelial cell": 0.01709509940483728,
+       "bronchial smooth muscle cell": 0.022540205141192857,
+       "cardiac valve cell": 0.0036722806128909715,
+       "chondrocyte": 0.00012663036596175764,
+       "classical monocyte": 0.003039128783082183,
+       "club cell": 0.0002532607319235153,
+       "dendritic cell": 0.0007597821957705458,
+       "early pro-B cell": 0.0017728251234646068,
+       "endocardial cell": 0.0040521717107762445,
+       "endothelial cell": 0.026465746486007344,
+       "endothelial cell of coronary artery": 0.039888565277953654,
+       "endothelial cell of hepatic sinusoid": 0.001392934025579334,
+       "endothelial cell of lymphatic vessel": 0.0005065214638470306,
+       "enterocyte of epithelium of large intestine": 0.018361403064454856,
+       "enteroendocrine cell": 0.0010130429276940611,
+       "epidermal cell": 0.006584779030011397,
+       "epithelial cell": 0.01278966696213752,
+       "epithelial cell of large intestine": 0.009750538179055338,
+       "epithelial cell of proximal tubule": 0.006078257566164366,
+       "epithelial cell of thymus": 0.0005065214638470306,
+       "fenestrated endothelial cell": 0.0036722806128909715,
+       "fibroblast": 0.014689122451563886,
+       "fibroblast of cardiac tissue": 0.02355324806888692,
+       "fibroblast of lung": 0.005191845004432063,
+       "fibrocyte": 0.0006331518298087882,
+       "granulocyte": 0.030644548562745347,
+       "granulocyte monocyte progenitor cell": 0.0010130429276940611,
+       "granulocytopoietic cell": 0.0016461947575028492,
+       "hematopoietic stem cell": 0.035456502469292134,
+       "hepatocyte": 0.015195643915410915,
+       "immature B cell": 0.0022793465873116375,
+       "intestinal crypt stem cell": 0.014689122451563886,
+       "keratinocyte": 0.010257059642902367,
+       "keratinocyte stem cell": 0.028618462707357226,
+       "kidney collecting duct epithelial cell": 0.0040521717107762445,
+       "kidney collecting duct principal cell": 0.0007597821957705458,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0011396732936558187,
+       "large intestine goblet cell": 0.017221729770799037,
+       "late pro-B cell": 0.0022793465873116375,
+       "lung macrophage": 0.00012663036596175764,
+       "macrophage": 0.020134228187919462,
+       "mature NK T cell": 0.0025326073192351527,
+       "mature alpha-beta T cell": 0.002785868051158668,
+       "mesangial cell": 0.0003798910978852729,
+       "mesenchymal stem cell": 0.017474990502722554,
+       "mesenchymal stem cell of adipose tissue": 0.039255413448144864,
+       "microglial cell": 0.1294162340129163,
+       "monocyte": 0.014815752817525642,
+       "mucus secreting cell": 0.0005065214638470306,
+       "myeloid cell": 0.027098898315816133,
+       "myeloid dendritic cell": 0.006838039761934912,
+       "myeloid leukocyte": 0.011903254400405218,
+       "naive B cell": 0.03811574015448905,
+       "natural killer cell": 0.005824996834240851,
+       "neuron": 0.007597821957705458,
+       "neutrophil": 0.0006331518298087882,
+       "non-classical monocyte": 0.002785868051158668,
+       "plasma cell": 0.0006331518298087882,
+       "plasmacytoid dendritic cell": 0.0003798910978852729,
+       "precursor B cell": 0.005191845004432063,
+       "proerythroblast": 0.0032923895150056984,
+       "professional antigen presenting cell": 0.0007597821957705458,
+       "promonocyte": 0.02127390148157528,
+       "pulmonary alveolar type 2 cell": 0.0002532607319235153,
+       "pulmonary interstitial fibroblast": 0.0003798910978852729,
+       "regular atrial cardiac myocyte": 0.0022793465873116375,
+       "regular ventricular cardiac myocyte": 0.003419019880967456,
+       "regulatory T cell": 0.0022793465873116375,
+       "secretory cell": 0.005571736102317336,
+       "skeletal muscle satellite cell": 0.032164112954286436,
+       "smooth muscle cell": 0.0006331518298087882,
+       "smooth muscle cell of the pulmonary artery": 0.0002532607319235153,
+       "thymocyte": 0.01760162086868431,
+       "tuft cell of large intestine": 0.0040521717107762445,
+       "vein endothelial cell": 0.0012663036596175764
+      },
+      "24_60_M": {
+       "B cell": 0.05758410152041183,
+       "Bergmann glial cell": 0.0010774572010056266,
+       "CD4-positive, alpha-beta T cell": 0.010415419609721059,
+       "CD8-positive, alpha-beta T cell": 0.013408356279181133,
+       "DN4 thymocyte": 0.01328863881240273,
+       "T cell": 0.018077337483538847,
+       "adventitial cell": 0.0017957620016760445,
+       "aortic endothelial cell": 0.00766191787381779,
+       "astrocyte": 0.003711241470130492,
+       "basal cell of epidermis": 0.031246258829163175,
+       "basal epithelial cell of tracheobronchial tree": 0.009218244941937029,
+       "basophil": 0.0011971746677840297,
+       "bladder cell": 0.00011971746677840296,
+       "bladder urothelial cell": 0.0005985873338920149,
+       "brain pericyte": 0.004788698671136119,
+       "bronchial smooth muscle cell": 0.02490123308990782,
+       "cardiac valve cell": 0.0026337842691248653,
+       "chondrocyte": 0.0003591524003352089,
+       "classical monocyte": 0.0013168921345624327,
+       "club cell": 0.00011971746677840296,
+       "dendritic cell": 0.002873219202681671,
+       "early pro-B cell": 0.00023943493355680593,
+       "endocardial cell": 0.006345025739255357,
+       "endothelial cell": 0.04070393870465701,
+       "endothelial cell of coronary artery": 0.03280258589728241,
+       "endothelial cell of lymphatic vessel": 0.0014366096013408356,
+       "enterocyte of epithelium of large intestine": 0.01855620735065246,
+       "enteroendocrine cell": 0.0011971746677840297,
+       "ependymal cell": 0.00047886986711361186,
+       "epidermal cell": 0.0043098288040225065,
+       "epithelial cell": 0.0003591524003352089,
+       "epithelial cell of large intestine": 0.00766191787381779,
+       "epithelial cell of proximal tubule": 0.0049084161379145215,
+       "epithelial cell of thymus": 0.0014366096013408356,
+       "fenestrated endothelial cell": 0.003471806536573686,
+       "fibroblast": 0.010535137076499461,
+       "fibroblast of cardiac tissue": 0.019992816951993297,
+       "fibroblast of lung": 0.003830958936908895,
+       "fibrocyte": 0.0008380222674488208,
+       "granulocyte": 0.026936430025140668,
+       "granulocyte monocyte progenitor cell": 0.00023943493355680593,
+       "granulocytopoietic cell": 0.002873219202681671,
+       "hematopoietic stem cell": 0.04142224350532743,
+       "immature B cell": 0.0003591524003352089,
+       "interneuron": 0.006584460672812163,
+       "intestinal crypt stem cell": 0.0019154794684544474,
+       "keratinocyte": 0.020351969352328504,
+       "keratinocyte stem cell": 0.018316772417095655,
+       "kidney collecting duct epithelial cell": 0.0010774572010056266,
+       "kidney collecting duct principal cell": 0.0022746318687896566,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0020351969352328503,
+       "large intestine goblet cell": 0.010415419609721059,
+       "late pro-B cell": 0.00023943493355680593,
+       "leukocyte": 0.0009577397342272237,
+       "lung macrophage": 0.0003591524003352089,
+       "macrophage": 0.04154196097210583,
+       "mature NK T cell": 0.0008380222674488208,
+       "mature alpha-beta T cell": 0.0031126541362384774,
+       "medium spiny neuron": 0.0003591524003352089,
+       "megakaryocyte-erythroid progenitor cell": 0.0011971746677840297,
+       "mesangial cell": 0.0005985873338920149,
+       "mesenchymal stem cell": 0.017598467616425237,
+       "mesenchymal stem cell of adipose tissue": 0.04980246617981564,
+       "microglial cell": 0.13815395666227703,
+       "monocyte": 0.010774572010056268,
+       "mucus secreting cell": 0.0007183048006704178,
+       "multiciliated columnar cell of tracheobronchial tree": 0.0010774572010056266,
+       "myeloid cell": 0.022028013887226146,
+       "myeloid dendritic cell": 0.004788698671136119,
+       "naive B cell": 0.042499700706333056,
+       "natural killer cell": 0.006823895606368969,
+       "neural stem cell": 0.00011971746677840296,
+       "neuroepithelial stem cell": 0.0008380222674488208,
+       "neuron": 0.011373159343948282,
+       "neutrophil": 0.0020351969352328503,
+       "non-classical monocyte": 0.0007183048006704178,
+       "oligodendrocyte": 0.016042140548305998,
+       "oligodendrocyte precursor cell": 0.0014366096013408356,
+       "pancreatic A cell": 0.004668981204357716,
+       "pancreatic D cell": 0.0019154794684544474,
+       "pancreatic PP cell": 0.0003591524003352089,
+       "pancreatic acinar cell": 0.013168921345624326,
+       "pancreatic ductal cell": 0.006345025739255357,
+       "pancreatic stellate cell": 0.0003591524003352089,
+       "pericyte": 0.00023943493355680593,
+       "precursor B cell": 0.00047886986711361186,
+       "proerythroblast": 0.0008380222674488208,
+       "professional antigen presenting cell": 0.0008380222674488208,
+       "promonocyte": 0.009816832275829043,
+       "pulmonary alveolar type 2 cell": 0.0007183048006704178,
+       "pulmonary neuroendocrine cell": 0.00011971746677840296,
+       "regular atrial cardiac myocyte": 0.009936549742607447,
+       "regular ventricular cardiac myocyte": 0.0027535017359032682,
+       "regulatory T cell": 0.00047886986711361186,
+       "skeletal muscle satellite cell": 0.036394109900634505,
+       "smooth muscle cell": 0.0003591524003352089,
+       "smooth muscle cell of the pulmonary artery": 0.0005985873338920149,
+       "thymocyte": 0.00047886986711361186,
+       "tuft cell of large intestine": 0.0007183048006704178,
+       "type B pancreatic cell": 0.03028851909493595,
+       "vein endothelial cell": 0.0017957620016760445
+      },
+      "24_61_M": {
+       "B cell": 0.07111416781292985,
+       "CD4-positive, alpha-beta T cell": 0.004676753782668501,
+       "CD8-positive, alpha-beta T cell": 0.011691884456671253,
+       "DN4 thymocyte": 0.024484181568088032,
+       "T cell": 0.013342503438789547,
+       "adventitial cell": 0.0012379642365887209,
+       "aortic endothelial cell": 0.008803301237964236,
+       "basal cell of epidermis": 0.041953232462173314,
+       "basal epithelial cell of tracheobronchial tree": 0.0024759284731774417,
+       "basophil": 0.000687757909215956,
+       "bladder cell": 0.0024759284731774417,
+       "bladder urothelial cell": 0.0041265474552957355,
+       "bronchial smooth muscle cell": 0.02627235213204952,
+       "cardiac valve cell": 0.005089408528198074,
+       "chondrocyte": 0.0002751031636863824,
+       "classical monocyte": 0.0005502063273727648,
+       "club cell": 0.0001375515818431912,
+       "dendritic cell": 0.0011004126547455295,
+       "early pro-B cell": 0.0005502063273727648,
+       "endocardial cell": 0.0026134800550206326,
+       "endothelial cell": 0.022558459422283357,
+       "endothelial cell of coronary artery": 0.029160935350756534,
+       "endothelial cell of lymphatic vessel": 0.0020632737276478678,
+       "enterocyte of epithelium of large intestine": 0.014442916093535076,
+       "enteroendocrine cell": 0.003026134800550206,
+       "epidermal cell": 0.004814305364511692,
+       "epithelial cell": 0.0041265474552957355,
+       "epithelial cell of large intestine": 0.009903713892709767,
+       "epithelial cell of proximal tubule": 0.010591471801925722,
+       "epithelial cell of thymus": 0.006052269601100412,
+       "fenestrated endothelial cell": 0.0028885832187070153,
+       "fibroblast": 0.014305364511691884,
+       "fibroblast of cardiac tissue": 0.02530949105914718,
+       "fibroblast of lung": 0.007565337001375516,
+       "fibrocyte": 0.0002751031636863824,
+       "granulocyte": 0.029436038514442917,
+       "granulocyte monocyte progenitor cell": 0.003301237964236589,
+       "granulocytopoietic cell": 0.004676753782668501,
+       "hematopoietic stem cell": 0.043053645116918844,
+       "immature B cell": 0.001513067400275103,
+       "intestinal crypt stem cell": 0.018569463548830812,
+       "keratinocyte": 0.019119669876203577,
+       "keratinocyte stem cell": 0.014030261348005502,
+       "kidney collecting duct epithelial cell": 0.0016506189821182944,
+       "kidney collecting duct principal cell": 0.0038514442916093533,
+       "kidney interstitial fibroblast": 0.002200825309491059,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0011004126547455295,
+       "large intestine goblet cell": 0.009903713892709767,
+       "late pro-B cell": 0.0017881705639614855,
+       "leukocyte": 0.005364511691884457,
+       "lung macrophage": 0.0002751031636863824,
+       "lymphocyte": 0.0002751031636863824,
+       "macrophage": 0.02984869325997249,
+       "mature alpha-beta T cell": 0.0016506189821182944,
+       "megakaryocyte-erythroid progenitor cell": 0.005089408528198074,
+       "mesangial cell": 0.001375515818431912,
+       "mesenchymal stem cell": 0.010866574965612105,
+       "mesenchymal stem cell of adipose tissue": 0.03603851444291609,
+       "microglial cell": 0.12063273727647868,
+       "monocyte": 0.013480055020632738,
+       "mucus secreting cell": 0.0005502063273727648,
+       "multiciliated columnar cell of tracheobronchial tree": 0.001513067400275103,
+       "myeloid cell": 0.039889958734525444,
+       "myeloid dendritic cell": 0.011279229711141679,
+       "naive B cell": 0.05254470426409904,
+       "natural killer cell": 0.0019257221458046766,
+       "neutrophil": 0.0001375515818431912,
+       "non-classical monocyte": 0.0034387895460797797,
+       "pancreatic A cell": 0.0072902338376891335,
+       "pancreatic D cell": 0.0023383768913342504,
+       "pancreatic PP cell": 0.000687757909215956,
+       "pancreatic acinar cell": 0.014305364511691884,
+       "pancreatic ductal cell": 0.0026134800550206326,
+       "pancreatic stellate cell": 0.000687757909215956,
+       "pericyte": 0.0001375515818431912,
+       "precursor B cell": 0.005777166437414031,
+       "proerythroblast": 0.0011004126547455295,
+       "professional antigen presenting cell": 0.0005502063273727648,
+       "promonocyte": 0.011279229711141679,
+       "pulmonary alveolar type 2 cell": 0.000687757909215956,
+       "pulmonary interstitial fibroblast": 0.0005502063273727648,
+       "pulmonary neuroendocrine cell": 0.0001375515818431912,
+       "regular atrial cardiac myocyte": 0.0034387895460797797,
+       "regular ventricular cardiac myocyte": 0.0026134800550206326,
+       "regulatory T cell": 0.0001375515818431912,
+       "secretory cell": 0.012242090784044016,
+       "skeletal muscle satellite cell": 0.023108665749656122,
+       "smooth muscle cell": 0.0011004126547455295,
+       "smooth muscle cell of the pulmonary artery": 0.0002751031636863824,
+       "smooth muscle cell of trachea": 0.0008253094910591472,
+       "thymocyte": 0.007152682255845942,
+       "tuft cell of large intestine": 0.0004126547455295736,
+       "type B pancreatic cell": 0.027510316368638238,
+       "vein endothelial cell": 0.0019257221458046766
+      },
+      "3_10_M": {
+       "B cell": 0.03768636112644948,
+       "Bergmann glial cell": 0.001518498067366096,
+       "CD4-positive, alpha-beta T cell": 0.005245720596355604,
+       "CD8-positive, alpha-beta T cell": 0.0028989508558807287,
+       "T cell": 0.00842076200993926,
+       "adventitial cell": 0.0028989508558807287,
+       "aortic endothelial cell": 0.012424075096631695,
+       "astrocyte": 0.01725565985643291,
+       "basal cell of epidermis": 0.051490889011595806,
+       "basal epithelial cell of tracheobronchial tree": 0.003036996134732192,
+       "basophil": 0.0005521811154058532,
+       "bladder cell": 0.014632799558255107,
+       "bladder urothelial cell": 0.030508006626173385,
+       "brain pericyte": 0.011871893981225842,
+       "bronchial smooth muscle cell": 0.001932633903920486,
+       "cardiac valve cell": 0.002484815019326339,
+       "chondrocyte": 0.013114301490889012,
+       "classical monocyte": 0.003036996134732192,
+       "early pro-B cell": 0.0004141358365543898,
+       "endocardial cell": 0.0020706791827719492,
+       "endothelial cell": 0.04555494202098288,
+       "endothelial cell of coronary artery": 0.011733848702374379,
+       "endothelial cell of lymphatic vessel": 0.000966316951960243,
+       "enterocyte of epithelium of large intestine": 0.022915516289342904,
+       "enteroendocrine cell": 0.0013804527885146328,
+       "ependymal cell": 0.0006902263942573164,
+       "epidermal cell": 0.00842076200993926,
+       "epithelial cell": 0.002484815019326339,
+       "epithelial cell of large intestine": 0.024986195472114853,
+       "epithelial cell of proximal tubule": 0.0011043622308117063,
+       "fenestrated endothelial cell": 0.0008282716731087797,
+       "fibroblast": 0.013666482606294864,
+       "fibroblast of cardiac tissue": 0.017393705135284373,
+       "fibroblast of lung": 0.0012424075096631696,
+       "granulocyte": 0.02995582551076753,
+       "granulocyte monocyte progenitor cell": 0.004279403644395362,
+       "granulocytopoietic cell": 0.008144671452236334,
+       "hematopoietic stem cell": 0.04541689674213142,
+       "immature B cell": 0.013252346769740474,
+       "intermediate monocyte": 0.0002760905577029266,
+       "interneuron": 0.0020706791827719492,
+       "intestinal crypt stem cell": 0.012424075096631695,
+       "keratinocyte": 0.013804527885146328,
+       "keratinocyte stem cell": 0.04099944781888459,
+       "kidney collecting duct epithelial cell": 0.002484815019326339,
+       "kidney collecting duct principal cell": 0.0006902263942573164,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0016565433462175593,
+       "large intestine goblet cell": 0.008696852567642186,
+       "late pro-B cell": 0.006764218663721701,
+       "leukocyte": 0.0033130866924351186,
+       "macrophage": 0.015046935394809497,
+       "mature alpha-beta T cell": 0.003865267807840972,
+       "medium spiny neuron": 0.0022087244616234127,
+       "megakaryocyte-erythroid progenitor cell": 0.0001380452788514633,
+       "mesangial cell": 0.0008282716731087797,
+       "mesenchymal stem cell": 0.01007730535615682,
+       "mesenchymal stem cell of adipose tissue": 0.018360022087244618,
+       "microglial cell": 0.13776918829376036,
+       "monocyte": 0.00800662617338487,
+       "mucus secreting cell": 0.0008282716731087797,
+       "multiciliated columnar cell of tracheobronchial tree": 0.0004141358365543898,
+       "myeloid cell": 0.023743787962451683,
+       "naive B cell": 0.015046935394809497,
+       "natural killer cell": 0.007454445057979017,
+       "neural stem cell": 0.005797901711761457,
+       "neuroepithelial stem cell": 0.0005521811154058532,
+       "neuron": 0.006350082827167311,
+       "neutrophil": 0.0006902263942573164,
+       "non-classical monocyte": 0.0017945886250690225,
+       "oligodendrocyte": 0.05577029265599116,
+       "oligodendrocyte precursor cell": 0.006350082827167311,
+       "pancreatic A cell": 0.01642738818332413,
+       "pancreatic D cell": 0.004831584759801215,
+       "pancreatic PP cell": 0.0004141358365543898,
+       "pancreatic acinar cell": 0.005521811154058531,
+       "pancreatic ductal cell": 0.00800662617338487,
+       "pancreatic stellate cell": 0.0011043622308117063,
+       "pericyte": 0.0001380452788514633,
+       "precursor B cell": 0.024157923799006074,
+       "proerythroblast": 0.0012424075096631696,
+       "professional antigen presenting cell": 0.0008282716731087797,
+       "promonocyte": 0.008282716731087797,
+       "pulmonary alveolar type 2 cell": 0.0002760905577029266,
+       "pulmonary interstitial fibroblast": 0.0008282716731087797,
+       "regular atrial cardiac myocyte": 0.0017945886250690225,
+       "secretory cell": 0.009939260077305357,
+       "skeletal muscle satellite cell": 0.00966316951960243,
+       "smooth muscle cell": 0.0004141358365543898,
+       "smooth muscle cell of trachea": 0.0005521811154058532,
+       "tuft cell of large intestine": 0.0011043622308117063,
+       "type B pancreatic cell": 0.012286029817780231
+      },
+      "3_10_M/3_11_M": {
+       "endocardial cell": 0.015873015873015872,
+       "endothelial cell of coronary artery": 0.031746031746031744,
+       "fibroblast of cardiac tissue": 0.015873015873015872,
+       "monocyte": 0.06349206349206349,
+       "regular atrial cardiac myocyte": 0.6031746031746031,
+       "regular ventricular cardiac myocyte": 0.25396825396825395,
+       "smooth muscle cell": 0.015873015873015872
+      },
+      "3_11_M": {
+       "B cell": 0.09824469478648153,
+       "Bergmann glial cell": 0.0005239717055279015,
+       "CD4-positive, alpha-beta T cell": 0.015981137018600995,
+       "CD8-positive, alpha-beta T cell": 0.009693476552266178,
+       "DN4 thymocyte": 0.03170028818443804,
+       "Kupffer cell": 0.008645533141210375,
+       "T cell": 0.009693476552266178,
+       "adventitial cell": 0.006025674613570867,
+       "aortic endothelial cell": 0.010217448257794078,
+       "astrocyte": 0.0018339009693476552,
+       "basal cell of epidermis": 0.020958868221116058,
+       "brain pericyte": 0.004453759496987163,
+       "bronchial smooth muscle cell": 0.011527377521613832,
+       "cardiac valve cell": 0.005763688760806916,
+       "classical monocyte": 0.0013099292638197536,
+       "club cell": 0.00026198585276395077,
+       "endocardial cell": 0.0026198585276395073,
+       "endothelial cell": 0.09248100602567462,
+       "endothelial cell of coronary artery": 0.03143830233167409,
+       "endothelial cell of hepatic sinusoid": 0.04270369400052397,
+       "endothelial cell of lymphatic vessel": 0.00026198585276395077,
+       "enterocyte of epithelium of large intestine": 0.02515064186533927,
+       "enteroendocrine cell": 0.002095886822111606,
+       "epidermal cell": 0.007335603877390621,
+       "epithelial cell": 0.001047943411055803,
+       "epithelial cell of large intestine": 0.03851192035630076,
+       "epithelial cell of proximal tubule": 0.002881844380403458,
+       "epithelial cell of thymus": 0.00026198585276395077,
+       "fenestrated endothelial cell": 0.006025674613570867,
+       "fibroblast of cardiac tissue": 0.040345821325648415,
+       "fibroblast of lung": 0.004977731202515065,
+       "granulocyte": 0.0005239717055279015,
+       "hepatocyte": 0.038773906209064714,
+       "intestinal crypt stem cell": 0.007597589730154571,
+       "keratinocyte stem cell": 0.061304689546764476,
+       "kidney collecting duct epithelial cell": 0.009431490699502228,
+       "kidney collecting duct principal cell": 0.002881844380403458,
+       "kidney loop of Henle ascending limb epithelial cell": 0.00707361802462667,
+       "large intestine goblet cell": 0.008907518993974326,
+       "macrophage": 0.012575320932669635,
+       "mature NK T cell": 0.007335603877390621,
+       "mesangial cell": 0.0015719151165837044,
+       "mesenchymal stem cell": 0.020958868221116058,
+       "mesenchymal stem cell of adipose tissue": 0.09614880796436992,
+       "monocyte": 0.016505108724128897,
+       "multiciliated columnar cell of tracheobronchial tree": 0.00026198585276395077,
+       "myeloid cell": 0.04689546764474718,
+       "myeloid leukocyte": 0.003143830233167409,
+       "natural killer cell": 0.0039297877914592615,
+       "neural stem cell": 0.0015719151165837044,
+       "neuron": 0.002881844380403458,
+       "neutrophil": 0.0013099292638197536,
+       "non-classical monocyte": 0.0005239717055279015,
+       "oligodendrocyte": 0.01100340581608593,
+       "oligodendrocyte precursor cell": 0.006287660466334818,
+       "pericyte": 0.0005239717055279015,
+       "proerythroblast": 0.0026198585276395073,
+       "professional antigen presenting cell": 0.003143830233167409,
+       "pulmonary alveolar type 1 cell": 0.0005239717055279015,
+       "pulmonary alveolar type 2 cell": 0.0015719151165837044,
+       "pulmonary interstitial fibroblast": 0.002095886822111606,
+       "regular atrial cardiac myocyte": 0.004453759496987163,
+       "secretory cell": 0.001047943411055803,
+       "skeletal muscle satellite cell": 0.055541000785957556,
+       "smooth muscle cell": 0.0015719151165837044,
+       "smooth muscle cell of the pulmonary artery": 0.00026198585276395077,
+       "thymocyte": 0.018600995546240503,
+       "tuft cell of large intestine": 0.002881844380403458,
+       "vein endothelial cell": 0.0007859575582918522
+      },
+      "3_8_M": {
+       "B cell": 0.04737660868335455,
+       "Bergmann glial cell": 0.000565690849950502,
+       "CD4-positive, alpha-beta T cell": 0.008061094611794654,
+       "CD8-positive, alpha-beta T cell": 0.005091217649554518,
+       "DN4 thymocyte": 0.004949794937066893,
+       "T cell": 0.01103097157403479,
+       "adventitial cell": 0.006364022061943148,
+       "astrocyte": 0.009051053599208032,
+       "basal cell of epidermis": 0.05402347617027294,
+       "basal epithelial cell of tracheobronchial tree": 0.0008485362749257531,
+       "basophil": 0.0008485362749257531,
+       "bladder cell": 0.02800169707254985,
+       "bladder urothelial cell": 0.015980766511101682,
+       "brain pericyte": 0.0021213406873143827,
+       "bronchial smooth muscle cell": 0.008343940036769906,
+       "cardiac valve cell": 0.005798331211992646,
+       "chondrocyte": 0.0015556498373638806,
+       "classical monocyte": 0.001131381699901004,
+       "early pro-B cell": 0.0008485362749257531,
+       "endocardial cell": 0.0019799179748267574,
+       "endothelial cell": 0.034789987271955876,
+       "endothelial cell of coronary artery": 0.021779097723094328,
+       "endothelial cell of lymphatic vessel": 0.003111299674727761,
+       "enterocyte of epithelium of large intestine": 0.023193324847970584,
+       "enteroendocrine cell": 0.0009899589874133787,
+       "epidermal cell": 0.0073539810493565266,
+       "epithelial cell": 0.0007071135624381275,
+       "epithelial cell of large intestine": 0.014142271248762552,
+       "epithelial cell of proximal tubule": 0.002545608824777259,
+       "epithelial cell of thymus": 0.0001414227124876255,
+       "fenestrated endothelial cell": 0.002545608824777259,
+       "fibroblast": 0.014566539386225428,
+       "fibroblast of cardiac tissue": 0.045113845283552535,
+       "fibroblast of lung": 0.0009899589874133787,
+       "fibrocyte": 0.002687031537264885,
+       "granulocyte": 0.020647716023193326,
+       "granulocyte monocyte progenitor cell": 0.0016970725498515061,
+       "granulocytopoietic cell": 0.009051053599208032,
+       "hematopoietic stem cell": 0.04780087682081742,
+       "immature B cell": 0.011172394286522416,
+       "intermediate monocyte": 0.000565690849950502,
+       "interneuron": 0.001131381699901004,
+       "intestinal crypt stem cell": 0.02333474756045821,
+       "keratinocyte": 0.010889548861547164,
+       "keratinocyte stem cell": 0.03125441945976524,
+       "kidney collecting duct epithelial cell": 0.002545608824777259,
+       "kidney collecting duct principal cell": 0.0009899589874133787,
+       "kidney loop of Henle ascending limb epithelial cell": 0.000565690849950502,
+       "large intestine goblet cell": 0.006505444774430774,
+       "late pro-B cell": 0.011738085136472917,
+       "leukocyte": 0.0021213406873143827,
+       "macrophage": 0.013435157686324424,
+       "mature alpha-beta T cell": 0.004384104087116391,
+       "medium spiny neuron": 0.007778249186819403,
+       "megakaryocyte-erythroid progenitor cell": 0.000282845424975251,
+       "mesangial cell": 0.000282845424975251,
+       "mesenchymal stem cell": 0.010606703436571913,
+       "mesenchymal stem cell of adipose tissue": 0.04695234054589167,
+       "microglial cell": 0.08216659595531042,
+       "monocyte": 0.011738085136472917,
+       "mucus secreting cell": 0.000565690849950502,
+       "multiciliated columnar cell of tracheobronchial tree": 0.00042426813746287653,
+       "myeloid cell": 0.013010889548861548,
+       "myeloid dendritic cell": 0.0001414227124876255,
+       "naive B cell": 0.021779097723094328,
+       "natural killer cell": 0.010041012586621411,
+       "neural stem cell": 0.0024041861122896338,
+       "neuron": 0.0019799179748267574,
+       "neutrophil": 0.0001414227124876255,
+       "non-classical monocyte": 0.002545608824777259,
+       "oligodendrocyte": 0.04808372224579267,
+       "oligodendrocyte precursor cell": 0.004949794937066893,
+       "pancreatic A cell": 0.009051053599208032,
+       "pancreatic D cell": 0.006646867486918399,
+       "pancreatic PP cell": 0.003252722387215387,
+       "pancreatic acinar cell": 0.007212558336868901,
+       "pancreatic ductal cell": 0.0067882901994060245,
+       "pancreatic stellate cell": 0.0021213406873143827,
+       "pericyte": 0.00042426813746287653,
+       "precursor B cell": 0.014425116673737802,
+       "proerythroblast": 0.0016970725498515061,
+       "professional antigen presenting cell": 0.002545608824777259,
+       "promonocyte": 0.009051053599208032,
+       "pulmonary alveolar type 2 cell": 0.0016970725498515061,
+       "pulmonary interstitial fibroblast": 0.0012728044123886295,
+       "regular atrial cardiac myocyte": 0.000565690849950502,
+       "respiratory basal cell": 0.0001414227124876255,
+       "secretory cell": 0.010323858011596663,
+       "skeletal muscle satellite cell": 0.02390043841040871,
+       "smooth muscle cell": 0.000565690849950502,
+       "smooth muscle cell of the pulmonary artery": 0.0008485362749257531,
+       "smooth muscle cell of trachea": 0.003111299674727761,
+       "thymocyte": 0.017112148211002688,
+       "tuft cell of large intestine": 0.001131381699901004,
+       "type B pancreatic cell": 0.02149625229811908,
+       "vein endothelial cell": 0.000282845424975251
+      },
+      "3_9_M": {
+       "B cell": 0.036815068493150686,
+       "Bergmann glial cell": 0.0017123287671232876,
+       "CD4-positive, alpha-beta T cell": 0.010844748858447488,
+       "CD8-positive, alpha-beta T cell": 0.0059931506849315065,
+       "DN4 thymocyte": 0.013841324200913241,
+       "Kupffer cell": 0.001997716894977169,
+       "T cell": 0.009845890410958904,
+       "adventitial cell": 0.006278538812785388,
+       "astrocyte": 0.02226027397260274,
+       "basal cell of epidermis": 0.0526541095890411,
+       "basal epithelial cell of tracheobronchial tree": 0.001569634703196347,
+       "basophil": 0.0005707762557077625,
+       "bladder cell": 0.03096461187214612,
+       "bladder urothelial cell": 0.0175513698630137,
+       "brain pericyte": 0.003995433789954338,
+       "bronchial smooth muscle cell": 0.005279680365296803,
+       "cardiac valve cell": 0.006135844748858447,
+       "chondrocyte": 0.0004280821917808219,
+       "classical monocyte": 0.0008561643835616438,
+       "club cell": 0.00028538812785388126,
+       "early pro-B cell": 0.0014269406392694063,
+       "endocardial cell": 0.0012842465753424657,
+       "endothelial cell": 0.04209474885844749,
+       "endothelial cell of coronary artery": 0.02468607305936073,
+       "endothelial cell of hepatic sinusoid": 0.0037100456621004564,
+       "endothelial cell of lymphatic vessel": 0.0025684931506849314,
+       "enterocyte of epithelium of large intestine": 0.027825342465753425,
+       "enteroendocrine cell": 0.0008561643835616438,
+       "ependymal cell": 0.00014269406392694063,
+       "epidermal cell": 0.004280821917808219,
+       "epithelial cell": 0.001569634703196347,
+       "epithelial cell of large intestine": 0.012699771689497716,
+       "epithelial cell of proximal tubule": 0.0008561643835616438,
+       "epithelial cell of thymus": 0.0004280821917808219,
+       "fenestrated endothelial cell": 0.0012842465753424657,
+       "fibroblast": 0.018692922374429224,
+       "fibroblast of cardiac tissue": 0.03281963470319635,
+       "fibroblast of lung": 0.001141552511415525,
+       "fibrocyte": 0.0008561643835616438,
+       "granulocyte": 0.026113013698630137,
+       "granulocyte monocyte progenitor cell": 0.001141552511415525,
+       "granulocytopoietic cell": 0.006135844748858447,
+       "hematopoietic stem cell": 0.04123858447488585,
+       "hepatocyte": 0.013127853881278538,
+       "immature B cell": 0.0091324200913242,
+       "intermediate monocyte": 0.0004280821917808219,
+       "interneuron": 0.00442351598173516,
+       "intestinal crypt stem cell": 0.0182648401826484,
+       "keratinocyte": 0.012271689497716894,
+       "keratinocyte stem cell": 0.03809931506849315,
+       "kidney collecting duct epithelial cell": 0.0017123287671232876,
+       "kidney collecting duct principal cell": 0.0004280821917808219,
+       "kidney loop of Henle ascending limb epithelial cell": 0.0008561643835616438,
+       "large intestine goblet cell": 0.005707762557077625,
+       "late pro-B cell": 0.011558219178082191,
+       "macrophage": 0.014269406392694063,
+       "mature NK T cell": 0.0005707762557077625,
+       "mature alpha-beta T cell": 0.001997716894977169,
+       "medium spiny neuron": 0.0009988584474885844,
+       "megakaryocyte-erythroid progenitor cell": 0.00014269406392694063,
+       "mesangial cell": 0.0005707762557077625,
+       "mesenchymal stem cell": 0.0024257990867579907,
+       "mesenchymal stem cell of adipose tissue": 0.05607876712328767,
+       "microglial cell": 0.096175799086758,
+       "monocyte": 0.015268264840182648,
+       "mucus secreting cell": 0.0021404109589041095,
+       "multiciliated columnar cell of tracheobronchial tree": 0.0004280821917808219,
+       "myeloid cell": 0.016409817351598174,
+       "myeloid dendritic cell": 0.00014269406392694063,
+       "myeloid leukocyte": 0.0007134703196347032,
+       "naive B cell": 0.019691780821917807,
+       "natural killer cell": 0.007420091324200913,
+       "neural stem cell": 0.0009988584474885844,
+       "neuron": 0.00898972602739726,
+       "neutrophil": 0.0005707762557077625,
+       "non-classical monocyte": 0.0018550228310502282,
+       "oligodendrocyte": 0.0639269406392694,
+       "oligodendrocyte precursor cell": 0.007134703196347032,
+       "pericyte": 0.0005707762557077625,
+       "precursor B cell": 0.009845890410958904,
+       "proerythroblast": 0.0009988584474885844,
+       "professional antigen presenting cell": 0.0004280821917808219,
+       "promonocyte": 0.00684931506849315,
+       "pulmonary alveolar type 2 cell": 0.003567351598173516,
+       "pulmonary interstitial fibroblast": 0.001569634703196347,
+       "regular atrial cardiac myocyte": 0.0005707762557077625,
+       "secretory cell": 0.009275114155251141,
+       "skeletal muscle satellite cell": 0.005850456621004566,
+       "smooth muscle cell": 0.0021404109589041095,
+       "smooth muscle cell of the pulmonary artery": 0.0009988584474885844,
+       "smooth muscle cell of trachea": 0.0048515981735159815,
+       "thymocyte": 0.03281963470319635,
+       "tuft cell of large intestine": 0.0004280821917808219,
+       "vein endothelial cell": 0.0005707762557077625
+      }
+     }
+    },
+    "tissue": {
+     "tvd": 0.20269188866159277,
+     "tvd_p": 0.9206349206349206,
+     "relabelings": 126,
+     "by_level": [
+      {
+       "level": "heart",
+       "young": 0.26241924063516225,
+       "old": 0.10133860750346507,
+       "diff": -0.16108063313169718,
+       "p": 0.9682539682539683
+      },
+      {
+       "level": "bone marrow",
+       "young": 0.0961445728420855,
+       "old": 0.1483423952692517,
+       "diff": 0.052197822427166196,
+       "p": 0.40476190476190477
+      },
+      {
+       "level": "lung",
+       "young": 0.021723292034658663,
+       "old": 0.05984993373280831,
+       "diff": 0.038126641698149645,
+       "p": 0.007936507936507936
+      },
+      {
+       "level": "limb muscle",
+       "young": 0.0180963288577067,
+       "old": 0.03918504243140272,
+       "diff": 0.021088713573696023,
+       "p": 0.047619047619047616
+      },
+      {
+       "level": "skin of body",
+       "young": 0.0546808365044672,
+       "old": 0.0355932080109724,
+       "diff": -0.019087628493494803,
+       "p": 0.30952380952380953
+      },
+      {
+       "level": "brain",
+       "young": 0.14692945021890763,
+       "old": 0.1626855074105194,
+       "diff": 0.015756057191611772,
+       "p": 0.8095238095238095
+      },
+      {
+       "level": "thymus",
+       "young": 0.024356383051631635,
+       "old": 0.03967935327339624,
+       "diff": 0.015322970221764601,
+       "p": 0.30158730158730157
+      },
+      {
+       "level": "tongue",
+       "young": 0.02856981691211728,
+       "old": 0.0431635603313216,
+       "diff": 0.01459374341920432,
+       "p": 0.4365079365079365
+      },
+      {
+       "level": "bladder lumen",
+       "young": 0.027527850300647964,
+       "old": 0.013749682425644375,
+       "diff": -0.01377816787500359,
+       "p": 0.35714285714285715
+      },
+      {
+       "level": "brown adipose tissue",
+       "young": 0.016028648155853788,
+       "old": 0.026996535037085427,
+       "diff": 0.01096788688123164,
+       "p": 0.23809523809523808
+      },
+      {
+       "level": "trachea",
+       "young": 0.021641399634739527,
+       "old": 0.03157847766330431,
+       "diff": 0.009937078028564781,
+       "p": 0.42857142857142855
+      },
+      {
+       "level": "kidney",
+       "young": 0.012124869803859135,
+       "old": 0.021202551026146422,
+       "diff": 0.009077681222287286,
+       "p": 0.2777777777777778
+      },
+      {
+       "level": "pancreas",
+       "young": 0.02390971171085482,
+       "old": 0.030774815726494827,
+       "diff": 0.006865104015640007,
+       "p": 0.7619047619047619
+      },
+      {
+       "level": "gonadal fat pad",
+       "young": 0.029647589706822707,
+       "old": 0.03399256738662716,
+       "diff": 0.004344977679804456,
+       "p": 0.8253968253968254
+      },
+      {
+       "level": "liver",
+       "young": 0.026287633549980084,
+       "old": 0.02974306208371016,
+       "diff": 0.0034554285337300775,
+       "p": 0.9206349206349206
+      },
+      {
+       "level": "spleen",
+       "young": 0.0382240170679053,
+       "old": 0.03492737657096584,
+       "diff": -0.0032966404969394583,
+       "p": 0.8095238095238095
+      },
+      {
+       "level": "large intestine",
+       "young": 0.06446362496756142,
+       "old": 0.06236981256671545,
+       "diff": -0.002093812400845968,
+       "p": 0.9682539682539683
+      },
+      {
+       "level": "aorta",
+       "young": 0.009092689587822753,
+       "old": 0.007155080866445584,
+       "diff": -0.0019376087213771693,
+       "p": 0.5952380952380952
+      },
+      {
+       "level": "diaphragm",
+       "young": 0.020828446716113662,
+       "old": 0.0217862304848556,
+       "diff": 0.0009577837687419384,
+       "p": 0.9682539682539683
+      },
+      {
+       "level": "mesenteric fat pad",
+       "young": 0.024769846841477698,
+       "old": 0.02389371498174355,
+       "diff": -0.0008761318597341472,
+       "p": 0.9761904761904762
+      },
+      {
+       "level": "subcutaneous adipose tissue",
+       "young": 0.032533750899624285,
+       "old": 0.03199248521712385,
+       "diff": -0.0005412656825004372,
+       "p": 0.9523809523809523
+      }
+     ],
+     "per_unit": {
+      "24_58_M": {
+       "aorta": 0.003112937367700162,
+       "bladder lumen": 0.026024156393973354,
+       "bone marrow": 0.1368447266840991,
+       "brain": 0.16361598804632052,
+       "brown adipose tissue": 0.028389988793425476,
+       "diaphragm": 0.025277051425725314,
+       "gonadal fat pad": 0.03162744365583364,
+       "heart": 0.10982443033246171,
+       "kidney": 0.01656082679616486,
+       "large intestine": 0.06985431453119163,
+       "limb muscle": 0.03747976590710995,
+       "liver": 0.06325488731166728,
+       "lung": 0.05316897024031877,
+       "mesenteric fat pad": 0.03349520607645374,
+       "skin of body": 0.019300211679741004,
+       "spleen": 0.043083053168970244,
+       "subcutaneous adipose tissue": 0.02714481384634541,
+       "thymus": 0.037728800896525964,
+       "tongue": 0.04146432573776616,
+       "trachea": 0.0327481011082057
+      },
+      "24_59_M": {
+       "aorta": 0.0040521717107762445,
+       "bladder lumen": 0.021653792579460554,
+       "bone marrow": 0.15195643915410917,
+       "brain": 0.1425857920729391,
+       "brown adipose tissue": 0.020640749651766495,
+       "diaphragm": 0.032417373686209956,
+       "gonadal fat pad": 0.03469672027352159,
+       "heart": 0.09421299227554768,
+       "kidney": 0.02355324806888692,
+       "large intestine": 0.07065974420666075,
+       "limb muscle": 0.0331771558819805,
+       "liver": 0.05571736102317336,
+       "lung": 0.05546410029124984,
+       "mesenteric fat pad": 0.03191085222236292,
+       "skin of body": 0.05673040395086742,
+       "spleen": 0.025959225022160314,
+       "subcutaneous adipose tissue": 0.0364695453969862,
+       "thymus": 0.03520324173736862,
+       "tongue": 0.04229454223122705,
+       "trachea": 0.030644548562745347
+      },
+      "24_60_M": {
+       "aorta": 0.010175984676164252,
+       "bladder lumen": 0.0007183048006704178,
+       "bone marrow": 0.13923141386328267,
+       "brain": 0.217167484736023,
+       "brown adipose tissue": 0.02621812522447025,
+       "diaphragm": 0.02945049682748713,
+       "gonadal fat pad": 0.03016880162815755,
+       "heart": 0.08811205554890458,
+       "kidney": 0.017598467616425237,
+       "large intestine": 0.0404645037711002,
+       "limb muscle": 0.03986591643720819,
+       "lung": 0.056626361786184604,
+       "mesenteric fat pad": 0.03016880162815755,
+       "pancreas": 0.06285167005866156,
+       "skin of body": 0.03388004309828804,
+       "spleen": 0.041781395905662634,
+       "subcutaneous adipose tissue": 0.025978690290913445,
+       "thymus": 0.03447863043218005,
+       "tongue": 0.041302526038549024,
+       "trachea": 0.03376032563150964
+      },
+      "24_61_M": {
+       "aorta": 0.011279229711141679,
+       "bladder lumen": 0.006602475928473178,
+       "bone marrow": 0.16533700137551582,
+       "brain": 0.12737276478679505,
+       "brown adipose tissue": 0.0327372764786795,
+       "gonadal fat pad": 0.03947730398899588,
+       "heart": 0.11320495185694636,
+       "kidney": 0.027097661623108667,
+       "large intestine": 0.06850068775790921,
+       "limb muscle": 0.046217331499312245,
+       "lung": 0.07414030261348005,
+       "pancreas": 0.060247592847317746,
+       "skin of body": 0.032462173314993126,
+       "spleen": 0.02888583218707015,
+       "subcutaneous adipose tissue": 0.038376891334250346,
+       "thymus": 0.05130674002751032,
+       "tongue": 0.04759284731774415,
+       "trachea": 0.029160935350756534
+      },
+      "3_10_M": {
+       "aorta": 0.013390392048591939,
+       "bladder lumen": 0.04514080618442849,
+       "bone marrow": 0.1725565985643291,
+       "brain": 0.27829928216454997,
+       "brown adipose tissue": 0.011457758144671452,
+       "diaphragm": 0.02056874654886803,
+       "gonadal fat pad": 0.03078409718387631,
+       "heart": 0.044036443953616784,
+       "kidney": 0.008696852567642186,
+       "large intestine": 0.08144671452236334,
+       "limb muscle": 0.012286029817780231,
+       "lung": 0.016151297625621203,
+       "pancreas": 0.05590833793484263,
+       "skin of body": 0.06957482054113749,
+       "spleen": 0.03161236885698509,
+       "subcutaneous adipose tissue": 0.02526228602981778,
+       "tongue": 0.045969077857537274,
+       "trachea": 0.036858089453340695
+      },
+      "3_10_M/3_11_M": {
+       "heart": 1.0
+      },
+      "3_11_M": {
+       "aorta": 0.013623264343725438,
+       "brain": 0.06602043489651559,
+       "brown adipose tissue": 0.040607807178412364,
+       "diaphragm": 0.08357348703170028,
+       "gonadal fat pad": 0.04584752423369138,
+       "heart": 0.10400838354728845,
+       "kidney": 0.035892061828661254,
+       "large intestine": 0.0861933455593398,
+       "limb muscle": 0.019386953104532357,
+       "liver": 0.11003405816085932,
+       "lung": 0.03196227403720199,
+       "mesenteric fat pad": 0.06942625098244695,
+       "skin of body": 0.08959916164527115,
+       "spleen": 0.08514540214828399,
+       "subcutaneous adipose tissue": 0.06733036416033535,
+       "thymus": 0.051349227141734344
+      },
+      "3_8_M": {
+       "aorta": 0.011172394286522416,
+       "bladder lumen": 0.043982463583651536,
+       "bone marrow": 0.1646160373355961,
+       "brain": 0.1680101824352991,
+       "brown adipose tissue": 0.0036769905246782633,
+       "gonadal fat pad": 0.03464856455946825,
+       "heart": 0.08457078206760006,
+       "kidney": 0.009899589874133786,
+       "large intestine": 0.07962098713053316,
+       "limb muscle": 0.045538113421015415,
+       "lung": 0.03167868759722812,
+       "mesenteric fat pad": 0.025456088247772592,
+       "pancreas": 0.06364022061943148,
+       "skin of body": 0.05515485787017395,
+       "spleen": 0.045538113421015415,
+       "subcutaneous adipose tissue": 0.03026446047235186,
+       "thymus": 0.02234478857304483,
+       "tongue": 0.04864941309574318,
+       "trachea": 0.03153726488474049
+      },
+      "3_9_M": {
+       "aorta": 0.007277397260273972,
+       "bladder lumen": 0.048515981735159815,
+       "bone marrow": 0.1435502283105023,
+       "brain": 0.2223173515981735,
+       "brown adipose tissue": 0.02440068493150685,
+       "gonadal fat pad": 0.036957762557077625,
+       "heart": 0.07948059360730593,
+       "kidney": 0.006135844748858447,
+       "large intestine": 0.07505707762557078,
+       "limb muscle": 0.013270547945205479,
+       "liver": 0.021404109589041095,
+       "lung": 0.028824200913242008,
+       "mesenteric fat pad": 0.02896689497716895,
+       "skin of body": 0.059075342465753425,
+       "spleen": 0.028824200913242008,
+       "subcutaneous adipose tissue": 0.03981164383561644,
+       "thymus": 0.048087899543379,
+       "tongue": 0.04823059360730594,
+       "trachea": 0.03981164383561644
+      }
+     }
+    },
+    "within": {
+     "mi_3bin": {
+      "types": {
+       "B cell": {
+        "values": {
+         "24_58_M": 0.00015984649262136867,
+         "24_59_M": 0.0005291810024516731,
+         "24_60_M": 0.0038797564757263045,
+         "24_61_M": 0.0030469716390436477,
+         "3_10_M": 0.002002832962285515,
+         "3_11_M": 0.0017973633570215939,
+         "3_8_M": 0.005698226192797732,
+         "3_9_M": 0.003450823007670836
+        },
+        "delta": -0.0013333724774831708,
+        "p": 0.34285714285714286,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "CD4-positive, alpha-beta T cell": {
+        "values": {
+         "24_58_M": 0.0013715162676772221,
+         "24_59_M": 0.017558180923005345,
+         "24_60_M": 0.03327000747079696,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0834343133627693,
+         "3_11_M": 0.05011990215404391,
+         "3_8_M": 0.049694127593660244,
+         "3_9_M": 0.0060232457322225985
+        },
+        "delta": -0.03426797104530413,
+        "p": 0.08571428571428572,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "CD8-positive, alpha-beta T cell": {
+        "values": {
+         "24_58_M": 0.0057550973826871465,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.02702655101472076,
+         "3_10_M": 0.01989832159516293,
+         "3_11_M": 0.0057550973826871465,
+         "3_8_M": 0.006101301321901202,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0002567320244141573,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "DN4 thymocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0016292662376533615,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.017142044929997637,
+         "3_8_M": 0.0,
+         "3_9_M": 0.010176818404038116
+        },
+        "delta": -0.008698971218598578,
+        "p": 0.14285714285714285,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "T cell": {
+        "values": {
+         "24_58_M": 0.0020503284209995943,
+         "24_59_M": 0.0,
+         "24_60_M": 0.020750213308443382,
+         "24_61_M": 0.03836800715466348,
+         "3_10_M": 0.02917095269132372,
+         "3_11_M": 0.008085220972438866,
+         "3_8_M": 0.02388119399782957,
+         "3_9_M": 0.04044610521119771
+        },
+        "delta": -0.010103730997170855,
+        "p": 0.4,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "basal cell of epidermis": {
+        "values": {
+         "24_58_M": 0.0007919565211583195,
+         "24_59_M": 0.0024115107393294635,
+         "24_60_M": 0.0037554951147953895,
+         "24_61_M": 0.001973303527586999,
+         "3_10_M": 0.005104058175299283,
+         "3_11_M": 0.005658210373738178,
+         "3_8_M": 0.004455486647889823,
+         "3_9_M": 0.007635356385003831
+        },
+        "delta": -0.0034802114197652356,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "bladder urothelial cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.004239617703912162,
+         "3_8_M": 0.017651042653641848,
+         "3_9_M": 0.036180113317052426
+        },
+        "delta": -0.019356924558202145,
+        "p": 0.1,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "bronchial smooth muscle cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 5.525765535070948e-05,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0036671641986001603,
+         "3_9_M": 0.0
+        },
+        "delta": -0.001208573652362376,
+        "p": 0.42857142857142855,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "cardiac valve cell": {
+        "values": {
+         "24_58_M": 0.012279501281120457,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.07117957563636944,
+         "3_8_M": 0.12444498445549972,
+         "3_9_M": 0.10361437953777035
+        },
+        "delta": -0.09667643788959972,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "endothelial cell": {
+        "values": {
+         "24_58_M": 0.0011434315118354242,
+         "24_59_M": 0.01484655243326036,
+         "24_60_M": 0.004231390857191258,
+         "24_61_M": 0.0010774040189908433,
+         "3_10_M": 0.0028855179809161025,
+         "3_11_M": 0.00559946116942339,
+         "3_8_M": 0.018230868497608927,
+         "3_9_M": 0.01074783587747355
+        },
+        "delta": -0.00404122617603602,
+        "p": 0.4,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "endothelial cell of coronary artery": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 3.0427765289414615e-05,
+         "24_60_M": 0.0016240912614528123,
+         "24_61_M": 0.030877457269976705,
+         "3_10_M": 0.037929353194435717,
+         "3_11_M": 0.0017397007141710082,
+         "3_8_M": 0.022644496498752564,
+         "3_9_M": 0.00895678235097454
+        },
+        "delta": -0.009684589115403725,
+        "p": 0.3142857142857143,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "enterocyte of epithelium of large intestine": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.011022301422502403,
+         "24_61_M": 0.0,
+         "3_10_M": 0.010812458253272024,
+         "3_11_M": 0.015435181640067956,
+         "3_8_M": 0.005844992881467356,
+         "3_9_M": 0.026356335939927613
+        },
+        "delta": -0.011856666823058137,
+        "p": 0.08571428571428572,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "epidermal cell": {
+        "values": {
+         "24_59_M": 0.003969189502279904,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.008779694921422145,
+         "3_11_M": 0.007167782510761775,
+         "3_8_M": 0.004814668244846933,
+         "3_9_M": 0.0
+        },
+        "delta": -0.0038674732518310783,
+        "p": 0.2,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "epithelial cell of large intestine": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0037914174203206117,
+         "24_60_M": 0.0031009399014114486,
+         "24_61_M": 0.0,
+         "3_10_M": 0.004582648588365311,
+         "3_11_M": 0.01602928115046311,
+         "3_8_M": 0.00867938445200532,
+         "3_9_M": 0.013484302925073102
+        },
+        "delta": -0.008970814948543696,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "fibroblast": {
+        "values": {
+         "24_58_M": 0.03192127918936508,
+         "24_59_M": 0.017404673823236662,
+         "24_60_M": 0.016403136334224445,
+         "24_61_M": 0.0765091161837548,
+         "3_10_M": 0.0009009426758475342,
+         "3_8_M": 0.004581275413341787,
+         "3_9_M": 0.010121721258223814
+        },
+        "delta": 0.03035823826684087,
+        "p": 0.08571428571428572,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "fibroblast of cardiac tissue": {
+        "values": {
+         "24_58_M": 0.0051886794139336945,
+         "24_59_M": 0.01816289023410321,
+         "24_60_M": 0.038408485062504764,
+         "24_61_M": 0.06902300680352488,
+         "3_10_M": 0.029021483239009306,
+         "3_11_M": 0.004313486753610752,
+         "3_8_M": 0.014570554214435844,
+         "3_9_M": 0.04573873757690387
+        },
+        "delta": 0.009284699932526692,
+        "p": 0.6,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "granulocyte": {
+        "values": {
+         "24_58_M": 0.0005578187688253544,
+         "24_59_M": 0.00874797353056503,
+         "24_60_M": 0.0016709252818459602,
+         "24_61_M": 0.0010973966992469497,
+         "3_10_M": 0.019541405614822253,
+         "3_8_M": 0.008481298435137927,
+         "3_9_M": 0.043281461718464476
+        },
+        "delta": -0.02074952668602073,
+        "p": 0.05714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "granulocytopoietic cell": {
+        "values": {
+         "24_58_M": 0.001482851998092673,
+         "24_60_M": 0.05624095995303997,
+         "24_61_M": 0.0,
+         "3_10_M": 0.023112927965279837,
+         "3_8_M": 0.01856570490842665,
+         "3_9_M": 0.051403016889516456
+        },
+        "delta": -0.011785945937363432,
+        "p": 0.6,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "hematopoietic stem cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.002937574036086951,
+         "24_61_M": 0.004240829445298305,
+         "3_10_M": 0.004483486627464048,
+         "3_8_M": 0.005324697497456062,
+         "3_9_M": 0.003321006396789322
+        },
+        "delta": -0.002581795970223496,
+        "p": 0.14285714285714285,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "intestinal crypt stem cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.022118751753790994,
+         "3_11_M": 0.12174592115292698,
+         "3_8_M": 0.0036434303211904016,
+         "3_9_M": 0.014127619740509398
+        },
+        "delta": -0.04040893074210444,
+        "p": 0.2,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "keratinocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.01567749455186463,
+         "24_61_M": 0.0,
+         "3_10_M": 0.012264494590684991,
+         "3_8_M": 0.014192943344141886,
+         "3_9_M": 0.02083406318382735
+        },
+        "delta": -0.011844460068251917,
+        "p": 0.11428571428571428,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "keratinocyte stem cell": {
+        "values": {
+         "24_58_M": 0.0052571812350220865,
+         "24_59_M": 0.007132286990082297,
+         "24_60_M": 0.0004372344203733852,
+         "24_61_M": 0.0,
+         "3_10_M": 0.007823668889927558,
+         "3_11_M": 0.009879232276060532,
+         "3_8_M": 0.02044961678931478,
+         "3_9_M": 0.008822806770324196
+        },
+        "delta": -0.008537155520037325,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "large intestine goblet cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.01721245627577974,
+         "24_61_M": 0.0,
+         "3_10_M": 0.03696422096058276,
+         "3_11_M": 0.021245617437955583,
+         "3_8_M": 0.027461841956025995,
+         "3_9_M": 0.040322366514058336
+        },
+        "delta": -0.02719539764821073,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "macrophage": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.012875816940871313,
+         "24_61_M": 0.007147404443749896,
+         "3_10_M": 0.0024659920445924267,
+         "3_11_M": 0.0,
+         "3_8_M": 0.051868421780683724,
+         "3_9_M": 0.015391805658600495
+        },
+        "delta": -0.012425749524813857,
+        "p": 0.45714285714285713,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "mesenchymal stem cell": {
+        "values": {
+         "24_58_M": 0.0022847119572601575,
+         "24_59_M": 0.024638326352620563,
+         "24_60_M": 0.012814796900162982,
+         "24_61_M": 0.01762875360221627,
+         "3_10_M": 0.028480117857842713,
+         "3_11_M": 0.01286121958961312,
+         "3_8_M": 0.022838545841064053
+        },
+        "delta": -0.0070516472264416374,
+        "p": 0.4,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "mesenchymal stem cell of adipose tissue": {
+        "values": {
+         "24_58_M": 0.008579361048163741,
+         "24_59_M": 0.006440667927404111,
+         "24_60_M": 0.00648169289993083,
+         "24_61_M": 0.016248505436247316,
+         "3_10_M": 0.014824196839811716,
+         "3_11_M": 0.0007390370065874646,
+         "3_8_M": 0.010423299112060495,
+         "3_9_M": 0.012157690812678059
+        },
+        "delta": -9.84991148479334e-05,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "microglial cell": {
+        "values": {
+         "24_58_M": 0.0012697881014695493,
+         "24_59_M": 0.0001453400197007985,
+         "24_60_M": 0.00017782346156922947,
+         "24_61_M": 0.001426787943277229,
+         "3_10_M": 0.00792353239598134,
+         "3_8_M": 0.005141871048208094,
+         "3_9_M": 0.0047134032703030375
+        },
+        "delta": -0.005171334023326622,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "monocyte": {
+        "values": {
+         "24_58_M": 0.0006240791513188903,
+         "24_59_M": 0.002882524453567859,
+         "24_60_M": 0.007367562269231205,
+         "24_61_M": 0.002744355686659245,
+         "3_10_M": 0.01977045926983627,
+         "3_11_M": 0.031032159706961278,
+         "3_8_M": 0.011373838196716135,
+         "3_9_M": 0.032514266620734006
+        },
+        "delta": -0.020268050558367622,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "myeloid cell": {
+        "values": {
+         "24_58_M": 0.003359607825972961,
+         "24_59_M": 0.005797553059910303,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0094119661982515,
+         "3_10_M": 0.0073549926660387305,
+         "3_11_M": 0.02281514442228437,
+         "3_8_M": 0.03627844875864021,
+         "3_9_M": 0.011261414869547126
+        },
+        "delta": -0.014785218408093919,
+        "p": 0.05714285714285714,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "naive B cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.009189086482495711,
+         "24_60_M": 0.003683924488688099,
+         "24_61_M": 0.0038131688700184037,
+         "3_10_M": 0.03232871675426487,
+         "3_8_M": 0.016807310486721048,
+         "3_9_M": 0.009922665621177242
+        },
+        "delta": -0.015514685993753836,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "natural killer cell": {
+        "values": {
+         "24_58_M": 0.0015288307876398447,
+         "24_59_M": 0.00944964928160951,
+         "24_60_M": 0.04089228652988039,
+         "3_10_M": 0.013010772271296382,
+         "3_8_M": 0.010383760288753116,
+         "3_9_M": 0.02708807312020045
+        },
+        "delta": 0.0004627203062932683,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "precursor B cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.021117050293979048,
+         "3_8_M": 0.04125568250488543,
+         "3_9_M": 0.02611560661242523
+        },
+        "delta": -0.02949611313709657,
+        "p": 0.1,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "promonocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0009621542759623036,
+         "24_60_M": 0.014972557103631963,
+         "24_61_M": 0.0009205443853315118,
+         "3_10_M": 0.049018961999552725,
+         "3_8_M": 0.03370957685149753,
+         "3_9_M": 0.022793570661100417
+        },
+        "delta": -0.030960222562818773,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "skeletal muscle satellite cell": {
+        "values": {
+         "24_58_M": 0.00016495418866102388,
+         "24_59_M": 0.002138658541425458,
+         "24_60_M": 0.0028515620907969613,
+         "24_61_M": 0.0,
+         "3_10_M": 0.018571397191423367,
+         "3_11_M": 0.007080090928977941,
+         "3_8_M": 0.025891506042877405,
+         "3_9_M": 0.05139239809622008
+        },
+        "delta": -0.02444505435965384,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "thymocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.001061544603585528,
+         "24_61_M": 0.0,
+         "3_11_M": 0.029284715679277776,
+         "3_8_M": 0.0077281066272599785,
+         "3_9_M": 0.018480311662242895
+        },
+        "delta": -0.018143863121731708,
+        "p": 0.1,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      "combined": {
+       "delta": -0.013561377818469781,
+       "p": 0.015873015873015872,
+       "types": 35,
+       "relabelings": 126
+      }
+     },
+     "norm_pearson": {
+      "types": {
+       "B cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "CD4-positive, alpha-beta T cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "CD8-positive, alpha-beta T cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "DN4 thymocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "T cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.9968253256168259,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": -0.5210723920522502
+        },
+        "delta": 0.37947442941726905,
+        "p": 0.5714285714285714,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "basal cell of epidermis": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.4143805904604551,
+         "24_61_M": 0.0,
+         "3_10_M": 0.04055512855264586,
+         "3_11_M": 0.0,
+         "3_8_M": -0.07691418701934888,
+         "3_9_M": -0.2761840518947442
+        },
+        "delta": 0.18173092520547557,
+        "p": 0.2857142857142857,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "bladder urothelial cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.32469740916232814,
+         "3_8_M": 0.0,
+         "3_9_M": -0.012511015791833772
+        },
+        "delta": -0.10406213112349812,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "bronchial smooth muscle cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "cardiac valve cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": -0.3077458222863803,
+         "3_9_M": -0.5254537423949375
+        },
+        "delta": 0.2777331882271059,
+        "p": 0.14285714285714285,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "endothelial cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": -0.3916381560323802,
+         "3_11_M": 0.0,
+         "3_8_M": -0.10673095389019445,
+         "3_9_M": 0.0
+        },
+        "delta": 0.12459227748064367,
+        "p": 0.42857142857142855,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "endothelial cell of coronary artery": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.9934018041543673,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.24835045103859182,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "enterocyte of epithelium of large intestine": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": -0.41767425985588985,
+         "3_11_M": 0.5219201393602004,
+         "3_8_M": 0.8611700380277411,
+         "3_9_M": 0.6849910309251392
+        },
+        "delta": -0.4126017371142977,
+        "p": 0.14285714285714285,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "epidermal cell": {
+        "values": {
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "epithelial cell of large intestine": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.4232476106557659,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": -0.10581190266394147,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "fibroblast": {
+        "values": {
+         "24_58_M": 0.0698845530870997,
+         "24_59_M": 0.047715857909302134,
+         "24_60_M": -0.1255401808337251,
+         "24_61_M": -0.16185557162081168,
+         "3_10_M": -0.15069911190395568,
+         "3_8_M": 0.11256089643002438,
+         "3_9_M": 0.09755783880631522
+        },
+        "delta": -0.062255376475328375,
+        "p": 0.5428571428571428,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "fibroblast of cardiac tissue": {
+        "values": {
+         "24_58_M": -0.10080977594551885,
+         "24_59_M": 0.2528957517552596,
+         "24_60_M": -0.13551479286956386,
+         "24_61_M": 0.3528387656869855,
+         "3_10_M": 0.06779999764005976,
+         "3_11_M": -0.03258843982330668,
+         "3_8_M": -0.01493075034373631,
+         "3_9_M": -0.14571915547936337
+        },
+        "delta": 0.12371207415837723,
+        "p": 0.4,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "granulocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": 0.8356796018537573,
+         "3_9_M": -0.6085005113822008
+        },
+        "delta": -0.07572636349051882,
+        "p": 0.7142857142857143,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "granulocytopoietic cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": -0.4271963791732623
+        },
+        "delta": 0.1423987930577541,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "hematopoietic stem cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.5296343210027165,
+         "3_8_M": -0.018425347063849712,
+         "3_9_M": -0.5412301868245164
+        },
+        "delta": 0.01000707096188321,
+        "p": 0.6,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "intestinal crypt stem cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": -0.285399075942578,
+         "3_9_M": 0.3578975584784383
+        },
+        "delta": -0.01812462063396507,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "keratinocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": -0.5295103342641044,
+         "24_61_M": 0.0,
+         "3_10_M": -0.2196407960327378,
+         "3_8_M": 0.5223025750971197,
+         "3_9_M": 0.0
+        },
+        "delta": -0.23326484325415342,
+        "p": 0.5714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "keratinocyte stem cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.04222279916742511,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": -0.010555699791856277,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "large intestine goblet cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "macrophage": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.8481616380013464,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": -0.2973272524768704,
+         "3_9_M": 0.0
+        },
+        "delta": 0.2863722226195542,
+        "p": 0.5714285714285714,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "mesenchymal stem cell": {
+        "values": {
+         "24_58_M": 0.22699125605370626,
+         "24_59_M": -0.1905144855869653,
+         "24_60_M": 0.0422642576854731,
+         "24_61_M": 0.37026248285019703,
+         "3_10_M": -0.3395108139189906,
+         "3_11_M": -0.007562968107263678,
+         "3_8_M": 0.018271758132747964
+        },
+        "delta": 0.22185155238177157,
+        "p": 0.2,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "mesenchymal stem cell of adipose tissue": {
+        "values": {
+         "24_58_M": -0.10607959002466587,
+         "24_59_M": 0.04854172078300966,
+         "24_60_M": 0.24877742979971118,
+         "24_61_M": 0.023410330862801004,
+         "3_10_M": 0.1727373332330138,
+         "3_11_M": -0.1540818626290666,
+         "3_8_M": -0.018223449468701563,
+         "3_9_M": -0.1103885199410666
+        },
+        "delta": 0.08115159755666923,
+        "p": 0.42857142857142855,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "microglial cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": -0.7769716211386807,
+         "3_10_M": 0.21969685594268176,
+         "3_8_M": 0.17580651906417913,
+         "3_9_M": -0.36793545766494057
+        },
+        "delta": -0.2034322110653103,
+        "p": 0.5142857142857142,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "monocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": -0.38744068668775344,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.11669773019979848
+        },
+        "delta": -0.12603460422188797,
+        "p": 0.5714285714285714,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "myeloid cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.7501423834379245,
+         "3_10_M": -0.019845150604679982,
+         "3_11_M": -0.4619450831933171,
+         "3_8_M": 0.0,
+         "3_9_M": 0.4753082102311422
+        },
+        "delta": 0.18915610175119485,
+        "p": 0.5142857142857142,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "naive B cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": -0.9528818857783264,
+         "3_9_M": 0.0
+        },
+        "delta": 0.31762729525944217,
+        "p": 0.42857142857142855,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "natural killer cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": 0.1636111268525234,
+         "3_9_M": 0.0
+        },
+        "delta": -0.05453704228417447,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "precursor B cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": -0.2563749187314231,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0854583062438077,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "promonocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 35,
+        "n": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "skeletal muscle satellite cell": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_60_M": 0.0,
+         "24_61_M": 0.0,
+         "3_10_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": -0.2699760377733748,
+         "3_9_M": 0.0
+        },
+        "delta": 0.0674940094433437,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 70,
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "thymocyte": {
+        "values": {
+         "24_58_M": 0.0,
+         "24_59_M": 0.0,
+         "24_61_M": 0.0,
+         "3_11_M": 0.0,
+         "3_8_M": 0.0,
+         "3_9_M": -0.23812640908700825
+        },
+        "delta": 0.07937546969566942,
+        "p": 1.0,
+        "method": "exact",
+        "n_relabelings": 20,
+        "n": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      "combined": {
+       "delta": 0.040287978067989186,
+       "p": 0.1984126984126984,
+       "types": 35,
+       "relabelings": 126
+      }
+     }
+    },
+    "fibroblast_like_share": {
+     "24_58_M": 0.11131864026895778,
+     "24_59_M": 0.10054451057363556,
+     "24_60_M": 0.10175984676164253,
+     "24_61_M": 0.0968363136176066,
+     "3_10_M": 0.06156819436775262,
+     "3_10_M/3_11_M": 0.015873015873015872,
+     "3_11_M": 0.16452711553576108,
+     "3_8_M": 0.11950219205204356,
+     "3_9_M": 0.1127283105022831
+    },
+    "association": {
+     "pearson": {
+      "r": -0.3214753526390724,
+      "p": 0.3875055114638448
+     },
+     "spearman": {
+      "r": 0.1,
+      "p": 0.8099812610229277
+     },
+     "orderings": 362880
+    }
+   }
+  },
+  "outcome": {
+   "not_detected": false,
+   "less_than_half": false,
+   "accounts_for_the_drop": false
+  },
+  "prediction": {
+   "text": "\u0432\u043d\u0443\u0442\u0440\u0438 \u0442\u0438\u043f\u043e\u0432 \u043f\u0430\u0434\u0435\u043d\u0438\u0435 MI \u0443 \u0441\u0430\u043c\u0446\u043e\u0432 \u0438\u0441\u0447\u0435\u0437\u0430\u0435\u0442",
+   "holds": false
+  }
+ },
+ "seconds": 19.2,
+ "specificity": {
+  "1a-males": {
+   "metric": "mi_3bin",
+   "genes": [
+    "Smad3",
+    "Col1a1"
+   ],
+   "direction": "decrease",
+   "first": "young",
+   "second": "old",
+   "values": {
+    "24_58_M": 0.0072395731320595205,
+    "24_59_M": 0.01112434189219214,
+    "24_60_M": 0.006265352010074675,
+    "24_61_M": 0.01074778295129472,
+    "3_10_M": 0.016562863987525704,
+    "3_10_M/3_11_M": 0.04692125067323071,
+    "3_11_M": 0.031368831094429686,
+    "3_8_M": 0.026035638404892772,
+    "3_9_M": 0.022069283318606848
+   },
+   "delta": -0.019747310999331878,
+   "se": 0.005326974203772883,
+   "t": -3.7070408535760593,
+   "controls": 1000,
+   "ranked": 1000,
+   "undefined": [],
+   "claimed": {
+    "k": 20,
+    "p": 0.02097902097902098,
+    "share_ci": [
+     0.012258267972811154,
+     0.03072003268289336
+    ],
+    "outcome": "specific",
+    "at_least_as_far": [
+     [
+      -8.404052910264516,
+      [
+       "Tmem39a",
+       "Fbln5"
+      ]
+     ],
+     [
+      -5.944855848764922,
+      [
+       "Tmem39a",
+       "Fbln2"
+      ]
+     ],
+     [
+      -5.905970418931563,
+      [
+       "Pcyt1a",
+       "Pi16"
+      ]
+     ],
+     [
+      -5.660592259278496,
+      [
+       "Tmem39a",
+       "Cygb"
+      ]
+     ],
+     [
+      -5.42762210959368,
+      [
+       "Plekho2",
+       "Aebp1"
+      ]
+     ],
+     [
+      -5.214838203684511,
+      [
+       "Ptk2b",
+       "Enpp2"
+      ]
+     ],
+     [
+      -5.014616975303271,
+      [
+       "Tmem39a",
+       "Entpd2"
+      ]
+     ],
+     [
+      -4.887319097075404,
+      [
+       "Rnft1",
+       "Clec3b"
+      ]
+     ],
+     [
+      -4.740392433182825,
+      [
+       "Ptk2b",
+       "Vcam1"
+      ]
+     ],
+     [
+      -4.607458729857353,
+      [
+       "Rnft1",
+       "Fbln5"
+      ]
+     ],
+     [
+      -4.54426382609149,
+      [
+       "Tmem39a",
+       "C1ra"
+      ]
+     ],
+     [
+      -4.473760477631605,
+      [
+       "Clstn1",
+       "Igfbp6"
+      ]
+     ],
+     [
+      -4.4124854549133135,
+      [
+       "Clstn1",
+       "C1s1"
+      ]
+     ],
+     [
+      -4.371872487792372,
+      [
+       "Ptk2b",
+       "Cryab"
+      ]
+     ],
+     [
+      -4.130704818660735,
+      [
+       "St3gal1",
+       "Gfpt2"
+      ]
+     ],
+     [
+      -3.929491466109903,
+      [
+       "Fndc3b",
+       "Fbln5"
+      ]
+     ],
+     [
+      -3.8966845041638805,
+      [
+       "Clstn1",
+       "Fbn1"
+      ]
+     ],
+     [
+      -3.8652556760819445,
+      [
+       "Clstn1",
+       "Syt11"
+      ]
+     ],
+     [
+      -3.8402505165177376,
+      [
+       "Pcyt1a",
+       "Clec3b"
+      ]
+     ],
+     [
+      -3.80551843556689,
+      [
+       "Hipk2",
+       "Syt11"
+      ]
+     ]
+    ]
+   },
+   "absolute": {
+    "k": 20,
+    "p": 0.02097902097902098,
+    "share_ci": [
+     0.012258267972811154,
+     0.03072003268289336
+    ],
+    "outcome": "specific",
+    "at_least_as_large": [
+     [
+      -8.404052910264516,
+      [
+       "Tmem39a",
+       "Fbln5"
+      ]
+     ],
+     [
+      -5.944855848764922,
+      [
+       "Tmem39a",
+       "Fbln2"
+      ]
+     ],
+     [
+      -5.905970418931563,
+      [
+       "Pcyt1a",
+       "Pi16"
+      ]
+     ],
+     [
+      -5.660592259278496,
+      [
+       "Tmem39a",
+       "Cygb"
+      ]
+     ],
+     [
+      -5.42762210959368,
+      [
+       "Plekho2",
+       "Aebp1"
+      ]
+     ],
+     [
+      -5.214838203684511,
+      [
+       "Ptk2b",
+       "Enpp2"
+      ]
+     ],
+     [
+      -5.014616975303271,
+      [
+       "Tmem39a",
+       "Entpd2"
+      ]
+     ],
+     [
+      -4.887319097075404,
+      [
+       "Rnft1",
+       "Clec3b"
+      ]
+     ],
+     [
+      -4.740392433182825,
+      [
+       "Ptk2b",
+       "Vcam1"
+      ]
+     ],
+     [
+      -4.607458729857353,
+      [
+       "Rnft1",
+       "Fbln5"
+      ]
+     ],
+     [
+      -4.54426382609149,
+      [
+       "Tmem39a",
+       "C1ra"
+      ]
+     ],
+     [
+      -4.473760477631605,
+      [
+       "Clstn1",
+       "Igfbp6"
+      ]
+     ],
+     [
+      -4.4124854549133135,
+      [
+       "Clstn1",
+       "C1s1"
+      ]
+     ],
+     [
+      -4.371872487792372,
+      [
+       "Ptk2b",
+       "Cryab"
+      ]
+     ],
+     [
+      -4.130704818660735,
+      [
+       "St3gal1",
+       "Gfpt2"
+      ]
+     ],
+     [
+      -3.929491466109903,
+      [
+       "Fndc3b",
+       "Fbln5"
+      ]
+     ],
+     [
+      -3.8966845041638805,
+      [
+       "Clstn1",
+       "Fbn1"
+      ]
+     ],
+     [
+      -3.8652556760819445,
+      [
+       "Clstn1",
+       "Syt11"
+      ]
+     ],
+     [
+      -3.8402505165177376,
+      [
+       "Pcyt1a",
+       "Clec3b"
+      ]
+     ],
+     [
+      -3.80551843556689,
+      [
+       "Hipk2",
+       "Syt11"
+      ]
+     ]
+    ]
+   },
+   "control_t_quantiles": {
+    "5%": -2.565402233847492,
+    "25%": -1.2933041924679234,
+    "50%": -1.0576696887207406,
+    "75%": -0.8620415073201615,
+    "95%": 0.4507950423354707
+   },
+   "matched": {
+    "Smad3": {
+     "mean": 31.29464002537266,
+     "detection": 0.21207315783909506,
+     "mean_range": [
+      26.805300066955635,
+      35.99592980230468
+     ],
+     "detection_range": [
+      0.20301652746942947,
+      0.22065405081580153
+     ]
+    },
+    "Col1a1": {
+     "mean": 191.97371110406314,
+     "detection": 0.14906438312718046,
+     "mean_range": [
+      92.81217182929838,
+      362.80047221341226
+     ],
+     "detection_range": [
+      0.10561370123691723,
+      0.1886386862599993
+     ]
+    }
+   },
+   "run2_values": {
+    "24_58_M": 0.0072395731320595205,
+    "24_59_M": 0.01112434189219214,
+    "24_60_M": 0.006265352010074675,
+    "24_61_M": 0.01074778295129472,
+    "3_10_M": 0.016562863987525704,
+    "3_10_M/3_11_M": 0.04692125067323071,
+    "3_11_M": 0.031368831094429686,
+    "3_8_M": 0.026035638404892772,
+    "3_9_M": 0.022069283318606848
+   },
+   "vs_run2_max_abs_diff": 0.0
+  },
+  "2a": {
+   "metric": "log_cp10k_mean",
+   "genes": [
+    "Xist"
+   ],
+   "direction": "decrease",
+   "first": "female",
+   "second": "male",
+   "values": {
+    "3_10_M": 0.0,
+    "3_11_M": 9.166929242143768e-05,
+    "3_38_F": 0.14844580935279827,
+    "3_39_F": 0.18061559319472262,
+    "3_56_F": 0.25904505678588685,
+    "3_8_M": 0.001809474931822932,
+    "3_9_M": 0.01491722940914655
+   },
+   "delta": -0.19183089303612152,
+   "se": 0.03304114199169144,
+   "t": -5.805819093188713,
+   "controls": 1000,
+   "ranked": 1000,
+   "undefined": [],
+   "claimed": {
+    "k": 1,
+    "p": 0.001998001998001998,
+    "share_ci": [
+     2.5317487143183826e-05,
+     0.0055589242797395855
+    ],
+    "outcome": "specific",
+    "at_least_as_far": [
+     [
+      -5.971950731784437,
+      [
+       "Faim2"
+      ]
+     ]
+    ]
+   },
+   "absolute": {
+    "k": 22,
+    "p": 0.022977022977022976,
+    "share_ci": [
+     0.013837414172030549,
+     0.033119664515197655
+    ],
+    "outcome": "specific",
+    "at_least_as_large": [
+     [
+      13.480292686461238,
+      [
+       "Phtf1"
+      ]
+     ],
+     [
+      10.12397229223954,
+      [
+       "Zdhhc8"
+      ]
+     ],
+     [
+      10.077905160920333,
+      [
+       "Tacc2"
+      ]
+     ],
+     [
+      9.64465164178477,
+      [
+       "Bltp1"
+      ]
+     ],
+     [
+      7.8403034061080366,
+      [
+       "Acbd5"
+      ]
+     ],
+     [
+      7.649660296347126,
+      [
+       "Arhgap24"
+      ]
+     ],
+     [
+      7.097814187718324,
+      [
+       "Senp3"
+      ]
+     ],
+     [
+      7.0692785636439295,
+      [
+       "Fam120c"
+      ]
+     ],
+     [
+      7.068957521751832,
+      [
+       "Btbd7"
+      ]
+     ],
+     [
+      6.931225635890247,
+      [
+       "Slc39a6"
+      ]
+     ],
+     [
+      6.701909847933455,
+      [
+       "Itga1"
+      ]
+     ],
+     [
+      6.413844643831531,
+      [
+       "Casd1"
+      ]
+     ],
+     [
+      6.279375720599595,
+      [
+       "Usp24"
+      ]
+     ],
+     [
+      6.2012310400809065,
+      [
+       "Adarb1"
+      ]
+     ],
+     [
+      6.176012709845861,
+      [
+       "Garre1"
+      ]
+     ],
+     [
+      6.1417554197546655,
+      [
+       "Cacna2d1"
+      ]
+     ],
+     [
+      6.097141110527175,
+      [
+       "Prkacb"
+      ]
+     ],
+     [
+      6.079026745480091,
+      [
+       "Lyst"
+      ]
+     ],
+     [
+      6.039594451190144,
+      [
+       "Myo9b"
+      ]
+     ],
+     [
+      -5.971950731784437,
+      [
+       "Faim2"
+      ]
+     ],
+     [
+      5.950294301905066,
+      [
+       "Diaph2"
+      ]
+     ],
+     [
+      5.872037044016786,
+      [
+       "Dnajb12"
+      ]
+     ]
+    ]
+   },
+   "control_t_quantiles": {
+    "5%": -1.327334149040417,
+    "25%": 0.11810487784146266,
+    "50%": 1.2417002354410023,
+    "75%": 2.5873475728678343,
+    "95%": 4.5983884331921985
+   },
+   "matched": {
+    "Xist": {
+     "mean": 22.439655172413794,
+     "detection": 0.19348659003831417,
+     "mean_range": [
+      8.57183908045977,
+      56.39894636015325
+     ],
+     "detection_range": [
+      0.13840996168582376,
+      0.24856321839080459
+     ]
+    }
+   },
+   "run2_values": {
+    "3_10_M": 0.0,
+    "3_11_M": 0.00011551791284644573,
+    "3_38_F": 0.16831322871757795,
+    "3_39_F": 0.209238119635367,
+    "3_56_F": 0.30358934995024645,
+    "3_8_M": 0.0023128815022201345,
+    "3_9_M": 0.0197709502113368
+   },
+   "vs_run2_max_abs_diff": 0.044544293164359594
+  },
+  "2b": {
+   "metric": "log_cp10k_mean",
+   "genes": [
+    "Ddx3y",
+    "Eif2s3y",
+    "Kdm5d",
+    "Uty"
+   ],
+   "direction": "increase",
+   "first": "female",
+   "second": "male",
+   "values": {
+    "3_10_M": 0.5738871042716295,
+    "3_11_M": 0.5323358511923966,
+    "3_38_F": 8.844094405625259e-05,
+    "3_39_F": 0.0,
+    "3_56_F": 0.0,
+    "3_8_M": 0.5490492851823627,
+    "3_9_M": 0.6170313188207034
+   },
+   "delta": 0.5680464095520876,
+   "se": 0.018415972949798975,
+   "t": 30.845310812551357,
+   "controls": 1000,
+   "ranked": 1000,
+   "undefined": [],
+   "claimed": {
+    "k": 0,
+    "p": 0.000999000999000999,
+    "share_ci": [
+     0.0,
+     0.003682083897274424
+    ],
+    "outcome": "specific",
+    "at_least_as_far": []
+   },
+   "absolute": {
+    "k": 0,
+    "p": 0.000999000999000999,
+    "share_ci": [
+     0.0,
+     0.003682083897274424
+    ],
+    "outcome": "specific",
+    "at_least_as_large": []
+   },
+   "control_t_quantiles": {
+    "5%": 0.10192092091272917,
+    "25%": 1.6012073948591432,
+    "50%": 2.618075536065648,
+    "75%": 3.8858025908556817,
+    "95%": 6.237358865358953
+   },
+   "matched": {
+    "Ddx3y": {
+     "mean": 20.302681992337163,
+     "detection": 0.21168582375478928,
+     "mean_range": [
+      16.310823754789272,
+      25.4477969348659
+     ],
+     "detection_range": [
+      0.19827586206896552,
+      0.2231800766283525
+     ]
+    },
+    "Eif2s3y": {
+     "mean": 17.828065134099617,
+     "detection": 0.13793103448275862,
+     "mean_range": [
+      15.416187739463602,
+      20.649425287356323
+     ],
+     "detection_range": [
+      0.12978927203065135,
+      0.1460727969348659
+     ]
+    },
+    "Kdm5d": {
+     "mean": 2.613984674329502,
+     "detection": 0.040708812260536395,
+     "mean_range": [
+      2.1455938697318007,
+      3.1724137931034484
+     ],
+     "detection_range": [
+      0.029693486590038315,
+      0.05076628352490421
+     ]
+    },
+    "Uty": {
+     "mean": 2.3692528735632186,
+     "detection": 0.05795019157088123,
+     "mean_range": [
+      1.806992337164751,
+      3.153735632183908
+     ],
+     "detection_range": [
+      0.041666666666666664,
+      0.07279693486590039
+     ]
+    }
+   },
+   "run2_values": {
+    "3_10_M": 0.67587461134233,
+    "3_11_M": 0.629804093969431,
+    "3_38_F": 0.00011179058049313502,
+    "3_39_F": 0.0,
+    "3_56_F": 0.0,
+    "3_8_M": 0.64543476893881,
+    "3_9_M": 0.7290758576827883
+   },
+   "vs_run2_max_abs_diff": 0.11204453886208487
+  },
+  "prediction": {
+   "text": "Xist \u0438 Y-\u0433\u0435\u043d\u044b \u2014 \u043a\u0440\u0430\u0439\u043d\u0438\u0435 \u0432 \u043e\u0431\u0435 \u0441\u0442\u043e\u0440\u043e\u043d\u044b, \u00a74 \u043f\u043e \u0441\u0430\u043c\u0446\u0430\u043c \u2014 \u0442\u0438\u043f\u0438\u0447\u043d\u044b\u0439",
+   "parts": {
+    "2a specific in the claimed direction": true,
+    "2a specific by absolute value": true,
+    "2b specific in the claimed direction": true,
+    "2b specific by absolute value": true,
+    "1a-males not specific in the claimed direction": false
+   },
+   "holds": false
+  }
+ }
+}
