@@ -1,0 +1,446 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "log_cp10k_mean",
+ "verdict": "INCONCLUSIVE \u2014 effect detected, but the metric's response to signal is untested (supply a positive control or an injected signal) [parametric only \u2014 too few replicates for the permutation test to reach alpha]",
+ "cause": "detected_untested_metric",
+ "fields": {
+  "metric_validity": {
+   "status": "UNTESTED",
+   "reason": "no nuisance bias, but no demonstrated response to signal (supply a positive control pair or an injected signal). Level shift (reported, not failed): gene_subsample +350% of the effect scale.",
+   "flags": [
+    "LEVEL_SHIFT"
+   ],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {
+     "gene_subsample": 3.497356761446381
+    },
+    "gate5": null,
+    "gate4": null,
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}; MDE 0.09113 vs attenuated SESOI 0.5 (SESOI 0.5 x \u03bb 1.00)",
+   "flags": [
+    "PARAMETRIC_ONLY"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "parametric",
+    "replication": {
+     "kind": "nested",
+     "counts": {
+      "female": 3,
+      "male": 4
+     },
+     "n_eff": 3
+    },
+    "power": {
+     "mde": 0.09113457486606416,
+     "power": 0.8,
+     "sesoi": 0.5,
+     "lambda_": 1.0,
+     "effective_sesoi": 0.5,
+     "attenuation": {
+      "model": "none (no attenuation measured)"
+     }
+    },
+    "attenuation": {},
+    "equalization": {
+     "strata": [
+      {
+       "stratum": "pooled",
+       "thinned_group": "male",
+       "n_thinned": 829,
+       "mean_before": 706373.7406513873,
+       "mean_after": 685963.1334392375,
+       "mean_other": 685963.1334392375,
+       "depth_ratio": 0.971105087806169,
+       "ks_after": 0.17268669200573722
+      }
+     ],
+     "depth_ratio": 0.971105087806169
+    },
+    "notes": []
+   }
+  },
+  "effect": {
+   "status": "DETECTED",
+   "reason": "effect -0.6701 [-0.7398, -0.6003], p=7.67e-05 (t, parametric only)",
+   "flags": [
+    "PARAMETRIC_ONLY"
+   ],
+   "detail": {
+    "cell_level_raw": -0.6703219155857344,
+    "cell_level_corrected": -0.6704215658523667,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.5,
+    "alpha": 0.05,
+    "effect": -0.6700527041401486,
+    "raw_effect": -0.6700100694565088,
+    "se": 0.021902572755542773,
+    "df": 3.0000173672014974,
+    "t_method": "welch",
+    "ci": [
+     -0.7397562376044589,
+     -0.6003491706758384
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.721597296342498,
+     -0.6185081119377992
+    ],
+    "p_t": 7.67259464033998e-05,
+    "p_perm": 0.02857142857142857,
+    "perm_method": "exact",
+    "perm_n": 35,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.02857142857142857,
+    "test": "t interval on replicate values (welch; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "female": 3,
+     "male": 4
+    },
+    "design_kind": "nested",
+    "raw_detected": true,
+    "p_raw": 7.648070759214143e-05,
+    "replicate_values": [
+     {
+      "replicate": "3_39_F",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_9_M",
+      "raw": 0.7290758576827883,
+      "corrected": 0.7292723727576865,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_8_M",
+      "raw": 0.64543476893881,
+      "corrected": 0.6456505319581953,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_11_M",
+      "raw": 0.629804093969431,
+      "corrected": 0.6297698925391744,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_10_M",
+      "raw": 0.67587461134233,
+      "corrected": 0.6756670734128627,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_38_F",
+      "raw": 0.00011179058049313502,
+      "corrected": 0.000111790580493135,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_56_F",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "female"
+     }
+    ],
+    "retained": 1.0000636328998376,
+    "effective_sesoi": 0.5,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias; level shift gene_subsample +350% of the effect scale (no structure to classify it; the effect field equalizes depth between groups) \u2014 reported, not failed",
+   "detail": {
+    "baseline": 0.26645729760004155,
+    "baseline_sd": 0.012513007281944108,
+    "null_center": 0.28360263518773393,
+    "null_sd": 0.006773889560356585,
+    "signal": -0.017145337587692377,
+    "has_signal": false,
+    "immaterial_signal": true,
+    "scale": 0.6703219155857344,
+    "scale_source": "effect",
+    "effect_scale": 0.6703219155857344,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.24699943275618566,
+      "shift": -0.019457864843855893,
+      "z": 9.783072070176981,
+      "shift_std": -0.02902764237814514,
+      "rel_change": 0.02902764237814514,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.2652597134543456,
+      "shift": -0.001197584145695929,
+      "z": 0.7351177035860151,
+      "shift_std": -0.001786580623206191,
+      "rel_change": 0.001786580623206191,
+      "classification": "none",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.26617972436276705,
+      "shift": -0.0002775732372745088,
+      "z": 0.1718270438263546,
+      "shift_std": -0.0004140894558578804,
+      "rel_change": 0.0004140894558578804,
+      "classification": "none",
+      "confounded": false
+     },
+     "gene_subsample": {
+      "mean_perturbed": 2.6108121814195,
+      "shift": 2.3443548838194586,
+      "z": 16.068413825615576,
+      "shift_std": 3.497356761446381,
+      "rel_change": 3.497356761446381,
+      "classification": "level_shift",
+      "confounded": false
+     }
+    },
+    "attenuation": {},
+    "level_shifts": {
+     "gene_subsample": 3.497356761446381
+    },
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.5,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.25,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 1259,
+      "n_b": 829,
+      "median_n_genes_a": 1169.0,
+      "median_n_genes_b": 1398.0,
+      "n_genes_ratio": 1.1958939264328485,
+      "overlap": 0.6536964980544747,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       -0.19964374792129824,
+       -0.15814417472207687
+      ],
+      "ratio_ci": [
+       0.8190224795716624,
+       0.853726687287255
+      ],
+      "overlap_upper": 0.7009812542149298
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.1958939264328485,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw -0.67 -> corrected -0.6701",
+   "detail": {
+    "cell_level_raw": -0.6703219155857344,
+    "cell_level_corrected": -0.6704215658523667,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.5,
+    "alpha": 0.05,
+    "effect": -0.6700527041401486,
+    "raw_effect": -0.6700100694565088,
+    "se": 0.021902572755542773,
+    "df": 3.0000173672014974,
+    "t_method": "welch",
+    "ci": [
+     -0.7397562376044589,
+     -0.6003491706758384
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.721597296342498,
+     -0.6185081119377992
+    ],
+    "p_t": 7.67259464033998e-05,
+    "p_perm": 0.02857142857142857,
+    "perm_method": "exact",
+    "perm_n": 35,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.02857142857142857,
+    "test": "t interval on replicate values (welch; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "female": 3,
+     "male": 4
+    },
+    "design_kind": "nested",
+    "raw_detected": true,
+    "p_raw": 7.648070759214143e-05,
+    "replicate_values": [
+     {
+      "replicate": "3_39_F",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_9_M",
+      "raw": 0.7290758576827883,
+      "corrected": 0.7292723727576865,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_8_M",
+      "raw": 0.64543476893881,
+      "corrected": 0.6456505319581953,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_11_M",
+      "raw": 0.629804093969431,
+      "corrected": 0.6297698925391744,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_10_M",
+      "raw": 0.67587461134233,
+      "corrected": 0.6756670734128627,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_38_F",
+      "raw": 0.00011179058049313502,
+      "corrected": 0.000111790580493135,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_56_F",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "female"
+     }
+    ],
+    "retained": 1.0000636328998376,
+    "effective_sesoi": 0.5,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "increase",
+  "sesoi": 0.5
+ },
+ "params": {
+  "metric": "log_cp10k_mean",
+  "group_col": "sex",
+  "groups": [
+   "female",
+   "male"
+  ],
+  "within": [],
+  "gene_pair": null,
+  "pair_metric": null,
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "mouse",
+  "signal_test": null,
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": false,
+  "seed": 0,
+  "n_perm": 1000
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-17T11:34:19+00:00",
+  "environment": {
+   "metric_autopsy": "0.3.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "50ee8768b9afc459d39018a3ff479a6b07e334db45f95a21552a21f592a7c43a",
+  "data_shape": [
+   2088,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "cea17e278a06fdba1f068e063131a5f27567473c8cc0ad5d5e9f5db970c1fdd5",
+  "claim_id": "63c136077eeecec950f9d9a45f7bca7dc43b345aabe919e71a8d8d8bc7eee9e5",
+  "log": null
+ }
+}

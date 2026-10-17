@@ -1,0 +1,45 @@
+# Diagnostics on the second run's data (validation/exploratory/real_pilot_diagnostics_plan.md): case2
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; STRING 10090.protein.info.v12.0.txt.gz ededc5cefddea16013c4d8f7d5a1080efea22d4b3f1f090c27019eb1d5209c08; 10090.protein.links.v12.0.txt.gz 803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d; the second run's real_pilot.json sha256 f4436ba146e2c22345de7319a39de26c94940c3ba7228ccb175d8bc23801e790
+
+## case2: 2088 cells x 2000 genes, case2.npz sha256 7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb (as select.json); groups 'female' -> 'male', unit mouse (0.1 s)
+2a: 2088 cells, mice all 3 -> 4
+2b: 2088 cells, mice all 3 -> 4
+2a: Delta -0.2215 (SE 0.04034, df 2.057); per-mouse values against the full matrix: max |diff| 0.0e+00; against the second run's (b): 7 mice, max |diff| 0.0e+00
+2b: Delta +0.67001 (SE 0.02188, df 3); per-mouse values against the full matrix: max |diff| 0.0e+00; against the second run's (b): 7 mice, max |diff| 0.0e+00
+(ii) controls 2a: 100 drawn from 1993 (1993 candidates); the claim genes' detection {'Xist': 0.19348659003831417}; the nearest's detection [0.032567049808429116, 0.37452107279693486]
+(ii) controls 2b: 100 drawn from 1993 (1993 candidates); the claim genes' detection {'Ddx3y': 0.21168582375478928, 'Eif2s3y': 0.13793103448275862, 'Kdm5d': 0.040708812260536395, 'Uty': 0.05795019157088123}; the nearest's detection {'Ddx3y': [0.1475095785440613, 0.29549808429118773], 'Eif2s3y': [0.032567049808429116, 0.29310344827586204], 'Kdm5d': [0.032567049808429116, 0.29310344827586204], 'Uty': [0.032567049808429116, 0.29310344827586204]}
+### 2a (ii) specificity: Delta -0.2215 against 100 controls: 0 at least as far in the claimed direction (decrease), p 0.009901; two-sided p 0.1287
+- the controls' Delta: 5% -0.0856, 25% -0.01614, 50% +0.04036, 75% +0.1171, 95% +0.3697; their first group's mean +0.3896 (median; +0.1317 to +0.6941), the claim's +0.227
+- (ii) does not flag
+### 2b (ii) specificity: Delta +0.67 against 100 controls: 2 at least as far in the claimed direction (increase), p 0.0297; two-sided p 0.0297
+- the controls' Delta: 5% -0.168, 25% -0.02176, 50% +0.1035, 75% +0.2231, 95% +0.5208; their first group's mean +1.153 (median; +0.6813 to +1.552), the claim's +3.726e-05
+- (ii) does not flag
+(ii): 0.6 s
+(iii) coupling at strength 50: the shared keep-probability is below 0.01 or above 0.99 in 92.7% of cells (z standard normal)
+### 2a (iii) plausibility, by stratum (h the higher group, l the lower):
+- all: |Delta| 0.2215 (female 0.227 > male 0.00555); (a) removal in h -0.227: holds (|Delta| / its size 0.976); (b) the dose responses in l 2.0: +0.001877, 10.0: +0.007986, 100.0: +0.02247, the largest at 100.0: FAILS (|Delta| / it 9.86)
+- (iii) flags: all: (b)
+### 2a (iv) agreement of log_cp10k_mean and detection, by stratum:
+- all: log_cp10k_mean Delta -0.2215 (p 0.02857, standardized -4.98); detection Delta -0.317 (p 0.02857, standardized -5.21); the same sign
+- (iv) does not flag
+### 2b (iii) plausibility, by stratum (h the higher group, l the lower):
+- all: |Delta| 0.67 (male 0.67 > female 3.726e-05); (a) removal in h -0.67: holds (|Delta| / its size 1); (b) the dose responses in l 2.0: +3.134e-05, 10.0: +0.0003173, 100.0: +0.002114, the largest at 100.0: FAILS (|Delta| / it 317)
+- (iii) flags: all: (b)
+### 2b (iv) agreement of log_cp10k_mean and detection, by stratum:
+- all: log_cp10k_mean Delta +0.67 (p 0.02857, standardized +19.8); detection Delta +0.7383 (p 0.02857, standardized +26.4); the same sign
+- (iv) does not flag
+(iii) and (iv): 0.6 s
+### 2a (i) the engine without GATE 4 and GATE 5 (13.1 s): INCONCLUSIVE — effect detected, but the metric's response to signal is untested (supply a positive control or an injected signal) [parametric only — too few replicates for the permutation test to reach alpha] [cause detected_untested_metric]
+- raw effect (first - second) +0.2215, p_raw 0.0297, raw_detected True; corrected +0.2215, p 0.02857 (DETECTED); retained +1; explained_by_depth False; reversed False; TOST True at +-0.5 (SESOI 0.5, construct)
+- thinning: pooled: male x 0.9711
+- gates: 0 PASS; 1 PASS; 2 PASS; fields: metric_validity UNTESTED; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN
+- (i) does not flag: the corrected effect is detected with the raw's sign
+### 2b (i) the engine without GATE 4 and GATE 5 (13.0 s): INCONCLUSIVE — effect detected, but the metric's response to signal is untested (supply a positive control or an injected signal) [parametric only — too few replicates for the permutation test to reach alpha] [cause detected_untested_metric]
+- raw effect (first - second) -0.67, p_raw 7.648e-05, raw_detected True; corrected -0.6701, p 0.02857 (DETECTED); retained +1; explained_by_depth False; reversed False; TOST False at +-0.5 (SESOI 0.5, construct)
+- thinning: pooled: male x 0.9711
+- gates: 0 PASS; 1 PASS; 2 PASS; fields: metric_validity UNTESTED; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN
+- (i) does not flag: the corrected effect is detected with the raw's sign
+
+case2: 28.4 s in all

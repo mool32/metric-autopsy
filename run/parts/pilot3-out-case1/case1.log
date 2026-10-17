@@ -1,0 +1,64 @@
+# Diagnostics on the second run's data (validation/exploratory/real_pilot_diagnostics_plan.md): case1
+
+engine 0.3.0.dev0 from /home/runner/work/_temp/engine/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+select.json sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac; STRING 10090.protein.info.v12.0.txt.gz ededc5cefddea16013c4d8f7d5a1080efea22d4b3f1f090c27019eb1d5209c08; 10090.protein.links.v12.0.txt.gz 803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d; the second run's real_pilot.json sha256 f4436ba146e2c22345de7319a39de26c94940c3ba7228ccb175d8bc23801e790
+
+## case1: 76797 cells x 2000 genes, case1.npz sha256 13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44 (as select.json); groups 'young' -> 'old', unit mouse (2.2 s)
+1a: 76797 cells, mice female 5 -> 3; male 5 -> 4
+1a-males: 56754 cells, mice all 5 -> 4
+1b: 76797 cells, mice female 5 -> 3; male 5 -> 4
+1a: Delta -0.0099171 (SE 0.003988, df 13); per-mouse values against the full matrix: max |diff| 0.0e+00; against the second run's (b): 17 mice, max |diff| 0.0e+00
+1a-males: Delta -0.019747 (SE 0.005327, df 4.442); per-mouse values against the full matrix: max |diff| 0.0e+00; against the second run's (b): 9 mice, max |diff| 0.0e+00
+1b: Delta +0.36866 (SE 0.12, df 13); per-mouse values against the full matrix: max |diff| 0.0e+00; against the second run's (b): 17 mice, max |diff| 0.0e+00
+(ii) controls pairs: 100 drawn from 2398 (1946 candidates); the claim genes' detection {'Smad3': 0.2247874265921846, 'Col1a1': 0.16857429326666407}; the nearest's detection {'Smad3': [0.21076344128025834, 0.23912392411161895], 'Col1a1': [0.1583916038386916, 0.17848353451306692]}; 102 pairs excluded by STRING >= 400; 1954 of 2000 genes mapped to STRING
+### 1a (ii) specificity: Delta -0.009917 against 100 controls: 24 at least as far in the claimed direction (decrease), p 0.2475; two-sided p 0.3168
+- the controls' Delta: 5% -0.03006, 25% -0.009472, 50% -0.004759, 75% -6.251e-05, 95% +0.01144; their first group's mean +0.01504 (median; +0.002244 to +0.1703), the claim's +0.02023
+- (ii) flags
+### 1a-males (ii) specificity: Delta -0.01975 against 100 controls: 8 at least as far in the claimed direction (decrease), p 0.08911; two-sided p 0.1188
+- the controls' Delta: 5% -0.03548, 25% -0.008686, 50% -0.003767, 75% +0.001106, 95% +0.01181; their first group's mean +0.01447 (median; +0.001375 to +0.2094), the claim's +0.02859
+- (ii) flags
+### 1b (ii) specificity: Delta +0.3687 against 100 controls: 98 at least as far in the claimed direction (decrease), p 0.9802; two-sided p 0.0297
+- the controls' Delta: 5% -0.1715, 25% -0.03994, 50% +0.06408, 75% +0.153, 95% +0.3142; their first group's mean -0.08215 (median; -0.3984 to +0.3705), the claim's -0.04327
+- (ii) flags
+(ii): 15.2 s
+(iii) coupling at strength 50: the shared keep-probability is below 0.01 or above 0.99 in 92.7% of cells (z standard normal)
+### 1a (iii) plausibility, by stratum (h the higher group, l the lower):
+- female: |Delta| 0.001734 (old 0.0136 > young 0.01186); (a) removal in h -0.004015: holds (|Delta| / its size 0.432); (b) the dose responses in l 1.0: +0.0002568, 3.0: +0.0024, 10.0: +0.007451, 50.0: +0.01324, the largest at 50.0: holds (|Delta| / it 0.131)
+- male: |Delta| 0.01975 (young 0.02859 > old 0.008844); (a) removal in h -0.02188: holds (|Delta| / its size 0.903); (b) the dose responses in l 1.0: +9.993e-05, 3.0: +0.00195, 10.0: +0.006939, 50.0: +0.009551, the largest at 50.0: FAILS (|Delta| / it 2.07)
+- (iii) flags: male: (b)
+### 1a (iv) agreement of mi_3bin and norm_pearson, by stratum:
+- female: mi_3bin Delta +0.001734 (p 0.6786, standardized +0.249); norm_pearson Delta +0.651 (p 0.08929, standardized +1.87); the same sign
+- male: mi_3bin Delta -0.01975 (p 0.01587, standardized -2.22); norm_pearson Delta +0.1305 (p 0.04762, standardized +1.77); opposite signs; FLAGGED
+- (iv) flags
+### 1a-males (iii) plausibility, by stratum (h the higher group, l the lower):
+- all: |Delta| 0.01975 (young 0.02859 > old 0.008844); (a) removal in h -0.02188: holds (|Delta| / its size 0.903); (b) the dose responses in l 1.0: +9.993e-05, 3.0: +0.00195, 10.0: +0.006939, 50.0: +0.009551, the largest at 50.0: FAILS (|Delta| / it 2.07)
+- (iii) flags: all: (b)
+### 1a-males (iv) agreement of mi_3bin and norm_pearson, by stratum:
+- all: mi_3bin Delta -0.01975 (p 0.01587, standardized -2.22); norm_pearson Delta +0.1305 (p 0.04762, standardized +1.77); opposite signs; FLAGGED
+- (iv) flags
+### 1b (iii) plausibility, by stratum (h the higher group, l the lower):
+- female: |Delta| 0.651 (old 0.608 > young -0.043); (a) removal in h -0.5796: FAILS (|Delta| / its size 1.12); (b) the dose responses in l 1.0: +0.05601, 3.0: +0.1237, 10.0: +0.1352, 50.0: +0.05496, the largest at 10.0: FAILS (|Delta| / it 4.81)
+- male: |Delta| 0.1305 (old 0.08693 > young -0.04354); (a) removal in h +0.01671: FAILS (|Delta| / its size inf); (b) the dose responses in l 1.0: +0.04645, 3.0: +0.1269, 10.0: +0.08492, 50.0: +0.01907, the largest at 3.0: FAILS (|Delta| / it 1.03)
+- (iii) flags: female: (a), female: (b), male: (a), male: (b)
+### 1b (iv) agreement of norm_pearson and mi_3bin, by stratum:
+- female: norm_pearson Delta +0.651 (p 0.08929, standardized +1.87); mi_3bin Delta +0.001734 (p 0.6786, standardized +0.249); the same sign
+- male: norm_pearson Delta +0.1305 (p 0.04762, standardized +1.77); mi_3bin Delta -0.01975 (p 0.01587, standardized -2.22); opposite signs; FLAGGED
+- (iv) flags
+(iii) and (iv): 7.5 s
+### 1a (i) the engine without GATE 4 and GATE 5 (743.5 s): INCONCLUSIVE — effect +0.009844 [+0.00122, +0.01847], p=0.0557 (exact permutation); neither detected nor equivalent within ±0.01568 [cause effect_inconclusive]
+- raw effect (first - second) +0.009917, p_raw 0.05357, raw_detected False; corrected +0.009844, p 0.0557 (INCONCLUSIVE); retained +0.9927; explained_by_depth False; reversed False; TOST False at +-0.01568 (SESOI 0.01568, observed)
+- thinning: female: young x 0.9108; male: old x 0.4917
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; fields: metric_validity UNTESTED; design_adequacy ADEQUATE; effect INCONCLUSIVE; replication NOT_RUN
+- (i) not applicable: the raw difference is not detected (p_raw 0.05357)
+### 1a-males (i) the engine without GATE 4 and GATE 5 (352.8 s): INCONCLUSIVE — effect detected, but the metric's response to signal is untested (supply a positive control or an injected signal) [cause detected_untested_metric]
+- raw effect (first - second) +0.01975, p_raw 0.01587, raw_detected True; corrected +0.01969, p 0.01587 (DETECTED); retained +0.9973; explained_by_depth False; reversed False; TOST False at +-0.02527 (SESOI 0.02527, observed)
+- thinning: pooled: old x 0.4917
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; fields: metric_validity UNTESTED; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN
+- (i) does not flag: the corrected effect is detected with the raw's sign
+### 1b (i) the engine without GATE 4 and GATE 5 (436.4 s): INCONCLUSIVE — effect detected, but the metric's response to signal is untested (supply a positive control or an injected signal) [underpowered relative to the SESOI] [cause detected_untested_metric]
+- raw effect (first - second) -0.3687, p_raw 0.004535, raw_detected True; corrected -0.3664, p 0.003118 (DETECTED); retained +0.9938; explained_by_depth False; reversed False; TOST False at +-0.1 (SESOI 0.1, construct)
+- thinning: female: young x 0.9108; male: old x 0.4917
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; fields: metric_validity UNTESTED; design_adequacy ADEQUATE; effect DETECTED; replication NOT_RUN
+- (i) does not flag: the corrected effect is detected with the raw's sign
+
+case1: 1560.0 s in all
