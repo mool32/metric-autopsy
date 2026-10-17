@@ -386,8 +386,9 @@ def test_a_floor_claim_reaches_the_engine_with_its_floor(tmp_path):
     (tmp_path / "out" / "reports").mkdir(parents=True)
     res = RP.run_case("case1", case, tmp_path, tmp_path / "out", lambda *m: None)
     one, fl = res["claims"]
-    assert json.dumps(one["a"], sort_keys=True, default=str).replace(str(one["a"]["seconds"]), "") == \
-        json.dumps(fl["a"], sort_keys=True, default=str).replace(str(fl["a"]["seconds"]), "")
+    def timeless(r):  # the analysis without its running time
+        return json.dumps({k: v for k, v in r.items() if k != "seconds"}, sort_keys=True, default=str)
+    assert timeless(one["a"]) == timeless(fl["a"])
     assert one["b"]["p"] == fl["b"]["p"] and one["b"]["floor"] == fl["b"]["floor"] == fl["sesoi_used"]
     assert "error" not in fl["d"], fl["d"].get("traceback")
     assert fl["d"]["prereg"]["sesoi"] == fl["b"]["floor"] and fl["d"]["prereg"]["sesoi_scale"] == "observed"
