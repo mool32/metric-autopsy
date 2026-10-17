@@ -206,3 +206,10 @@ Before the code of v0.4, four checks on the second run's files, each asked wheth
 drop of MI on §4 from the sex differences of case 2: planned, with their rules and the owner's
 prediction, in `validation/exploratory/real_pilot_diagnostics_plan.md` before their one run
 (`.github/workflows/real-pilot-3.yml`, the label `pilot-run-3`, the branch `results/real-pilot-3`).
+
+**The run:** workflow run 39029096682, one attempt, every job green; its outputs on
+`results/real-pilot-3` at 065b81e, the merged log copied here as `real_pilot_3.log`, the inputs'
+check as `real_pilot_3_inputs.log`, the tallies as `real_pilot_3_summary.py` and `.log`. Checks
+(ii) (specificity) and (iv) (agreement of measures) separate §4 from the sex differences; (i) (the
+engine without GATE 4 and 5) and (iii) (plausibility) do not. The owner's prediction holds; the
+part of (iv) on §4 was known before the run.

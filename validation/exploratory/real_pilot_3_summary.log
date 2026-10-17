@@ -1,0 +1,263 @@
+# The diagnostics' tallies (from real_pilot_3.json, sha256 6a4c705cf2e95e44cd495b36a5c1a7b385d61510c735a95c3b3ac2954a6ac8a2)
+engine 0.3.0.dev0; python 3.13.16; numpy 2.5.3; STRING 10090.protein.info.v12.0.txt.gz ededc5cefddea16013c4d8f7d5a1080efea22d4b3f1f090c27019eb1d5209c08; 10090.protein.links.v12.0.txt.gz 803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d
+parts: case1 1560.0 s, complete True; case2 28.4 s, complete True
+
+## Outcomes (the merged log's table)
+
+| check | 1a | 1a-males | 1b | 2a | 2b | separates |
+|---|---|---|---|---|---|---|
+| (i) | not applicable | does not flag | does not flag | does not flag | does not flag | does not separate |
+| (ii) | flags | flags | flags | does not flag | does not flag | separates |
+| (iii) | flags | flags | flags | flags | flags | does not separate |
+| (iv) | flags | flags | flags | does not flag | does not flag | separates |
+
+the prediction holds: True
+
+## (ii) the controls at least as far as the claim
+
+### 1a: mi_3bin(Smad3, Col1a1), decrease, Delta -0.009917
+- in the claimed direction: 24 of 100 controls at least as far (p 0.2475; the share 0.240, 95% CI 0.160 to 0.336: the outcome 'flags' holds over the whole interval)
+    -0.07723  Lum + Aebp1
+    -0.05309  Htra1 + Ogn
+    -0.03882  Ramp2 + Aebp1
+    -0.03286  Gas1 + Sfrp1
+    -0.03077  Cxcl16 + Aebp1
+    -0.03003  Cxcl16 + Mfap5
+    -0.02447  Ncf2 + Gpr34
+    -0.0215  Phlda3 + Enpp2
+    -0.02069  Ncf1 + Lat2
+    -0.01849  Irf5 + Enpp2
+    -0.0173  Naaa + Col6a2
+    -0.01563  Thbd + Aebp1
+    -0.01475  Thbd + Fbn1
+    -0.01467  Tinagl1 + Lcn2
+    -0.01459  Ncf2 + Siglech
+    -0.01454  Phlda3 + Mfap5
+    -0.01436  Ccdc80 + Tmem204
+    -0.01371  Thbd + Cdkn1c
+    -0.01244  H2-Q6 + Tmem204
+    -0.0118  Naaa + Depp1
+    -0.01118  Ncf1 + Inmt
+    -0.01104  Acvrl1 + Ins2
+    -0.011  Ccdc80 + Tnfaip8l2
+    -0.01032  Alad + Lair1
+- in absolute size: 31 of 100 at least as large (two-sided p 0.3168; 95% CI of the share 0.221 to 0.410)
+- the drawn controls' detection, by the claim gene they match: Smad3 0.2248: 0.2108 to 0.2391; Col1a1 0.1686: 0.1584 to 0.1785
+
+### 1a-males: mi_3bin(Smad3, Col1a1), decrease, Delta -0.01975
+- in the claimed direction: 8 of 100 controls at least as far (p 0.08911; the share 0.080, 95% CI 0.035 to 0.152: the outcome 'flags' is within the interval's reach of the 0.05 line)
+    -0.05414  Htra1 + Ogn
+    -0.0524  Lum + Aebp1
+    -0.04772  Cxcl16 + Aebp1
+    -0.04174  Ramp2 + Aebp1
+    -0.04008  Cxcl16 + Mfap5
+    -0.03524  Gas1 + Sfrp1
+    -0.03456  Phlda3 + Enpp2
+    -0.02169  Irf5 + Enpp2
+- in absolute size: 11 of 100 at least as large (two-sided p 0.1188; 95% CI of the share 0.056 to 0.188): P2ry12 + Syngr1 +0.06953, Htra1 + Ogn -0.05414, Lum + Aebp1 -0.0524, Ckmt1 + Gsta4 +0.0507, Cxcl16 + Aebp1 -0.04772, Ramp2 + Aebp1 -0.04174, Cxcl16 + Mfap5 -0.04008, Gas1 + Sfrp1 -0.03524, Phlda3 + Enpp2 -0.03456, Irf5 + Enpp2 -0.02169, Lum + Ngp +0.02024
+- the drawn controls' detection, by the claim gene they match: Smad3 0.2248: 0.2108 to 0.2391; Col1a1 0.1686: 0.1584 to 0.1785
+
+### 1b: norm_pearson(Smad3, Col1a1), decrease, Delta +0.3687
+- in the claimed direction: 98 of 100 controls at least as far (p 0.9802; the share 0.980, 95% CI 0.930 to 0.998: the outcome 'flags' holds over the whole interval)
+    -0.344  Cxcl16 + Mfap5
+    -0.1958  P2ry12 + Syngr1
+    -0.1873  Krt5 + Smoc2
+    -0.1851  Phlda3 + Enpp2
+    -0.1717  H2-Q6 + Tmem204
+    -0.1714  Naaa + Lat2
+    -0.1677  Hsd3b7 + Cd93
+    -0.1642  Ckmt1 + Gna15
+    -0.1638  Phlda3 + Fabp4
+    -0.1255  Thbd + Aebp1
+    -0.1026  Hmox1 + Smoc2
+    -0.09878  Ramp2 + Aebp1
+    -0.09525  Cxcl16 + Serpinb5
+    -0.07709  Naaa + Col6a2
+    -0.07693  Ramp2 + Enpp2
+    -0.07445  Cxcl16 + Aebp1
+    -0.06577  Ncf2 + Siglech
+    -0.05591  Ncf2 + Gpr34
+    -0.05491  Spint1 + Siglech
+    -0.05451  Hvcn1 + Trem2
+    -0.05336  Htra1 + Ogn
+    -0.05263  Krt14 + S100a9
+    -0.05112  Col4a2 + Tpm2
+    -0.04536  Map1b + Syngr1
+    -0.04007  Thbd + Cdkn1c
+    -0.03989  Hsd3b7 + S100a9
+    -0.02269  Ncf1 + Lat2
+    -0.01181  C3 + Gpr34
+    -0.008822  Alad + Lair1
+    -0.003191  Metrnl + Cd93
+    -0.002104  Thbd + Fbn1
+    -0.001956  Phlda3 + Mfap5
+    +0.0009986  Pkp3 + Syngr1
+    +0.003407  H2-DMb1 + Cldn7
+    +0.008274  Scd1 + Esam
+    +0.00905  Cavin2 + Tnfaip8l2
+    +0.009686  Col3a1 + Cdkn1c
+    +0.01308  Map1b + Itgb7
+    +0.02269  Lum + Aebp1
+    +0.02363  Col3a1 + Tmem86a
+    +0.02463  Prss23 + Ngp
+    +0.03012  Tinagl1 + Lcn2
+    +0.03398  Htra1 + Tmem204
+    +0.03471  C3 + Siglech
+    +0.03471  Krt5 + Cldn7
+    +0.04615  Pkp3 + Cybb
+    +0.05422  Gas1 + Sfrp1
+    +0.06023  Cxcl16 + S100a9
+    +0.06056  Cpe + Cd83
+    +0.0639  Irf5 + Serpinb5
+    +0.06425  Map1b + Vwa1
+    +0.07134  Lum + Ngp
+    +0.07573  Naaa + Efemp1
+    +0.0805  Naaa + Itgb7
+    +0.0826  Tcim + Trem2
+    +0.08274  Hvcn1 + Fbn1
+    +0.08445  Trim47 + Aebp1
+    +0.08615  Acvrl1 + Tnfaip8l2
+    +0.09075  Hsd3b7 + Trem2
+    +0.0933  Naaa + Depp1
+    +0.09446  Cd14 + Smoc2
+    +0.1008  Ramp2 + Tnfaip6
+    +0.1104  Hsd3b7 + Vwa1
+    +0.111  Alad + Vwa1
+    +0.1125  Gatm + Igf1
+    +0.116  Hmox1 + Cdkn1c
+    +0.1198  Irf5 + Gsta4
+    +0.1256  Pglyrp1 + Cd83
+    +0.1306  Prss23 + Krt19
+    +0.1377  C3 + Cdkn1c
+    +0.1388  Acvrl1 + Ins2
+    +0.1414  Lum + Tmem86a
+    +0.1449  Ccdc80 + Tnfaip8l2
+    +0.1466  Gimap1 + Lcn2
+    +0.1513  Ccdc80 + Tmem204
+    +0.1581  Spint1 + Fabp4
+    +0.1656  Lsr + Trem2
+    +0.1669  H2-Q6 + Krt19
+    +0.1683  Krt14 + Col6a2
+    +0.1696  Thbd + Tnfaip8l2
+    +0.1813  P2ry12 + Cyp4b1
+    +0.185  Col1a2 + Cybb
+    +0.1919  Ncf1 + Inmt
+    +0.1941  Naaa + Gata3
+    +0.1949  Gatm + Cd79a
+    +0.1953  Hvcn1 + Smoc2
+    +0.2073  Maged2 + Cd79a
+    +0.208  Ncf2 + Tpm2
+    +0.2207  Irf5 + Enpp2
+    +0.2266  Pkp3 + Fabp4
+    +0.2395  Krt5 + Fbln2
+    +0.2698  Alad + Lat2
+    +0.2881  H2-Q6 + Ogn
+    +0.2939  Ckmt1 + Gsta4
+    +0.3138  Prss23 + Tnfaip8l2
+    +0.3222  Gatm + Krt19
+    +0.3281  Irf5 + Efemp1
+    +0.3444  Ramp2 + Krt19
+- in absolute size: 2 of 100 at least as large (two-sided p 0.0297; 95% CI of the share 0.002 to 0.070): Spint1 + Col6a2 +0.4574, Fbln1 + Trem2 +0.4505
+- the drawn controls' detection, by the claim gene they match: Smad3 0.2248: 0.2108 to 0.2391; Col1a1 0.1686: 0.1584 to 0.1785
+
+### 2a: log_cp10k_mean(Xist), decrease, Delta -0.2215
+- in the claimed direction: 0 of 100 controls at least as far (p 0.009901; the share 0.000, 95% CI 0.000 to 0.036: the outcome 'does not flag' holds over the whole interval)
+- in absolute size: 12 of 100 at least as large (two-sided p 0.1287; 95% CI of the share 0.064 to 0.200): Ifi205 +0.8728, Itgbl1 +0.5167, Pla1a +0.494, Tmem100 +0.411, Timp1 +0.3937, Adgrd1 +0.3685, Man2b2 +0.2971, Slco3a1 +0.2784, Thbs3 +0.2762, Ccn5 +0.267, Lims2 +0.2433, Rhbdf1 +0.2273
+- the drawn controls' detection, by the claim gene they match: Xist 0.1935: 0.0896 to 0.3745
+
+### 2b: log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty), increase, Delta +0.67
+- in the claimed direction: 2 of 100 controls at least as far (p 0.0297; the share 0.020, 95% CI 0.002 to 0.070: the outcome 'does not flag' is within the interval's reach of the 0.05 line)
+    +0.8026  Igfbp5 + C4b + Ifit3 + Pgf
+    +0.7189  Ggt5 + C4b + F3 + Postn
+- in absolute size: 2 of 100 at least as large (two-sided p 0.0297; 95% CI of the share 0.002 to 0.070): Igfbp5 + C4b + Ifit3 + Pgf +0.8026, Ggt5 + C4b + F3 + Postn +0.7189
+- the drawn controls' detection, by the claim gene they match: Ddx3y 0.2117: 0.1475 to 0.2955; Eif2s3y 0.1379: 0.0896 to 0.2931; Kdm5d 0.0407: 0.0326 to 0.2931; Uty 0.0580: 0.0326 to 0.2931
+
+## (iii) per mouse: the claim's value, the response at the largest dose, the change at full removal
+
+### 1a: flags (male: (b))
+- female: h old, l young; |Delta| 0.001734; (a) removal in h -0.004015, |Delta| / its size 0.432; (b) the largest mean response in l +0.01324 at 50.0, |Delta| / it 0.131
+- male: h young, l old; |Delta| 0.01975; (a) removal in h -0.02188, |Delta| / its size 0.903; (b) the largest mean response in l +0.009551 at 50.0, |Delta| / it 2.07
+    21_48_F: value 0.02127; response at 50.0 -0.0019781; removal -0.01008
+    21_54_F: value 0.00989; response at 50.0 +0.0069258; removal -0.0030511
+    21_55_F: value 0.00963; response at 50.0 -0.00084679; removal +0.0010869
+    24_58_M: value 0.00724; response at 50.0 +0.0086496; removal -0.00694
+    24_59_M: value 0.01112; response at 50.0 +0.010466; removal -0.010877
+    24_60_M: value 0.00627; response at 50.0 +0.0078213; removal -0.0059958
+    24_61_M: value 0.01075; response at 50.0 +0.011269; removal -0.010538
+    3_10_M: value 0.01656; response at 50.0 +0.019719; removal -0.016185
+    3_10_M/3_11_M: value 0.04692; response at 50.0 +0.013703; removal -0.014795
+    3_11_M: value 0.03137; response at 50.0 +0.032447; removal -0.030835
+    3_38_F: value 0.00490; response at 50.0 +0.011608; removal -0.0046244
+    3_38_F/3_39_F: value 0.02200; response at 50.0 +0.0080467; removal +0.0074087
+    3_39_F: value 0.00700; response at 50.0 +0.017478; removal -0.0067323
+    3_56_F: value 0.01636; response at 50.0 +0.031265; removal -0.015697
+    3_57_F: value 0.00905; response at 50.0 -0.0021811; removal -0.0031958
+    3_8_M: value 0.02604; response at 50.0 +0.036204; removal -0.025783
+    3_9_M: value 0.02207; response at 50.0 +0.027775; removal -0.02178
+
+### 1a-males: flags (all: (b))
+- all: h young, l old; |Delta| 0.01975; (a) removal in h -0.02188, |Delta| / its size 0.903; (b) the largest mean response in l +0.009551 at 50.0, |Delta| / it 2.07
+    24_58_M: value 0.00724; response at 50.0 +0.0086496; removal -0.00694
+    24_59_M: value 0.01112; response at 50.0 +0.010466; removal -0.010877
+    24_60_M: value 0.00627; response at 50.0 +0.0078213; removal -0.0059958
+    24_61_M: value 0.01075; response at 50.0 +0.011269; removal -0.010538
+    3_10_M: value 0.01656; response at 50.0 +0.019719; removal -0.016185
+    3_10_M/3_11_M: value 0.04692; response at 50.0 +0.013703; removal -0.014795
+    3_11_M: value 0.03137; response at 50.0 +0.032447; removal -0.030835
+    3_8_M: value 0.02604; response at 50.0 +0.036204; removal -0.025783
+    3_9_M: value 0.02207; response at 50.0 +0.027775; removal -0.02178
+
+### 1b: flags (female: (a), female: (b), male: (a), male: (b))
+- female: h old, l young; |Delta| 0.651; (a) removal in h -0.5796, |Delta| / its size 1.12; (b) the largest mean response in l +0.1352 at 10.0, |Delta| / it 4.81
+- male: h old, l young; |Delta| 0.1305; (a) removal in h +0.01671, |Delta| / its size inf; (b) the largest mean response in l +0.1269 at 3.0, |Delta| / it 1.03
+    21_48_F: value 0.97003; response at 50.0 +0.16715; removal -1.0216
+    21_54_F: value 0.85384; response at 50.0 +0.35646; removal -0.83477
+    21_55_F: value 0.00000; response at 50.0 +0; removal +0.11763
+    24_58_M: value -0.01026; response at 50.0 +0.052713; removal +0.044958
+    24_59_M: value 0.06774; response at 50.0 +0.094337; removal +0.050901
+    24_60_M: value 0.16825; response at 50.0 +0.022945; removal -0.054386
+    24_61_M: value 0.12201; response at 50.0 +0.0092123; removal +0.025352
+    3_10_M: value 0.03100; response at 50.0 +0.034251; removal -0.012109
+    3_10_M/3_11_M: value 0.00000; response at 50.0 +0; removal -0.016579
+    3_11_M: value -0.14511; response at 50.0 +0.030163; removal +0.15263
+    3_38_F: value 0.03186; response at 50.0 +0.037832; removal +0.009731
+    3_38_F/3_39_F: value 0.00000; response at 50.0 +0; removal +0.076598
+    3_39_F: value 0.04182; response at 50.0 +0.043626; removal +0.010358
+    3_56_F: value 0.11364; response at 50.0 +0.07857; removal -0.072581
+    3_57_F: value -0.40231; response at 50.0 +0.11479; removal +0.49797
+    3_8_M: value -0.08615; response at 50.0 +0.01561; removal +0.1205
+    3_9_M: value -0.01742; response at 50.0 +0.015328; removal +0.056615
+
+### 2a: flags (all: (b))
+- all: h female, l male; |Delta| 0.2215; (a) removal in h -0.227, |Delta| / its size 0.976; (b) the largest mean response in l +0.02247 at 100.0, |Delta| / it 9.86
+    3_10_M: value 0.00000; response at 100.0 +0; removal +0
+    3_11_M: value 0.00012; response at 100.0 +0.0063357; removal -0.00011552
+    3_38_F: value 0.16831; response at 100.0 +0.70602; removal -0.16831
+    3_39_F: value 0.20924; response at 100.0 +1.0217; removal -0.20924
+    3_56_F: value 0.30359; response at 100.0 +1.4158; removal -0.30359
+    3_8_M: value 0.00231; response at 100.0 +0.012712; removal -0.0023129
+    3_9_M: value 0.01977; response at 100.0 +0.070824; removal -0.019771
+
+### 2b: flags (all: (b))
+- all: h male, l female; |Delta| 0.67; (a) removal in h -0.67, |Delta| / its size 1; (b) the largest mean response in l +0.002114 at 100.0, |Delta| / it 317
+    3_10_M: value 0.67587; response at 100.0 +2.5921; removal -0.67587
+    3_11_M: value 0.62980; response at 100.0 +2.6304; removal -0.6298
+    3_38_F: value 0.00011; response at 100.0 +0.0063423; removal -0.00011179
+    3_39_F: value 0.00000; response at 100.0 +0; removal +0
+    3_56_F: value 0.00000; response at 100.0 +0; removal +0
+    3_8_M: value 0.64543; response at 100.0 +2.7015; removal -0.64543
+    3_9_M: value 0.72908; response at 100.0 +3.0328; removal -0.72908
+
+## (i) the engine without GATE 4 and GATE 5
+- 1a: not applicable (the raw difference is not detected (p_raw 0.05357)); raw +0.009917 (p 0.05357), corrected +0.009844 (p 0.0557, INCONCLUSIVE), retained 0.9927; thinning female: young x 0.9108; male: old x 0.4917; verdict INCONCLUSIVE [effect_inconclusive]; 743.5 s
+- 1a-males: does not flag (the corrected effect is detected with the raw's sign); raw +0.01975 (p 0.01587), corrected +0.01969 (p 0.01587, DETECTED), retained 0.9973; thinning pooled: old x 0.4917; verdict INCONCLUSIVE [detected_untested_metric]; 352.8 s
+- 1b: does not flag (the corrected effect is detected with the raw's sign); raw -0.3687 (p 0.004535), corrected -0.3664 (p 0.003118, DETECTED), retained 0.9938; thinning female: young x 0.9108; male: old x 0.4917; verdict INCONCLUSIVE [detected_untested_metric]; 436.4 s
+- 2a: does not flag (the corrected effect is detected with the raw's sign); raw +0.2215 (p 0.0297), corrected +0.2215 (p 0.02857, DETECTED), retained 1.0000; thinning pooled: male x 0.9711; verdict INCONCLUSIVE [detected_untested_metric]; 13.1 s
+- 2b: does not flag (the corrected effect is detected with the raw's sign); raw -0.67 (p 7.648e-05), corrected -0.6701 (p 0.02857, DETECTED), retained 1.0001; thinning pooled: male x 0.9711; verdict INCONCLUSIVE [detected_untested_metric]; 13.0 s
+
+## (iv) the two measures by stratum
+- 1a (mi_3bin against norm_pearson): flags; female +0.001734 (p 0.6786) against +0.651 (p 0.08929); male -0.01975 (p 0.01587) against +0.1305 (p 0.04762)
+- 1a-males (mi_3bin against norm_pearson): flags; all -0.01975 (p 0.01587) against +0.1305 (p 0.04762)
+- 1b (norm_pearson against mi_3bin): flags; female +0.651 (p 0.08929) against +0.001734 (p 0.6786); male +0.1305 (p 0.04762) against -0.01975 (p 0.01587)
+- 2a (log_cp10k_mean against detection): does not flag; all -0.2215 (p 0.02857) against -0.317 (p 0.02857)
+- 2b (log_cp10k_mean against detection): does not flag; all +0.67 (p 0.02857) against +0.7383 (p 0.02857)
