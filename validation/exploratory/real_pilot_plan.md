@@ -169,7 +169,8 @@ development data, so a deviation is admissible. Case 3 is not run again.
   its cells, and a Y gene in at least ten times that share and in at least 5% of them. A mouse that
   is neither, or whose call contradicts its label, is excluded. By this rule 3_38_F (42.1% against
   1.5%) is female. The rest is as in the plan: composite ids excluded, the cell type by the rule,
-  the claims 2a and 2b with R1's settings.
+  the claims 2a and 2b with R1's settings. The owner approved this form of the rule, ten times and
+  5%, on 2026-10-17.
 - **Case 1: §4's setup as the audit reproduced it** (`validation/flagship_audit/REPORT.md`, the
   mouse as the unit), not one cell type by a rule. The cells are every primary Smart-seq2 cell of TMS
   FACS at the 3-month stage and the "20-month-old stage and over" stage, both sexes, every cell type
@@ -198,3 +199,10 @@ development data, so a deviation is admissible. Case 3 is not run again.
   (b)'s per-mouse `mi_3bin` of Smad3 and Col1a1 is compared with the audit's values; a difference is
   reported, not corrected. Case 1's cells (about 77,000) are read from the Census in blocks of
   10,000. The design's floor is reported for every claim, beside its SESOI.
+
+## The diagnostics on the second run's data (the owner, 2026-10-17)
+
+Before the code of v0.4, four checks on the second run's files, each asked whether it separates the
+drop of MI on §4 from the sex differences of case 2: planned, with their rules and the owner's
+prediction, in `validation/exploratory/real_pilot_diagnostics_plan.md` before their one run
+(`.github/workflows/real-pilot-3.yml`, the label `pilot-run-3`, the branch `results/real-pilot-3`).
