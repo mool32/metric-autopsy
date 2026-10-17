@@ -273,7 +273,12 @@ def test_attenuation_is_a_power_check_in_design_adequacy():
     assert power["lambda_"] < 1 and power["effective_sesoi"] == pytest.approx(0.05 * power["lambda_"])
 
 
-def test_underpowered_design_is_flagged_and_named_in_the_verdict():
+def test_underpowered_design_is_flagged_and_named_in_the_verdict(monkeypatch):
+    # The power check only: GATE 0's depth perturbation stays (it measures the attenuation), its
+    # dropout perturbation is replaced by the identity. On these data at SESOI 0.02 the dropout
+    # bias (about 0.021 against a tolerance of 0.01) fails GATE 0 on 4 of 40 seeds; seed 0 passed
+    # until v0.4 keyed the draws by the claim.
+    monkeypatch.setattr(_gates, "_perturb", _only({"depth_downsample"}))
     a = _run(nested_mice(4, c_young=1.5, c_old=1.4, mouse_sd=0.4, seed=3), replicate_col="mouse",
              prereg={**COMPOSITION, "sesoi": 0.02})
     assert "UNDERPOWERED" in a.design_adequacy.flags
@@ -357,18 +362,35 @@ def test_injected_signal_can_establish_metric_validity_without_controls():
     assert a.verdict == "SUPPORTED (provisional until replicated)"
 
 
-def test_injected_module_raises_relative_expression_and_keeps_counts():
+def test_injected_module_lowers_the_module_by_thinning_its_own_genes():
+    """v0.4 change 2: the module probe thins the module's own genes to 1/fold, counts staying real,
+    leaves every other gene as it is, has no sham (the reference is the untouched data) and names
+    its direction (a decrease) and its genes. v0.3 raised the module by thinning every other gene."""
     d = make_clean()
-    out = injected_signal.module(["Smad3", "Col1a1"], fold=2.0, frac=1.0)(d, np.random.default_rng(0))
+    inject = injected_signal.module(["Smad3", "Col1a1"], fold=2.0, frac=1.0)
+    out = inject(d, np.random.default_rng(0))
     assert np.allclose(out.X, np.round(out.X)) and out.X.min() >= 0
-    frac = lambda X: X[:, :2].sum() / X.sum()  # noqa: E731
-    assert frac(out.X) > 1.5 * frac(d.X)
+    names = list(d.var_names)
+    mod = [names.index("Smad3"), names.index("Col1a1")]
+    rest = [j for j in range(len(names)) if j not in mod]
+    assert np.array_equal(out.X[:, rest], d.X[:, rest])
+    assert out.X[:, mod].sum() == pytest.approx(0.5 * d.X[:, mod].sum(), rel=0.05)
+    assert inject.sham is None and inject.direction == "decrease" and inject.genes == ("Smad3", "Col1a1")
+    share = d.X[:, mod].sum() / d.X.sum()
+    assert inject.depth_loss(d) == pytest.approx(0.5 * share)
+    # the column-local form draws exactly what the injection into a copy draws
+    cols = inject.columns(d.X[:, mod], np.random.default_rng(0))
+    assert np.array_equal(cols, out.X[:, mod])
+    half = injected_signal.module(["Smad3"], fold=2.0, frac=0.5)(d, np.random.default_rng(1))
+    changed = np.mean(half.X[:, mod[0]] != d.X[:, mod[0]])
+    assert 0.1 < changed < 0.5  # only a random half of the cells is thinned
 
 
 def test_injected_module_updates_total_counts_under_copy_on_write():
     """With pandas' copy-on-write (the default from pandas 3) an array taken from an obs column is
     read-only: the module injection and its sham wrote the library sizes into one and failed (CI,
-    the panel's N6c cards would have been engine errors). They now write into a copy."""
+    the panel's N6c cards would have been engine errors). They now write into a copy (the module
+    has no sham since v0.4)."""
     import pandas as pd
     d = make_clean()
     d.obs["total_counts"] = d.X.sum(axis=1).astype(float)
@@ -380,7 +402,7 @@ def test_injected_module_updates_total_counts_under_copy_on_write():
     except Exception:  # pandas >= 3: copy-on-write is always on
         pass
     try:
-        for fn in (inject, inject.sham):
+        for fn in (inject,):
             out = fn(d, np.random.default_rng(0))
             tot = np.asarray(out.obs["total_counts"], dtype=float)
             assert np.all(tot <= np.asarray(d.obs["total_counts"]) + 1e-9) and tot.min() >= 0
@@ -660,11 +682,17 @@ def test_unsized_and_tolerated_biases_reach_the_verdict(monkeypatch):
     assert unsized.effect.status == "DETECTED"
     assert unsized.verdict.startswith("INCONCLUSIVE") and "cannot be sized" in unsized.verdict
     assert "declare a SESOI" in unsized.verdict
-    # a SESOI of 1.0 would also set delta_min to 0.5, more than this injection moves the metric:
-    # delta_min is pre-registered on its own here, so that only the bias tolerance changes
-    tolerated = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0, "delta_min": 0.02}, **kw)
+    # the tolerance, 0.5 here, is set by bias_tolerance x SESOI; delta_min is pre-registered on its
+    # own, so that only the bias tolerance changes (0.5 x SESOI would be more than this injection
+    # moves the metric)
+    tolerated = _run(d, metric=_depth_biased,
+                     prereg={**claim, "sesoi": 0.5, "bias_tolerance": 1.0, "delta_min": 0.02}, **kw)
     assert "BIAS_BELOW_TOLERANCE" in tolerated.metric_validity.flags
     assert tolerated.verdict.startswith("SUPPORTED"), tolerated.verdict
+    # the same tolerance from a SESOI of 1.0: the effect (+0.65) is then shown smaller than the SESOI,
+    # EFFECT BELOW SESOI since v0.4 (change 14), where v0.3 said SUPPORTED
+    below = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 1.0, "delta_min": 0.02}, **kw)
+    assert "BIAS_BELOW_TOLERANCE" in below.metric_validity.flags and below.cause == "effect_below_sesoi"
     blocking = _run(d, metric=_depth_biased, prereg={**claim, "sesoi": 0.1}, **kw)
     assert blocking.metric_validity.status == "FAIL"
     assert blocking.verdict.startswith("NOT SUPPORTED — metric invalid")
@@ -807,6 +835,9 @@ def _autopsy(mv="PASS", da="ADEQUATE", ef="DETECTED", rp="NOT_RUN", pending=Fals
     (dict(mv="UNTESTED", ef="NO_DETECTABLE_EFFECT"), "INCONCLUSIVE"),
     (dict(mv="UNTESTED"), "INCONCLUSIVE — effect detected, but the metric's response"),
     (dict(rp="NOT_REPLICATED"), "NOT SUPPORTED — the effect did not replicate"),
+    (dict(ef="INCONCLUSIVE", ef_detail={"detected_only_after_correction": True}), "INCONCLUSIVE"),
+    (dict(ef_detail={"tost_equivalent": True, "ci_2alpha": (0.1, 0.2), "effective_sesoi": 1.0}),
+     "EFFECT BELOW SESOI"),
     (dict(pending=True), "INCONCLUSIVE — effect detected; judgment gates"),
     (dict(rp="REPLICATED"), "SUPPORTED — replicated"),
     (dict(), "SUPPORTED (provisional until replicated)"),

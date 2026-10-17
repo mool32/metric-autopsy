@@ -5,6 +5,65 @@ All notable changes to `metric-autopsy` are documented here. Format follows
 [SemVer](https://semver.org/). Downstream papers should cite a fixed version for
 comparability.
 
+## [0.4.0.dev0] — in development, not released
+
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-17):
+1, 2, 6, 7 (its decided minimum), 8, 14, 15 and 16. Changes 3, 4 and 13 wait on the owner's decision
+after the second diagnostics on the pilot's data (`validation/exploratory/real_pilot_4.log`).
+Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
+
+### Changed
+- **GATE 4 on the claim's own statistic (change 1).** With a replicate unit the signal goes into
+  the group whose replicates have more of the probed genes' counts per cell, whatever the claim's
+  wording (on an exact tie into each group, the weaker response judged); the response is the
+  change of the replicate-level difference that the effect test uses, with its interval over the
+  injected group's replicates (`GATE4_N_REP_REPLICATE` = 50 injections within each), judged
+  against the injection's own direction (`inject.direction`). v0.3's all-cell response stays in
+  the detail (`all_cells`) and is the judged response without a replicate unit; a direct call
+  without the claim's groups is v0.3's gate.
+- **Keyed draws (change 1).** Every gate's random stream is seeded by the data's hash, the claim's
+  canonical form (`provenance.canonical_claim`: the metric, the genes, the groups sorted and the
+  direction for that order) and `seed` (`provenance.claim_seed`): a mirrored wording gets the
+  same draws and verdict, two claims on the same data different draws. The tie rules of GATE 1's
+  bootstrap and of the thinning follow the groups' labels, not their order. Numbers that depend on
+  draws differ from v0.3's for the same `seed`.
+- **The data hash** (`provenance.sha256_data`) reads the values whatever their storage (a canonical
+  CSR of float64 values): a SimpleData and an AnnData with a sparse X of the same data have one
+  hash. Hashes differ from v0.3's, so the run log counts attempts afresh.
+- **The module probe lowers the module by thinning its own genes (change 2)**, `fold`-times in a
+  random `frac` of cells (all by default), against the untouched data and without a sham; it
+  names its genes, its direction (a decrease) and the share of counts it removes
+  (`inject.depth_loss`). v0.3 raised the module by thinning every other gene against a sham.
+- **A correction can only remove a conclusion (change 6).** An effect counts as detected only if
+  the raw replicate-level test detects it too, in the same direction; otherwise INCONCLUSIVE, cause
+  `detected_only_after_correction`, and GATE 2 warns. The TOST also runs on the uncorrected data:
+  a NO DETECTABLE EFFECT that only the corrected data show carries ABSENCE_ONLY_AFTER_CORRECTION.
+  The report checks the data against the capture model (`equalization.capture_check`).
+- **EFFECT BELOW SESOI (change 14):** a detected effect in the claimed direction whose (1 − 2α)
+  interval lies within the effective SESOI; cause `effect_below_sesoi`. It comes after the
+  replication check and before the judgment gates.
+
+### Added
+- **Composition (change 7, the decided minimum):** `run_autopsy(composition=[...])`, the CLI's
+  `--composition` and the MCP tool's `composition` name obs columns of an annotation (cell type
+  first): their shares per replicate are compared between the groups (the total variation
+  distance and each level's difference, with permutation p over the replicates;
+  `composition.composition_difference`), the claim is judged within each cell type with at least
+  20 cells in at least 3 replicates of each group, the verdicts not combined
+  (`report.per_type_verdicts`; a type absent from every replicate of one group is UNIDENTIFIABLE),
+  and a difference of composition is noted in the verdict. Composition removes no conclusion:
+  by which rule it would is not decided (on section 4 the drop of MI stayed within types).
+- **The engine's `norm_pearson` beside a pair's metric (change 15)**, by stratum, on the
+  uncorrected data (`Autopsy.reference`, `report.coupling_reference`); reported, not a gate.
+- **Units whose ids name several animals (change 16)** are flagged COMPOSITE_UNITS, with the
+  units they overlap (`effect.composite_units`); a warning, not an exclusion.
+- `stats.nested_relabelings` and `stats.relabeling_p`: the effect test's relabelings for a
+  statistic of any shape.
+
+### Removed
+- **The internal checklist's "2.4x" in `qc.py`'s docstring (change 8)**, a number without a
+  script; the docstring points to the flagship audit's report instead.
+
 ## [Unreleased]
 
 The record of validation v1; the release is postponed until the check on real data (the owner's

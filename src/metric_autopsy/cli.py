@@ -115,6 +115,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
     p.add_argument("--inject-signal", choices=["coupling"],
                    help="test the metric's response to an injected coupling of the gene pair")
+    p.add_argument("--composition", nargs="*", default=[],
+                   help="obs columns of an annotation, the cell type first (e.g. cell_type tissue): their shares "
+                        "are compared between the groups at the replicate level and the claim is judged within "
+                        "each cell type, the verdicts not combined (reported, not gates)")
     p.add_argument("--pos-pair", nargs=2)
     p.add_argument("--neg-pair", nargs=2)
     p.add_argument("--data2", help="second .h5ad for GATE 6 replication")
@@ -194,6 +198,7 @@ def main(argv=None):
         signal_test=signal,
         seed=args.seed,
         log_path=log_path,
+        composition=args.composition,
     )
     autopsy.metric_name = args.metric
     print(autopsy.to_markdown())

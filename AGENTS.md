@@ -54,6 +54,7 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 | `src/metric_autopsy/provenance.py` | data / pre-registration hashes, versions, run log |
 | `src/metric_autopsy/metrics.py` | reference metrics (`mi_3bin`, `norm_pearson`, …) |
 | `src/metric_autopsy/report.py` | `run_autopsy` orchestration, the four fields, `decide` (the verdict rule) |
+| `src/metric_autopsy/composition.py` | the comparison's composition in cell types and tissues, the claim per type (v0.4; reported, not a gate) |
 | `src/metric_autopsy/mcp_server.py` | MCP tools |
 | `references/` | full gate definitions, red flags, the pre-reg form (load on demand) |
 | `examples/mi_coupling_tms/` | worked example + executed notebook |

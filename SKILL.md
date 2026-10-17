@@ -116,8 +116,9 @@ INCONCLUSIVE.
 Print `Autopsy.to_markdown()`: the verdict, the four fields with their reasons, the
 gate-by-gate table, and the provenance hashes. Keep the JSON report (`--json`) with the data
 and pre-registration hashes. The verdict is one of SUPPORTED (provisional until replicated) ·
-SUPPORTED — replicated · NOT SUPPORTED · NO DETECTABLE EFFECT · INCONCLUSIVE · UNIDENTIFIABLE ·
-DEGENERATE METRIC, with its qualifiers (*parametric only*, *underpowered*). Follow the
+SUPPORTED — replicated · EFFECT BELOW SESOI · NOT SUPPORTED · NO DETECTABLE EFFECT · INCONCLUSIVE ·
+UNIDENTIFIABLE · DEGENERATE METRIC, with its qualifiers (*parametric only*, *underpowered*, a
+difference of composition). Follow the
 research-flow rule: a failed metric is recorded as **killed**, plainly, with the number that
 killed it — never softened. SUPPORTED is provisional ("real until replicated"), not a victory
 lap. If the run log shows earlier attempts at the same claim, say so.

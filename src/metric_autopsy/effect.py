@@ -30,6 +30,11 @@ Steps (``estimate_effect``):
    cannot be "explained": the effect is then INCONCLUSIVE, and the reason reports how much
    of it the correction left. (Testing raw minus corrected per replicate instead would be
    anti-conservative: the untouched group's component is zero by construction.)
+   A correction can only remove a conclusion, never create one (v0.4 change 6): DETECTED needs
+   the effect detected, in one direction, by the raw replicate-level test (the same data without
+   the correction) and by the corrected one; ``detected_only_after_correction`` marks the rest,
+   INCONCLUSIVE. The TOST runs on the uncorrected data too, and an absence that only the corrected
+   data show is flagged ABSENCE_ONLY_AFTER_CORRECTION (reported, not blocking).
 5. **Power.** The SESOI is declared on the construct scale. GATE 0's attenuation under
    depth halving gives a reliability-model estimate of how much of a construct-scale
    difference survives at the analysed depth (lambda). The design is UNDERPOWERED when the
@@ -130,6 +135,26 @@ def _replicate_design(obs, group_col, groups, replicate_col, within):
     else:
         strata = {r: "" for r in reps}
     return dict(kind=kind, reps=reps, membership=membership, strata=strata)
+
+
+_UNIT_SEPARATORS = "/+,;&|"
+
+
+def composite_units(reps) -> list:
+    """Units whose id names several animals (parts joined by one of ``/ + , ; & |``) and the other
+    units they overlap with (decided 2026-10-17, v0.4 change 16: on preprint section 4's setup two
+    units held two mice each, 3_10_M/3_11_M and 3_38_F/3_39_F, whose parts were units of their own).
+    A check of the ids' text, not of the cells: it warns, it does not exclude."""
+    import re
+    split = re.compile("\\s*[" + re.escape(_UNIT_SEPARATORS) + "]\\s*")
+    ids = [str(r) for r in reps]
+    parts = {r: {x for x in split.split(r) if x} or {r} for r in ids}
+    out = []
+    for r in ids:
+        if len(parts[r]) >= 2:
+            out.append(dict(unit=r, names=sorted(parts[r]),
+                            overlaps=sorted(u for u in ids if u != r and parts[u] & parts[r])))
+    return out
 
 
 def _tier(n_eff: int, min_replicates: int) -> str:
@@ -291,10 +316,49 @@ def assess_design(
     tier = _tier(n_eff, min_replicates)
     design.update(rep_design=rep_design, tier=tier,
                   replication=dict(kind=rep_design["kind"], counts=counts, n_eff=n_eff))
+    composite = composite_units(rep_design["reps"])
+    if composite:
+        design["composite_units"] = composite
+        design["notes"].append(
+            "units whose ids name several animals: " + "; ".join(
+                f"{c['unit']}" + (f" (overlaps {', '.join(c['overlaps'])})" if c["overlaps"] else "")
+                for c in composite) + " — each counts as one replicate; check that it is one")
     if tier == "insufficient":
         design["tier_reason"] = (f"{n_eff} replicate(s) per group (need >= "
                                  f"{max(3, int(min_replicates or 3))}): no effect verdict")
     return design
+
+
+def capture_check(raw: SimpleData, equalized: SimpleData, group_col: str, groups, replicate_col=None) -> dict:
+    """The data against the capture model, for the report (not a gate; v0.4 change 6, decided).
+
+    Under the model behind the thinning the groups differ by capture alone, so at equal depth their
+    cells detect as many genes. Per group: the mean of the replicates' (else the cells') mean depth
+    and genes detected per cell, before and after the thinning, and the groups' relative difference.
+    A difference in genes detected that the thinning leaves is either biology or an artifact the
+    capture model does not describe (entry-level dropout, say); the check cannot tell which."""
+    out = {}
+    for name, d in (("raw", raw), ("equalized", equalized)):
+        X = d.X if isinstance(d.X, np.ndarray) else np.asarray(d.X)
+        depth = X.sum(axis=1)
+        genes = (X > 0).sum(axis=1)
+        grp = np.asarray(d.obs[group_col])
+        rep = np.asarray(d.obs[replicate_col]).astype(str) if replicate_col else None
+        row = {}
+        for g in groups:
+            m = grp == g
+            if rep is None:
+                row[str(g)] = dict(depth=float(depth[m].mean()) if m.any() else float("nan"),
+                                   genes=float(genes[m].mean()) if m.any() else float("nan"), unit="cells")
+                continue
+            units = [r for r in dict.fromkeys(rep[m])]
+            row[str(g)] = dict(depth=float(np.mean([depth[m & (rep == r)].mean() for r in units])) if units else float("nan"),
+                               genes=float(np.mean([genes[m & (rep == r)].mean() for r in units])) if units else float("nan"),
+                               unit="replicates")
+        a, b = row[str(groups[0])], row[str(groups[1])]
+        row["relative_difference"] = {k: (a[k] / b[k] - 1.0 if b[k] else float("nan")) for k in ("depth", "genes")}
+        out[name] = row
+    return out
 
 
 def public_design(design: dict) -> dict:
@@ -346,6 +410,8 @@ def estimate_effect(
             eq_sets.append(eq)
             eq_info = eq_info or info
     depth_ratio = eq_info["depth_ratio"] if eq_info else 1.0
+    if eq_info is not None:
+        eq_info["capture_check"] = capture_check(sd, eq_sets[0], group_col, groups, replicate_col)
     design["equalization"] = eq_info
 
     cell_raw = _cell_effect(metric, sd, group_col, groups)
@@ -429,6 +495,20 @@ def estimate_effect(
     reversed_ = bool(design["correction"] in THINNING and inf_raw["detected"] and inf["detected"]
                      and np.isfinite(raw_est) and np.isfinite(est) and np.sign(est) != np.sign(raw_est))
     detail["reversed_by_correction"] = reversed_
+    # a correction can only remove a conclusion, never create one (v0.4 change 6): the corrected
+    # effect counts as detected only where the raw test detects it too, in the same direction
+    created = bool(design["correction"] in THINNING and inf["detected"] and not reversed_
+                   and not (inf_raw["detected"] and np.isfinite(raw_est) and np.sign(raw_est) == np.sign(est)))
+    detail["detected_only_after_correction"] = created
+    # the TOST on the uncorrected data, at their own depth (decided 2026-10-12): an absence that
+    # only the corrected data show is marked, not blocked
+    lam_raw, _ = attenuation_lambda(attenuation_half, 1.0, sesoi_scale)
+    eff_sesoi_raw = lam_raw * sesoi if sesoi is not None else None
+    lo2r, hi2r = inf_raw["ci_2alpha"]
+    equivalent_raw = (eff_sesoi_raw is not None and eff_sesoi_raw > 0 and np.isfinite(lo2r) and np.isfinite(hi2r)
+                      and lo2r > -eff_sesoi_raw and hi2r < eff_sesoi_raw)
+    detail.update(tost_equivalent_raw=bool(equivalent_raw) if eff_sesoi_raw is not None else None,
+                  effective_sesoi_raw=eff_sesoi_raw, ci_2alpha_raw=inf_raw["ci_2alpha"])
 
     ci = inf["ci"]
     p_txt = (f"p={inf['perm'].p:.3g} ({inf['perm'].method} permutation)" if tier == "permutation"
@@ -448,13 +528,25 @@ def estimate_effect(
             f"the correction reversed the sign: raw {raw_est:+.4g} (detected) -> {est_txt} at equal "
             f"{what}, {p_txt}; the technical difference is larger than the effect, so its direction "
             "depends on how exactly the correction removed it", flags, detail), public_design(design)
+    if created:
+        what = "depth" if design["correction"] == "depth_thinning" else "capture"
+        return Assessment(
+            "INCONCLUSIVE",
+            f"effect {est_txt} at equal {what}, {p_txt}, but the raw difference {raw_est:+.4g} is not "
+            f"detected at the replicate level in that direction (p={detail['p_raw']:.3g}): a correction "
+            "can only remove a conclusion, never create one", flags, detail), public_design(design)
     if inf["detected"]:
         return Assessment("DETECTED", f"effect {est_txt}, {p_txt}", flags, detail), public_design(design)
     if equivalent:
-        return Assessment(
-            "NO_DETECTABLE_EFFECT",
-            f"effect {est_txt}: the {1 - 2 * alpha:.0%} interval lies within ±{eff_sesoi:.4g} "
-            f"(SESOI {sesoi:g} x attenuation {lam:.2f}; TOST)", flags, detail), public_design(design)
+        reason = (f"effect {est_txt}: the {1 - 2 * alpha:.0%} interval lies within ±{eff_sesoi:.4g} "
+                  f"(SESOI {sesoi:g} x attenuation {lam:.2f}; TOST)")
+        if design["correction"] in THINNING and not equivalent_raw:
+            what = "depth" if design["correction"] == "depth_thinning" else "capture"
+            flags = flags + ["ABSENCE_ONLY_AFTER_CORRECTION"]
+            reason += (f"; absence shown only after the {what} correction: on the uncorrected data the "
+                       f"{1 - 2 * alpha:.0%} interval [{lo2r:+.4g}, {hi2r:+.4g}] is not within "
+                       f"±{eff_sesoi_raw:.4g}")
+        return Assessment("NO_DETECTABLE_EFFECT", reason, flags, detail), public_design(design)
     why = ("no SESOI pre-registered, so equivalence cannot be tested" if sesoi is None
            else f"neither detected nor equivalent within ±{eff_sesoi:.4g}")
     if design["correction"] in THINNING and np.isfinite(retained) and abs(retained) < 0.5:

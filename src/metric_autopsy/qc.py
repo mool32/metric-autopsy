@@ -2,8 +2,9 @@
 
 These functions never touch your metric. They ask one question: do the groups you intend
 to compare have equivalent technical quality, in every stratification you will use? That
-question sank the MI-coupling analysis (male-old cells detected 2.4x fewer genes), and it
-is the cheapest, highest-yield check in the whole harness.
+question sank the MI-coupling analysis (the old males' cells detected fewer genes; the
+flagship audit's numbers are in validation/flagship_audit/REPORT.md), and it is the cheapest,
+highest-yield check in the whole harness.
 """
 from __future__ import annotations
 
@@ -176,9 +177,11 @@ def qc_parity(
             ratio_breach=False, overlap_breach=False, flagged=False,
         )
         if assessable:
-            ia = rng.integers(0, na, size=(n_boot, na))
-            ib = rng.integers(0, nb, size=(n_boot, nb))
-            ba, bb = a[ia], b[ib]
+            # the groups are drawn in the order of their labels: a mirrored wording, the same draws
+            boot = {}
+            for lab, n_, v_ in sorted(((str(g_a), na, a), (str(g_b), nb, b)), key=lambda t: t[0]):
+                boot[lab] = v_[rng.integers(0, n_, size=(n_boot, n_))]
+            ba, bb = boot[str(g_a)], boot[str(g_b)]
             log_r = np.log(np.maximum(np.median(ba, axis=1), 1e-9)) - np.log(np.maximum(np.median(bb, axis=1), 1e-9))
             ov = np.array([_dist_overlap(x, y) for x, y in zip(ba, bb)])
             row["_boot"] = (log_r, ov)

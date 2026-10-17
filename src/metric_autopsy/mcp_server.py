@@ -74,6 +74,7 @@ def autopsy_report(
     seed: int = 0,
     json_path: str | None = None,
     log_path: str | None = None,
+    composition: Sequence[str] = (),
 ) -> str:
     """Run the full metric-autopsy gate sequence on an AnnData `.h5ad` and return a Markdown
     report: four-field assessment, gate-by-gate table, verdict and provenance hashes.
@@ -97,6 +98,9 @@ def autopsy_report(
     prereg_path: pre-registration JSON (explicit arguments override it). json_path: write the
     JSON report. log_path: run log; a pre-registered run is always logged (default
     $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl; "off" disables).
+    composition: obs columns of an annotation, the cell type first (e.g. ["cell_type", "tissue"]):
+    their shares are compared between the groups at the replicate level and the claim is judged
+    within each cell type, the verdicts not combined (reported, not gates).
     """
     import json
 
@@ -133,6 +137,7 @@ def autopsy_report(
         signal_test=signal,
         seed=seed,
         log_path=log_path,  # None: the shared rule (logged iff pre-registered)
+        composition=list(composition or ()),
     )
     autopsy.metric_name = metric
     if json_path:

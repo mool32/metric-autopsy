@@ -665,7 +665,8 @@ def gate3_raw_visibility(
 # --------------------------------------------------------------------------- #
 # GATE 4 (automatable part) — does the metric respond to an injected signal?
 # --------------------------------------------------------------------------- #
-GATE4_N_REP = 200    # injections (each against its own sham) per GATE 4 run
+GATE4_N_REP = 200    # injections (each against its own reference) of the all-cell response
+GATE4_N_REP_REPLICATE = 50  # injections into each replicate's cells for the claim's statistic (v0.4)
 DELTA_MIN_FRACTION = 0.5  # default delta_min = 0.5 x SESOI (decided 2026-10-08)
 
 
@@ -684,6 +685,23 @@ def response_interval(deltas, direction: str = "increase", alpha: float = 0.05) 
     sign = 1.0 if direction == "increase" else -1.0
     s_lo, s_hi = sorted((sign * lo, sign * hi))
     return dict(mean_response=mean, sd_response=sd_, n_rep=n, ci=(lo, hi), ci_level=1.0 - alpha,
+                signed_lower=s_lo, signed_upper=s_hi, z=float(mean / se) if se > 0 else
+                (float("inf") * np.sign(mean) if mean else 0.0))
+
+
+def _interval(mean: float, se: float, df: float, n: int, direction: str, alpha: float) -> dict:
+    """``response_interval``'s fields for a mean with a given standard error and degrees of freedom
+    (the interval over replicates of GATE 4's claim-level response)."""
+    if direction not in ("increase", "decrease"):
+        raise ValueError(f"the signal direction is 'increase' or 'decrease', not {direction!r}")
+    if not (np.isfinite(se) and df > 0):
+        return dict(mean_response=mean, se=se, df=df, n_rep=n, ci=(float("nan"), float("nan")),
+                    ci_level=1.0 - alpha, signed_lower=float("nan"), signed_upper=float("nan"), z=float("nan"))
+    half = t_ppf(1.0 - alpha / 2.0, df) * se if se > 0 else 0.0
+    lo, hi = mean - half, mean + half
+    sign = 1.0 if direction == "increase" else -1.0
+    s_lo, s_hi = sorted((sign * lo, sign * hi))
+    return dict(mean_response=mean, se=se, df=df, n_rep=n, ci=(lo, hi), ci_level=1.0 - alpha,
                 signed_lower=s_lo, signed_upper=s_hi, z=float(mean / se) if se > 0 else
                 (float("inf") * np.sign(mean) if mean else 0.0))
 
@@ -711,9 +729,12 @@ def _check_delta_min(delta_min):
 
 
 def _column_local(inject) -> bool:
+    """An injector that rewrites only its genes' columns (``inject.genes``, ``inject.columns``),
+    against a sham that does the same (``coupling``) or against the untouched data (``module``,
+    which has no sham)."""
     sham = getattr(inject, "sham", None)
     return (getattr(inject, "genes", None) is not None and callable(getattr(inject, "columns", None))
-            and sham is not None and callable(getattr(sham, "columns", None)))
+            and (sham is None or callable(getattr(sham, "columns", None))))
 
 
 def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
@@ -721,16 +742,14 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
     sham (or on the untouched data if the injector has no sham). Raises ValueError if the signal
     cannot be injected (e.g. non-count input).
 
-    A column-local injector (``injected_signal.coupling``: ``inject.genes`` and
-    ``inject.columns``) rewrites the two genes of one private copy of the data and restores them
-    after every evaluation, with the same random draws as injecting into copies: the metric sees
-    exactly the data a copy would hold, without copying the matrix twice per injection.
+    A column-local injector (``inject.genes`` and ``inject.columns``: ``injected_signal.coupling``
+    and ``module``) rewrites its genes in one private copy of the data and restores them after
+    every evaluation, with the same random draws as injecting into copies: the metric sees exactly
+    the data a copy would hold, without copying the matrix twice per injection.
     `decouple` names the gene replaced, before every injection, by a depth-matched draw from
     neighbouring cells (``_depth_matched_draw``): GATE 5 injects into the positive control's
-    genes with their own coupling removed. It needs a column-local injector.
+    genes with their own coupling removed. It needs a column-local injector with a sham.
     """
-    from .core import unique_col_index
-
     sham = getattr(inject, "sham", None)
     if not _column_local(inject):
         if decouple is not None:
@@ -746,7 +765,17 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
             if v is not None and ref is not None and np.isfinite(v - ref):
                 out.append(v - ref)
         return out
+    if decouple is not None and sham is None:
+        raise ValueError("decoupling needs an injector with a sham")
     work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    return _column_deltas(metric, work, inject, n_rep, rng, decouple=decouple)
+
+
+def _column_deltas(metric, work: SimpleData, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
+    """The column-local responses on `work`, a private copy that is restored before returning."""
+    from .core import unique_col_index
+
+    sham = getattr(inject, "sham", None)
     X, obs = work.X, work.obs
     cols = [unique_col_index(work.var_names, g) for g in inject.genes]
     original = X[:, cols].copy()
@@ -756,6 +785,7 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
     if decouple is not None:
         kb = list(inject.genes).index(decouple)
         depth = X.sum(axis=1) - original.sum(axis=1)
+    base = _safe_call(lambda: metric(work)) if sham is None else None
     out = []
     try:
         for _ in range(n_rep):
@@ -763,13 +793,13 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
             if decouple is not None:
                 before[:, kb] = _depth_matched_draw(original[:, kb], depth, rng)
             vals = []
-            for fn in (inject.columns, sham.columns):
+            for fn in ((inject.columns,) if sham is None else (inject.columns, sham.columns)):
                 after = fn(before, rng)
                 X[:, cols] = after
                 if tot is not None:
                     obs["total_counts"] = tot - (original - after).sum(axis=1)
                 vals.append(_safe_call(lambda: metric(work)))
-            v, ref = vals
+            v, ref = (vals[0], base) if sham is None else vals
             if v is not None and ref is not None and np.isfinite(v - ref):
                 out.append(v - ref)
     finally:
@@ -779,23 +809,133 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
     return out
 
 
+def _replicate_delta(metric, sub: SimpleData, inject, n_rep: int, rng) -> tuple[float | None, int]:
+    """The mean response of one replicate's cells (`sub`, a private copy) over `n_rep` injections."""
+    if _column_local(inject):
+        deltas = _column_deltas(metric, sub, inject, n_rep, rng)
+    else:
+        deltas = injected_deltas(metric, sub, inject, n_rep, rng)
+    return (float(np.mean(deltas)) if deltas else None), len(deltas)
+
+
+def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate_col, within,
+                    direction: str, alpha: float, n_rep: int, rng) -> dict:
+    """GATE 4 on the claim's own statistic (v0.4 change 1): the signal goes into the group whose
+    replicates have more of the probed genes' counts per cell (each replicate weighted equally; on
+    an exact tie into each group, and the weaker response is judged), and the response is the
+    change of the replicate-level difference that the effect test uses, its interval over the
+    replicates (the injection repeated within each replicate)."""
+    from .core import unique_col_index
+    from .effect import _replicate_design
+    from .stats import stratum_weights
+
+    genes = getattr(inject, "genes", None)
+    if not genes:
+        return dict(error="the injector names no genes (inject.genes), so the group to inject into "
+                          "cannot be chosen by their counts")
+    design = _replicate_design(sd.obs, group_col, groups, replicate_col, within)
+    if design["kind"] == "mixed":
+        return dict(error=design["reason"])
+    X = as_dense(sd.X)
+    cols = [unique_col_index(sd.var_names, g) for g in genes]
+    probe = np.asarray(X[:, cols], dtype=float).sum(axis=1)
+    rep = np.asarray(sd.obs[replicate_col]).astype(str)
+    grp = np.asarray(sd.obs[group_col])
+    level = {}
+    for gname in groups:
+        per = [float(probe[(rep == r) & (grp == gname)].mean()) for r in design["reps"]
+               if ((rep == r) & (grp == gname)).any()]
+        level[str(gname)] = float(np.mean(per)) if per else float("nan")
+    a, b = level[str(groups[0])], level[str(groups[1])]
+    # on an exact tie both groups, in the order of their labels (a mirrored wording, the same draws)
+    targets = [0] if a > b else [1] if b > a else sorted((0, 1), key=lambda k: str(groups[k]))
+    # the effect test's weights: strata with both groups, precision weights over their replicates
+    in_first = np.array([1 if groups[0] in design["membership"][r] else 0 for r in design["reps"]])
+    labels = {st: i for i, st in enumerate(dict.fromkeys(design["strata"][r] for r in design["reps"]))}
+    strata = np.array([labels[design["strata"][r]] for r in design["reps"]])
+    weights = stratum_weights(in_first, strata) if design["kind"] == "nested" else {}
+    runs = []
+    for k in targets:
+        gname = groups[k]
+        resp, depth = {}, []
+        for i, r in enumerate(design["reps"]):
+            if design["kind"] == "nested" and gname not in design["membership"][r]:
+                continue
+            m = (rep == r) & (grp == gname)
+            if not m.any():
+                continue
+            sub = SimpleData(np.array(X[m], copy=True), sd.obs[m].copy(), list(sd.var_names))
+            v, n_ok = _replicate_delta(metric, sub, inject, n_rep, rng)
+            if v is not None and np.isfinite(v) and n_ok >= max(2, n_rep // 2):
+                resp[r] = v
+            if callable(getattr(inject, "depth_loss", None)):
+                depth.append(inject.depth_loss(sub))
+        if design["kind"] == "nested":
+            by_st = {}
+            for r, v in resp.items():
+                st = labels[design["strata"][r]]
+                if st in weights:
+                    by_st.setdefault(st, []).append(v)
+            wsum = sum(weights[st] for st in by_st) if by_st else 0.0
+            mean = (sum(weights[st] / wsum * float(np.mean(v)) for st, v in by_st.items())
+                    if wsum else float("nan"))
+            ss = sum(float(((np.asarray(v) - np.mean(v)) ** 2).sum()) for v in by_st.values())
+            df = sum(len(v) - 1 for v in by_st.values())
+            se = (float(np.sqrt(ss / df * sum((weights[st] / wsum) ** 2 / len(v) for st, v in by_st.items())))
+                  if df > 0 else float("nan"))
+            n_used = sum(len(v) for v in by_st.values())
+        else:
+            v = np.asarray(list(resp.values()), float)
+            mean = float(v.mean()) if len(v) else float("nan")
+            df = len(v) - 1
+            se = float(v.std(ddof=1) / np.sqrt(len(v))) if len(v) > 1 else float("nan")
+            n_used = len(v)
+        iv = _interval(mean, se, df, n_used, direction, alpha)
+        sign = 1.0 if k == 0 else -1.0  # the effect test's difference is groups[0] - groups[1]
+        lo, hi = iv["ci"]
+        runs.append(dict(group=str(gname), group_index=k, replicate_responses=resp, interval=iv,
+                         statistic_change=sign * mean,
+                         statistic_ci=tuple(sorted((sign * lo, sign * hi))) if np.isfinite(lo) else (lo, hi),
+                         depth_loss=float(np.mean(depth)) if depth else None))
+    run = min(runs, key=lambda x: (x["interval"]["signed_lower"] if np.isfinite(x["interval"]["signed_lower"])
+                                   else -np.inf, x["interval"]["mean_response"] if direction == "increase"
+                                   else -x["interval"]["mean_response"]))
+    return dict(run, levels=level, tie=len(targets) == 2, design=design["kind"],
+                runs=[{k2: v2 for k2, v2 in x.items() if k2 != "replicate_responses"} for x in runs]
+                if len(runs) > 1 else None)
+
+
 def gate4_signal_response(
     metric: Metric,
     data,
     inject: Callable,
-    direction: str = "increase",
+    direction: str | None = None,
     delta_min: float | None = None,
     n_rep: int = GATE4_N_REP,
     alpha: float = 0.05,
     seed: int = 0,
+    *,
+    group_col: str | None = None,
+    groups: tuple | None = None,
+    replicate_col: str | None = None,
+    within: Sequence[str] = (),
+    n_rep_replicate: int = GATE4_N_REP_REPLICATE,
 ) -> GateResult:
     """Inject a known construct change (``injected_signal``) and judge the metric's response.
 
-    The response is the metric on injected data minus the metric on the injector's matched
-    *sham* (``inject.sham``: the same thinning without the signal), over `n_rep` injections,
-    with its two-sided (1 - `alpha`) t interval (``response_interval``). Against the untouched
-    data the thinning noise is confounded with the signal: a valid correlation metric on an
-    already strongly coupled pair fell (z = -2.6) and failed.
+    With the claim's groups and replicate unit (``run_autopsy`` passes them), the response is
+    measured with the claim's own statistic (v0.4 change 1): the signal goes into the group where
+    the probed genes have more counts per cell, whatever the claim's wording, and the response is
+    the change of the replicate-level difference between the groups that the effect test uses,
+    its (1 - `alpha`) interval taken over the replicates (`n_rep_replicate` injections within each).
+    The response is judged against the direction the injection itself must move the metric in that
+    group (`direction`, by default the injector's ``inject.direction``), not against the claim's.
+    The all-cell response (v0.3's GATE 4: the metric over all cells, `n_rep` injections) stays in the
+    detail as a diagnostic, and is the judged response when no replicate unit is given.
+
+    The reference is the injector's sham (``coupling``: the same thinning without the signal; against
+    the untouched data the thinning noise is confounded with the signal) or, for an injector without
+    one (``module``, which thins the module's own genes), the untouched data.
 
     * FAIL — the metric is shown blind: the upper bound in the declared direction is below
       `delta_min`, the smallest response that matters (pre-registered ``delta_min``, default
@@ -812,27 +952,70 @@ def gate4_signal_response(
 
     name = "Construct response (injected signal)"
     delta_min = _check_delta_min(delta_min)
+    direction = direction or getattr(inject, "direction", None) or "increase"
     sd = _as_simple(data)
+    claim_mode = group_col is not None and groups is not None and replicate_col is not None
+    if claim_mode:
+        gcol = np.asarray(sd.obs[group_col])
+        sd = sd[(gcol == groups[0]) | (gcol == groups[1])]
     rng = np.random.default_rng(seed)
     base = _safe_call(lambda: metric(sd))
     if base is None:
         return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on the data", {})
     sham = getattr(inject, "sham", None)
+    reference = "sham" if sham is not None else "untouched data"
     try:
         deltas = injected_deltas(metric, sd, inject, n_rep, rng)
     except Exception as e:  # e.g. non-count input
         return GateResult(4, name, GateStatus.SKIP, f"signal could not be injected: {e}", {})
-    if len(deltas) < 3:
-        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", {})
-    iv = response_interval(deltas, direction, alpha)
+    all_cells = response_interval(deltas, direction, alpha) if len(deltas) >= 3 else None
+    detail = dict(injection=describe(inject), direction=direction, base=base, reference=reference,
+                  delta_min=delta_min, alpha=alpha, all_cells=all_cells)
+    claim = None
+    if claim_mode:
+        try:
+            claim = _claim_response(metric, sd, inject, group_col, groups, replicate_col, within,
+                                    direction, alpha, n_rep_replicate, rng)
+        except Exception as e:  # reported, never silent
+            claim = dict(error=f"{type(e).__name__}: {e}")
+    lvl = f"{100 * (1 - alpha):g}%"
+    if claim is not None and claim.get("error") is None:
+        iv = claim["interval"]
+        detail.update(mode="claim statistic", injected_group=claim["group"], probed_counts_per_cell=claim["levels"],
+                      tie=claim["tie"], replicate_responses=claim["replicate_responses"],
+                      statistic_change=claim["statistic_change"], statistic_ci=claim["statistic_ci"],
+                      depth_loss=claim["depth_loss"], n_rep_replicate=n_rep_replicate, runs=claim["runs"], **iv)
+        lo, hi = iv["ci"]
+        others = {g: v for g, v in claim["levels"].items() if g != claim["group"]}
+        where = ("on a tie of the probed counts the weaker of the two groups' responses is judged" if claim["tie"]
+                 else f"{claim['levels'][claim['group']]:.4g} probed counts per cell against "
+                      + ", ".join(f"{v:.4g} in {g}" for g, v in others.items()))
+        resp = (f"injected into {claim['group']} ({where}), its replicates' values move by {iv['mean_response']:+.4g} "
+                f"against the {reference} ({lvl} CI [{lo:+.4g}, {hi:+.4g}] over {iv['n_rep']} replicates, "
+                f"{n_rep_replicate} injections each, expected {direction}); the replicate-level difference "
+                f"{groups[0]} - {groups[1]} moves by {claim['statistic_change']:+.4g}")
+        if claim.get("depth_loss") is not None:
+            resp += f"; the injection removes {claim['depth_loss']:.2%} of their counts"
+        if not np.isfinite(iv["signed_lower"]):
+            detail["outcome"] = "UNTESTED"
+            return GateResult(4, name, GateStatus.WARN,
+                              f"response to {describe(inject)} not established: {resp}; an interval over "
+                              "the replicates needs at least two replicates with a response in one stratum "
+                              "— untested, not invalid", detail)
+    else:
+        if all_cells is None:
+            return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", detail)
+        iv = all_cells
+        detail.update(mode="all cells", **iv)
+        if claim is not None:
+            detail["claim_statistic_error"] = claim["error"]
+        lo, hi = iv["ci"]
+        resp = (f"{iv['mean_response']:+.4g} against the {reference} over all cells "
+                f"({lvl} CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected {direction})")
+        if claim is not None:
+            resp += f"; the claim's statistic could not be used: {claim['error']}"
     outcome = judge_response(iv, delta_min)
-    detail = dict(injection=describe(inject), direction=direction, base=base,
-                  reference="sham" if sham is not None else "untouched data", delta_min=delta_min,
-                  alpha=alpha, outcome=outcome, **iv)
-    lo, hi = iv["ci"]
-    resp = (f"{iv['mean_response']:+.4g} against the {detail['reference']} "
-            f"({100 * (1 - alpha):g}% CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected "
-            f"{direction})")
+    detail["outcome"] = outcome
     if outcome == "FAIL":
         shown = ("responds, but less than delta_min" if iv["signed_lower"] > 0 else "blind")
         return GateResult(4, name, GateStatus.FAIL,

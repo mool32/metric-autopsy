@@ -32,8 +32,8 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 | Field | Question | Statuses |
 |---|---|---|
 | `metric_validity` | Does the metric respond to its construct and resist nuisance? | PASS · FAIL · UNTESTED · DEGENERATE (flags: LEVEL_SHIFT, DEPTH_BIAS_CORRECTED, BIAS_BELOW_TOLERANCE, BIAS_UNSIZED) |
-| `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED) |
-| `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN |
+| `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED, COMPOSITE_UNITS) |
+| `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN (flag: ABSENCE_ONLY_AFTER_CORRECTION) |
 | `replication` | Does it hold on independent data? | REPLICATED · NOT_REPLICATED · INCONCLUSIVE · NOT_RUN |
 
 `decide` reads them in this order; the first matching line is the verdict:
@@ -44,14 +44,24 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
 5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
 6. effect NO_DETECTABLE_EFFECT → **NO DETECTABLE EFFECT**, only if the metric is PASS (absence of an effect cannot be claimed with a metric whose response is untested)
-7. effect not DETECTED → **INCONCLUSIVE**
-8. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
-9. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
-10. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
+7. an effect that only the corrected data show (v0.4) → **INCONCLUSIVE** (`detected_only_after_correction`): a correction can only remove a conclusion, never create one
+8. effect not DETECTED → **INCONCLUSIVE**
+9. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
+10. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
+11. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
     the pre-registered one → **NOT SUPPORTED**
-11. replication NOT_REPLICATED → **NOT SUPPORTED**
-12. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
-13. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+12. replication NOT_REPLICATED → **NOT SUPPORTED**
+13. the effect, detected in the claimed direction, is shown smaller than the SESOI by the same
+    report's TOST (v0.4) → **EFFECT BELOW SESOI** (`effect_below_sesoi`)
+14. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
+15. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+
+Reported beside the verdict, not part of the rule (v0.4): the composition of the comparison in
+the annotations named by `composition=` (cell type, tissue), with the claim judged within each
+cell type and the verdicts not combined; a difference of composition is noted in the verdict
+itself, since a claim about a mixture stands only with it (change 7). For a pair, the engine's own
+`norm_pearson` beside the metric, by stratum (change 15). Units whose ids name several animals are
+flagged COMPOSITE_UNITS (change 16).
 
 **Claims are directional.** The pre-registration states the claimed change of the metric from
 `groups[0]` to `groups[1]`: `increase`, `decrease`, or `two-sided`. SUPPORTED needs the effect in
@@ -248,6 +258,18 @@ noise as an effect; probe p07). Graded rule, by replicates per group (or pairs):
   the *opposite* sign at equal depth → INCONCLUSIVE: the technical difference is larger than
   the effect, so the direction depends on how exactly the correction removed it. (In the dev
   data this turned three false SUPPORTED verdicts on a pure depth artifact into INCONCLUSIVE.)
+- **detected only after the correction** (v0.4 change 6) — the corrected effect is detected but
+  the raw replicate-level test (the same data without the correction) does not detect it in the
+  same direction → INCONCLUSIVE. A correction can only remove a conclusion, never create one: on
+  v1's reports the correction had enlarged undetected raw differences into all 7 false SUPPORTED
+  of N3 at f = 0.4 (`validation/exploratory/v1_correction_rule.log`).
+- **absence only after the correction** (v0.4) — the TOST also runs on the uncorrected data; a
+  NO DETECTABLE EFFECT that only the corrected data show carries ABSENCE_ONLY_AFTER_CORRECTION
+  (reported, not blocking). The report also checks the data against the capture model behind the
+  thinning: per group, depth and genes detected per cell, before and after it
+  (`equalization.capture_check`).
+- **EFFECT BELOW SESOI** (v0.4 change 14) — a detected effect whose (1 − 2α) interval lies inside
+  ±(attenuated) SESOI: detected, but smaller than the smallest effect that matters.
 
 **Power.** By default the SESOI is declared on the construct scale (`sesoi_scale`:
 `construct`). GATE 0's attenuation under depth halving gives a reliability-model estimate λ of
@@ -288,10 +310,28 @@ change is not merely dropout — without needing the metric to surface it.
 by *responding* to signal, not merely by resisting nuisance — a metric that returns random
 numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`
 or `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
-(seqgendiff-style, so the data stay valid counts with real technical noise) 200 times, each
-**relative to a matched sham** — the same thinning without the signal (independent
-keep-probabilities for a coupling; all genes thinned for a module) — and the mean response gets
-its two-sided 95% t interval (decided 2026-10-08):
+(seqgendiff-style, so the data stay valid counts with real technical noise).
+
+**On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
+group whose replicates have more of the probed genes' counts per cell (each replicate weighted
+equally; on an exact tie into each group, and the weaker response is judged), whatever the
+claim's wording: "Xist is higher in females" and "Xist is lower in males" are one claim (R1's
+lesson, D1). The response is the change of the replicate-level difference that the effect test
+uses, its 95% t interval taken over the injected group's replicates (50 injections within each),
+so that it is an uncertainty over donors; it is judged against the direction the injection must
+move the metric (`inject.direction`), not against the claim's. The all-cell response (below, the
+v0.3 gate) stays in the detail as a diagnostic, and is the judged response without a replicate
+unit. Every random draw of the engine is keyed by the data and the claim's canonical form (the
+metric, the genes, the groups' labels sorted, the direction for that order), so a mirrored
+wording gets the same draws and the same verdict.
+
+**The probes.** A coupling is injected **relative to a matched sham**: the same thinning with
+independent keep-probabilities. The module probe (v0.4 change 2) *lowers* the module by thinning
+its own genes `fold`-times, against the untouched data and without a sham: the loss of counts is
+then the signal itself, as for a real decrease of expression, and the depth falls only by the
+module's share of the counts, which is reported (v0.3 raised it by thinning every other gene
+against a sham that thinned all, and on shallow data the sham's loss of single counts made half
+the response). The mean response gets its two-sided 95% t interval (decided 2026-10-08):
 
 - **PASS** — the lower bound in the declared direction is above 0: a response is shown.
 - **FAIL** — the upper bound is below `delta_min`, the smallest response that matters

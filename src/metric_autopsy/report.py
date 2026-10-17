@@ -100,9 +100,10 @@ def _na(reason: str) -> Assessment:
 CAUSES = ("degenerate_metric", "metric_invalid_gate0", "metric_invalid_gate5", "metric_invalid_gate4",
           "metric_invalid",
           "unidentifiable", "effect_not_evaluated", "explained_by_depth", "insufficient_replication",
-          "absence_untested_metric", "no_detectable_effect", "effect_inconclusive",
+          "absence_untested_metric", "no_detectable_effect", "detected_only_after_correction",
+          "effect_inconclusive",
           "detected_untested_metric", "bias_unsized", "no_direction", "opposite_direction",
-          "not_replicated", "judgment_pending", "replicated", "provisional")
+          "not_replicated", "effect_below_sesoi", "judgment_pending", "replicated", "provisional")
 
 
 def decide_cause(a: "Autopsy") -> tuple[str, str]:
@@ -117,6 +118,10 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
         notes.append("parametric only — too few replicates for the permutation test to reach alpha")
     if "UNDERPOWERED" in da.flags:
         notes.append("underpowered relative to the SESOI")
+    for comp in (getattr(a, "composition", None) or {}).get("columns", {}).values():
+        if comp.get("differs"):  # a claim about a mixture only with its difference of composition
+            notes.append(f"the groups' composition in {comp['column']} differs (total variation distance "
+                         f"{comp['tvd']:.3g}, p {comp['tvd_p']:.3g})")
     tail = f" [{'; '.join(notes)}]" if notes else ""
 
     if mv.status == "DEGENERATE":
@@ -139,6 +144,8 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
                     "response to signal is untested, so absence cannot be claimed" + tail,
                     "absence_untested_metric")
         return f"NO DETECTABLE EFFECT — {ef.reason}{tail}", "no_detectable_effect"
+    if ef.detail.get("detected_only_after_correction"):
+        return f"INCONCLUSIVE — {ef.reason}{tail}", "detected_only_after_correction"
     if ef.status != "DETECTED":
         return f"INCONCLUSIVE — {ef.reason}{tail}", "effect_inconclusive"
     if mv.status != "PASS":
@@ -170,6 +177,14 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
         tail = f" [{'; '.join(notes)}]"
     if rp.status == "NOT_REPLICATED":
         return f"NOT SUPPORTED — the effect did not replicate: {rp.reason}{tail}", "not_replicated"
+    if ef.detail.get("tost_equivalent"):
+        # detected, in the claimed direction, by the raw and the corrected test, and shown smaller
+        # than the SESOI by the same report's TOST: not an effect that matters (v0.4 change 14)
+        lo2, hi2 = ef.detail.get("ci_2alpha") or (float("nan"), float("nan"))
+        alpha = float((a.prereg or {}).get("alpha", 0.05))
+        return (f"EFFECT BELOW SESOI — {ef.reason}; its {1 - 2 * alpha:.0%} interval [{lo2:+.4g}, {hi2:+.4g}] "
+                f"lies within ±{ef.detail.get('effective_sesoi'):.4g}, the effective SESOI: detected, but "
+                f"smaller than the smallest effect that matters{tail}", "effect_below_sesoi")
     if a.judgment_pending:
         return (f"INCONCLUSIVE — effect detected; judgment gates 4 and 7 are unresolved{tail}",
                 "judgment_pending")
@@ -194,6 +209,10 @@ class Autopsy:
     replication: Assessment | None = None
     params: dict = field(default_factory=dict)
     provenance: dict = field(default_factory=dict)
+    # v0.4: the composition of the comparison and the claim per type (change 7), and a second
+    # measure of a pair's coupling beside the metric (change 15); reported, not gates
+    composition: dict = field(default_factory=dict)
+    reference: dict = field(default_factory=dict)
 
     @property
     def judgment_pending(self) -> bool:
@@ -231,6 +250,29 @@ class Autopsy:
         lines += ["", "## Gates", "", "| Gate | Name | Status | Finding |", "|---|---|---|---|"]
         for r in sorted(self.results, key=lambda r: r.gate):
             lines.append(f"| {r.gate} | {_cell(r.name)} | **{r.status.value}** | {_cell(r.message)} |")
+        if self.composition:
+            from .composition import describe as _describe
+            lines += ["", "## Composition (reported, not a gate)", ""]
+            for comp in self.composition.get("columns", {}).values():
+                lines.append(f"- {_cell(_describe(comp))}")
+            per = self.composition.get("per_type") or {}
+            if per.get("types"):
+                lines += ["", f"The claim within each {_cell(per['column'])} (not combined):", "",
+                          "| Type | Replicates | Effect | Verdict |", "|---|---|---|---|"]
+                for t, v in per["types"].items():
+                    reps = ", ".join(f"{g} {n}" for g, n in v["replicates"].items())
+                    eff = "" if v.get("effect") is None else f"{v['effect']:+.4g} (p {v.get('p', float('nan')):.3g})"
+                    lines.append(f"| {_cell(t)} | {_cell(reps)} | {_cell(eff)} | {_cell(v['verdict'])} |")
+        if self.reference.get("rows"):
+            ref = self.reference
+            lines += ["", f"## {_cell(ref['measure'])} of {_cell(' and '.join(ref['genes']))} beside the metric "
+                          "(reported, not a gate)", "",
+                      f"| Stratum | {_cell(self.metric_name)}, {_cell(ref['groups'][0])} -> {_cell(ref['groups'][1])} | "
+                      f"{_cell(ref['measure'])} |", "|---|---|---|"]
+            for row in ref["rows"]:
+                cells = [f"{x['difference']:+.4g} (p {x['p']:.3g})" if x.get("difference") is not None else "—"
+                         for x in (row["metric"], row["reference"])]
+                lines.append(f"| {_cell(row['stratum'])} | {_cell(cells[0])} | {_cell(cells[1])} |")
         prov = self.provenance
         if prov:
             lines += ["", "## Provenance", ""]
@@ -256,6 +298,7 @@ class Autopsy:
             gates=[dict(gate=r.gate, name=r.name, status=r.status.value, message=r.message,
                         detail=_slim(r.detail)) for r in sorted(self.results, key=lambda r: r.gate)],
             prereg=self.prereg, params=self.params, provenance=self.provenance,
+            composition=self.composition, reference=self.reference,
         ))
 
     def to_json(self, **kw) -> str:
@@ -373,9 +416,12 @@ def _design_adequacy(g1: GateResult, design: dict, prereg: dict, attenuation: di
         flags.append("POWER_NOT_ASSESSED")
     if attenuation:
         flags.append("ATTENUATION")
+    if design.get("composite_units"):
+        flags.append("COMPOSITE_UNITS")
     detail = dict(qc=g1.status.value, correction=design.get("correction"), tier=tier,
                   replication=design.get("replication"), power=design.get("power"),
-                  attenuation=attenuation, equalization=design.get("equalization"), notes=notes)
+                  attenuation=attenuation, equalization=design.get("equalization"), notes=notes,
+                  composite_units=design.get("composite_units"))
     if g1.status == GateStatus.STOP:
         return Assessment("UNIDENTIFIABLE", g1.message, flags, detail)
     if not design.get("identifiable", True):
@@ -415,6 +461,10 @@ def _gate2_result(effect: Assessment, design: dict) -> GateResult:
     if d.get("explained_by_depth"):
         return GateResult(2, "Estimand-dependent correction", GateStatus.WARN,
                           txt + " — the raw difference is explained by the technical difference", d)
+    if d.get("detected_only_after_correction"):
+        return GateResult(2, "Estimand-dependent correction", GateStatus.WARN,
+                          txt + " — only the corrected effect is detected: a correction can only remove a "
+                          "conclusion, never create one", d)
     return GateResult(2, "Estimand-dependent correction", GateStatus.PASS, txt, d)
 
 
@@ -423,6 +473,98 @@ def _replication(g6: GateResult | None) -> Assessment:
         return Assessment(NOT_RUN, "no independent dataset supplied")
     status = g6.detail.get("replication", NOT_RUN)
     return Assessment(status, g6.message, list(g6.detail.get("effect_flags", [])), g6.detail)
+
+
+def per_type_verdicts(metric, data, *, type_col: str, group_col: str, groups, within, replicate_col: str,
+                      prereg: dict, metric_validity: Assessment, att_half, n_perm: int, seed_of,
+                      run_effect: bool = True, params: dict | None = None) -> dict:
+    """The claim within each level of `type_col`, each with its verdict by ``decide``, not combined
+    (v0.4 change 7, (ii) and (iii)). A type absent from every replicate of one group is UNIDENTIFIABLE;
+    a type is judged on the replicates holding at least ``composition.MIN_CELLS`` of its cells, if
+    each group has ``composition.MIN_REPLICATES`` of them; the metric's validity is the whole claim's
+    (GATE 0, 4 and 5 are not run per type)."""
+    from .composition import MIN_CELLS, MIN_REPLICATES, type_replicates
+    from .effect import estimate_effect
+
+    obs = data.obs
+    table = type_replicates(obs, type_col, group_col, groups, replicate_col, MIN_CELLS)
+    lab = np.asarray(obs[type_col]).astype(str)
+    rep = np.asarray(obs[replicate_col]).astype(str)
+    need = max(MIN_REPLICATES, int(prereg.get("min_replicates") or MIN_REPLICATES))
+    out = {}
+    for t, row in table.items():
+        g0, g1 = (str(g) for g in groups)
+        counts = {g: len(row[g]["replicates"]) for g in (g0, g1)}
+        rec = dict(replicates=counts, cells={g: row[g]["cells"] for g in (g0, g1)}, effect=None)
+        missing = [g for g in (g0, g1) if not row[g]["any"]]
+        if missing:
+            rec.update(verdict=f"UNIDENTIFIABLE — {t} is absent from every replicate of {missing[0]}",
+                       cause="unidentifiable")
+        elif min(counts.values()) < need:
+            rec.update(verdict=(f"INCONCLUSIVE — insufficient replication: {counts[g0]} and {counts[g1]} replicates "
+                                f"with at least {MIN_CELLS} cells of {t} (need {need} in each group)"),
+                       cause="insufficient_replication")
+        elif not run_effect:
+            rec.update(verdict=f"NOT SUPPORTED — metric invalid: {metric_validity.reason}",
+                       cause="metric_invalid" if metric_validity.status == "FAIL" else "degenerate_metric")
+        else:
+            keep = set(row[g0]["replicates"]) | set(row[g1]["replicates"])
+            sub = data[(lab == t) & np.isin(rep, sorted(keep))]
+            g1_t = _g.gate1_qc_parity(sub, group_col, groups, within=within, alpha=float(prereg["alpha"]),
+                                      seed=seed_of(f"gate1:type:{t}"))
+            eff, design = estimate_effect(
+                metric, sub, group_col=group_col, groups=groups, within=within, replicate_col=replicate_col,
+                estimand=prereg.get("estimand"), sesoi=prereg.get("sesoi"), alpha=float(prereg["alpha"]),
+                power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]), n_perm=n_perm,
+                spikein_prefix=prereg.get("spikein_prefix", "ERCC-"), qc_imbalanced=g1_t.status == GateStatus.WARN,
+                attenuation_half=att_half, sesoi_scale=prereg.get("sesoi_scale", "construct"),
+                seed=seed_of(f"effect:type:{t}"))
+            da = _design_adequacy(g1_t, design, prereg)
+            a = Autopsy(f"{_metric_name(metric)} in {t}", [], prereg, metric_validity, da, eff,
+                        _na("not run per type"), dict(params or {}, groups=[g0, g1]))
+            verdict, cause = decide_cause(a)
+            rec.update(verdict=verdict, cause=cause, effect=eff.detail.get("effect"),
+                       p=eff.detail.get("p_perm") if eff.detail.get("tier") == "permutation" else eff.detail.get("p_t"),
+                       effect_status=eff.status)
+        out[t] = rec
+    return dict(column=type_col, min_cells=MIN_CELLS, min_replicates=need, types=out)
+
+
+def coupling_reference(metric, data, gene_pair, *, group_col: str, groups, replicate_col: str, within=(),
+                       alpha: float = 0.05, n_perm: int = 1000, seed: int = 0) -> dict:
+    """The engine's own ``norm_pearson`` of the pair beside the user's metric, on the uncorrected data
+    at the replicate level, by stratum and over the strata (v0.4 change 15, decided 2026-10-17: on
+    preprint section 4 ``mi_3bin`` fell where ``norm_pearson`` rose). Not a gate: always shown.
+    The differences are from groups[0] to groups[1], each with the permutation (or, below its reach,
+    the t) p of the effect test."""
+    from functools import partial
+    from .effect import _infer, _replicate_design, _rep_values, _restrict
+    from .metrics import norm_pearson
+
+    sd = _restrict(data, group_col, groups)
+    design = _replicate_design(sd.obs, group_col, groups, replicate_col, list(within))
+    if design["kind"] == "mixed":
+        return dict(error=design["reason"])
+    ref = partial(norm_pearson, gene_a=gene_pair[0], gene_b=gene_pair[1])
+    rng = np.random.default_rng(seed)
+    values = {k: _rep_values(m, sd, group_col, groups, replicate_col, design) for k, m in (("metric", metric), ("reference", ref))}
+
+    def summary(vals, sub):
+        inf = _infer(vals, sub, groups, "permutation", alpha, n_perm, rng)
+        p = inf["perm"].p if inf["tier"] == "permutation" else inf["p_t"]
+        return dict(difference=-float(inf["est"]) if np.isfinite(inf["est"]) else None, p=float(p),
+                    tier=inf["tier"], n=inf["n_counts"])
+    rows = []
+    strata = list(dict.fromkeys(design["strata"][r] for r in design["reps"]))
+    for st in strata if len(strata) > 1 else []:
+        reps = [r for r in design["reps"] if design["strata"][r] == st]
+        sub = dict(design, reps=reps, strata={r: "" for r in reps})
+        rows.append(dict(stratum=" ".join(st.split("\x1f")) or "all",
+                         **{k: summary({r: v[r] for r in reps}, sub) for k, v in values.items()}))
+    rows.append(dict(stratum="over the strata" if len(strata) > 1 else "all",
+                     **{k: summary(v, design) for k, v in values.items()}))
+    return dict(measure="norm_pearson (the engine's)", genes=list(gene_pair), groups=[str(g) for g in groups],
+                data="uncorrected", rows=rows)
 
 
 # --------------------------------------------------------------------------- #
@@ -448,6 +590,7 @@ def run_autopsy(
     seed: int = 0,
     n_perm: int = 1000,
     log_path=None,
+    composition: Sequence[str] = (),
 ) -> Autopsy:
     """Run the gates and assemble the four-field verdict.
 
@@ -463,10 +606,15 @@ def run_autopsy(
     with a pre-registration is appended to the run log (`log_path`, else
     ``$METRIC_AUTOPSY_LOG``, else ``metric_autopsy_runs.jsonl``; ``"off"`` disables).
     With `stop_on_first_fail`, an invalid or degenerate metric stops the analysis before the
-    effect is estimated.
+    effect is estimated. `composition` names obs columns of an annotation (cell type, tissue): their
+    shares are compared between the groups at the replicate level, and the claim is judged within
+    each level of the first one, the verdicts not combined (v0.4 change 7; reported, not gates). For
+    a pair (`gene_pair`) the engine's own ``norm_pearson`` is reported beside the metric, by stratum
+    (v0.4 change 15).
     """
     name = _metric_name(metric)
     preregistered = bool(prereg)
+    signal_direction = (prereg or {}).get("signal_direction")  # explicit, before the defaults
     prereg = normalize_prereg(prereg)
     groups = tuple(groups)
     within = list(within)
@@ -486,6 +634,16 @@ def run_autopsy(
     if include_matrix_perturbations is None:
         include_matrix_perturbations = gene_pair is None
 
+    # every random draw is keyed by the data and the claim's canonical form (v0.4 change 1): a
+    # mirrored wording gets the same draws, two claims on the same data different ones
+    data_sha = _prov.sha256_data(data, _hashed_columns(group_col, within, replicate_col))
+    claim = _prov.canonical_claim(name, gene_pair or getattr(signal_test, "genes", None) or (), groups,
+                                  prereg.get("direction"))
+    params["claim"] = claim
+
+    def seed_of(stream: str) -> int:
+        return _prov.claim_seed(data_sha, claim, seed, stream)
+
     from .effect import _cell_effect, assess_design, equalizing_correction, estimate_effect, public_design
 
     raw_cell = _cell_effect(metric, data, group_col, groups)
@@ -497,7 +655,7 @@ def run_autopsy(
 
     g0 = _g.gate0_independence(metric, data, protect_genes=gene_pair or (),
                                include_matrix_perturbations=include_matrix_perturbations,
-                               seed=seed, effect_scale=effect_scale, sesoi=sesoi, corrected=corrected,
+                               seed=seed_of("gate0"), effect_scale=effect_scale, sesoi=sesoi, corrected=corrected,
                                bias_tolerance=float(prereg["bias_tolerance"]))
     results.append(g0)
     g5 = None
@@ -505,7 +663,7 @@ def run_autopsy(
         tied, why_not, tie = _controls_tie(metric, pair_metric, data, gene_pair)
         if tied:
             g5 = _g.gate5_controls(pair_metric, data, pos_pair, neg_pair, within=within, alpha=alpha,
-                                   exclude=gene_pair or (), seed=seed,
+                                   exclude=gene_pair or (), seed=seed_of("gate5"),
                                    pos_dose=float(prereg["positive_control_dose"]), delta_min=delta_min,
                                    direction=prereg.get("signal_direction", "increase"))
             g5.detail.update(controls_tied=True, **tie)
@@ -515,13 +673,16 @@ def run_autopsy(
         results.append(g5)
     g4 = None
     if signal_test is not None:
+        # the direction the injection must move the metric: pre-registered, else the probe's own
         g4 = _g.gate4_signal_response(metric, data, signal_test,
-                                      direction=prereg.get("signal_direction", "increase"),
-                                      delta_min=delta_min, alpha=alpha, seed=seed)
+                                      direction=signal_direction or getattr(signal_test, "direction", None),
+                                      delta_min=delta_min, alpha=alpha, seed=seed_of("gate4"),
+                                      group_col=group_col if replicate_col else None, groups=groups,
+                                      replicate_col=replicate_col, within=within)
         results.append(g4)
     mv = _metric_validity(g0, g5, g4)
 
-    g1 = _g.gate1_qc_parity(data, group_col, groups, within=within, alpha=alpha, seed=seed)
+    g1 = _g.gate1_qc_parity(data, group_col, groups, within=within, alpha=alpha, seed=seed_of("gate1"))
     results.append(g1)
 
     att_half = None
@@ -545,7 +706,7 @@ def run_autopsy(
             power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]),
             n_perm=n_perm, spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
             qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half,
-            sesoi_scale=prereg.get("sesoi_scale", "construct"), seed=seed)
+            sesoi_scale=prereg.get("sesoi_scale", "construct"), seed=seed_of("effect"))
         results.append(_gate2_result(eff, design))
     da = _design_adequacy(g1, design, prereg, g0.detail.get("attenuation"))
 
@@ -559,20 +720,41 @@ def run_autopsy(
             estimand=prereg.get("estimand"), sesoi=sesoi,
             primary_effect=eff.detail.get("effect"), alpha=alpha,
             min_replicates=int(prereg["min_replicates"]), n_perm=n_perm,
-            attenuation_half=att_half, seed=seed, sesoi_scale=prereg.get("sesoi_scale", "construct"))
+            attenuation_half=att_half, seed=seed_of("gate6"), sesoi_scale=prereg.get("sesoi_scale", "construct"))
         results.append(g6)
     rp = _replication(g6)
 
     autopsy = Autopsy(name, results, prereg, mv, da, eff, rp, params)
+    composition = [composition] if isinstance(composition, str) else list(composition or ())
+    params["composition"] = composition
+    if composition and replicate_col is not None:
+        from .composition import composition_difference
+        autopsy.composition = dict(
+            columns={c: composition_difference(data.obs, c, group_col, groups, replicate_col, within, alpha=alpha,
+                                               n_perm=n_perm, rng=np.random.default_rng(seed_of(f"composition:{c}")))
+                     for c in composition},
+            per_type=per_type_verdicts(
+                metric, data, type_col=composition[0], group_col=group_col, groups=groups, within=within,
+                replicate_col=replicate_col, prereg=prereg, metric_validity=mv, att_half=att_half, n_perm=n_perm,
+                seed_of=seed_of, run_effect=not (stop_on_first_fail and mv.status in ("FAIL", "DEGENERATE")),
+                params=params))
+    if gene_pair is not None and replicate_col is not None:
+        autopsy.reference = coupling_reference(metric, data, gene_pair, group_col=group_col, groups=groups,
+                                               replicate_col=replicate_col, within=within, alpha=alpha,
+                                               n_perm=n_perm, seed=seed_of("reference"))
     if log_path is None and not preregistered and "METRIC_AUTOPSY_LOG" not in os.environ:
         log_path = "off"  # no pre-registration: nothing to protect, nothing logged by default
-    autopsy.provenance = _provenance(autopsy, data, data2, group_col, within, replicate_col, log_path)
+    autopsy.provenance = _provenance(autopsy, data, data2, group_col, within, replicate_col, log_path, data_sha)
     return autopsy
 
 
-def _provenance(a: Autopsy, data, data2, group_col, within, replicate_col, log_path) -> dict:
-    cols = [group_col, *within] + ([replicate_col] if replicate_col else []) + ["n_genes_by_counts", "total_counts"]
-    data_sha = _prov.sha256_data(data, cols)
+def _hashed_columns(group_col, within, replicate_col) -> list:
+    return [group_col, *within] + ([replicate_col] if replicate_col else []) + ["n_genes_by_counts", "total_counts"]
+
+
+def _provenance(a: Autopsy, data, data2, group_col, within, replicate_col, log_path, data_sha=None) -> dict:
+    cols = _hashed_columns(group_col, within, replicate_col)
+    data_sha = data_sha or _prov.sha256_data(data, cols)
     prereg_sha = _prov.sha256_json(a.prereg)
     claim = _prov.sha256_json(dict(prereg=prereg_sha, data=data_sha, metric=a.metric_name,
                                    group_col=group_col, groups=a.params.get("groups")))

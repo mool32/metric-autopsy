@@ -82,7 +82,10 @@ def thin_to_match(data: SimpleData, group_col: str, groups: tuple, *, totals: np
         b = np.where(smask & (labels == groups[1]))[0]
         if len(a) == 0 or len(b) == 0:
             continue
-        hi, lo = (a, b) if totals[a].mean() >= totals[b].mean() else (b, a)
+        ma, mb = totals[a].mean(), totals[b].mean()
+        # the deeper group; on an exact tie the first by label, whatever the wording's order
+        first = ma > mb or (ma == mb and str(groups[0]) <= str(groups[1]))
+        hi, lo = (a, b) if first else (b, a)
         before = float(totals[hi].mean())
         p = float(np.clip(totals[lo].mean() / before, 0.0, 1.0)) if before > 0 else 1.0
         keep_p[hi] = p
