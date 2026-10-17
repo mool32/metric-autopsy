@@ -213,3 +213,27 @@ check as `real_pilot_3_inputs.log`, the tallies as `real_pilot_3_summary.py` and
 (ii) (specificity) and (iv) (agreement of measures) separate §4 from the sex differences; (i) (the
 engine without GATE 4 and 5) and (iii) (plausibility) do not. The owner's prediction holds; the
 part of (iv) on §4 was known before the run.
+
+## The second diagnostics on the same data (the owner, 2026-10-17)
+
+The owner's decision on the first diagnostics' report: before changes 3, 4 and 13 of v0.4, (v) the
+composition of cells on §4 and (ii′) specificity again, on the donor-level t with 1,000 controls
+from the full set of genes, planned with the owner's two predictions in
+`validation/exploratory/real_pilot_diagnostics_2_plan.md` before their one run
+(`.github/workflows/real-pilot-4.yml`, the label `pilot-run-4`, the branch `results/real-pilot-4`).
+
+**The run:** workflow run 39041129662, one attempt, every job green; its outputs on
+`results/real-pilot-4` at fbb0852 (every file as its SHA256SUMS), the log copied here as
+`real_pilot_4.log`, the extraction's as `real_pilot_4_extract.log`, the inputs' check as
+`real_pilot_4_inputs.log`, the tallies as `real_pilot_4_summary.py` and `.log`. The extraction read
+21,025 measured genes for 56,754 male cells of case 1 and 2,088 cells of case 2; the claim genes'
+counts equal the case files', and 1a-males' per-mouse values equal the second run's (max |diff| 0).
+Neither prediction holds:
+- (v): within the 35 cell types that qualify in males, the drop of MI stays (combined −0.01356,
+  exact p 0.01587, 68.7% of the overall −0.01975; 31 of the 35 types lower), so composition does not
+  account for it, although the composition of types differs between the groups (total variation
+  distance 0.3411, exact p 0.03175; by tissue 0.2027, p 0.9206). The four fibroblast-like types do
+  not show the drop (mean +0.008123; the other 31 types −0.01636).
+- (ii′): 1a-males is specific (20 of 1,000 matched pairs at least as far, 95% interval of the share
+  0.0123 to 0.0307), as are Xist (1 of 1,000 in the claimed direction, 22 by absolute value) and the
+  Y genes (0 and 0). Specificity on the t no longer separates §4 from the sex differences.
