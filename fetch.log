@@ -1,0 +1,41 @@
+ok   4300 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/soft/GSE152184_family.soft.gz
+ok   4611 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/miniml/GSE152184_family.xml.tgz
+ok   673 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/suppl/
+ok   8609 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/suppl/filelist.txt
+ok   752 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/matrix/
+ok   3120 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/matrix/GSE152184-GPL19057_series_matrix.txt.gz
+ok   1867 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152184/matrix/GSE152184-GPL24676_series_matrix.txt.gz
+ok   2382 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/soft/GSE152183_family.soft.gz
+ok   2810 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/miniml/GSE152183_family.xml.tgz
+ok   673 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/suppl/
+ok   3093 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/suppl/filelist.txt
+ok   603 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/matrix/
+ok   2081 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152183/matrix/GSE152183_series_matrix.txt.gz
+ok   1777 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/soft/GSE152182_family.soft.gz
+ok   2231 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/miniml/GSE152182_family.xml.tgz
+ok   673 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/suppl/
+ok   1065 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/suppl/filelist.txt
+ok   603 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/matrix/
+ok   1638 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE152nnn/GSE152182/matrix/GSE152182_series_matrix.txt.gz
+ok   2152 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/soft/GSE188441_family.soft.gz
+ok   2615 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/miniml/GSE188441_family.xml.tgz
+ok   673 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/suppl/
+ok   2002 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/suppl/filelist.txt
+ok   603 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/matrix/
+ok   1968 bytes  https://ftp.ncbi.nlm.nih.gov/geo/series/GSE188nnn/GSE188441/matrix/GSE188441_series_matrix.txt.gz
+ok   15473 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/s41593-022-01022-8%22&resultType=core&format=json
+doi=10.1038/s41593-022-01022-8 pmcid=PMC11645269 license=cc by
+ok   265786 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11645269/fullTextXML
+ok   19431889 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11645269/supplementaryFiles
+ok   15322 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/s41467-020-17740-1%22&resultType=core&format=json
+doi=10.1038/s41467-020-17740-1 pmcid=PMC7414220 license=cc by
+ok   178541 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7414220/fullTextXML
+ok   9266 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/s41586-021-03549-5%22&resultType=core&format=json
+doi=10.1038/s41586-021-03549-5 pmcid= license=
+the licence is not a Creative Commons one (''): the full text is not copied
+ok   83624 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/s41586-018-0590-4%22&resultType=core&format=json
+doi=10.1038/s41586-018-0590-4 pmcid=PMC6642641 license=
+the licence is not a Creative Commons one (''): the full text is not copied
+ok   20670 bytes  https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%2210.1038/s41586-020-2496-1%22&resultType=core&format=json
+doi=10.1038/s41586-020-2496-1 pmcid=PMC8240505 license=
+the licence is not a Creative Commons one (''): the full text is not copied

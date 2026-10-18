@@ -1,0 +1,14 @@
+#Archive/File	Name	Time	Size	Type
+Archive	GSE152182_RAW.tar	12/03/2020 23:41:04	43591680	TAR
+File	GSM4605683_All_NO_sample_01_barcodes.tsv.gz	06/05/2020 07:57:14	15065	TSV
+File	GSM4605683_All_NO_sample_01_features.tsv.gz	06/05/2020 07:57:14	279361	TSV
+File	GSM4605683_All_NO_sample_01_matrix.mtx.gz	06/05/2020 07:57:15	9647860	MTX
+File	GSM4605684_All_NO_sample_02_barcodes.tsv.gz	06/05/2020 07:57:18	18764	TSV
+File	GSM4605684_All_NO_sample_02_features.tsv.gz	06/05/2020 07:57:18	279361	TSV
+File	GSM4605684_All_NO_sample_02_matrix.mtx.gz	06/05/2020 07:57:19	12179166	MTX
+File	GSM4605685_All_INHIB_sample_01_barcodes.tsv.gz	06/05/2020 07:56:56	13752	TSV
+File	GSM4605685_All_INHIB_sample_01_features.tsv.gz	06/05/2020 07:57:06	279361	TSV
+File	GSM4605685_All_INHIB_sample_01_matrix.mtx.gz	06/05/2020 07:56:57	9179449	MTX
+File	GSM4605686_All_INHIB_sample_02_barcodes.tsv.gz	06/05/2020 07:57:10	18182	TSV
+File	GSM4605686_All_INHIB_sample_02_features.tsv.gz	06/05/2020 07:57:10	279361	TSV
+File	GSM4605686_All_INHIB_sample_02_matrix.mtx.gz	06/05/2020 07:57:11	11392291	MTX
