@@ -1,0 +1,11 @@
+# The time and memory of the acceptance test A4 on fabricated counts of case 1's size (real_pilot_5_timing.py; nothing real)
+# run: python validation/exploratory/real_pilot_5_timing.py --scale 1.0 --claim A4 (the engine of 15bce5a; one process, 4-core container, other jobs running beside it);
+# resident memory of the python process sampled by ps every 10 s besides ru_maxrss
+
+# SYNTHETIC timing of A4 (real_pilot_5_timing.py; nothing real)
+fabricated 76797 cells x 2000 genes dense, the pool 21025 genes with 268,607,656 counts (91 s); peak so far 8.30 GB
+- A4: INCONCLUSIVE — effect +0.001307 [-0.001445, +0.004059] within the domain's types, equally weighted, p=0.229 (exact permutation); neither detected nor equivalent within ±0.0004093 [underpowered relative to the SESOI; judged within the domain: fibroblast 0, fibroblast 1, fibroblast 2, fibroblast 3, type 1, type 10, type 11, type 14, type 15, type 16, type 17, type 22, type 23, type 24, type 25, type 26, type 29, type 3, type 32, type 35, type 5, type 7, type 8, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (501.0 s)     effect 0.001307129196077927 CI [-0.001445014477428076, 0.00405927286958393] over the domain's cell types, equally weighted; s_m 0.00040925235628379823; domain ['fibroblast 0', 'fibroblast 1', 'fibroblast 2', 'fibroblast 3', 'type 1', 'type 10', 'type 11', 'type 14', 'type 15', 'type 16', 'type 17', 'type 22', 'type 23', 'type 24', 'type 25', 'type 26', 'type 29', 'type 3', 'type 32', 'type 35', 'type 5', 'type 7', 'type 8']     gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS; 5 WARN
+A4: 501 s in the engine; INCONCLUSIVE — effect +0.001307 [-0.001445, +0.004059] within the domain's types, equally weighted, p=0.229 (exact permutation); neither detected nor equivalent
+peak resident memory 8.30 GB; total 594 s
+
+sampled resident memory: 46 samples, maximum 7.63 GB at 09:44:08 UTC (the fabrication peaked before the engine started; ru_maxrss above includes it)
