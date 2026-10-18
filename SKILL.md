@@ -65,7 +65,7 @@ and what would disprove the claim. Then the commitments the engine enforces:
   `mi_3bin`, whose values on real data are of the order of 0.01;
 - **the cell-type column** (`composition`, first) when the data carry one: the claim is then judged
   within its domain, the types where its genes are expressed (both genes of a pair in at least 10%
-  of a type's cells in at least one group), the types weighted equally;
+  of a type's cells in each group; any gene of a set in at least one), the types weighted equally;
 - alpha, power, controls (or an injected signal and its direction). `delta_min` is no longer used
   (v0.4: GATE 4 fails a metric only where its response is shown at or below zero).
 

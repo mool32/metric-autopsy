@@ -367,7 +367,14 @@ def gate0_independence(
             0, "Mathematical independence", GateStatus.DEGENERATE,
             f"the metric returned the same value ({base_mean:.6g}) on every resample, null and "
             "perturbation — it carries no information about the data", detail)
+    return _gate0_result(detail)
 
+
+def _gate0_result(detail: dict) -> GateResult:
+    """GATE 0's status and message from its classified responses (shared by `gate0_independence` and
+    `gate0_between_groups`)."""
+    responses, attenuation, level_shifts = detail["responses"], detail["attenuation"], detail["level_shifts"]
+    bias_tolerance = detail["bias_tolerance"]
     flagged = {k: r for k, r in responses.items() if r.get("confounded")}
     if flagged:
         worst = max(flagged, key=lambda k: flagged[k]["bias_size"] / flagged[k]["bias_tolerance"])
@@ -377,7 +384,7 @@ def gate0_independence(
             f"'{worst}' biases the metric ({w['bias_kind']}): {w['bias_size']:.4g} "
             f"(95% lower bound {w['bias_ci_low']:.4g}) against a tolerance of {w['bias_tolerance']:.4g} "
             f"({float(bias_tolerance):g} x SESOI; z={w['z']:.1f}) — the nuisance can create a "
-            "difference with no biology",
+            "difference with no biology" + _between_text(detail.get("between_groups")),
             detail,
         )
     handled = {k: r for k, r in responses.items() if r.get("classification") == "bias"}
@@ -386,6 +393,10 @@ def gate0_independence(
         if r["handling"] == "corrected":
             notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); the declared "
                          "correction removes it between groups")
+        elif r["handling"] == "equal between groups":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, above the tolerance "
+                         f"{r['bias_tolerance']:.4g}), but the groups' technical difference is shown within it"
+                         + _between_text(detail.get("between_groups")))
         elif r["handling"] == "below tolerance":
             notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, 95% lower "
                          f"bound {r['bias_ci_low']:.4g}) within the tolerance {r['bias_tolerance']:.4g}")
@@ -408,6 +419,53 @@ def gate0_independence(
     msg = ("no bias; " + "; ".join(parts) + " — reported, not failed") if parts else \
         "no bias or attenuation beyond estimator noise under any nuisance perturbation"
     return GateResult(0, "Mathematical independence", GateStatus.PASS, msg, detail)
+
+
+def _between_text(b: dict | None) -> str:
+    if not b:
+        return ""
+    if b.get("error"):
+        return f"; the groups' technical difference could not be estimated ({b['error']})"
+    ci = b.get("ci_2alpha") or [float("nan"), float("nan")]
+    return (f"; the groups' technical difference (the metric on the null, {b.get('estimate_over', 'the replicates')}) "
+            f"{b['effect']:+.4g}, {100 * (1 - 2 * b['alpha']):.0f}% interval [{ci[0]:+.4g}, {ci[1]:+.4g}], "
+            + ("within" if b["equivalent"] else "not shown within") + f" ±{b['margin']:.4g}")
+
+
+def claim_null(sd: SimpleData, genes, rng) -> SimpleData:
+    """GATE 0's 'no biology, same technology' reference restricted to a claim's genes (v0.4 change 12):
+    each gene's counts redrawn independently from cells at least as deep (`_depth_matched_draw`, depth
+    the counts of every other gene of the claim's), the other genes untouched; a claim without genes, or
+    non-count input, takes the whole null (`_gene_null`)."""
+    from .core import unique_col_index
+    if not genes or not _looks_like_counts(np.asarray(sd.X)):
+        return _gene_null(sd, rng)
+    X = np.array(sd.X, dtype=float, copy=True)
+    cols = [unique_col_index(list(sd.var_names), str(g)) for g in genes]
+    depth = X.sum(axis=1) - X[:, cols].sum(axis=1)
+    for c in cols:
+        X[:, c] = _depth_matched_draw(X[:, c], depth, rng)
+    return SimpleData(X, sd.obs, sd.var_names)
+
+
+def gate0_between_groups(g0: GateResult, between: dict) -> GateResult:
+    """v0.4 change 12 (decided 2026-10-12, coded on the owner's decision of 2026-10-18): GATE 0 blocks only a
+    bias it cannot show to be equal between the groups. `between` is the groups' technical difference: the
+    claim's metric on GATE 0's null (no gene-gene biology, each group's own technology), estimated between
+    the groups as the effect is (the same units, correction and test); `equivalent` where its 90% interval
+    lies within ±`margin` (bias_tolerance x SESOI, GATE 0's tolerance). A blocking bias then becomes
+    "equal between groups" (reported, not failed); otherwise it still blocks, the test recorded."""
+    if g0.status not in (GateStatus.FAIL,):
+        return g0
+    detail = dict(g0.detail)
+    detail["responses"] = {k: dict(r) for k, r in detail["responses"].items()}
+    detail["between_groups"] = between
+    if between.get("equivalent"):
+        for r in detail["responses"].values():
+            if r.get("handling") == "blocking":
+                r["handling"], r["confounded"] = "equal between groups", False
+        detail["bias_handling"] = {k: r["handling"] for k, r in detail["responses"].items() if r.get("handling")}
+    return _gate0_result(detail)
 
 
 # --------------------------------------------------------------------------- #

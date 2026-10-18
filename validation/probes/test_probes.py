@@ -389,17 +389,17 @@ def test_p09_equivalence_requires_a_sesoi():
     assert with_sesoi.effect.status == "NO_DETECTABLE_EFFECT"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "JOURNAL.md D8: v0.4 change 4 (decided 2026-10-12 and 2026-10-18) makes the design's floor the margin "
-    "of absence without a SESOI, so the null's effect is NO_DETECTABLE_EFFECT flagged NO_SESOI_FLOOR (floor "
-    "0.1126 here); p09's expectation, unedited, is v0.3's INCONCLUSIVE"))
-def test_p09_without_a_sesoi_the_null_is_inconclusive():
-    """p09's second truth, split from the test above unedited (JOURNAL.md, D8): on null data without a
-    pre-registered SESOI the effect is INCONCLUSIVE."""
+def test_p09_without_a_sesoi_the_null_is_judged_at_the_floor():
+    """p09's second truth (JOURNAL.md, D8 and D9): on null data without a pre-registered SESOI no absence
+    is claimed without a test. v0.3 kept it by INCONCLUSIVE (its mechanics: no SESOI, no TOST); since
+    v0.4 change 4 the design's floor is the margin, named in the reason, and the verdict stays
+    INCONCLUSIVE while the metric's response is untested."""
     null = _mice(6, seed=0)
     no_sesoi = run_autopsy(NPR, null, group_col="age", groups=("young", "old"),
                            replicate_col="mouse", prereg=COMPOSITION)
-    assert no_sesoi.effect.status == "INCONCLUSIVE"
+    assert no_sesoi.effect.status == "NO_DETECTABLE_EFFECT" and "NO_SESOI_FLOOR" in no_sesoi.effect.flags
+    assert "confirmed only for effects of at least" in no_sesoi.effect.reason
+    assert no_sesoi.cause == "absence_untested_metric" and "do not differ" not in no_sesoi.to_markdown()
 
 
 # fixed in v0.3.0.dev0 — v0.1.1 failure (p09): null floor from 20 permutations flips verdicts
@@ -539,11 +539,11 @@ def p14_backgrounds():
     return bgs, simulate.dry_pilot(bgs)
 
 
-def _p14_outcomes(bgs, pilot, level):
+def _p14_outcomes(bgs, pilot, level, n=P14_DATASETS):
     import panel as PANEL
     pool = [pe for pe in bgs["B1"].plan["pool"] if pe["level"] == level]
     out = []
-    for i in range(P14_DATASETS):
+    for i in range(n):
         pe = pool[i % len(pool)]
         e = dict(id=f"G{i}", condition="N1", variant="null", index=i, side="A", pair=pe["index"], seed=9000 + i)
         X, obs, genes, _ = PANEL.build(e, bgs, pilot)
@@ -573,14 +573,23 @@ def test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind(p
     assert medium.count("FAIL") <= 1 and medium.count("PASS") >= P14_DATASETS - 1
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "JOURNAL.md D8: v0.4 change 3 (decided 2026-10-17 and 2026-10-18) drops delta_min, so GATE 4 FAILs only "
-    "where the response's upper bound is at or below 0; at the low level 1 of 8 datasets FAIL (4 PASS, 3 "
-    "UNTESTED); p14's expectation, unedited, is v0.3's (FAIL in at least 7 of 8)"))
-def test_p14_gate4_fails_the_metric_at_the_low_level_where_it_is_blind(p14_backgrounds):
-    """p14's low-level truth, split from the test above unedited (JOURNAL.md, D8): log-normalized
-    Pearson does not respond to an injected coupling at the low level (-0.023 to +0.019), and GATE 4
-    FAILs it with probability >= 0.8."""
+# p14's low-level pairs classed by v0.4's definition of blindness (change 3: a response at or below 0), from
+# the population responses of p14_gate4_by_expression_level.log with their SE (JOURNAL.md, D9)
+P14_LOW_BLIND = (21, 22)       # r + 1.96 SE <= 0
+P14_LOW_RESPONDS = (16,)       # r - 1.96 SE > 0
+
+
+def test_p14_gate4_never_certifies_a_blind_pair_nor_fails_one_that_responds(p14_backgrounds):
+    """p14's low-level truth (JOURNAL.md, D8 and D9): the population response of log-normalized Pearson
+    at the low level lies between -0.023 and +0.019. v0.3 called the level blind below 0.8 x delta_min
+    and expected GATE 4 to FAIL it in at least 7 of 8 datasets (its mechanics); by v0.4's definition two
+    pairs are blind and one responds (d8_p14_low_level.log: on 40 datasets PASS 0 of 10 on the blind,
+    FAIL 0 of 5 on the one that responds). On 16 datasets, two per pair: no PASS on a blind pair, no FAIL
+    on the one that responds."""
     bgs, pilot = p14_backgrounds
-    low = _p14_outcomes(bgs, pilot, "low")
-    assert low.count("FAIL") >= 7
+    pool = [pe for pe in bgs["B1"].plan["pool"] if pe["level"] == "low"]
+    out = _p14_outcomes(bgs, pilot, "low", n=2 * len(pool))
+    pairs = [pool[i % len(pool)]["index"] for i in range(2 * len(pool))]
+    assert {*P14_LOW_BLIND, *P14_LOW_RESPONDS} <= set(pairs)
+    assert not [i for i, (k, o) in enumerate(zip(pairs, out)) if k in P14_LOW_BLIND and o == "PASS"]
+    assert not [i for i, (k, o) in enumerate(zip(pairs, out)) if k in P14_LOW_RESPONDS and o == "FAIL"]

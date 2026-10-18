@@ -57,10 +57,12 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 15. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
 
 **The claim's domain (v0.4, decided 2026-10-18).** With `composition=` naming a cell-type column
-(first), the effect is judged in the claim's domain: the types where, in at least one group, both
-genes of a pair (any gene of a set) are detected in at least 10% of the type's cells, with at least
-20 cells in at least 3 replicates of each group, per stratum (`domain.claim_domain`; a claim without
-genes takes every type). The effect field is the combined estimate over the domain's types, each
+(first), the effect is judged in the claim's domain: the types where both genes of a pair are
+detected in at least 10% of the type's cells in each group (the coupling of a pair is not defined
+where a gene is not expressed; the owner's second decisions of 2026-10-18), or any gene of a set in at
+least one group, with at least 20 cells in at least 3 replicates of each group, per stratum
+(`domain.claim_domain`; a claim without genes takes every type). A type outside a pair's domain where
+the genes reach the threshold in one group only is listed in the report. The effect field is the combined estimate over the domain's types, each
 weighted equally (strata by precision), on (replicate, type) units at equal depth within each
 (stratum, type), with its interval over the replicates (`combined.py`). GATE 4 and GATE 0 run on the
 domain's cells. The whole mixture's estimate, the estimate outside the domain and each type's are
@@ -88,9 +90,12 @@ The verdict names the assumption it rests on: *parametric only* (too few replica
 permutation test to reach alpha), *underpowered relative to the SESOI* and *non-directional
 claim*.
 
-**No rescue language.** A FAIL in an earlier field is never softened by a later one. With
-`stop_on_first_fail` (the default) an invalid metric stops the analysis before the effect is
-estimated; design adequacy, which does not depend on the metric, is still reported.
+**No rescue language.** A FAIL in an earlier field is never softened by a later one. The verdict
+follows the first FAIL; since v0.4 (the owner's decision of 2026-10-18) the effect — within the
+domain, the mixture's, the types outside the domain — the composition, the technical covariates and
+the other report lines are estimated after it too and reported as the dossier, the effect flagged
+`DOSSIER_ONLY` (v0.3 stopped before the effect with `stop_on_first_fail`, which is now kept only for
+compatibility).
 
 **Provenance.** Every report carries `data_sha256` (X, var_names and the obs columns used),
 `prereg_sha256`, a `claim_id` (data + pre-registration + comparison), versions and the seed

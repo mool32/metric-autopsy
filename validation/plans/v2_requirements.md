@@ -104,7 +104,9 @@ Candidates, for the owner's choice (they can be combined):
   and by droplet (10x), with the deeper method as the truth about whether a difference or a
   coupling exists that the shallower data's metric must see. First check, by code independent of
   the engine, that the mice and tissues are really shared between the two methods (the mouse ids,
-  their ages and sexes, the tissues each method covers).
+  their ages and sexes, the tissues each method covers). The 3-month FACS data are by every sign in the metadata the
+  original Tabula Muris's (requirement 7's check of the source), so the comparison stays within one
+  age, or within the later time points.
 - **A generative model other than GATE 4's:** the coupling planted by a shared latent program in a
   simulator fitted to the real background (marginals and a copula), with the truth the metric's
   population response to the program's strength; GATE 4 keeps its thinning injection.
@@ -116,6 +118,44 @@ Candidates, for the owner's choice (they can be combined):
 
 The truth's mechanism and its thresholds are fixed before the pilot, and the oracle that applies
 them never imports the engine, as in v1.
+
+**A real control for coupling: searched for, none verified (2026-10-18).** The owner removed Marsh et
+al. 2022 as a control for coupling (its primary contrast is the appearance of Fos's expression, 23.0%
+of the cells against 0.2%) and asked for a control where both genes are detected in at least 10% of
+the cells in both groups and the difference of coupling follows from a known cause, not Kang et al.
+2018 or Levy et al. 2020. A web search from this session (the journals' and GEO's pages are not
+reachable from it, so nothing below has been read in full or checked on data) found no benchmark of
+that form; the summary of a 2024 methods paper ("Leveraging gene correlations in single cell
+transcriptomic data", BMC Bioinformatics, doi:10.1186/s12859-024-05926-z) names the absence of ground
+truth as what hinders such assessments. Two candidates, each to be checked by code
+independent of the engine before it could be registered (requirement 7):
+- **Mosaic loss of chromosome Y in blood (LOY).** In a man with LOY in a share f of his leukocytes the
+  Y genes are absent from the same cells, so the correlation of two Y genes across the donor's cells
+  rises with f(1 − f); in men without LOY it is only the cells' common variation. Both genes stay
+  detected in at least 10% of the cells while f is moderate, the donors are the replicates, and the
+  cause is a physical one. LOY is scored from single-cell expression in published work (Cell Mol Life
+  Sci 2021, doi:10.1007/s00018-021-03822-w; a 2025 medRxiv preprint on OneK1K's 982 donors,
+  doi:10.1101/2025.06.01.25328624). The circularity: where
+  the donors' LOY is called from the same cells' Y genes, the groups are defined by the data the
+  metric reads; the calling genes must exclude the pair, and a DNA-based LOY call (a genotyping array)
+  would remove it. It is a coupling of co-absence, created by a mixture of cells within the donor:
+  a metric validated on it is validated for that mechanism.
+- **Promoter–reporter lines (scCoBench, bioRxiv 2025, doi:10.1101/2025.05.26.656221; Arabidopsis
+  roots).** A reporter driven by a gene's promoter is coupled with the native gene by construction;
+  between two lines with different promoters the reporter's coupling with one native gene differs by
+  a known cause. Whether the four datasets hold replicates of a line, and both genes at 10% in both,
+  is not known; without replicates it measures a metric's sensitivity within a sample, not the engine's
+  verdict between groups.
+
+**If neither passes its check, the sensitivity to coupling is measured in v2 by planted causes**, each
+labelled with its mechanism: (i) a latent program in a generative model fitted to the real background
+(the candidate above), with the truth the metric's population response to the program's strength;
+(ii) a mixture of real cells of one type in two states, mixed in donor-specific proportions, with the
+truth the coupling the mixture creates; (iii) the natural or constructed causes above, where checked.
+**The caveat of circularity:** each truth defines coupling by its mechanism — the probe's, the model's,
+the mixture's — so a metric's sensitivity is measured to that mechanism and not to regulatory
+coordination at large; where the truth is GATE 4's own injection the measure is only the probe's
+sampling error (v1's S5), so at least one mechanism must be independent of GATE 4's.
 
 ## 4. Pairs beyond the most correlated, and enough of them
 
@@ -174,6 +214,15 @@ Requirements 13–15.
   CP10k's denominator).
 - Each probe is checked by arithmetic against the data's composition before registration (for the
   module probe: the share of cells with the marker times its response there, against delta_min).
+- **The source of the data is checked for every comparison** (the owner's second decisions of
+  2026-10-18): in TMS FACS the 3-month mice come, by every sign in the metadata, from the original
+  Tabula Muris and the older ones from TMS (`FACS.selection` empty at 3 months and filled after, the
+  cells' names in two formats, GSE132042 beginning with GSE109774's samples, and the young male units
+  with 1,298 more genes and 189,000 fewer counts per cell, exact p 0.016 and 0.008;
+  `real_claims.md`, "The source in Tabula Muris Senis FACS"). Age is taken as confounded with the
+  source in any comparison of 3-month mice with older ones: such a comparison is not a positive
+  control, a null or a real claim of age in v2 unless the source is shown shared. What the TMS authors
+  write about it is checked before it is called a finding.
 
 ## 8. Development data, conditions and reporting
 

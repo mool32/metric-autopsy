@@ -34,7 +34,8 @@ A metric that changes between conditions is **not** a finding. Declare the commi
 (estimand, direction, replicate unit, SESOI — `references/prereg_template.md`), then run the gates, then
 report the verdict that `report.decide` gives from four fields: **metric validity, design
 adequacy, effect, replication**. An invalid metric (nuisance *bias*, a failed negative control,
-no response to an injected signal) stops the analysis — a later field cannot rescue it. The
+no response to an injected signal) decides the verdict — a later field cannot rescue it (since
+v0.4 the rest is still estimated and reported as the dossier, marked `DOSSIER_ONLY`). The
 effect is judged across biological replicates at equal depth (or spike-in capture), never
 across cells. SUPPORTED needs a metric whose response is demonstrated (positive control or
 injected signal), a replicate-level DETECTED effect in the pre-registered direction and resolved

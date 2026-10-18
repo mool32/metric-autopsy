@@ -8,12 +8,46 @@ comparability.
 ## [0.4.0.dev0] — in development, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-18):
-1, 2, 3, 4, 6, 7, 8, 13 (as a line of the report), 14, 15 and 16, and the claim's domain (the
+1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15 and 16, and the claim's domain (the
 decisions of 2026-10-18, after the second diagnostics on the pilot's data,
-`validation/exploratory/real_pilot_4.log`). Validation v1's scope stays the tag `v0.3.0-prereg`'s:
-nothing here is validated.
+`validation/exploratory/real_pilot_4.log`, and the second decisions of 2026-10-18, after the third,
+`validation/exploratory/real_pilot_5_summary.log`). Validation v1's scope stays the tag
+`v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
+- **The full dossier after the first FAIL (the owner's second decisions of 2026-10-18).** The verdict
+  follows the first FAIL as before, but the effect — within the domain, the mixture's, outside the
+  domain, per type — GATE 6, the composition, the technical covariates and every other report line
+  are estimated after it too. The effect then carries the flag `DOSSIER_ONLY` (and
+  `detail["dossier_only"]`), its reason opens with "(the dossier: estimated after metric validity's
+  FAIL, which decides the verdict)", and `decide` never reads it before the FAIL. `stop_on_first_fail`
+  (the CLI's `--no-stop`, the MCP tools' argument) is kept for compatibility and recorded; it no
+  longer stops anything.
+- **GATE 0 blocks only a bias it cannot show to be equal between the groups (change 12, decided
+  2026-10-12, coded on the owner's second decisions of 2026-10-18).** Where GATE 0 FAILs on a blocking
+  bias and the data have a replicate unit, `run_autopsy` estimates the groups' technical difference
+  (`report.technical_difference`): the claim's metric on GATE 0's null of the claim's genes (each
+  gene's counts redrawn independently from cells at least as deep within the unit, `gates.claim_null`:
+  no gene-gene biology, each group's own technology), averaged over `TECHNICAL_DRAWS` = 3 draws per
+  unit, estimated between the groups as the effect is (the same units, domain, correction and test).
+  Where its 90% interval lies within ±GATE 0's tolerance (bias_tolerance × the SESOI in the metric's
+  units, the TOST) the bias is reported, handling "equal between groups", GATE 0 WARN; otherwise it
+  still blocks and the test is recorded in GATE 0's message and `detail["between_groups"]`
+  (`gates.gate0_between_groups`). A direct call of `gate0_independence` has no groups and is
+  unchanged. Without a replicate unit nothing changes.
+- **`norm_pearson` gives NaN, not 0.0, where it measures nothing (the owner's second decisions of
+  2026-10-18).** Below `metrics.MIN_CODETECTED` = 20 cells with counts of both genes (never fewer than
+  3), or where one gene takes one value among them (tested by equality: the standard deviation of
+  equal floats can round to 1e-16, and their correlation to 1.0). The minimum, fixed from principle
+  before any run, is the 20 cells a unit needs to count (`composition.MIN_CELLS`), applied to the
+  cells the correlation is computed on (Fisher's z over 20 cells has a standard error of 0.24). v0.3
+  returned 0.0, a value not measured reported as no correlation.
+- **Replicates the metric gives no value on are left out and listed.** A replicate (or a unit
+  (replicate, type) of the domain) whose metric is not finite, uncorrected or at equal depth, leaves
+  both tests and is listed in `detail["unmeasured"]` (and the domain's `unmeasured`) and in the
+  Markdown report's section "Left out: the metric gives no value (not measured)". Where that
+  leaves fewer replicates per group than the pre-registered minimum, which there were before, the
+  effect is NOT_ESTIMABLE and the verdict UNIDENTIFIABLE, cause `unmeasured`.
 - **The SESOI on the construct's scale, brought into the metric's units by GATE 4 (change 3,
   decided 2026-10-18).** `prereg["sesoi"]` is by default a change of the construct
   (`sesoi_scale="construct"`): for a coupling probe a change of the correlation of the pair's log
@@ -42,8 +76,11 @@ nothing here is validated.
   the TOST that explains a difference by depth need a pre-registered SESOI.
 - **The claim's domain (decided 2026-10-18).** With `composition` (the cell type first), the claim
   is judged in the cell types where its genes are expressed: for a pair, both genes detected in at
-  least 10% of the type's cells in at least one group (`domain.DOMAIN_DETECTION`, the lower bound of
-  v1's low level); for a set, any of its genes; for a claim without genes, every type; each type
+  least 10% of the type's cells **in each group** (`domain.DOMAIN_DETECTION`, the lower bound of
+  v1's low level; the owner's second decisions of 2026-10-18, by the definition of coupling: a pair's
+  coupling is not defined in a group where a gene is not expressed — the third diagnostics ran with
+  "in at least one group"); for a set, any of its genes in at least one group (a change of expression
+  may be its appearance); for a claim without genes, every type; each type
   with at least 20 cells in at least 3 replicates of each group, per stratum
   (`domain.claim_domain`). The verdict follows the combined estimate within the domain: the metric
   of each (replicate, type) unit, at equal depth within its (stratum, type), the types weighted
@@ -120,30 +157,53 @@ nothing here is validated.
 - `combined.py` (the units, the cluster-robust estimator and its relabelings), `domain.py` (the
   domain's rule), `specificity.py`.
 - **A test of GATE 0's false FAIL rate** over 40 seeds against a target of 5% fixed before measuring
-  (`tests/test_v04_domain.py`), xfail(strict=True) while the known issue below stands.
+  (`tests/test_v04_domain.py`), xfail(strict=True) while the known issue below stands; and the same
+  rate with change 12 applied, xfail(strict=True) too.
+- **The groups' technical covariates per replicate, a line of the dossier (the owner's second
+  decisions of 2026-10-18).** Per cell its total count and its number of genes with a count, over
+  every gene of `specificity_pool` (else of the data); per replicate the median over its cells; the
+  difference groups[0] − groups[1] of the replicates' means per stratum and over the strata, with
+  the effect test's relabelings (exact up to 20,000), on all the comparison's cells and on the
+  domain's (`composition.technical_covariates`, `Autopsy.technical`). GATE 1's ratio of median genes
+  passed §4 in males at 1.32 while the young units detected 1,298 more genes per cell (exact p 0.016).
+- **The claim genes' counts per type and group** (`index` of each type of the domain: the mean over
+  replicates of log1p(10^4 × the genes' counts / the cell's total)), in the domain's table, and a
+  line for every type outside a pair's domain where the genes reach the threshold in one group
+  only (`domain["one_group"]`): counts from elsewhere, or the expression's appearance; a line of the
+  dossier, not part of the rule.
+- `tests/test_v04_dossier.py`: the regression tests of the second decisions of 2026-10-18.
 
 ### Known issues
-- **GATE 0 falsely fails a valid metric in 4 of 40 seeds.** On the nested-mice test data
-  (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's scale), the
-  `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against a tolerance
-  of 0.01 (0.5 × SESOI), and GATE 0 FAILs in seeds 8, 11, 36 and 37. The power test that met it is
-  isolated from GATE 0's dropout (`test_underpowered_design_is_flagged_and_named_in_the_verdict`);
-  the rate's own test records the failure. Change 12 (GATE 0 blocks only a bias it cannot show to be
-  equal between the groups) is decided, not yet coded.
-- **`norm_pearson` returns 0.0 where fewer than 3 cells carry both genes** or a gene does not vary
-  among them. On the third diagnostics' Marsh primary contrast (`validation/exploratory/real_pilot_5_summary.log`)
-  all three ENZ-INHIB mice take this value against 0.336 to 0.394 in ENZ-NONE, so that contrast's
-  SUPPORTED compares measured correlations with the fallback.
-- **Two expectations of the dev set conflict with changes 3 and 4** (`validation/probes/JOURNAL.md`,
-  D8): at p14's low expression level, where log-normalized Pearson does not respond to the injected
-  coupling, GATE 4 FAILs 1 of 8 datasets (4 PASS, 3 UNTESTED) against the expected 7 or more; on p09's
-  null without a SESOI the effect is NO_DETECTABLE_EFFECT at the design's floor (flag
-  NO_SESOI_FLOOR) against the expected INCONCLUSIVE. Both parts are `xfail(strict=True)`, their
-  expectations unedited, for the owner's decision.
+- **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
+  test data (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's
+  scale), the `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against
+  a tolerance of 0.01 (0.5 × SESOI), and GATE 0 FAILs in seeds 8, 11, 36 and 37. The power test that
+  met it is isolated from GATE 0's dropout (`test_underpowered_design_is_flagged_and_named_in_the_verdict`);
+  the rate's own test records the failure. Change 12 does not lift it: with 4 mice per group the
+  groups' technical difference cannot be shown within ±0.01, its 90% interval spanning about 0.25
+  (seed 8: −0.081 [−0.210, +0.049]); the second rate test records it.
+- **`codetected_spearman` and `pearson` still return 0.0 where they measure nothing** (fewer than 3
+  co-detected cells, or no variance), and `mi_3bin` 0.0 on no cells: the correctness error decided
+  for `norm_pearson`, not changed for them in this round.
 - **v1's panel copies the tag's rules.** `validation/prereg/test_prereg.py` checks the panel's and the
   oracle's copies against the tag's engine; on this branch it checks that v0.4 differs from them in
-  exactly the decided ways (the causes of changes 6, 14 and the domain; GATE 4's FAIL only at or below
-  zero; the module probe's default share and its direction).
+  exactly the decided ways (the causes of changes 6, 14, the domain and the unmeasured replicates;
+  GATE 4's FAIL only at or below zero; the module probe's default share and its direction).
+
+### Fixed
+- **Two expectations of the dev set that encoded v0.3's mechanics** (`validation/probes/JOURNAL.md`,
+  D8 and D9; the owner's second decisions of 2026-10-18). p09's null without a SESOI: INCONCLUSIVE was
+  v0.3's way of claiming no absence without a margin; it is now NO_DETECTABLE_EFFECT at the design's
+  floor, the floor named, the verdict INCONCLUSIVE while the metric's response is untested. p14's low
+  level: "FAIL in at least 7 of 8" rested on v0.3's threshold 0.8 × delta_min; by v0.4's definition of
+  blindness two of its pairs are blind and one responds, and GATE 4 PASSes none of the blind (0 of 10
+  datasets) and FAILs none of the one that responds (0 of 5; `validation/probes/d8_p14_low_level.log`).
+  Both tests are updated, their xfails removed.
+- **`norm_pearson`'s 0.0 where it measured nothing** (above, Changed). On the third diagnostics'
+  Marsh primary contrast (`validation/exploratory/real_pilot_5_summary.log`) all three ENZ-INHIB mice
+  took this value against 0.336 to 0.394 in ENZ-NONE, so that contrast's SUPPORTED compared measured
+  correlations with the fallback; by the domain's rule in each group it is outside the domain, not a
+  claim about coupling, and Marsh et al. 2022 is no longer a control for coupling.
 
 ### Removed
 - **The internal checklist's "2.4x" in `qc.py`'s docstring (change 8)**, a number without a

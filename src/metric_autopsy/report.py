@@ -21,8 +21,10 @@ fields that answer different questions:
   domain, the types weighted equally, and the whole mixture's is reported beside (v0.4).
 * ``replication`` — REPLICATED / NOT_REPLICATED / INCONCLUSIVE / NOT_RUN (GATE 6).
 
-No rescue language: a FAIL in an earlier field is never softened by a later one, and with
-``stop_on_first_fail`` an invalid metric stops the analysis before the effect is estimated.
+No rescue language: a FAIL in an earlier field is never softened by a later one. The verdict follows
+the first FAIL; since v0.4 the effect, the domain's, the mixture's and the composition are estimated
+after it too and reported as the dossier, marked as not deciding the verdict (the owner's decision
+of 2026-10-18).
 Judgment gates (4, 7) are pending unless the pre-registration says otherwise, so a
 SUPPORTED verdict is never reached by default. The Python API, the CLI and the MCP server
 all call this one function.
@@ -103,7 +105,8 @@ def _na(reason: str) -> Assessment:
 # explained_by_depth or with opposite_direction.
 CAUSES = ("degenerate_metric", "metric_invalid_gate0", "metric_invalid_gate5", "metric_invalid_gate4",
           "metric_invalid",
-          "unidentifiable", "effect_not_evaluated", "empty_domain", "explained_by_depth", "insufficient_replication",
+          "unidentifiable", "unmeasured", "effect_not_evaluated", "empty_domain", "explained_by_depth",
+          "insufficient_replication",
           "absence_untested_metric", "no_detectable_effect", "detected_only_after_correction",
           "effect_inconclusive",
           "detected_untested_metric", "bias_unsized", "no_direction", "opposite_direction",
@@ -140,6 +143,8 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
                 f"metric_invalid_gate{gate}" if gate in (0, 4, 5) else "metric_invalid")
     if da.status == "UNIDENTIFIABLE":
         return f"UNIDENTIFIABLE — {da.reason}", "unidentifiable"
+    if ef.detail.get("unmeasured_insufficient"):
+        return f"UNIDENTIFIABLE — {ef.reason}", "unmeasured"
     if ef.status == NOT_RUN:
         return f"INCONCLUSIVE — effect not evaluated: {ef.reason}", "effect_not_evaluated"
     if ef.detail.get("domain_empty"):
@@ -225,6 +230,8 @@ class Autopsy:
     composition: dict = field(default_factory=dict)
     reference: dict = field(default_factory=dict)
     specificity: dict = field(default_factory=dict)
+    # the groups' technical covariates per replicate, counts and genes per cell (a line of the dossier)
+    technical: dict = field(default_factory=dict)
 
     @property
     def judgment_pending(self) -> bool:
@@ -301,17 +308,38 @@ class Autopsy:
                 lines.append(f"| the whole mixture | {_cell(_fx(mix.get('corrected')))} | {_cell(_fx(mix.get('raw')))} |")
             per = dom.get("per_type") or []
             if per:
-                lines += ["", "| Type | In the domain | Detection | Effect (corrected) | Effect (raw) |", "|---|---|---|---|---|"]
+                lines += ["", "| Type | In the domain | Detection | The genes' counts per cell (log1p CP10k) | "
+                              "Effect (corrected) | Effect (raw) |", "|---|---|---|---|---|---|"]
                 for r in per:
                     det = r.get("detection") or {}
                     dtxt = "; ".join(f"{g}: " + ", ".join(f"{k} {v:.0%}" for k, v in d.items()) for g, d in det.items())
+                    itxt = "; ".join(f"{g}: {v:.3g}" for g, v in (r.get("index") or {}).items()
+                                     if v is not None and np.isfinite(v)) or "—"
                     lines.append(f"| {_cell(r['type'])} | {'yes' if r['in_domain'] else 'no'} | {_cell(dtxt)} | "
-                                 f"{_cell(_fx(r.get('corrected')))} | {_cell(_fx(r.get('raw')))} |")
+                                 f"{_cell(itxt)} | {_cell(_fx(r.get('corrected')))} | {_cell(_fx(r.get('raw')))} |")
+        ef_detail = (self.effect.detail if self.effect is not None else None) or {}
+        unmeasured = list(ef_detail.get("unmeasured") or [])
+        unmeasured_units = [u for u in ((ef_detail.get("domain") or {}).get("unmeasured") or []) if u.get("in_domain")]
+        if unmeasured or unmeasured_units:
+            lines += ["", "## Left out: the metric gives no value (not measured)", ""]
+            for u in unmeasured:
+                lines.append(f"- replicate {_cell(u['replicate'])}: uncorrected "
+                             f"{'measured' if u.get('raw') is not None else 'no value'}, at equal depth "
+                             f"{'measured' if u.get('corrected') is not None else 'no value'}")
+            for u in unmeasured_units:
+                lines.append(f"- unit ({_cell(u['replicate'])}, {_cell(u['type'])}) of the domain: uncorrected "
+                             f"{'measured' if u.get('raw') is not None else 'no value'}, at equal depth "
+                             f"{'measured' if u.get('corrected') is not None else 'no value'}")
         if self.composition:
             from .composition import describe as _describe
             lines += ["", "## Composition (reported, not a gate)", ""]
             for comp in self.composition.get("columns", {}).values():
                 lines.append(f"- {_cell(_describe(comp))}")
+        if self.technical:
+            from .composition import describe_technical as _tdesc
+            lines += ["", "## Technical covariates per replicate (reported, not a gate)", ""]
+            for ln in _tdesc(self.technical):
+                lines.append(f"- {_cell(ln)}")
         if self.reference.get("rows"):
             ref = self.reference
             lines += ["", f"## {_cell(ref['measure'])} of {_cell(' and '.join(ref['genes']))} beside the metric "
@@ -354,7 +382,7 @@ class Autopsy:
             prereg=self.prereg, params=self.params, provenance=self.provenance,
             composition={k: v for k, v in self.composition.items() if k != "domain"} | (
                 {"domain": _public_domain(self.composition["domain"])} if self.composition.get("domain") else {}),
-            reference=self.reference, specificity=self.specificity,
+            reference=self.reference, specificity=self.specificity, technical=self.technical,
         ))
 
     def to_json(self, **kw) -> str:
@@ -551,6 +579,44 @@ def _replication(g6: GateResult | None) -> Assessment:
     return Assessment(status, g6.message, list(g6.detail.get("effect_flags", [])), g6.detail)
 
 
+TECHNICAL_DRAWS = 3  # GATE 0's null draws averaged per unit in the groups' technical difference (change 12)
+
+
+def technical_difference(metric, data, genes, *, group_col: str, groups, within=(), replicate_col: str,
+                         estimand, margin: float, alpha: float = 0.05, power: float = 0.8, n_perm: int = 1000,
+                         min_replicates: int = 3, spikein_prefix: str = "ERCC-", domain: dict | None = None,
+                         seed: int = 0, n_draws: int = TECHNICAL_DRAWS) -> dict:
+    """v0.4 change 12: the groups' technical difference — the claim's metric on GATE 0's null (each claim
+    gene's counts redrawn independently from cells at least as deep within the unit, ``gates.claim_null``:
+    no gene-gene biology, each group's own technology), averaged over `n_draws` draws per unit, estimated
+    between the groups as the effect is (``effect.estimate_effect``: the same units, domain, correction
+    and test). Equivalent to no difference where its 90% interval lies within ±`margin` (TOST); a null
+    the metric cannot measure (fewer replicates than the test needs) is not equivalent."""
+    from .effect import estimate_effect
+
+    rng = np.random.default_rng(seed)
+
+    def null_metric(d):
+        sd = _g._as_simple(d)
+        vals = [v for v in (_g._safe_call(lambda: metric(_g.claim_null(sd, genes, rng))) for _ in range(n_draws))
+                if v is not None]
+        return float(np.mean(vals)) if vals else float("nan")
+
+    try:
+        eff, _design = estimate_effect(
+            null_metric, data, group_col=group_col, groups=groups, within=within, replicate_col=replicate_col,
+            estimand=estimand, sesoi=margin, alpha=alpha, power=power, min_replicates=min_replicates,
+            n_perm=n_perm, spikein_prefix=spikein_prefix, sesoi_scale="observed", seed=seed, domain=domain)
+    except Exception as e:  # never silent: the test is recorded as not done, and the bias keeps blocking
+        return dict(equivalent=False, margin=margin, alpha=alpha, error=f"{type(e).__name__}: {e}")
+    d = eff.detail
+    return dict(equivalent=bool(d.get("tost_equivalent")), margin=float(margin), alpha=alpha,
+                effect=d.get("effect"), ci=d.get("ci"), ci_2alpha=d.get("ci_2alpha"), status=eff.status,
+                reason=eff.reason, test=d.get("test"), tier=d.get("tier"), estimate_over=d.get("estimate_over"),
+                n_replicates=d.get("n_replicates"), draws=n_draws,
+                error=None if d.get("effect") is not None else eff.reason)
+
+
 def coupling_reference(metric, data, gene_pair, *, group_col: str, groups, replicate_col: str, within=(),
                        alpha: float = 0.05, n_perm: int = 1000, seed: int = 0, domain: dict | None = None) -> dict:
     """The engine's own ``norm_pearson`` of the pair beside the user's metric, on the uncorrected data
@@ -680,8 +746,9 @@ def run_autopsy(
     ``judgment_pending``, optionally ``known_interactions`` (pairs) and ``known_to_differ`` (genes) for
     the check of specificity, and free-text commitments. Its hash is recorded, and a run with a
     pre-registration is appended to the run log (`log_path`, else ``$METRIC_AUTOPSY_LOG``, else
-    ``metric_autopsy_runs.jsonl``; ``"off"`` disables). With `stop_on_first_fail`, an invalid or
-    degenerate metric stops the analysis before the effect is estimated.
+    ``metric_autopsy_runs.jsonl``; ``"off"`` disables). `stop_on_first_fail` is kept for compatibility and
+    recorded: since v0.4 the effect and every report line are estimated after a FAIL too (the dossier,
+    flag ``DOSSIER_ONLY``), and the verdict follows the first FAIL either way.
 
     v0.4: GATE 4 runs first, and with a construct-scale SESOI its probe is a change of the construct of
     that size, whose response s_m is the SESOI in the metric's units for GATE 0's tolerance, the TOST,
@@ -735,7 +802,7 @@ def run_autopsy(
     def seed_of(stream: str) -> int:
         return _prov.claim_seed(data_sha, claim, seed, stream)
 
-    from .effect import _cell_effect, assess_design, equalizing_correction, estimate_effect, public_design
+    from .effect import _cell_effect, equalizing_correction, estimate_effect
 
     # ---- the claim's domain (cell types where its genes are detected) --------------------------
     kind = "pair" if gene_pair else ("set" if claim_genes else "global")
@@ -777,6 +844,17 @@ def run_autopsy(
                                include_matrix_perturbations=include_matrix_perturbations,
                                seed=seed_of("gate0"), effect_scale=effect_scale, sesoi=sesoi_metric, corrected=corrected,
                                bias_tolerance=float(prereg["bias_tolerance"]))
+    # change 12: a blocking bias blocks only where the groups' technical difference, the metric on GATE 0's
+    # null estimated between them as the effect is, cannot be shown within GATE 0's tolerance
+    if (g0.status == GateStatus.FAIL and replicate_col is not None
+            and any(r.get("handling") == "blocking" for r in g0.detail.get("responses", {}).values())):
+        between = technical_difference(
+            metric, data, claim_genes, group_col=group_col, groups=groups, within=within,
+            replicate_col=replicate_col, estimand=prereg.get("estimand"), margin=g0.detail["bias_tolerance_abs"],
+            alpha=alpha, power=float(prereg["power"]), n_perm=n_perm, min_replicates=int(prereg["min_replicates"]),
+            spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
+            domain=domain if domain is not None and domain["n_domain_types"] else None, seed=seed_of("gate0:between"))
+        g0 = _g.gate0_between_groups(g0, between)
     results.append(g0)
     g5 = None
     if pair_metric is not None and pos_pair is not None and neg_pair is not None:
@@ -805,24 +883,22 @@ def run_autopsy(
 
     effect_sesoi = sesoi_metric
     effect_scale_name = "observed" if sesoi_metric is not None else sesoi_scale
-    if stop_on_first_fail and mv.status in ("FAIL", "DEGENERATE"):
-        eff = Assessment(NOT_RUN, f"metric_validity is {mv.status}; the effect is not estimated "
-                                  "(stop_on_first_fail)")
-        # design adequacy does not depend on the metric: still assess identifiability and replication
-        design = public_design(assess_design(
-            data, group_col=group_col, groups=groups, within=within, replicate_col=replicate_col,
-            estimand=prereg.get("estimand"), min_replicates=int(prereg["min_replicates"]),
-            spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
-            qc_imbalanced=g1.status == GateStatus.WARN))
-    else:
-        eff, design = estimate_effect(
-            metric, data, group_col=group_col, groups=groups, within=within,
-            replicate_col=replicate_col, estimand=prereg.get("estimand"), sesoi=effect_sesoi, alpha=alpha,
-            power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]),
-            n_perm=n_perm, spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
-            qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half,
-            sesoi_scale=effect_scale_name, seed=seed_of("effect"), domain=domain, sesoi_label=sesoi_info.get("label"))
-        results.append(_gate2_result(eff, design))
+    # the full dossier (v0.4, the owner's decision of 2026-10-18): the effect within the domain, the
+    # mixture's, the types outside the domain, the composition and every report line are estimated
+    # whatever metric validity says; the verdict still follows the first FAIL (``decide``)
+    eff, design = estimate_effect(
+        metric, data, group_col=group_col, groups=groups, within=within,
+        replicate_col=replicate_col, estimand=prereg.get("estimand"), sesoi=effect_sesoi, alpha=alpha,
+        power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]),
+        n_perm=n_perm, spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
+        qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half,
+        sesoi_scale=effect_scale_name, seed=seed_of("effect"), domain=domain, sesoi_label=sesoi_info.get("label"))
+    if mv.status in ("FAIL", "DEGENERATE"):
+        eff.detail["dossier_only"] = True
+        eff = Assessment(eff.status, f"(the dossier: estimated after metric validity's {mv.status}, which "
+                                     f"decides the verdict) {eff.reason}", list(eff.flags) + ["DOSSIER_ONLY"],
+                         eff.detail)
+    results.append(_gate2_result(eff, design))
     da = _design_adequacy(g1, design, prereg, g0.detail.get("attenuation"), sesoi_info)
 
     if gene_pair is not None:
@@ -848,6 +924,14 @@ def run_autopsy(
                      for c in composition})
         if domain is not None:
             autopsy.composition["domain"] = domain
+    if replicate_col is not None:
+        from .composition import technical_covariates
+        try:
+            autopsy.technical = technical_covariates(
+                data, group_col, groups, replicate_col, within, domain=domain, pool=specificity_pool, alpha=alpha,
+                n_perm=n_perm, rng=np.random.default_rng(seed_of("technical")))
+        except Exception as e:  # a report line: reported, never silent, never blocking
+            autopsy.technical = dict(error=f"{type(e).__name__}: {e}")
     if gene_pair is not None and replicate_col is not None:
         autopsy.reference = coupling_reference(metric, data, gene_pair, group_col=group_col, groups=groups,
                                                replicate_col=replicate_col, within=within, alpha=alpha,

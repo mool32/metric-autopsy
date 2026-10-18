@@ -146,6 +146,131 @@ def type_replicates(obs, type_col: str, group_col: str, groups: Sequence, replic
     return out
 
 
+TECHNICAL = ("counts per cell", "genes per cell")
+
+
+def _domain_cells(obs, dom: dict, replicate_col: str) -> np.ndarray:
+    """The cells of the domain's types, each in its own stratum (the domain's per-stratum lists)."""
+    rep = np.asarray(obs[replicate_col]).astype(str)
+    lab = _labels(obs, dom["column"])
+    strata = dom["_design"]["strata"]
+    key = np.array([strata.get(r, None) for r in rep], dtype=object)
+    out = np.zeros(len(obs), bool)
+    for st, types in dom["domain"].items():
+        out |= (key == st) & np.isin(lab, list(types))
+    return out
+
+
+def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: str, within: Sequence[str] = (), *,
+                         domain: dict | None = None, pool=None, alpha: float = 0.05, n_perm: int = 1000, rng=None,
+                         max_exact: int = 20000) -> dict:
+    """The groups' technical covariates per replicate (a line of the dossier, the owner's decision of
+    2026-10-18): per cell its total count and its number of genes with a count, over every gene of
+    `pool` (the same cells with every gene) or else of `data`; per replicate (per replicate and group in
+    a paired design) the median over its cells; the difference from groups[0] to groups[1]
+    (groups[0] − groups[1], as the effect) of the replicates' means within each stratum of `within`,
+    and over the strata with the effect test's precision weights, each with its two-sided permutation
+    p over the effect test's relabelings (every one when there are at most `max_exact`). On all the
+    comparison's cells, and on the cells of the domain's types when a domain is given. GATE 1 compares
+    the cells' median numbers of genes with a ratio threshold of 1.5; on preprint section 4's setup it
+    passed at 1.32 while the young males' units detected 1,298 more genes per cell (exact p 0.016 over
+    126 relabelings, the third diagnostics, ``validation/exploratory/real_pilot_5_summary.log``)."""
+    from .effect import _replicate_design
+    from .stats import permutation_test_nested, permutation_test_paired
+
+    rng = rng if rng is not None else np.random.default_rng(0)
+    obs = data.obs
+    src = pool if pool is not None else data
+    n = len(obs)
+    if int(getattr(src.X, "shape", (0,))[0]) != n:
+        return dict(error=f"the pool has {getattr(src.X, 'shape', ('?',))[0]} cells, the data {n}")
+    grp = np.asarray(obs[group_col])
+    keep = (grp == groups[0]) | (grp == groups[1])
+    design = _replicate_design(obs[keep], group_col, groups, replicate_col, list(within))
+    if design["kind"] == "mixed":
+        return dict(error=design["reason"])
+    X = src.X
+    per_cell = {TECHNICAL[0]: np.asarray(X.sum(axis=1), dtype=float).ravel(),
+                TECHNICAL[1]: np.asarray((X > 0).sum(axis=1), dtype=float).ravel()}
+    rep = np.asarray(obs[replicate_col]).astype(str)
+    cell_sets = {"all cells": keep}
+    if domain is not None and not domain.get("error") and domain.get("n_domain_types"):
+        cell_sets["the domain's cells"] = keep & _domain_cells(obs, domain, replicate_col)
+    reps = design["reps"]
+    strata = design["strata"]
+    st_order = list(dict.fromkeys(strata[r] for r in reps))
+    g0, g1 = groups[0], groups[1]
+    rows = []
+    for cells, cm in cell_sets.items():
+        for cov, v in per_cell.items():
+            if design["kind"] == "nested":
+                vals, lab, st = [], [], []
+                for r in reps:
+                    m = cm & (rep == r)
+                    if m.any():
+                        vals.append(float(np.median(v[m])))
+                        lab.append(1 if g0 in design["membership"][r] else 0)
+                        st.append(strata[r])
+                y, g, s = np.asarray(vals), np.asarray(lab, int), np.asarray(st, dtype=object)
+                parts = [(name, s == key) for name, key in
+                         ([(" ".join(k.split("\x1f")) or "all", k) for k in st_order] if len(st_order) > 1 else [])]
+                parts.append(("combined" if len(st_order) > 1 else "all", np.ones(len(y), bool)))
+                for name, m in parts:
+                    if not ((g[m] == 1).any() and (g[m] == 0).any()):
+                        rows.append(dict(cells=cells, covariate=cov, stratum=name, difference=None,
+                                         reason="a group without replicates"))
+                        continue
+                    res = permutation_test_nested(y[m], g[m], s[m], n_perm=n_perm, rng=rng, max_exact=max_exact)
+                    rows.append(dict(cells=cells, covariate=cov, stratum=name,
+                                     first=float(y[m][g[m] == 1].mean()), second=float(y[m][g[m] == 0].mean()),
+                                     difference=float(res.observed), p=float(res.p), method=res.method,
+                                     n_relabelings=int(res.n), replicates={str(g0): int((g[m] == 1).sum()),
+                                                                           str(g1): int((g[m] == 0).sum())}))
+            else:
+                d, st = [], []
+                for r in reps:
+                    a, b = cm & (rep == r) & (grp == g0), cm & (rep == r) & (grp == g1)
+                    if a.any() and b.any():
+                        d.append((float(np.median(v[a])), float(np.median(v[b]))))
+                        st.append(strata[r])
+                D, s = np.asarray(d, float).reshape(-1, 2), np.asarray(st, dtype=object)
+                parts = [(name, s == key) for name, key in
+                         ([(" ".join(k.split("\x1f")) or "all", k) for k in st_order] if len(st_order) > 1 else [])]
+                parts.append(("combined" if len(st_order) > 1 else "all", np.ones(len(D), bool)))
+                for name, m in parts:
+                    if not m.any():
+                        rows.append(dict(cells=cells, covariate=cov, stratum=name, difference=None,
+                                         reason="no replicate with cells of both groups"))
+                        continue
+                    res = permutation_test_paired(D[m, 0] - D[m, 1], n_perm=n_perm, rng=rng, max_exact=max_exact)
+                    rows.append(dict(cells=cells, covariate=cov, stratum=name, first=float(D[m, 0].mean()),
+                                     second=float(D[m, 1].mean()), difference=float(res.observed), p=float(res.p),
+                                     method=res.method, n_relabelings=int(res.n), replicates=dict(pairs=int(m.sum()))))
+    return dict(groups=[str(g0), str(g1)], design=design["kind"], source="pool" if pool is not None else "data",
+                alpha=alpha, rows=rows,
+                differs=[dict(cells=r["cells"], covariate=r["covariate"], stratum=r["stratum"]) for r in rows
+                         if r.get("difference") is not None and r["p"] < alpha])
+
+
+def describe_technical(tech: dict) -> list:
+    """Lines for the report: per cell set, covariate and stratum, the difference with its p."""
+    if not tech:
+        return []
+    if tech.get("error"):
+        return [f"not assessed ({tech['error']})"]
+    g0, g1 = tech["groups"]
+    out = []
+    for r in tech["rows"]:
+        head = f"{r['cells']}, {r['covariate']}, {r['stratum']}"
+        if r.get("difference") is None:
+            out.append(f"{head}: not compared ({r['reason']})")
+            continue
+        out.append(f"{head}: {g0} {r['first']:.4g}, {g1} {r['second']:.4g}, {g0} − {g1} {r['difference']:+.4g} "
+                   f"({r['method']} p {r['p']:.3g}, {r['n_relabelings']} relabelings; the replicates' medians per cell"
+                   f"{', over every gene of the pool' if tech['source'] == 'pool' else ''})")
+    return out
+
+
 def describe(comp: dict, top: int = 5) -> str:
     """One line: the TVD with its p and the largest differences."""
     if comp.get("error"):

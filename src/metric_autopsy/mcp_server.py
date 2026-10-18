@@ -103,6 +103,8 @@ def autopsy_report(
     their shares are compared between the groups at the replicate level, and the claim is judged
     within its domain, the cell types where its genes are expressed, the types weighted equally;
     the whole mixture's estimate is reported beside.
+    stop_on_first_fail: kept for compatibility; since v0.4 the effect and every report line are
+    estimated after a FAIL too (the dossier), and the verdict follows the first FAIL either way.
     """
     import json
 

@@ -160,10 +160,12 @@ def test_markdown_cell_escapes_pipe_and_newline():
     assert _cell("a|b\nc") == "a\\|b<br>c"
 
 
-# --- #21 : stop_on_first_fail honored for pairwise gates -------------------
-def test_stop_halts_before_gate6_after_a_validity_fail():
-    # since v0.4 (change 13) a broken negative control no longer fails GATE 5, so the metric is made
-    # invalid by GATE 4: it falls where the injected coupling rises
+# --- #21 : after a validity FAIL the rest is the dossier (v0.4) ------------
+def test_after_a_validity_fail_every_gate_runs_as_the_dossier_and_the_verdict_follows_the_fail():
+    # v0.3 stopped before the effect and GATE 6 (stop_on_first_fail); since v0.4 (the owner's decision of
+    # 2026-10-18) the effect and the gates after it are estimated and reported, marked as not deciding,
+    # and the verdict still follows the first FAIL. Since v0.4 (change 13) a broken negative control no
+    # longer fails GATE 5, so the metric is made invalid by GATE 4: it falls where the injected coupling rises
     from metric_autopsy import injected_signal
     d = make_clean()
     m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
@@ -174,7 +176,10 @@ def test_stop_halts_before_gate6_after_a_validity_fail():
     )
     gates_run = {r.gate for r in autopsy.results}
     assert next(r for r in autopsy.results if r.gate == 4).status == GateStatus.FAIL
-    assert 4 in gates_run and 6 not in gates_run  # GATE 4 blocked -> GATE 6 never ran
+    assert {2, 4, 6} <= gates_run  # the effect and the replication are estimated after the FAIL
+    assert "DOSSIER_ONLY" in autopsy.effect.flags and autopsy.effect.detail["dossier_only"] is True
+    assert autopsy.effect.reason.startswith("(the dossier: estimated after metric validity's FAIL")
+    assert autopsy.cause == "metric_invalid_gate4" and autopsy.verdict.startswith("NOT SUPPORTED — metric invalid")
 
 
 # --- #22 : duplicate var_names rejected ------------------------------------

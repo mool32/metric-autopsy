@@ -86,7 +86,14 @@ def codetected_spearman(data, *, gene_a: str, gene_b: str) -> float:
     return float(np.corrcoef(ra, rb)[0, 1])
 
 
-def norm_pearson(data, *, gene_a: str, gene_b: str) -> float:
+# The fewest cells carrying both genes on which norm_pearson measures a correlation (v0.4, the owner's
+# decision of 2026-10-18): the 20 cells a unit (replicate, type) needs to count (composition.MIN_CELLS),
+# applied to the cells the correlation is computed on. Fisher's z of a correlation over 20 cells has a
+# standard error of 1/sqrt(17) = 0.24; over fewer the value is not a measurement of the replicate.
+MIN_CODETECTED = 20
+
+
+def norm_pearson(data, *, gene_a: str, gene_b: str, min_codetected: int = MIN_CODETECTED) -> float:
     """Library-normalized (CP10k + log1p) Pearson on co-detected cells.
 
     The reference for a normalized metric: per-cell normalization divides out the library
@@ -95,6 +102,11 @@ def norm_pearson(data, *, gene_a: str, gene_b: str) -> float:
     same total correlates them (the CP10k ratio correlation, probe p06), and that correlation
     grows as depth falls, so with enough cells GATE 0 classifies depth as bias for it (probe
     p13).
+
+    NaN — not measured — where fewer than `min_codetected` cells (never fewer than 3) carry both
+    genes, or where one gene does not vary among them. v0.3 returned 0.0 there, a value that was
+    not measured reported as no correlation (the third diagnostics, Marsh et al. 2022's inhibited
+    arm); the engine leaves out the replicates where the metric gives no value and lists them.
     """
     from .core import as_dense, unique_col_index
 
@@ -103,14 +115,15 @@ def norm_pearson(data, *, gene_a: str, gene_b: str) -> float:
     ia, ib = unique_col_index(var_names, gene_a), unique_col_index(var_names, gene_b)
     raw_a, raw_b = X[:, ia], X[:, ib]
     both = (raw_a > 0) & (raw_b > 0)
-    if both.sum() < 3:
-        return 0.0
+    if both.sum() < max(3, int(min_codetected)):
+        return float("nan")
     tot = X.sum(axis=1)
     tot = np.where(tot == 0, 1.0, tot)
     a = np.log1p(raw_a / tot * 1e4)[both]
     b = np.log1p(raw_b / tot * 1e4)[both]
-    if a.std() == 0 or b.std() == 0:
-        return 0.0
+    # equal values, not a zero std: the std of equal floats can round to 1e-16, and their correlation to 1
+    if np.ptp(a) == 0 or np.ptp(b) == 0:
+        return float("nan")
     return float(np.corrcoef(a, b)[0, 1])
 
 

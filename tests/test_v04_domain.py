@@ -140,7 +140,7 @@ def test_a_sesoi_below_the_floor_is_flagged():
 # --------------------------------------------------------------------------- #
 # the domain
 # --------------------------------------------------------------------------- #
-def test_the_domain_holds_the_types_where_both_genes_are_detected_in_one_group():
+def test_the_domain_holds_the_types_where_both_genes_are_detected_in_each_group():
     from metric_autopsy.domain import claim_domain
     d = typed_mice(col_in_b=(0.05, 0.0))  # Col1a1 in about 5% of the young B cells: below 10%
     dom = claim_domain(d, type_col="cell_type", group_col="age", groups=("young", "old"), replicate_col="mouse",
@@ -148,12 +148,14 @@ def test_the_domain_holds_the_types_where_both_genes_are_detected_in_one_group()
     assert dom["domain"] == {"": ["A"]} and dom["outside"] == {"": ["B"]}
     b = next(r for r in dom["strata"][0]["types"] if r["type"] == "B")
     assert b["detection"]["young"]["Col1a1"] < 0.10 and b["detection"]["young"]["Smad3"] > 0.9
-    # in one group is enough: a coupling the change brings about (Col1a1 from 3% to 40% of A's cells)
+    # in each group (the owner's decision of 2026-10-18, by the definition of coupling; the rule was "in at
+    # least one group" before): a pair that appears with the change (Col1a1 from 3% to 40% of A's cells) is
+    # a claim about expression, outside the domain (tests/test_v04_dossier.py has the line it gets)
     induced = typed_mice(col_in_a=(0.5, 0.03))
     dom2 = claim_domain(induced, type_col="cell_type", group_col="age", groups=("young", "old"),
                         replicate_col="mouse", genes=("Smad3", "Col1a1"), kind="pair")
     a = next(r for r in dom2["strata"][0]["types"] if r["type"] == "A")
-    assert a["detection"]["old"]["Col1a1"] < 0.10 <= a["detection"]["young"]["Col1a1"] and a["in_domain"]
+    assert a["detection"]["old"]["Col1a1"] < 0.10 <= a["detection"]["young"]["Col1a1"] and not a["in_domain"]
 
 
 def test_the_claim_is_judged_within_its_domain_and_the_mixture_is_reported_beside():
@@ -269,15 +271,45 @@ GATE0_FALSE_FAIL_TARGET = 0.05  # at most alpha of the seeds, fixed before measu
 GATE0_SEEDS = 40
 
 
+_GATE0_RUNS: dict = {}
+
+
+def _gate0_over_seeds():
+    """GATE 0 on the known issue's data over the seeds, computed once for the two tests below."""
+    if not _GATE0_RUNS:
+        from test_v03_verdict import nested_mice
+        from metric_autopsy.effect import _cell_effect
+        d = nested_mice(4, c_young=1.5, c_old=1.4, mouse_sd=0.4, seed=3)
+        scale = max(abs(_cell_effect(NPR, d, "age", ("young", "old"))), 0.02)
+        _GATE0_RUNS.update(data=d, results=[gate0_independence(
+            NPR, d, seed=s, effect_scale=scale, sesoi=0.02, corrected=("depth_downsample",), bias_tolerance=0.5)
+            for s in range(GATE0_SEEDS)])
+    return _GATE0_RUNS["data"], _GATE0_RUNS["results"]
+
+
 @pytest.mark.xfail(strict=True, reason=(
     "known issue (CHANGELOG 0.4.0.dev0): on these data GATE 0 calls 20% extra dropout a bias of 0.0195-0.0213 "
     "against a tolerance of 0.01 (0.5 x SESOI 0.02) and FAILs in 4 of 40 seeds (8, 11, 36, 37); the groups "
-    "do not differ in dropout, so by change 12 (decided, not coded) it should report it"))
+    "do not differ in dropout. GATE 0 alone has no groups: change 12 is applied by run_autopsy (next test)"))
 def test_gate0_false_fail_rate_over_seeds_is_within_its_target():
-    from test_v03_verdict import nested_mice
-    from metric_autopsy.effect import _cell_effect
-    d = nested_mice(4, c_young=1.5, c_old=1.4, mouse_sd=0.4, seed=3)
-    scale = max(abs(_cell_effect(NPR, d, "age", ("young", "old"))), 0.02)
-    fails = sum(gate0_independence(NPR, d, seed=s, effect_scale=scale, sesoi=0.02, corrected=("depth_downsample",),
-                                   bias_tolerance=0.5).status.value == "FAIL" for s in range(GATE0_SEEDS))
+    _, results = _gate0_over_seeds()
+    fails = sum(g.status.value == "FAIL" for g in results)
     assert fails / GATE0_SEEDS <= GATE0_FALSE_FAIL_TARGET, f"{fails} of {GATE0_SEEDS} seeds FAIL"
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "known issue (CHANGELOG 0.4.0.dev0): change 12 cannot show the groups' technical difference within the "
+    "tolerance of 0.01 on 4 mice per group, its 90% interval spanning about 0.25 (seeds 8, 11, 36, 37: "
+    "-0.081 [-0.210, +0.049], -0.090 [-0.221, +0.041], -0.072 [-0.200, +0.056], -0.073 [-0.187, +0.040]), so "
+    "the 4 FAILs stand"))
+def test_gate0_false_fail_rate_with_change_12_is_within_its_target():
+    from metric_autopsy.report import technical_difference
+    d, results = _gate0_over_seeds()
+    fails = 0
+    for s, g0 in enumerate(results):
+        if g0.status.value == "FAIL":
+            between = technical_difference(NPR, d, ("Smad3", "Col1a1"), group_col="age", groups=("young", "old"),
+                                           replicate_col="mouse", estimand="composition",
+                                           margin=g0.detail["bias_tolerance_abs"], seed=s)
+            fails += gates.gate0_between_groups(g0, between).status.value == "FAIL"
+    assert fails / GATE0_SEEDS <= GATE0_FALSE_FAIL_TARGET, f"{fails} of {GATE0_SEEDS} seeds FAIL with change 12"

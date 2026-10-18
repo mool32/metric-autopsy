@@ -4,23 +4,33 @@ When the data carry cell-type labels (the first column of ``run_autopsy(composit
 verdict comes from the claim's estimate combined over the types of its domain, the types weighted
 equally (``combined``), and the estimate over the whole mixture goes into the report beside the
 groups' difference of composition. The rule, fixed from principle before the third diagnostics
-(``validation/exploratory/real_pilot_diagnostics_3_plan.md``), not from section 4's data:
+(``validation/exploratory/real_pilot_diagnostics_3_plan.md``), not from section 4's data, and for a
+pair changed after them by the definition of coupling (the owner's second decisions of 2026-10-18):
 
-* a type is **in the domain of a claim about a pair** where, in at least one of the two groups, both
-  genes are detected in at least ``DOMAIN_DETECTION`` (10%) of the type's cells, the lower bound of
-  validation v1's expression levels (no metric was tested below it). Detection in a group is the mean
-  over its replicates, each weighted equally, of the share of the replicate's cells of the type with a
-  count of the gene. *In at least one group*, because a claim of change may be the very appearance of
-  the coupling: requiring both groups would remove a type where the change itself moves a gene across
-  the threshold, and pooling the cells would make the rule depend on the groups' numbers of cells;
+* a type is **in the domain of a claim about a pair** where, **in each of the two groups**, both genes are
+  detected in at least ``DOMAIN_DETECTION`` (10%) of the type's cells, the lower bound of validation
+  v1's expression levels (no metric was tested below it). Detection in a group is the mean over its
+  replicates, each weighted equally, of the share of the replicate's cells of the type with a count of
+  the gene. *In each group* by the definition of coupling (the owner's decision of 2026-10-18, on the
+  third diagnostics): the coupling of a pair is not defined in a group where a gene is not expressed,
+  and a change that makes a gene appear is a claim about expression. The third diagnostics had *in at
+  least one group* (fixed before them); on §4 it let in seven types where only the young detected
+  Col1a1, and on Marsh et al. 2022 it kept a contrast whose inhibited arm had Fos in 0.2% of its cells;
 * for a claim about a set of genes (a module, or one gene), where the set (a count of any of its
-  genes) is detected so in at least one group;
+  genes) is detected so in at least one group: a change of expression may be the expression's
+  appearance;
 * for a claim that names no genes, every type;
 * and only where it can be estimated: at least ``MIN_CELLS`` cells in at least ``MIN_REPLICATES``
   replicates of each group (in a paired design, replicates with that many cells in both groups).
 
 The rule is applied within each stratum of ``within``. A type absent from every replicate of one group
-cannot be compared there (change 7's UNIDENTIFIABLE) and is listed. Nothing here reads the metric.
+cannot be compared there (change 7's UNIDENTIFIABLE) and is listed. Beside the detections, each type
+carries an index of the claim genes' counts per group (``index``: the mean over the replicates of the
+mean per cell of log1p(10^4 x the genes' counts / the cell's total over the genes of `data`), the
+claim's own genes where the third diagnostics' index of foreign counts used a list of fibroblast
+genes fixed from the literature); a type outside a pair's domain where
+the genes reach the threshold in one group only is listed with it (a line of the dossier, not part of
+the rule: counts that come from elsewhere, or the expression's appearance). Nothing here reads the metric.
 """
 from __future__ import annotations
 
@@ -60,11 +70,11 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
     sub_obs = obs[keep]
     design = _replicate_design(sub_obs, group_col, groups, replicate_col, list(within))
     rule = dict(threshold=threshold, kind=kind, genes=[str(g) for g in genes], min_cells=min_cells,
-                min_replicates=min_replicates,
-                text=("types where, in at least one group, " + (
-                    "both genes are" if kind == "pair" else "the set of genes is" if kind == "set" else "")
-                    + f" detected in at least {threshold:.0%} of the type's cells" if kind != "global"
-                    else "every type (the claim names no genes)")
+                min_replicates=min_replicates, groups_needed="each" if kind == "pair" else "at least one",
+                text=(("types where, in each group, both genes are" if kind == "pair" else
+                       "types where, in at least one group, the set of genes is")
+                      + f" detected in at least {threshold:.0%} of the type's cells" if kind != "global"
+                      else "every type (the claim names no genes)")
                 + f"; estimable with at least {min_cells} cells in at least {min_replicates} replicates of each group")
     if design["kind"] == "mixed":
         return dict(column=type_col, rule=rule, error=design["reason"])
@@ -77,6 +87,8 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
     if G is not None:
         detected = (G > 0) if kind == "pair" else (G.sum(axis=1, keepdims=True) > 0)
         names = [str(g) for g in genes] if kind == "pair" else ["set"]
+        tot = np.asarray(data.X.sum(axis=1), dtype=float).ravel()[keep]
+        index = np.log1p(1e4 * G.sum(axis=1) / np.where(tot > 0, tot, 1.0))
     need = max(int(min_replicates), MIN_REPLICATES)
     g0, g1 = (str(x) for x in groups)
     strata_labels = list(dict.fromkeys(design["strata"][r] for r in design["reps"]))
@@ -87,7 +99,7 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
         rows = []
         for t in sorted(set(lab[in_st].tolist())):
             mt = in_st & (lab == t)
-            row = dict(type=t, cells={}, replicates={}, detection={})
+            row = dict(type=t, cells={}, replicates={}, detection={}, index={})
             units = {}
             for gname in (g0, g1):
                 mg = mt & (grp.astype(str) == gname)
@@ -99,6 +111,8 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
                     det = [detected[mg & (rep == r)].mean(axis=0) for r in ok]
                     row["detection"][gname] = ({n: float(np.mean([d[i] for d in det])) for i, n in enumerate(names)}
                                                if det else {n: float("nan") for n in names})
+                    idx = [float(index[mg & (rep == r)].mean()) for r in ok]
+                    row["index"][gname] = float(np.mean(idx)) if idx else float("nan")
             if design["kind"] == "paired":
                 both = sorted(set(units[g0]) & set(units[g1]))
                 row["replicates"] = dict(pairs=both)
@@ -110,15 +124,21 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
             if kind == "global":
                 row["in_domain"] = True
             else:
-                row["in_domain"] = any(
-                    all(np.isfinite(row["detection"][g][n]) and row["detection"][g][n] >= threshold for n in names)
-                    for g in (g0, g1))
+                by_group = [all(np.isfinite(row["detection"][g][n]) and row["detection"][g][n] >= threshold
+                                for n in names) for g in (g0, g1)]
+                row["detected_in"] = [g for g, ok in zip((g0, g1), by_group) if ok]
+                row["in_domain"] = all(by_group) if kind == "pair" else any(by_group)
             rows.append(row)
         out_strata.append(dict(stratum=" ".join(st.split("\x1f")) if st else "all", key=st, types=rows))
     domain = {s["key"]: [r["type"] for r in s["types"] if r["qualifies"] and r["in_domain"]] for s in out_strata}
     outside = {s["key"]: [r["type"] for r in s["types"] if r["qualifies"] and not r["in_domain"]] for s in out_strata}
+    # the dossier's line: types outside a pair's domain where the genes reach the threshold in one group only
+    one_group = [dict(stratum=s["stratum"], type=r["type"], detected_in=r["detected_in"], detection=r["detection"],
+                      index=r["index"])
+                 for s in out_strata for r in s["types"]
+                 if kind == "pair" and r["qualifies"] and not r["in_domain"] and len(r.get("detected_in", [])) == 1]
     return dict(column=type_col, rule=rule, design=design["kind"], strata=out_strata, domain=domain, outside=outside,
-                n_domain_types=len({t for v in domain.values() for t in v}),
+                n_domain_types=len({t for v in domain.values() for t in v}), one_group=one_group,
                 unlabelled_cells=int(missing.sum()), _design=design)
 
 
@@ -204,4 +224,10 @@ def describe(dom: dict) -> list:
         small = [r["type"] for r in s["types"] if not r["qualifies"] and r["in_domain"]]
         lines.append(f"{s['stratum']}: domain {', '.join(inside) or 'none'}; outside it {len(outside)} type(s)"
                      + (f"; in the domain by detection but not estimable: {', '.join(small)}" if small else ""))
+    for r in dom.get("one_group") or []:
+        det = "; ".join(f"{g}: " + ", ".join(f"{k} {v:.0%}" for k, v in d.items()) for g, d in r["detection"].items())
+        idx = ", ".join(f"{g} {v:.3g}" for g, v in r["index"].items())
+        lines.append(f"{r['stratum']}: {r['type']} reaches the threshold in {r['detected_in'][0]} only ({det}; the "
+                     f"genes' counts per cell, log1p CP10k: {idx}) — outside the domain: counts from elsewhere, or "
+                     "the expression's appearance (a line of the dossier, not part of the rule)")
     return lines

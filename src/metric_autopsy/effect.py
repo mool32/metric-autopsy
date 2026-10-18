@@ -189,6 +189,35 @@ def _rep_values(metric, data, group_col, groups, replicate_col, design):
     return out
 
 
+def _n_eff(reps, design: dict, groups) -> int:
+    """The replicates per group (the smaller group) or the pairs among `reps`."""
+    if design["kind"] == "paired":
+        return len(reps)
+    first = sum(1 for r in reps if groups[0] in design["membership"][r])
+    return min(first, len(reps) - first)
+
+
+def _measured(raw_vals: dict, corr_vals: dict, design: dict, groups) -> tuple[dict, dict, list, int, int]:
+    """The replicates where the metric gives a value on the uncorrected and on the corrected data. The
+    others are left out of both tests and listed (v0.4, the owner's decision of 2026-10-18: a value that
+    was not measured is not a value of 0): (raw, corrected, the unmeasured, replicates per group before
+    and after)."""
+    def fin(v):
+        return v is not None and np.isfinite(v)
+    reps = list(design["reps"])
+    ok = {r: fin(raw_vals.get(r)) and fin(corr_vals.get(r)) for r in reps}
+    unmeasured = [dict(replicate=r, raw=raw_vals.get(r) if fin(raw_vals.get(r)) else None,
+                       corrected=corr_vals.get(r) if fin(corr_vals.get(r)) else None) for r in reps if not ok[r]]
+    return ({r: raw_vals[r] if ok[r] else None for r in reps}, {r: corr_vals[r] if ok[r] else None for r in reps},
+            unmeasured, _n_eff(reps, design, groups), _n_eff([r for r in reps if ok[r]], design, groups))
+
+
+def _unmeasured_reason(n_left: int, n_total: int, n_after: int, min_replicates: int, what: str) -> str:
+    return (f"the metric gives no value (not measured) on {n_left} of the {n_total} {what}, which leaves "
+            f"{n_after} replicate(s) per group, fewer than {min_replicates}: the comparison cannot be made on "
+            "these data (the unmeasured are listed)")
+
+
 def _infer(values: dict, design: dict, groups, tier: str, alpha: float, n_perm: int, rng,
            max_exact: int = 20000, min_replicates: int = 3) -> dict:
     """Run the graded test on replicate values ({replicate: value}); NaNs dropped."""
@@ -463,6 +492,22 @@ def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, with
         corr = np.where(ok.any(axis=0), np.where(ok, stack, 0.0).sum(axis=0) / np.maximum(ok.sum(axis=0), 1), np.nan)
     else:
         corr = raw
+    # the units where the metric gives no value, uncorrected or at equal depth, are left out and listed;
+    # an Estimator counts a replicate by its units, so they must go before it is built
+    measured = np.isfinite(raw) & np.isfinite(corr)
+    unit_table = [dict(replicate=str(units.reps[r]), type=units.types[t], in_domain=bool(d),
+                       raw=float(v) if np.isfinite(v) else None, corrected=float(c) if np.isfinite(c) else None,
+                       measured=bool(m))
+                  for r, t, d, v, c, m in zip(units.unit_rep, units.unit_type, in_dom, raw, corr, measured)]
+    unmeasured = [u for u in unit_table if not u["measured"]]
+    n_before = _units_n_eff(units.subset(in_dom))
+    units, raw, corr, in_dom = units.subset(measured), raw[measured], corr[measured], in_dom[measured]
+    n_after = _units_n_eff(units.subset(in_dom)) if in_dom.any() else 0
+    if unmeasured and (not in_dom.any() or n_after < min_replicates <= n_before):
+        return dict(empty=False, unmeasured=unmeasured, unmeasured_insufficient=True, n_before=n_before,
+                    n_after=n_after, n_units=int(len(unit_table)), n_cells=int(typed.n_obs), units=unit_table,
+                    types=sorted({u["type"] for u in unit_table if u["in_domain"]}), eq_info=eq_info,
+                    capture_check=cc, outside=None, per_type=[])
     dom_units = units.subset(in_dom)
     inf = _units_inference(dom_units, corr[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     inf_raw = _units_inference(dom_units, raw[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
@@ -482,17 +527,25 @@ def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, with
             continue
         sub = units.subset(sel)
         rec = dict(type=t, in_domain=bool(in_dom[sel].any()), units=int(sel.sum()),
-                   detection=det.get(t, {}).get("detection"),
+                   detection=det.get(t, {}).get("detection"), index=det.get(t, {}).get("index"),
                    corrected=_summary(_units_inference(sub, corr[sel], groups, tier, alpha, n_perm, rng, max_exact,
                                                        min_replicates), alpha),
                    raw=_summary(_units_inference(sub, raw[sel], groups, tier, alpha, n_perm, rng, max_exact,
                                                  min_replicates), alpha))
         per_type.append(rec)
-    unit_table = [dict(replicate=str(units.reps[r]), type=units.types[t], in_domain=bool(d), raw=float(v),
-                       corrected=float(c)) for r, t, d, v, c in zip(units.unit_rep, units.unit_type, in_dom, raw, corr)]
     return dict(empty=False, inf=inf, inf_raw=inf_raw, outside=outside, per_type=per_type, eq_info=eq_info,
                 capture_check=cc, n_units=int(in_dom.sum()), n_cells=int(typed.n_obs), units=unit_table,
-                types=sorted({units.types[t] for t in units.unit_type[in_dom]}))
+                types=sorted({units.types[t] for t in units.unit_type[in_dom]}), unmeasured=unmeasured,
+                unmeasured_insufficient=False, n_before=n_before, n_after=n_after)
+
+
+def _units_n_eff(units) -> int:
+    """The contributing replicates per group (the smaller group) or the pairs of a set of units."""
+    from .combined import Estimator
+    if units.n_units == 0:
+        return 0
+    c = Estimator(units).counts()
+    return c["pairs"] if units.kind == "paired" else min(c["first"], c["second"])
 
 
 def estimate_effect(
@@ -580,15 +633,18 @@ def estimate_effect(
     for r in rep_design["reps"]:
         xs = [p[r] for p in per_set if p.get(r) is not None]
         corr_vals[r] = float(np.mean(xs)) if xs else None
+    # a replicate where the metric gives no value (not measured) leaves both tests and is listed
+    raw_vals, corr_vals, unmeasured, n_before, n_after = _measured(raw_vals, corr_vals, rep_design, groups)
 
     inf = _infer(corr_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     inf_raw = _infer(raw_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     mixture = None
+    detail["unmeasured"] = unmeasured
     if domain is not None and not domain.get("error"):
         mixture = dict(corrected=_summary(inf, alpha), raw=_summary(inf_raw, alpha),
                        replicate_values=[dict(replicate=r, raw=raw_vals.get(r), corrected=corr_vals.get(r))
                                          for r in rep_design["reps"]],
-                       equalization=eq_info)
+                       equalization=eq_info, unmeasured=unmeasured)
         dres = _domain_effect(metric, sd, domain, group_col=group_col, groups=groups, within=within,
                               replicate_col=replicate_col, correction=design["correction"], tier=tier, alpha=alpha,
                               n_perm=n_perm, n_equalize=n_equalize, rng=rng, max_exact=max_exact,
@@ -602,11 +658,23 @@ def estimate_effect(
                       + ("the claim's genes detected" if domain["rule"]["kind"] != "global" else "both groups")
                       + f" by the rule ({domain['rule']['text']}); the whole mixture's estimate is reported beside")
             return Assessment("INCONCLUSIVE", reason, [], detail), public_design(design)
+        if dres.get("unmeasured_insufficient"):
+            detail.update(unmeasured_insufficient=True, effect=None, raw_effect=None)
+            n_dom = sum(1 for u in dres["units"] if u["in_domain"])
+            n_off = sum(1 for u in dres["unmeasured"] if u["in_domain"])
+            return Assessment("NOT_ESTIMABLE", _unmeasured_reason(
+                n_off, n_dom, dres["n_after"], min_replicates, "units (replicate, type) of the domain"),
+                [], detail), public_design(design)
         inf, inf_raw = dres["inf"], dres["inf_raw"]
         if dres["eq_info"] is not None:
             eq_info = dict(dres["eq_info"], capture_check=dres["capture_check"])
             depth_ratio = eq_info["depth_ratio"]
             design["equalization"] = eq_info
+    elif unmeasured and n_after < min_replicates <= n_before:
+        detail.update(unmeasured_insufficient=True, effect=None, raw_effect=None)
+        return Assessment("NOT_ESTIMABLE", _unmeasured_reason(
+            len(unmeasured), len(rep_design["reps"]), n_after, min_replicates, "replicates"),
+            [], detail), public_design(design)
     if tier != "insufficient" and inf["tier"] == "insufficient":
         design["tier_reason"] = "; ".join(inf["notes"]) or "insufficient replication"
     tier = inf["tier"] if tier != "insufficient" else tier

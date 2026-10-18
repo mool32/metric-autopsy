@@ -133,7 +133,8 @@ def build_parser() -> argparse.ArgumentParser:
                                  "runs with a pre-registration are always logged)")
     p.add_argument("--no-log", action="store_true", help="do not write a run log")
     p.add_argument("--no-stop", action="store_true",
-                   help="estimate the effect even when the metric is invalid")
+                   help="kept for compatibility: since v0.4 the effect and every report line are estimated after "
+                        "a FAIL too (the dossier), and the verdict follows the first FAIL either way")
     p.add_argument("--resolve-judgment", action="store_true",
                    help="mark judgment gates (4, 7) resolved, allowing a provisional SUPPORTED")
     return p

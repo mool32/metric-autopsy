@@ -52,6 +52,42 @@ et al. 2018 and Levy et al. 2020 are not in the pilot: they belong to the confir
 Interferon-β stimulation (Kang et al. 2018), listed here before, is now a positive control of the
 second question (below).
 
+### The source in Tabula Muris Senis FACS: age is confounded with it (decided 2026-10-18)
+
+**Decided** (the owner's second decisions of 2026-10-18, item 8): in every plan, a comparison of
+3-month mice with older ones in TMS FACS is taken as confounded with the source — the 3-month data of
+the original Tabula Muris (Tabula Muris Consortium 2018) against the later time points of Tabula Muris
+Senis — and every age comparison in TMS is preceded by a check of the source in the metadata. By the
+rule decided before the third diagnostics the statement that the 3-month mice come from the original
+Tabula Muris stays "undecided" (GEO's records of GSE109774 name none of case 1's units), but the
+evidence of the third diagnostics agrees (`validation/exploratory/real_pilot_5_summary.log`, (b4)):
+- **`FACS.selection`** (the source h5ad's obs) is empty in every 3-month cell and filled in every older
+  one: in females young `nan`, old `Multiple`; in males young `nan`, old `CD31+, CD45+,
+  CD31-CD45-Sca1+, CD31-CD45-Sca1-VCAM1+`, `Cardiomyocytes`, `Handpicked` and others (8 values);
+- **the cells' names:** the young in Tabula Muris 2018's format (`A1.B000126.3_39_F.1.1`,
+  `A1.D041894.3_9_M.1.1`: well, plate, mouse), the old in TMS's (`A10_MAA001700_S46.mus`,
+  `A10_B000320`);
+- **GSE132042** (TMS FACS, 996 samples) begins with GSE109774's samples (Tabula Muris 2018:
+  `Bladder; GSM2967045`, `Brain_Microglia; GSM2967046`, `Brain_Neurons; GSM2967047`);
+- **the technical covariates per unit:** the young male units' median cell has 1,298 more genes with a
+  count (the Census's `nnz`, exact p 0.0159 over 126 relabelings; the source's `n_genes` +1,376, p
+  0.0159) and 189,000 fewer counts (`raw_sum`, p 0.0079; `n_counts` −248,390, p 0.0079); in females
+  neither differs (`nnz` −259, p 0.64; `raw_sum` +75,203, p 0.36). GATE 1's ratio of median genes
+  passed the males at 1.32.
+
+**What the TMS authors write** is checked before this is called a finding: their text (Tabula Muris
+Consortium 2020, Nature 583:590–595, PMC8240505, an NIH author manuscript without a Creative Commons
+licence) is not in the repository; the next run's metadata step fetches it and logs the passages on
+the 3-month data's origin, the batches and the sorting, quoted, without archiving the text. Until
+then the confound is a working assumption of the plans, not a result.
+
+**The check, for every age comparison in TMS** (before registration, by code independent of the
+engine): the source of each cell (its GEO sample and series, its name's format, `FACS.selection` and
+any other column that separates the ages), the technical covariates per unit with a permutation p (the
+engine's own line of the dossier since v0.4, `Autopsy.technical`), and whether the sexes, tissues and
+ages being compared share a source. A comparison whose groups differ in source is reported as
+confounded with it, whatever its verdict.
+
 ## Level B: confirmation
 
 **At least 20 papers with published claims about shifts of coordination or coexpression** between
