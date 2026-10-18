@@ -1,0 +1,38 @@
+# part case3a (validation/exploratory/real_pilot_6_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A8-3a1: NO DETECTABLE EFFECT — effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within ±0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (151.4 s)
+    effect 0.005107427466086122 CI [-0.033086220649349726, 0.043301075581521964] over the domain's cell types, equally weighted; s_m 0.05635913724723111; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a2: NO DETECTABLE EFFECT — effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within ±0.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (152.1 s)
+    effect 0.0238191477145085 CI [-0.00031598605494743276, 0.04795428148396443] over the domain's cell types, equally weighted; s_m 0.05052186167665575; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a3: NO DETECTABLE EFFECT — effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within ±0.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (151.5 s)
+    effect -0.023976029198154763 CI [-0.04781679790515238, -0.00013526049115714436] over the domain's cell types, equally weighted; s_m 0.07031728154647177; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a4: NO DETECTABLE EFFECT — effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within ±0.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (151.3 s)
+    effect -0.0013482949413966766 CI [-0.03591998608823375, 0.033223396205440396] over the domain's cell types, equally weighted; s_m 0.05345201563189507; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a5: NO DETECTABLE EFFECT — effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within ±0.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (150.8 s)
+    effect -0.0051229851979706035 CI [-0.038928233643593324, 0.02868226324765212] over the domain's cell types, equally weighted; s_m 0.0658476741291236; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a6: NO DETECTABLE EFFECT — effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within ±0.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (150.7 s)
+    effect 0.02102689510828206 CI [-0.0029073014703279443, 0.044961091686892066] over the domain's cell types, equally weighted; s_m 0.0599005400896533; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a7: NO DETECTABLE EFFECT — effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within ±0.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (149.7 s)
+    effect 0.012870158698401087 CI [-0.015948218119567814, 0.04168853551636999] over the domain's cell types, equally weighted; s_m 0.06701236379149698; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect NO_DETECTABLE_EFFECT; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A8-3a8: INCONCLUSIVE — effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within ±0.05599 [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (149.2 s)
+    effect -0.011743846432340624 CI [-0.07380618993156443, 0.05031849706688318] over the domain's cell types, equally weighted; s_m 0.05599373417285648; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+    dossier: effect INCONCLUSIVE; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+
+part case3a: 1209.7 s

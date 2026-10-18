@@ -1,0 +1,10 @@
+# part case1 (validation/exploratory/real_pilot_6_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A4: INCONCLUSIVE — effect -0.0003159 [-0.01682, +0.01619] within the domain's types, equally weighted, p=1 (exact permutation); neither detected nor equivalent within ±0.001126; the raw difference -0.004141 (not detected at the replicate level, p=0.571) shrinks to 8% at equal depth [underpowered relative to the SESOI; judged within the domain: fibroblast, fibroblast of cardiac tissue, granulocytopoietic cell, mesenchymal stem cell, mesenchymal stem cell of adipose tissue, the types weighted equally; the whole mixture is reported beside; the groups' composition in cell_type differs (total variation distance 0.43, p 0.0193); the groups' composition in tissue differs (total variation distance 0.393, p 0.0326)] [cause effect_inconclusive] (116.1 s)
+    effect -0.00031594587281951955 CI [-0.016817363761374823, 0.016185472015735784] over the domain's cell types, equally weighted; s_m 0.001126145007129572; domain ['fibroblast', 'fibroblast of cardiac tissue', 'granulocytopoietic cell', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN; 5 PASS
+    dossier: effect INCONCLUSIVE; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only [('male', 'enterocyte of epithelium of large intestine'), ('male', 'epithelial cell of large intestine'), ('male', 'granulocyte'), ('male', 'keratinocyte'), ('male', 'precursor B cell'), ('male', 'skeletal muscle satellite cell')]
+
+part case1: 126.0 s

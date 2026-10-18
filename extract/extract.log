@@ -1,0 +1,11 @@
+# The fourth run's extraction (validation/exploratory/real_pilot_6_plan.md; the third run's real_pilot_5_extract.run_census)
+
+python 3.13.16; numpy 2.5.3; pandas 2.3.3; Census release 2025-11-08
+
+## case1: 76797 cells x 21025 genes (21025 measured, 0 symbols naming several features left out; 249 s); the case file's genes with the same counts: 62 of 62 checked
+   named genes not measured: ['Loxl1']
+   the metadata: 28 Census obs columns for 76797 cells; the source h5ad (2,548,184,202 bytes, sha256 e311a6191473aca2452b18c28e93e72666f7fda68f687091faa3d1271f4155a0): 110824 cells, obs columns ['index', 'FACS.selection', 'age', 'cell', 'free_annotation', 'method', 'donor_id', 'subtissue', 'n_genes', 'n_counts', 'louvain', 'leiden', 'assay_ontology_term_id', 'disease_ontology_term_id', 'cell_type_ontology_term_id', 'tissue_ontology_term_id', 'tissue_original', 'development_stage_ontology_term_id', 'self_reported_ethnicity_ontology_term_id', 'sex_ontology_term_id', 'is_primary_data', 'suspension_type', 'tissue_type', 'cell_type', 'assay', 'disease', 'sex', 'tissue', 'self_reported_ethnicity', 'development_stage', 'observation_joinid']
+## case2: 2088 cells x 21025 genes (21025 measured, 0 symbols naming several features left out; 31 s); the case file's genes with the same counts: 55 of 55 checked
+## case3: 15711 cells x 35465 genes (35483 measured, 9 symbols naming several features left out; 148 s); the case file's genes with the same counts: 50 of 50 checked
+
+extraction: 639.0 s

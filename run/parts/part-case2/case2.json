@@ -1,0 +1,1133 @@
+{
+ "part": "case2",
+ "synthetic": false,
+ "engine": "0.4.0.dev0",
+ "seconds": 31.5,
+ "result": {
+  "claims": [
+   {
+    "verdict": "SUPPORTED (provisional until replicated) [parametric only \u2014 too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside]",
+    "label": "SUPPORTED",
+    "cause": "provisional",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to module(1 genes, 1/1.64872 by thinning, frac=1): module(1 genes, 1/1.64872 by thinning, frac=1) injected into female (38.49 probed counts per cell against 0.389 in male), its values move by -0.05855 against the untouched data (95% CI [-0.1078, -0.009334] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by -0.05855; the injection removes 0.00% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.05855.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}; MDE 0.2115 vs the SESOI in the metric's units 0.05855 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.009334, +0.1078] over the replicates); the design's floor 0.2847: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+      "flags": [
+       "PARAMETRIC_ONLY",
+       "UNDERPOWERED",
+       "SESOI_BELOW_FLOOR"
+      ]
+     },
+     "effect": {
+      "status": "DETECTED",
+      "reason": "effect +0.2215 [+0.05247, +0.3906] within the domain's types, equally weighted, p=0.0297 (t, parametric only)",
+      "flags": [
+       "PARAMETRIC_ONLY"
+      ]
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.2215 -> corrected +0.2215"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to module(1 genes, 1/1.64872 by thinning, frac=1): module(1 genes, 1/1.64872 by thinning, frac=1) injected into female (38.49 probed counts per cell against 0.389 in male), its values move by -0.05855 against the untouched data (95% CI [-0.1078, -0.009334] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by -0.05855; the injection removes 0.00% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.05855"
+     }
+    ],
+    "effect": {
+     "effect": 0.22152022929431608,
+     "raw_effect": 0.2214970620277963,
+     "ci": [
+      0.052466026321236314,
+      0.39057443226739585
+     ],
+     "p_perm": 0.02857142857142857,
+     "p_raw": 0.02969539900455298,
+     "p_t": 0.029697952576547504,
+     "raw_detected": true,
+     "tost_equivalent": false,
+     "sesoi": 0.0585509102788086,
+     "effective_sesoi": 0.0585509102788086,
+     "sesoi_source": "declared",
+     "floor": 0.28465252974642496,
+     "tier": "parametric",
+     "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+     "n_replicates": {
+      "female": 3,
+      "male": 4
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "fibroblast of cardiac tissue"
+     ],
+     "empty": false,
+     "n_units": 7,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "female": {
+         "set": 0.3270379235084739
+        },
+        "male": {
+         "set": 0.010015771335111666
+        }
+       },
+       "index": {
+        "female": 0.22704689943439713,
+        "male": 0.005549837406600845
+       },
+       "corrected": {
+        "effect": 0.22152022929431608,
+        "ci": [
+         0.052466026321236314,
+         0.39057443226739585
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033452653550974,
+        "df": 2.05651694231451,
+        "p": 0.029697952576547504,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       "raw": {
+        "effect": 0.2214970620277963,
+        "ci": [
+         0.052461843828893684,
+         0.3905322802266989
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033622993670257,
+        "df": 2.056861044896905,
+        "p": 0.02969539900455298,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.22147694930928044,
+      "ci": [
+       0.05246118823714083,
+       0.3904927103814201
+      ],
+      "ci_level": 0.95,
+      "se": 0.040337976672844555,
+      "df": 2.0572139250484924,
+      "p": 0.029691827837215357,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "raw": {
+      "effect": 0.2214970620277963,
+      "ci": [
+       0.0524618438288936,
+       0.39053228022669895
+      ],
+      "ci_level": 0.95,
+      "se": 0.04033622993670258,
+      "df": 2.0568610448969054,
+      "p": 0.02969539900455298,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.0585509102788086,
+     "sesoi_metric_ci": [
+      0.009334199117456463,
+      0.10776762144016074
+     ],
+     "dose": {
+      "kind": "module",
+      "construct_change": 0.5,
+      "scale": "log expression (natural log)",
+      "fold": 1.6487212707001282
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.25,
+       "dose": {
+        "kind": "module",
+        "construct_change": 0.25,
+        "scale": "log expression (natural log)",
+        "fold": 1.2840254166877414
+       },
+       "response": -0.030671097032291678,
+       "ci": [
+        -0.05667713918726889,
+        -0.004665054877314466
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.5,
+       "dose": {
+        "kind": "module",
+        "construct_change": 0.5,
+        "scale": "log expression (natural log)",
+        "fold": 1.6487212707001282
+       },
+       "response": -0.0585509102788086,
+       "ci": [
+        -0.10776762144016074,
+        -0.009334199117456463
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 1.0,
+       "dose": {
+        "kind": "module",
+        "construct_change": 1.0,
+        "scale": "log expression (natural log)",
+        "fold": 2.718281828459045
+       },
+       "response": -0.10552654886598618,
+       "ci": [
+        -0.1923504735059508,
+        -0.01870262422602155
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 5.805819093188712,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 1,
+      "n": 1000,
+      "share": 0.001,
+      "share_ci": [
+       2.5317487143183826e-05,
+       0.0055589242797395855
+      ],
+      "p": 0.001998001998001998,
+      "outcome": "specific"
+     },
+     "absolute": {
+      "k": 30,
+      "n": 1000,
+      "share": 0.03,
+      "share_ci": [
+       0.020330485682734434,
+       0.04255140246959854
+      ],
+      "p": 0.030969030969030968,
+      "outcome": "specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "Faim2"
+       ],
+       "t": 5.971950731784437,
+       "t_signed": 5.971950731784437,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Ccdc137"
+       ],
+       "t": 4.7168877534762546,
+       "t_signed": 4.7168877534762546,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Clybl"
+       ],
+       "t": 4.682153199543072,
+       "t_signed": 4.682153199543072,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tceal3"
+       ],
+       "t": 3.5009243019938516,
+       "t_signed": 3.5009243019938516,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Dleu2"
+       ],
+       "t": 3.131568565878759,
+       "t_signed": 3.131568565878759,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Mgst3"
+       ],
+       "t": 2.645468334309737,
+       "t_signed": 2.645468334309737,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Ppm1k"
+       ],
+       "t": 2.6227534873831786,
+       "t_signed": 2.6227534873831786,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Ncam1"
+       ],
+       "t": 2.5154577399641465,
+       "t_signed": 2.5154577399641465,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Fadd"
+       ],
+       "t": 2.4869885785961596,
+       "t_signed": 2.4869885785961596,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Shfl"
+       ],
+       "t": 2.476748605093688,
+       "t_signed": 2.476748605093688,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": -1.2702320515380903,
+      "ci": [
+       -2.21764867566461,
+       -0.28441466945240923
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 1.0,
+      "method": "exact",
+      "n_relabelings": 35,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 21025,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "Faim2"
+       ],
+       "t_signed": 5.971950731784437
+      }
+     ]
+    },
+    "reference": {},
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A1",
+    "claim": {
+     "id": "A1",
+     "case": "case2",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Xist"
+     ],
+     "groups": [
+      "female",
+      "male"
+     ],
+     "group_col": "sex",
+     "replicate": "mouse",
+     "within": [],
+     "direction": "decrease",
+     "sesoi": 0.5,
+     "probe": "module",
+     "composition": [
+      "cell_type"
+     ],
+     "known_to_differ": true,
+     "criterion": "SUPPORTED",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "decrease",
+     "sesoi": 0.5,
+     "judgment_pending": false,
+     "known_to_differ": [
+      "Xist",
+      "Tsix",
+      "Jpx",
+      "Ftx",
+      "Ddx3y",
+      "Eif2s3y",
+      "Kdm5d",
+      "Uty",
+      "Zfy1",
+      "Zfy2",
+      "Sry",
+      "Usp9y",
+      "Ube1y1",
+      "Ddx3x",
+      "Eif2s3x",
+      "Kdm5c",
+      "Kdm6a",
+      "Zfx",
+      "Usp9x",
+      "Uba1",
+      "Mid1",
+      "Erdr1",
+      "Sts"
+     ]
+    },
+    "report": "reports/A1.json",
+    "report_sha256": "b28092174a630fb2a1f4b54fb305557a11e67f0318a2d77b3903e780b4de43b9",
+    "seconds": 15.9,
+    "cells": 2088,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "DETECTED",
+     "effect_reason": "effect +0.2215 [+0.05247, +0.3906] within the domain's types, equally weighted, p=0.0297 (t, parametric only)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation",
+      "handling": {},
+      "tolerance": 0.0292754551394043,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in at least one group, the set of genes is detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "female",
+       "male"
+      ],
+      "design": "nested",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 838293.0,
+        "second": 852235.375,
+        "difference": -13942.375,
+        "p": 0.9714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 2505.3333333333335,
+        "second": 3417.375,
+        "difference": -912.0416666666665,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 838293.0,
+        "second": 852235.375,
+        "difference": -13942.375,
+        "p": 0.9714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 2505.3333333333335,
+        "second": 3417.375,
+        "difference": -912.0416666666665,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      ],
+      "differs": [
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "verdict": "SUPPORTED (provisional until replicated) [parametric only \u2014 too few replicates for the permutation test to reach alpha; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside]",
+    "label": "SUPPORTED",
+    "cause": "provisional",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to module(4 genes, 1/1.64872 by thinning, frac=1): module(4 genes, 1/1.64872 by thinning, frac=1) injected into male (110.7 probed counts per cell against 0.002861 in female), its values move by -0.1701 against the untouched data (95% CI [-0.1886, -0.1516] over 4 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by +0.1701; the injection removes 0.01% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.1701.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}; MDE 0.09085 vs the SESOI in the metric's units 0.1701 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.1516, +0.1886] over the replicates); the design's floor 0.1209",
+      "flags": [
+       "PARAMETRIC_ONLY"
+      ]
+     },
+     "effect": {
+      "status": "DETECTED",
+      "reason": "effect -0.6699 [-0.7393, -0.6004] within the domain's types, equally weighted, p=7.61e-05 (t, parametric only)",
+      "flags": [
+       "PARAMETRIC_ONLY"
+      ]
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw -0.67 -> corrected -0.6699"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to module(4 genes, 1/1.64872 by thinning, frac=1): module(4 genes, 1/1.64872 by thinning, frac=1) injected into male (110.7 probed counts per cell against 0.002861 in female), its values move by -0.1701 against the untouched data (95% CI [-0.1886, -0.1516] over 4 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by +0.1701; the injection removes 0.01% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.1701"
+     }
+    ],
+    "effect": {
+     "effect": -0.6698668081520598,
+     "raw_effect": -0.6700100694565088,
+     "ci": [
+      -0.739349827408054,
+      -0.6003837888960656
+     ],
+     "p_perm": 0.02857142857142857,
+     "p_raw": 7.648070759214143e-05,
+     "p_t": 7.606500869039579e-05,
+     "raw_detected": true,
+     "tost_equivalent": false,
+     "sesoi": 0.17007302840714333,
+     "effective_sesoi": 0.17007302840714333,
+     "sesoi_source": "declared",
+     "floor": 0.12086454520407479,
+     "tier": "parametric",
+     "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+     "n_replicates": {
+      "female": 3,
+      "male": 4
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "fibroblast of cardiac tissue"
+     ],
+     "empty": false,
+     "n_units": 7,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "female": {
+         "set": 0.002145922746781116
+        },
+        "male": {
+         "set": 0.7404568278631247
+        }
+       },
+       "index": {
+        "female": 3.7263526831044995e-05,
+        "male": 0.6700473329833398
+       },
+       "corrected": {
+        "effect": -0.6698668081520598,
+        "ci": [
+         -0.739349827408054,
+         -0.6003837888960656
+        ],
+        "ci_level": 0.95,
+        "se": 0.02183328219642428,
+        "df": 3.0000174776104838,
+        "p": 7.606500869039579e-05,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       "raw": {
+        "effect": -0.6700100694565088,
+        "ci": [
+         -0.7396346408416553,
+         -0.6003854980713622
+        ],
+        "ci_level": 0.95,
+        "se": 0.021877761081534376,
+        "df": 3.000017406616374,
+        "p": 7.648070759214143e-05,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": -0.6699201507634602,
+      "ci": [
+       -0.7394692035331665,
+       -0.600371097993754
+      ],
+      "ci_level": 0.95,
+      "se": 0.021854031422005805,
+      "df": 3.0000174444380674,
+      "p": 7.626336008415002e-05,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "raw": {
+      "effect": -0.6700100694565088,
+      "ci": [
+       -0.7396346408416553,
+       -0.6003854980713622
+      ],
+      "ci_level": 0.95,
+      "se": 0.021877761081534376,
+      "df": 3.0000174066163745,
+      "p": 7.648070759214143e-05,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.17007302840714333,
+     "sesoi_metric_ci": [
+      0.1515581930046581,
+      0.18858786380962858
+     ],
+     "dose": {
+      "kind": "module",
+      "construct_change": 0.5,
+      "scale": "log expression (natural log)",
+      "fold": 1.6487212707001282
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.25,
+       "dose": {
+        "kind": "module",
+        "construct_change": 0.25,
+        "scale": "log expression (natural log)",
+        "fold": 1.2840254166877414
+       },
+       "response": -0.08899338337342776,
+       "ci": [
+        -0.09901618622804743,
+        -0.07897058051880808
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.5,
+       "dose": {
+        "kind": "module",
+        "construct_change": 0.5,
+        "scale": "log expression (natural log)",
+        "fold": 1.6487212707001282
+       },
+       "response": -0.17007302840714333,
+       "ci": [
+        -0.18858786380962858,
+        -0.1515581930046581
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 1.0,
+       "dose": {
+        "kind": "module",
+        "construct_change": 1.0,
+        "scale": "log expression (natural log)",
+        "fold": 2.718281828459045
+       },
+       "response": -0.3104381578796298,
+       "ci": [
+        -0.34407876312685975,
+        -0.27679755263239986
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": -30.845310812551364,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 0,
+      "n": 1000,
+      "share": 0.0,
+      "share_ci": [
+       0.0,
+       0.003682083897274424
+      ],
+      "p": 0.000999000999000999,
+      "outcome": "specific"
+     },
+     "absolute": {
+      "k": 0,
+      "n": 1000,
+      "share": 0.0,
+      "share_ci": [
+       0.0,
+       0.003682083897274424
+      ],
+      "p": 0.000999000999000999,
+      "outcome": "specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "Dele1",
+        "Zfp318",
+        "Wasf3",
+        "Hecw2"
+       ],
+       "t": -12.607447269511415,
+       "t_signed": 12.607447269511415,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Rassf2",
+        "Clip4",
+        "Gm20604",
+        "Tmem161b"
+       ],
+       "t": -11.917344838846256,
+       "t_signed": 11.917344838846256,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Bdp1",
+        "Clip4",
+        "Spata13",
+        "Grik5"
+       ],
+       "t": -9.618589431259517,
+       "t_signed": 9.618589431259517,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tbl1xr1",
+        "Rcor3",
+        "Spata13",
+        "Zbtb7b"
+       ],
+       "t": -9.413307096477691,
+       "t_signed": 9.413307096477691,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Cep120",
+        "Kdm4c",
+        "Phtf2",
+        "Axin2"
+       ],
+       "t": -9.324747632584565,
+       "t_signed": 9.324747632584565,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tnpo1",
+        "Clip4",
+        "Hnrnpa1",
+        "Nfatc2ip"
+       ],
+       "t": -8.693149065627921,
+       "t_signed": 8.693149065627921,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Ecpas",
+        "Cd44",
+        "Ubash3b",
+        "Rel"
+       ],
+       "t": -8.6377202429354,
+       "t_signed": 8.6377202429354,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Plce1",
+        "B4galt2",
+        "1810014B01Rik",
+        "6530402F18Rik"
+       ],
+       "t": -8.559503172263394,
+       "t_signed": 8.559503172263394,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Sharpin",
+        "Scap",
+        "Ern1",
+        "Ptpre"
+       ],
+       "t": -8.25811153705421,
+       "t_signed": 8.25811153705421,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tnpo1",
+        "Acap3",
+        "Piga",
+        "Dhrs11"
+       ],
+       "t": -8.210479790996718,
+       "t_signed": 8.210479790996718,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": 2.6276406124451093,
+      "ci": [
+       1.1434548181424655,
+       4.236610501197014
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.02857142857142857,
+      "method": "exact",
+      "n_relabelings": 35,
+      "significant": true,
+      "warning": "the controls shift together in the claim's direction: the claim's change may be part of a change shared by many genes"
+     },
+     "pool": {
+      "genes": 21025,
+      "same_as_data": false
+     },
+     "at_least_as_far": []
+    },
+    "reference": {},
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A2",
+    "claim": {
+     "id": "A2",
+     "case": "case2",
+     "metric": "log_cp10k_mean",
+     "genes": [
+      "Ddx3y",
+      "Eif2s3y",
+      "Kdm5d",
+      "Uty"
+     ],
+     "groups": [
+      "female",
+      "male"
+     ],
+     "group_col": "sex",
+     "replicate": "mouse",
+     "within": [],
+     "direction": "increase",
+     "sesoi": 0.5,
+     "probe": "module",
+     "composition": [
+      "cell_type"
+     ],
+     "known_to_differ": true,
+     "criterion": "SUPPORTED",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "increase",
+     "sesoi": 0.5,
+     "judgment_pending": false,
+     "known_to_differ": [
+      "Xist",
+      "Tsix",
+      "Jpx",
+      "Ftx",
+      "Ddx3y",
+      "Eif2s3y",
+      "Kdm5d",
+      "Uty",
+      "Zfy1",
+      "Zfy2",
+      "Sry",
+      "Usp9y",
+      "Ube1y1",
+      "Ddx3x",
+      "Eif2s3x",
+      "Kdm5c",
+      "Kdm6a",
+      "Zfx",
+      "Usp9x",
+      "Uba1",
+      "Mid1",
+      "Erdr1",
+      "Sts"
+     ]
+    },
+    "report": "reports/A2.json",
+    "report_sha256": "7fd8afc2c19e77048b9c4fcb1e6a4cdf3dea2e9e0eb1ca853f00bf45eac6dd4c",
+    "seconds": 15.1,
+    "cells": 2088,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "DETECTED",
+     "effect_reason": "effect -0.6699 [-0.7393, -0.6004] within the domain's types, equally weighted, p=7.61e-05 (t, parametric only)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation",
+      "handling": {},
+      "tolerance": 0.08503651420357167,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in at least one group, the set of genes is detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "female",
+       "male"
+      ],
+      "design": "nested",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 838293.0,
+        "second": 852235.375,
+        "difference": -13942.375,
+        "p": 0.9714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 2505.3333333333335,
+        "second": 3417.375,
+        "difference": -912.0416666666665,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 838293.0,
+        "second": 852235.375,
+        "difference": -13942.375,
+        "p": 0.9714285714285714,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 2505.3333333333335,
+        "second": 3417.375,
+        "difference": -912.0416666666665,
+        "p": 0.02857142857142857,
+        "method": "exact",
+        "n_relabelings": 35,
+        "replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      ],
+      "differs": [
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all"
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "case_sha256": "7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb"
+ }
+}

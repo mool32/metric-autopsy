@@ -1,0 +1,3209 @@
+{
+ "part": "case1",
+ "synthetic": false,
+ "engine": "0.4.0.dev0",
+ "seconds": 126.0,
+ "result": {
+  "claims": [
+   {
+    "verdict": "INCONCLUSIVE \u2014 effect -0.0003159 [-0.01682, +0.01619] within the domain's types, equally weighted, p=1 (exact permutation); neither detected nor equivalent within \u00b10.001126; the raw difference -0.004141 (not detected at the replicate level, p=0.571) shrinks to 8% at equal depth [underpowered relative to the SESOI; judged within the domain: fibroblast, fibroblast of cardiac tissue, granulocytopoietic cell, mesenchymal stem cell, mesenchymal stem cell of adipose tissue, the types weighted equally; the whole mixture is reported beside; the groups' composition in cell_type differs (total variation distance 0.43, p 0.0193); the groups' composition in tissue differs (total variation distance 0.393, p 0.0326)]",
+    "label": "INCONCLUSIVE",
+    "cause": "effect_inconclusive",
+    "fields": {
+     "metric_validity": {
+      "status": "UNTESTED",
+      "reason": "no nuisance bias, but no demonstrated response to signal (GATE 4: response to coupling(Smad3, Col1a1, strength=0.791086) not established: coupling(Smad3, Col1a1, strength=0.791086) injected into young (1605 probed counts per cell against 652.9 in old), its values move by +0.001126 against the sham (95% CI [-0.002262, +0.004514] over 4 replicates, on the domain's 5 type(s), 50 injections per unit, expected increase); the replicate-level difference young - old moves by +0.001126; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.001126; the interval includes 0 \u2014 untested, not invalid; the positive control responds, but on another pair).",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 10, 'old': 7}; attenuation (GATE 0) extra_dropout \u221263%; MDE 0.02258 vs the SESOI in the metric's units 0.001126 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [-0.002262, +0.004514] over the replicates); the design's floor 0.02958: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+      "flags": [
+       "UNDERPOWERED",
+       "SESOI_BELOW_FLOOR",
+       "ATTENUATION",
+       "COMPOSITE_UNITS"
+      ]
+     },
+     "effect": {
+      "status": "INCONCLUSIVE",
+      "reason": "effect -0.0003159 [-0.01682, +0.01619] within the domain's types, equally weighted, p=1 (exact permutation); neither detected nor equivalent within \u00b10.001126; the raw difference -0.004141 (not detected at the replicate level, p=0.571) shrinks to 8% at equal depth",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation extra_dropout \u221263% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 2 assessable strata (worst point ratio 1.32x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw -0.004141 -> corrected -0.0003159"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.92 vs 0.97) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "WARN",
+      "message": "response to coupling(Smad3, Col1a1, strength=0.791086) not established: coupling(Smad3, Col1a1, strength=0.791086) injected into young (1605 probed counts per cell against 652.9 in old), its values move by +0.001126 against the sham (95% CI [-0.002262, +0.004514] over 4 replicates, on the domain's 5 type(s), 50 injections per unit, expected increase); the replicate-level difference young - old moves by +0.001126; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.001126; the interval includes 0 \u2014 untested, not invalid"
+     },
+     {
+      "gate": 5,
+      "name": "Controls",
+      "status": "PASS",
+      "message": "the positive control beats its empirical null in all 2 strata; null centre 0.00338..0.0103"
+     }
+    ],
+    "effect": {
+     "effect": -0.00031594587281951955,
+     "raw_effect": -0.0041413691841429125,
+     "ci": [
+      -0.016817363761374823,
+      0.016185472015735784
+     ],
+     "p_perm": 1.0,
+     "p_raw": 0.5714285714285714,
+     "p_t": 0.9639337102293308,
+     "raw_detected": false,
+     "tost_equivalent": false,
+     "sesoi": 0.001126145007129572,
+     "effective_sesoi": 0.001126145007129572,
+     "sesoi_source": "declared",
+     "floor": 0.029580592822731497,
+     "tier": "permutation",
+     "test": "exact permutation over replicates (n=70)",
+     "n_replicates": {
+      "young": 4,
+      "old": 4
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "fibroblast",
+      "fibroblast of cardiac tissue",
+      "granulocytopoietic cell",
+      "mesenchymal stem cell",
+      "mesenchymal stem cell of adipose tissue"
+     ],
+     "empty": false,
+     "n_units": 36,
+     "outside": {
+      "types": [
+       "B cell",
+       "CD4-positive, alpha-beta T cell",
+       "CD8-positive, alpha-beta T cell",
+       "DN4 thymocyte",
+       "T cell",
+       "basal cell",
+       "basal cell of epidermis",
+       "bladder urothelial cell",
+       "bronchial smooth muscle cell",
+       "cardiac valve cell",
+       "endothelial cell",
+       "endothelial cell of coronary artery",
+       "enterocyte of epithelium of large intestine",
+       "epidermal cell",
+       "epithelial cell of large intestine",
+       "granulocyte",
+       "hematopoietic stem cell",
+       "intestinal crypt stem cell",
+       "keratinocyte",
+       "keratinocyte stem cell",
+       "large intestine goblet cell",
+       "luminal epithelial cell of mammary gland",
+       "macrophage",
+       "microglial cell",
+       "monocyte",
+       "myeloid cell",
+       "naive B cell",
+       "natural killer cell",
+       "precursor B cell",
+       "promonocyte",
+       "skeletal muscle satellite cell",
+       "thymocyte"
+      ],
+      "corrected": {
+       "effect": 0.010728753741932214,
+       "ci": [
+        0.007398522795515859,
+        0.01405898468834857
+       ],
+       "ci_level": 0.95,
+       "se": 0.0011983164577817054,
+       "df": 3.9903635725668933,
+       "p": 0.0020408163265306124,
+       "test": "exact permutation over replicates (n=2450)",
+       "tier": "permutation",
+       "detected": true,
+       "n_replicates": {
+        "young": 8,
+        "old": 7
+       }
+      },
+      "raw": {
+       "effect": 0.011311849426726575,
+       "ci": [
+        0.007964179920943115,
+        0.014659518932510034
+       ],
+       "ci_level": 0.95,
+       "se": 0.0013094663881136636,
+       "df": 5.093088804425008,
+       "p": 0.0008163265306122449,
+       "test": "exact permutation over replicates (n=2450)",
+       "tier": "permutation",
+       "detected": true,
+       "n_replicates": {
+        "young": 8,
+        "old": 7
+       }
+      }
+     },
+     "per_type": [
+      {
+       "type": "B cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.06936512414108621,
+         "Col1a1": 0.0526957630585689
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.07380524932063193,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.0012725785229188405,
+        "ci": [
+         -0.002180218450437629,
+         0.0047253754962753095
+        ],
+        "ci_level": 0.95,
+        "se": 0.0014005171991751351,
+        "df": 5.820010836317425,
+        "p": 0.37142857142857144,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.0013333724774831708,
+        "ci": [
+         -0.0018133973342408013,
+         0.004480142289207143
+        ],
+        "ci_level": 0.95,
+        "se": 0.0012858613436494005,
+        "df": 5.997008844481796,
+        "p": 0.34285714285714286,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "CD4-positive, alpha-beta T cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.1646848602988954,
+         "Col1a1": 0.07547108512020793
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.17185230461298162,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.03799337498455552,
+        "ci": [
+         -0.009974909082933678,
+         0.08596165905204471
+        ],
+        "ci_level": 0.95,
+        "se": 0.016905861164607742,
+        "df": 3.7925547480576127,
+        "p": 0.08571428571428572,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.03426797104530413,
+        "ci": [
+         -0.013240165253792312,
+         0.08177610734440058
+        ],
+        "ci_level": 0.95,
+        "se": 0.017698877880042166,
+        "df": 4.3787684066648636,
+        "p": 0.08571428571428572,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "CD8-positive, alpha-beta T cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.15444444444444447,
+         "Col1a1": 0.0662962962962963
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.21561448935493488,
+        "old": null
+       },
+       "corrected": {
+        "effect": -0.00012729298968318196,
+        "ci": [
+         -0.020669953234329207,
+         0.020415367254962846
+        ],
+        "ci_level": 0.95,
+        "se": 0.008000319100933755,
+        "df": 5.018527061019643,
+        "p": 1.0,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": -0.0002567320244141573,
+        "ci": [
+         -0.01980447170212778,
+         0.019291007653299466
+        ],
+        "ci_level": 0.95,
+        "se": 0.007687089546783464,
+        "df": 5.187177262979974,
+        "p": 1.0,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "DN4 thymocyte",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.14310092637737687,
+         "Col1a1": 0.11004388103364213
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.16274513708679167,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.008828593729986572,
+        "ci": [
+         -0.012493775043663573,
+         0.03015096250363672
+        ],
+        "ci_level": 0.95,
+        "se": 0.004985087592489743,
+        "df": 2.0124571793389507,
+        "p": 0.2177966947541532,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.008698971218598578,
+        "ci": [
+         -0.012518262971242247,
+         0.0299162054084394
+        ],
+        "ci_level": 0.95,
+        "se": 0.004993985492575925,
+        "df": 2.0268163548033566,
+        "p": 0.22199374598168586,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "T cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.32891414141414144,
+         "Col1a1": 0.08914141414141415
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.4398578982042684,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.014067162856768078,
+        "ci": [
+         -0.008634440379503769,
+         0.036768766093039924
+        ],
+        "ci_level": 0.95,
+        "se": 0.00927151614013148,
+        "df": 5.983665678306522,
+        "p": 0.17142857142857143,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.010103730997170855,
+        "ci": [
+         -0.017925900039979528,
+         0.03813336203432124
+        ],
+        "ci_level": 0.95,
+        "se": 0.011233116854636361,
+        "df": 5.554616070136126,
+        "p": 0.4,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "basal cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.6103866801535254,
+         "Col1a1": 0.03975130535877527
+        },
+        "old": {
+         "Smad3": 0.48298331868883687,
+         "Col1a1": 0.014502150467915883
+        }
+       },
+       "index": {
+        "young": 0.6197813140749457,
+        "old": 0.40830632632055197
+       },
+       "corrected": {
+        "effect": -0.0011666454074833665,
+        "ci": [
+         -0.018688261578043396,
+         0.01635497076307666
+        ],
+        "ci_level": 0.95,
+        "se": 0.004379191471854093,
+        "df": 2.1663104002154747,
+        "p": 0.813165314037767,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": -8.148197939089608e-05,
+        "ci": [
+         -0.015832820360239957,
+         0.015669856401458165
+        ],
+        "ci_level": 0.95,
+        "se": 0.004653056761449637,
+        "df": 2.7086304221942172,
+        "p": 0.9872371377003208,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "basal cell of epidermis",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.31134239592183516,
+         "Col1a1": 0.110875106202209
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.20560983483173703,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.0031455642815678645,
+        "ci": [
+         -9.974310370469957e-05,
+         0.006390871666840429
+        ],
+        "ci_level": 0.95,
+        "se": 0.001270795459637139,
+        "df": 5.1118197332897,
+        "p": 0.11428571428571428,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.0034802114197652356,
+        "ci": [
+         0.0012233054533934162,
+         0.0057371173861370545
+        ],
+        "ci_level": 0.95,
+        "se": 0.0009194432939041658,
+        "df": 5.9229947641045015,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "bladder urothelial cell",
+       "in_domain": false,
+       "units": 6,
+       "detection": {
+        "young": {
+         "Smad3": 0.5773990447242726,
+         "Col1a1": 0.08704226371399625
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.4255016754268428,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.019356924558202145,
+        "ci": [
+         -0.02048475221427803,
+         0.05919860133068232
+        ],
+        "ci_level": 0.95,
+        "se": 0.009259793730738783,
+        "df": 2.0,
+        "p": 0.17173516936236455,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.019356924558202145,
+        "ci": [
+         -0.02048475221427803,
+         0.05919860133068232
+        ],
+        "ci_level": 0.95,
+        "se": 0.009259793730738783,
+        "df": 2.0,
+        "p": 0.17173516936236455,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "bronchial smooth muscle cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.011156690906830753,
+         "Col1a1": 0.09260985766672883
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.0039041841294851862,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.001208573652362376,
+        "ci": [
+         -0.004049986560123754,
+         0.006467133864848506
+        ],
+        "ci_level": 0.95,
+        "se": 0.0012224661232189565,
+        "df": 2.000510876530973,
+        "p": 0.4270260090074607,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.001208573652362376,
+        "ci": [
+         -0.004049986560123754,
+         0.006467133864848506
+        ],
+        "ci_level": 0.95,
+        "se": 0.0012224661232189565,
+        "df": 2.000510876530973,
+        "p": 0.4270260090074607,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "cardiac valve cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": null,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.09676576084351866,
+        "ci": [
+         0.03317417843374679,
+         0.16035734325329054
+        ],
+        "ci_level": 0.95,
+        "se": 0.015781565978812688,
+        "df": 2.1487306360805003,
+        "p": 0.02146399635363494,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.09667643788959972,
+        "ci": [
+         0.03324913478565383,
+         0.1601037409935456
+        ],
+        "ci_level": 0.95,
+        "se": 0.015798679274453983,
+        "df": 2.1578194881282857,
+        "p": 0.02132766244684814,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "endothelial cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.08490468344945384,
+         "Col1a1": 0.09962836784369573
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.08978964844826387,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.004904233421708297,
+        "ci": [
+         -0.006931808936726939,
+         0.016740275780143532
+        ],
+        "ci_level": 0.95,
+        "se": 0.004836336392789867,
+        "df": 5.995917360895296,
+        "p": 0.2857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.00404122617603602,
+        "ci": [
+         -0.007440611626121617,
+         0.015523063978193658
+        ],
+        "ci_level": 0.95,
+        "se": 0.004690969638321788,
+        "df": 5.992574476437629,
+        "p": 0.4,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "endothelial cell of coronary artery",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.04670240415854451,
+         "Col1a1": 0.09313632589704714
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.04851750876579639,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.009511505083976442,
+        "ci": [
+         -0.018394995128916326,
+         0.037418005296869214
+        ],
+        "ci_level": 0.95,
+        "se": 0.01140369673090381,
+        "df": 5.997641967558265,
+        "p": 0.37142857142857144,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.009684589115403725,
+        "ci": [
+         -0.017287543744199354,
+         0.0366567219750068
+        ],
+        "ci_level": 0.95,
+        "se": 0.011016155093422533,
+        "df": 5.984828641554746,
+        "p": 0.3142857142857143,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "enterocyte of epithelium of large intestine",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.2872503443072205,
+         "Col1a1": 0.08000260147643427
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.20610076025547608,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.010771237331775686,
+        "ci": [
+         -0.0035366007503287757,
+         0.025079075413880148
+        ],
+        "ci_level": 0.95,
+        "se": 0.005823399669701845,
+        "df": 5.900427957541086,
+        "p": 0.08571428571428572,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.011856666823058137,
+        "ci": [
+         -0.0013954239252714617,
+         0.025108757571387738
+        ],
+        "ci_level": 0.95,
+        "se": 0.005172220124824887,
+        "df": 5.055168790689895,
+        "p": 0.08571428571428572,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "epidermal cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.12582345191040845,
+         "Col1a1": 0.13438735177865613
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.06738691656532217,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.003922625872820872,
+        "ci": [
+         -0.0020418109602563126,
+         0.009887062705898057
+        ],
+        "ci_level": 0.95,
+        "se": 0.002294298583979283,
+        "df": 4.820282730913018,
+        "p": 0.150190323106008,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.0038674732518310783,
+        "ci": [
+         -0.0021535263949492636,
+         0.00988847289861142
+        ],
+        "ci_level": 0.95,
+        "se": 0.0023252322429565125,
+        "df": 4.881780846398712,
+        "p": 0.15856091344073775,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "epithelial cell of large intestine",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.082687338501292,
+         "Col1a1": 0.060465116279069774
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.12323325978823534,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.009321309219124274,
+        "ci": [
+         0.001569487930440581,
+         0.017073130507807968
+        ],
+        "ci_level": 0.95,
+        "se": 0.00266689921463605,
+        "df": 3.588365063421865,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.008970814948543696,
+        "ci": [
+         0.00131035061359255,
+         0.01663127928349484
+        ],
+        "ci_level": 0.95,
+        "se": 0.00273515438593643,
+        "df": 3.9137505331237903,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "fibroblast",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.6612021857923497,
+         "Col1a1": 0.990990990990991
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 2.1012280821549485,
+        "old": null
+       },
+       "corrected": {
+        "effect": -0.031131296019666136,
+        "ci": [
+         -0.07185550728413131,
+         0.00959291524479904
+        ],
+        "ci_level": 0.95,
+        "se": 0.01335607337233209,
+        "df": 3.2483828234498047,
+        "p": 0.095372586685466,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": -0.03035823826684087,
+        "ci": [
+         -0.07436731789921325,
+         0.013650841365531512
+        ],
+        "ci_level": 0.95,
+        "se": 0.0143551610828643,
+        "df": 3.2142687435277315,
+        "p": 0.11874447099994034,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.2620830974584681,
+         "Col1a1": 0.9393268751933825
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 1.374724151002104,
+        "old": null
+       },
+       "corrected": {
+        "effect": -0.007476317944447478,
+        "ci": [
+         -0.04595655657763156,
+         0.03100392068873661
+        ],
+        "ci_level": 0.95,
+        "se": 0.015355511991896699,
+        "df": 5.4667045001815815,
+        "p": 0.6571428571428571,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": -0.009284699932526692,
+        "ci": [
+         -0.051522138097448184,
+         0.03295273823239479
+        ],
+        "ci_level": 0.95,
+        "se": 0.01656558117329773,
+        "df": 5.139682181880382,
+        "p": 0.6,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "granulocyte",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.12131449631449631,
+         "Col1a1": 0.1821253071253071
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.12137114578788266,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.019488025610749863,
+        "ci": [
+         -0.02168348882206109,
+         0.06065954004356082
+        ],
+        "ci_level": 0.95,
+        "se": 0.010558963204232972,
+        "df": 2.2334173645653763,
+        "p": 0.19281920020775267,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.02074952668602073,
+        "ci": [
+         -0.021467155029975427,
+         0.06296620840201689
+        ],
+        "ci_level": 0.95,
+        "se": 0.01044443025686574,
+        "df": 2.1411034421999737,
+        "p": 0.17686541112576282,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "granulocytopoietic cell",
+       "in_domain": true,
+       "units": 6,
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": null,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.026510975509428034,
+        "ci": [
+         -0.01177659674459794,
+         0.064798547763454
+        ],
+        "ci_level": 0.95,
+        "se": 0.011052536262368955,
+        "df": 2.615570793176763,
+        "p": 0.10864628901015427,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.011785945937363434,
+        "ci": [
+         -0.054062972035764205,
+         0.07763486391049107
+        ],
+        "ci_level": 0.95,
+        "se": 0.02116468526199398,
+        "df": 3.1256838116702483,
+        "p": 0.6150159742767971,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "hematopoietic stem cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.347953216374269,
+         "Col1a1": 0.054891015417331206
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.2676657210104517,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.0029336853125417873,
+        "ci": [
+         0.00027803653437246225,
+         0.005589334090711112
+        ],
+        "ci_level": 0.95,
+        "se": 0.0010250517421989895,
+        "df": 4.87371231601764,
+        "p": 0.036382455973376304,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.002581795970223496,
+        "ci": [
+         -0.0006673223214951293,
+         0.005830914261942122
+        ],
+        "ci_level": 0.95,
+        "se": 0.001217264322174679,
+        "df": 4.449756817238732,
+        "p": 0.09424375462856105,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "intestinal crypt stem cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.3680672268907563,
+         "Col1a1": 0.057483863110461574
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.2227996784165247,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.04040893074210446,
+        "ci": [
+         -0.04671033577332548,
+         0.1275281972575344
+        ],
+        "ci_level": 0.95,
+        "se": 0.02737493681222171,
+        "df": 3.0,
+        "p": 0.2363926033692787,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.04040893074210444,
+        "ci": [
+         -0.04671033577332548,
+         0.12752819725753436
+        ],
+        "ci_level": 0.95,
+        "se": 0.027374936812221702,
+        "df": 3.0,
+        "p": 0.23639260336927892,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "keratinocyte",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.3342911877394636,
+         "Col1a1": 0.23563218390804597
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.16818530364420353,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.012453347512913635,
+        "ci": [
+         0.0016347146451257503,
+         0.02327198038070152
+        ],
+        "ci_level": 0.95,
+        "se": 0.0042066655589104,
+        "df": 4.992244372924567,
+        "p": 0.031564898350340265,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.011844460068251917,
+        "ci": [
+         -0.0003779112727962889,
+         0.024066831409300125
+        ],
+        "ci_level": 0.95,
+        "se": 0.004700872897925203,
+        "df": 4.818254454502156,
+        "p": 0.055013560725353905,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "keratinocyte stem cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.1019088669950739,
+         "Col1a1": 0.08901981639050605
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.09051983773446276,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.008571807721221385,
+        "ci": [
+         -0.0002721455931005805,
+         0.01741576103554335
+        ],
+        "ci_level": 0.95,
+        "se": 0.00342764960525505,
+        "df": 4.9388767856289615,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.008537155520037325,
+        "ci": [
+         -0.00030431841254013534,
+         0.017378629452614786
+        ],
+        "ci_level": 0.95,
+        "se": 0.00342460531943221,
+        "df": 4.929058082542878,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "large intestine goblet cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.26782627484874677,
+         "Col1a1": 0.062284263683458095
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.12879928338707256,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.028848871039360558,
+        "ci": [
+         0.01566658650500278,
+         0.04203115557371834
+        ],
+        "ci_level": 0.95,
+        "se": 0.005110431191270275,
+        "df": 4.943235741445226,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.02719539764821073,
+        "ci": [
+         0.01218782176603146,
+         0.04220297353039
+        ],
+        "ci_level": 0.95,
+        "se": 0.0061329195274056406,
+        "df": 5.998577942385614,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "luminal epithelial cell of mammary gland",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.6344443285168385,
+         "Col1a1": 0.03153063676804536
+        },
+        "old": {
+         "Smad3": 0.5831522051635903,
+         "Col1a1": 0.0
+        }
+       },
+       "index": {
+        "young": 0.6179404109038454,
+        "old": 0.5015267668879606
+       },
+       "corrected": {
+        "effect": 0.007693179246874785,
+        "ci": [
+         -0.0007720637938401298,
+         0.0161584222875897
+        ],
+        "ci_level": 0.95,
+        "se": 0.0026599798484142085,
+        "df": 3.0,
+        "p": 0.06290048039999485,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.010571879639982745,
+        "ci": [
+         -0.0006488474883285973,
+         0.021792606768294087
+        ],
+        "ci_level": 0.95,
+        "se": 0.003525818207735964,
+        "df": 3.0,
+        "p": 0.057741589334189936,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "macrophage",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.17971326582082026,
+         "Col1a1": 0.07293485430489272
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.11749213294184731,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.014824451171145574,
+        "ci": [
+         -0.02270117802211742,
+         0.052350080364408566
+        ],
+        "ci_level": 0.95,
+        "se": 0.012115705009954568,
+        "df": 3.1521757118634985,
+        "p": 0.2571428571428571,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.012425749524813857,
+        "ci": [
+         -0.02440077908670351,
+         0.04925227813633123
+        ],
+        "ci_level": 0.95,
+        "se": 0.012364348139103974,
+        "df": 3.4055140601702054,
+        "p": 0.45714285714285713,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "mesenchymal stem cell",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.23389602016294475,
+         "Col1a1": 0.9373717836000235
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 1.5443568549839655,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.009597356612154637,
+        "ci": [
+         -0.006189686156658294,
+         0.02538439938096757
+        ],
+        "ci_level": 0.95,
+        "se": 0.005420751065297672,
+        "df": 3.5729822893706342,
+        "p": 0.15986210061164297,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.0070516472264416374,
+        "ci": [
+         -0.009941873068657427,
+         0.024045167521540702
+        ],
+        "ci_level": 0.95,
+        "se": 0.00654945205976785,
+        "df": 4.850190604150177,
+        "p": 0.33223808525907916,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "mesenchymal stem cell of adipose tissue",
+       "in_domain": true,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.39297799250272,
+         "Col1a1": 0.9906016014010404
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 2.301961610060531,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.0009195524784333491,
+        "ci": [
+         -0.008360284787329935,
+         0.010199389744196633
+        ],
+        "ci_level": 0.95,
+        "se": 0.00326433880464702,
+        "df": 3.7754698877644257,
+        "p": 0.8,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 9.84991148479334e-05,
+        "ci": [
+         -0.009491794171972365,
+         0.009688792401668232
+        ],
+        "ci_level": 0.95,
+        "se": 0.0038498500157752888,
+        "df": 5.589991062956266,
+        "p": 1.0,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "microglial cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.2699711134071716,
+         "Col1a1": 0.08244937816250851
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.3041999499492844,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.0048284990143690745,
+        "ci": [
+         0.00132302670558422,
+         0.00833397132315393
+        ],
+        "ci_level": 0.95,
+        "se": 0.0011647804999854329,
+        "df": 3.3338097027828995,
+        "p": 0.02072128402740936,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.005171334023326623,
+        "ci": [
+         0.0013394916238316339,
+         0.009003176422821613
+        ],
+        "ci_level": 0.95,
+        "se": 0.001063480639897051,
+        "df": 2.472639297595627,
+        "p": 0.02561872576820967,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "monocyte",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.17612699521756506,
+         "Col1a1": 0.13857945537937919
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.1943174919053483,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.01941192396106047,
+        "ci": [
+         0.004467453086413633,
+         0.03435639483570731
+        ],
+        "ci_level": 0.95,
+        "se": 0.005636908203771549,
+        "df": 4.538731055029105,
+        "p": 0.05714285714285714,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.020268050558367622,
+        "ci": [
+         0.004977730401218539,
+         0.03555837071551671
+        ],
+        "ci_level": 0.95,
+        "se": 0.005187880776557703,
+        "df": 3.4816522448138247,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "myeloid cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.12196505401132181,
+         "Col1a1": 0.12123238325285425
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.11581059262240544,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.014792690534764083,
+        "ci": [
+         -0.00501160252384251,
+         0.03459698359337068
+        ],
+        "ci_level": 0.95,
+        "se": 0.00683107068497581,
+        "df": 3.609127641888232,
+        "p": 0.05714285714285714,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.014785218408093919,
+        "ci": [
+         -0.005071963211804677,
+         0.034642400027992515
+        ],
+        "ci_level": 0.95,
+        "se": 0.006801602521107682,
+        "df": 3.553785095051869,
+        "p": 0.05714285714285714,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "naive B cell",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.07185093509350934,
+         "Col1a1": 0.03664741474147415
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.08253729464319165,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.01523991558384559,
+        "ci": [
+         -0.009719646442543382,
+         0.04019947761023456
+        ],
+        "ci_level": 0.95,
+        "se": 0.007051165220667491,
+        "df": 2.5348079776636276,
+        "p": 0.13579583852643173,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.015514685993753836,
+        "ci": [
+         -0.010462036504515021,
+         0.041491408492022694
+        ],
+        "ci_level": 0.95,
+        "se": 0.006891053342193127,
+        "df": 2.3289846617814134,
+        "p": 0.13507681272182337,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "natural killer cell",
+       "in_domain": false,
+       "units": 6,
+       "detection": {
+        "young": {
+         "Smad3": 0.44030303030303025,
+         "Col1a1": 0.10352272727272727
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.5799124877049764,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.006547401581516784,
+        "ci": [
+         -0.02012720436707176,
+         0.03322200753010533
+        ],
+        "ci_level": 0.95,
+        "se": 0.009134223196960936,
+        "df": 3.5516360371959124,
+        "p": 0.5177866348022608,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": -0.0004627203062932683,
+        "ci": [
+         -0.0446644101654932,
+         0.04373896955290666
+        ],
+        "ci_level": 0.95,
+        "se": 0.013091486014093984,
+        "df": 2.719600649807267,
+        "p": 0.974235960152807,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "precursor B cell",
+       "in_domain": false,
+       "units": 6,
+       "detection": {
+        "young": {
+         "Smad3": 0.11513157894736842,
+         "Col1a1": 0.0
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.06818154807894039,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.029496113137096564,
+        "ci": [
+         0.003446758195672462,
+         0.05554546807852066
+        ],
+        "ci_level": 0.95,
+        "se": 0.006054254567493511,
+        "df": 2.0,
+        "p": 0.03964175439008044,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.02949611313709657,
+        "ci": [
+         0.003446758195672469,
+         0.05554546807852068
+        ],
+        "ci_level": 0.95,
+        "se": 0.006054254567493511,
+        "df": 2.0,
+        "p": 0.03964175439008044,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      },
+      {
+       "type": "promonocyte",
+       "in_domain": false,
+       "units": 7,
+       "detection": {
+        "young": {
+         "Smad3": 0.11265912305516267,
+         "Col1a1": 0.13854314002828855
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.13752199498790119,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.031844511001214215,
+        "ci": [
+         0.0035579933853103207,
+         0.06013102861711811
+        ],
+        "ci_level": 0.95,
+        "se": 0.008164614276326636,
+        "df": 2.6151430510236664,
+        "p": 0.03816996675082729,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.030960222562818773,
+        "ci": [
+         0.003638188482993167,
+         0.05828225664264438
+        ],
+        "ci_level": 0.95,
+        "se": 0.008411949706564297,
+        "df": 2.896128578170339,
+        "p": 0.03685408652698441,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "young": 3,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "skeletal muscle satellite cell",
+       "in_domain": false,
+       "units": 8,
+       "detection": {
+        "young": {
+         "Smad3": 0.2778233244517319,
+         "Col1a1": 0.1094998975199836
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.36441329741705464,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.024761114434696037,
+        "ci": [
+         -0.00505505950782591,
+         0.05457728837721798
+        ],
+        "ci_level": 0.95,
+        "se": 0.009403551493515759,
+        "df": 3.01969609581263,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "raw": {
+        "effect": 0.02444505435965384,
+        "ci": [
+         -0.00532610622638436,
+         0.05421621494569204
+        ],
+        "ci_level": 0.95,
+        "se": 0.0094151381795891,
+        "df": 3.034538768474153,
+        "p": 0.02857142857142857,
+        "test": "exact permutation over replicates (n=70)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "type": "thymocyte",
+       "in_domain": false,
+       "units": 6,
+       "detection": {
+        "young": {
+         "Smad3": 0.09271523178807947,
+         "Col1a1": 0.152317880794702
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "index": {
+        "young": 0.15610907614624409,
+        "old": null
+       },
+       "corrected": {
+        "effect": 0.018438833672988354,
+        "ci": [
+         -0.008332590964539439,
+         0.045210258310516144
+        ],
+        "ci_level": 0.95,
+        "se": 0.0062231416302249,
+        "df": 2.000358080299668,
+        "p": 0.09750772906804084,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       },
+       "raw": {
+        "effect": 0.018143863121731708,
+        "ci": [
+         -0.008509760067331208,
+         0.044797486310794624
+        ],
+        "ci_level": 0.95,
+        "se": 0.006232915346903486,
+        "df": 2.0129332877914496,
+        "p": 0.0997792082482043,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "young": 3,
+         "old": 3
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.009945001720249102,
+      "ci": [
+       0.001378249903799476,
+       0.018511753536698726
+      ],
+      "ci_level": 0.95,
+      "se": 0.003965412010039118,
+      "df": 13.0,
+      "p": 0.05215419501133787,
+      "test": "exact permutation over replicates (n=7056)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "young": 10,
+       "old": 7
+      }
+     },
+     "raw": {
+      "effect": 0.009917075984997654,
+      "ci": [
+       0.0013025733081055597,
+       0.018531578661889748
+      ],
+      "ci_level": 0.95,
+      "se": 0.0039875151174414685,
+      "df": 13.0,
+      "p": 0.05357142857142857,
+      "test": "exact permutation over replicates (n=7056)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "young": 10,
+       "old": 7
+      }
+     }
+    },
+    "gate4": {
+     "status": "WARN",
+     "sesoi_metric": 0.001126145007129572,
+     "sesoi_metric_ci": [
+      -0.002261919272541165,
+      0.004514209286800309
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.7910862291573373,
+      "added_variance": 0.16593452545164866,
+      "var_a": 1.9469288910478564,
+      "var_b": 1.1372385297419205,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.5511482882066006,
+        "added_variance": 0.07845787751809233,
+        "var_a": 1.9469288910478564,
+        "var_b": 1.1372385297419205,
+        "floored": []
+       },
+       "response": 0.00028083790640854645,
+       "ci": [
+        -0.0016833386194126936,
+        0.0022450144322297867
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.7910862291573373,
+        "added_variance": 0.16593452545164866,
+        "var_a": 1.9469288910478564,
+        "var_b": 1.1372385297419205,
+        "floored": []
+       },
+       "response": 0.001126145007129572,
+       "ci": [
+        -0.002261919272541165,
+        0.004514209286800309
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 1.1642190052518888,
+        "added_variance": 0.3747105976013382,
+        "var_a": 1.9469288910478564,
+        "var_b": 1.1372385297419205,
+        "floored": []
+       },
+       "response": 0.0033673111672099035,
+       "ci": [
+        -0.002332043640097559,
+        0.009066665974517366
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": -0.5746500551458463,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 578,
+      "n": 1000,
+      "share": 0.578,
+      "share_ci": [
+       0.5466973532816155,
+       0.6088421020854184
+      ],
+      "p": 0.5784215784215784,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 585,
+      "n": 1000,
+      "share": 0.585,
+      "share_ci": [
+       0.5537481738679162,
+       0.6157499260748409
+      ],
+      "p": 0.5854145854145855,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "Ing1",
+        "Tmed3"
+       ],
+       "t": -0.5730300901830361,
+       "t_signed": -0.5730300901830361,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Mrpl18",
+        "Bgn"
+       ],
+       "t": -0.5722682475904421,
+       "t_signed": -0.5722682475904421,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Zfp260",
+        "Vkorc1"
+       ],
+       "t": -0.5773881302222349,
+       "t_signed": -0.5773881302222349,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Ssc5d",
+        "Pkm"
+       ],
+       "t": -0.5706366463645345,
+       "t_signed": -0.5706366463645345,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Casp4",
+        "Capzb"
+       ],
+       "t": -0.5700847045928383,
+       "t_signed": -0.5700847045928383,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Zfhx4",
+        "Clic1"
+       ],
+       "t": -0.5697639111369819,
+       "t_signed": -0.5697639111369819,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Alg5",
+        "Sdf4"
+       ],
+       "t": -0.5799440032339356,
+       "t_signed": -0.5799440032339356,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Cops5",
+        "Morf4l2"
+       ],
+       "t": -0.5693423011588752,
+       "t_signed": -0.5693423011588752,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Nolc1",
+        "C1ra"
+       ],
+       "t": -0.5672885581595687,
+       "t_signed": -0.5672885581595687,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Pja2",
+        "Cavin3"
+       ],
+       "t": -0.5666873544848051,
+       "t_signed": -0.5666873544848051,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": -0.4101274142606491,
+      "ci": [
+       -1.6800835426524756,
+       0.8598287141311796
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.7,
+      "method": "exact",
+      "n_relabelings": 70,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 21025,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "Dld",
+        "Vkorc1"
+       ],
+       "t_signed": 6.42951876579032
+      },
+      {
+       "genes": [
+        "Sirpa",
+        "Rhoj"
+       ],
+       "t_signed": 5.85702896459345
+      },
+      {
+       "genes": [
+        "Kctd10",
+        "Col6a2"
+       ],
+       "t_signed": 5.677317460523684
+      },
+      {
+       "genes": [
+        "Slc25a1",
+        "Col3a1"
+       ],
+       "t_signed": 3.9098183912606115
+      },
+      {
+       "genes": [
+        "Mospd3",
+        "Itm2c"
+       ],
+       "t_signed": 3.5882657230826225
+      },
+      {
+       "genes": [
+        "Amotl2",
+        "Sat1"
+       ],
+       "t_signed": 3.387099747302642
+      },
+      {
+       "genes": [
+        "Sirpa",
+        "Tspo"
+       ],
+       "t_signed": 3.1790041671058087
+      },
+      {
+       "genes": [
+        "Tmem223",
+        "C1ra"
+       ],
+       "t_signed": 3.155051080135752
+      },
+      {
+       "genes": [
+        "Sirpa",
+        "Dpep1"
+       ],
+       "t_signed": 2.8388700808559855
+      },
+      {
+       "genes": [
+        "Zfhx4",
+        "Cpq"
+       ],
+       "t_signed": 2.830512635216524
+      },
+      {
+       "genes": [
+        "Lonp2",
+        "Cavin3"
+       ],
+       "t_signed": 2.7625931883884216
+      },
+      {
+       "genes": [
+        "Odr4",
+        "Ssr1"
+       ],
+       "t_signed": 2.646853594901057
+      },
+      {
+       "genes": [
+        "Jade1",
+        "Col6a2"
+       ],
+       "t_signed": 2.5064634224340754
+      },
+      {
+       "genes": [
+        "Pacsin2",
+        "Cd302"
+       ],
+       "t_signed": 2.4546239744718803
+      },
+      {
+       "genes": [
+        "Odr4",
+        "Arpc3"
+       ],
+       "t_signed": 2.400138438854653
+      },
+      {
+       "genes": [
+        "Raf1",
+        "C1ra"
+       ],
+       "t_signed": 2.325770089361462
+      },
+      {
+       "genes": [
+        "Slc25a12",
+        "Col6a2"
+       ],
+       "t_signed": 2.278040758256796
+      },
+      {
+       "genes": [
+        "Olfm1",
+        "Fkbp1a"
+       ],
+       "t_signed": 2.2695797039582857
+      },
+      {
+       "genes": [
+        "Dnajc5",
+        "Arpc3"
+       ],
+       "t_signed": 2.241728039071145
+      },
+      {
+       "genes": [
+        "Ilf3",
+        "Fbln2"
+       ],
+       "t_signed": 2.1603517558621625
+      },
+      {
+       "genes": [
+        "Rin2",
+        "Jak1"
+       ],
+       "t_signed": 2.1062959890043453
+      },
+      {
+       "genes": [
+        "Kctd10",
+        "Zfp36"
+       ],
+       "t_signed": 2.1045737825642266
+      },
+      {
+       "genes": [
+        "Ssc5d",
+        "Col6a1"
+       ],
+       "t_signed": 2.095992227011855
+      },
+      {
+       "genes": [
+        "Ing1",
+        "Cavin3"
+       ],
+       "t_signed": 2.030352494423051
+      },
+      {
+       "genes": [
+        "Chpt1",
+        "Npc2"
+       ],
+       "t_signed": 1.9858599706336417
+      },
+      {
+       "genes": [
+        "Kctd10",
+        "Tspo"
+       ],
+       "t_signed": 1.9255895948152133
+      },
+      {
+       "genes": [
+        "Rapgef6",
+        "Pkm"
+       ],
+       "t_signed": 1.9181985039194749
+      },
+      {
+       "genes": [
+        "Zfp260",
+        "Fbln2"
+       ],
+       "t_signed": 1.9142882095221878
+      },
+      {
+       "genes": [
+        "Igsf10",
+        "Entpd2"
+       ],
+       "t_signed": 1.8912083207405384
+      },
+      {
+       "genes": [
+        "Ssc5d",
+        "Zfp36"
+       ],
+       "t_signed": 1.881183857272526
+      },
+      {
+       "genes": [
+        "Syne2",
+        "Slc25a3"
+       ],
+       "t_signed": 1.8721302548117158
+      },
+      {
+       "genes": [
+        "Chpt1",
+        "Igfbp6"
+       ],
+       "t_signed": 1.8463469622200692
+      },
+      {
+       "genes": [
+        "Limd1",
+        "Slc25a3"
+       ],
+       "t_signed": 1.8461597753004515
+      },
+      {
+       "genes": [
+        "Jade1",
+        "Cd302"
+       ],
+       "t_signed": 1.8391362732742107
+      },
+      {
+       "genes": [
+        "Tmem208",
+        "Aebp1"
+       ],
+       "t_signed": 1.8151991517849255
+      },
+      {
+       "genes": [
+        "Slc25a12",
+        "Snrpb"
+       ],
+       "t_signed": 1.7836065533849932
+      },
+      {
+       "genes": [
+        "Hras",
+        "Cd34"
+       ],
+       "t_signed": 1.7327459646549708
+      },
+      {
+       "genes": [
+        "Ssc5d",
+        "Ssr1"
+       ],
+       "t_signed": 1.7060764240610642
+      },
+      {
+       "genes": [
+        "Limd1",
+        "Sat1"
+       ],
+       "t_signed": 1.6883736632655924
+      },
+      {
+       "genes": [
+        "Cdipt",
+        "C1ra"
+       ],
+       "t_signed": 1.6742851461846402
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "groups": [
+      "young",
+      "old"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "male",
+       "metric": {
+        "difference": 0.0041413691841429125,
+        "p": 0.5714285714285714,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "reference": {
+        "difference": 0.0567684701320384,
+        "p": 0.6285714285714286,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "stratum": "over the strata",
+       "metric": {
+        "difference": 0.0041413691841429125,
+        "p": 0.5714285714285714,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "reference": {
+        "difference": 0.0567684701320384,
+        "p": 0.6285714285714286,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.43003220209245135,
+      "tvd_p": 0.01927437641723356,
+      "differs": true
+     },
+     "tissue": {
+      "tvd": 0.3934202742927202,
+      "tvd_p": 0.03259637188208617,
+      "differs": true
+     }
+    },
+    "id": "A4",
+    "claim": {
+     "id": "A4",
+     "case": "case1",
+     "metric": "mi_3bin",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "groups": [
+      "young",
+      "old"
+     ],
+     "group_col": "age",
+     "replicate": "mouse",
+     "within": [
+      "sex"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "controls": true,
+     "composition": [
+      "cell_type",
+      "tissue"
+     ],
+     "criterion": "not SUPPORTED, with the dossier",
+     "attempt": 2
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A4.json",
+    "report_sha256": "7004d1837d451be94bbc73816ff6964fe9dae576cef32175c5575a421212b3b2",
+    "seconds": 116.1,
+    "cells": 76797,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "INCONCLUSIVE",
+     "effect_reason": "effect -0.0003159 [-0.01682, +0.01619] within the domain's types, equally weighted, p=1 (exact permutation); neither detected nor equivalent within \u00b10.001126; the raw difference -0.004141 (not detected at the replicate level, p=0.571) shrinks to 8% at equal depth",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation extra_dropout \u221263% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.000563072503564786,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [
+      {
+       "stratum": "male",
+       "type": "enterocyte of epithelium of large intestine",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.3610643676959244,
+         "Col1a1": 0.11911049451087652
+        },
+        "old": {
+         "Smad3": 0.16422971858376278,
+         "Col1a1": 0.00967741935483871
+        }
+       },
+       "index": {
+        "young": 0.30889041164600495,
+        "old": 0.11612795518964295
+       }
+      },
+      {
+       "stratum": "male",
+       "type": "epithelial cell of large intestine",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.11453574880818303,
+         "Col1a1": 0.12324299531719077
+        },
+        "old": {
+         "Smad3": 0.09543636089152394,
+         "Col1a1": 0.02536525974025974
+        }
+       },
+       "index": {
+        "young": 0.15987970185982975,
+        "old": 0.17809319171683266
+       }
+      },
+      {
+       "stratum": "male",
+       "type": "granulocyte",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.22663527088235333,
+         "Col1a1": 0.10546092780613908
+        },
+        "old": {
+         "Smad3": 0.09720857684748935,
+         "Col1a1": 0.027159402006470827
+        }
+       },
+       "index": {
+        "young": 0.1747412522116463,
+        "old": 0.09496316853869993
+       }
+      },
+      {
+       "stratum": "male",
+       "type": "keratinocyte",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.28879190576864994,
+         "Col1a1": 0.11014799154334039
+        },
+        "old": {
+         "Smad3": 0.17822080696428277,
+         "Col1a1": 0.04264705882352941
+        }
+       },
+       "index": {
+        "young": 0.10941293789641428,
+        "old": 0.0844402188226877
+       }
+      },
+      {
+       "stratum": "male",
+       "type": "precursor B cell",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.1510802581902326,
+         "Col1a1": 0.10813542808427719
+        },
+        "old": {
+         "Smad3": 0.04859659310878823,
+         "Col1a1": 0.0
+        }
+       },
+       "index": {
+        "young": 0.2322922599519425,
+        "old": 0.08658746887603049
+       }
+      },
+      {
+       "stratum": "male",
+       "type": "skeletal muscle satellite cell",
+       "detected_in": [
+        "young"
+       ],
+       "detection": {
+        "young": {
+         "Smad3": 0.3454944578413551,
+         "Col1a1": 0.12127994708749779
+        },
+        "old": {
+         "Smad3": 0.10752149932391933,
+         "Col1a1": 0.010697602885641196
+        }
+       },
+       "index": {
+        "young": 0.46598818072284753,
+        "old": 0.14092109055069138
+       }
+      }
+     ],
+     "technical": {
+      "groups": [
+       "young",
+       "old"
+      ],
+      "design": "nested",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "male",
+        "first": 427512.6,
+        "second": 616511.125,
+        "difference": -188998.52500000002,
+        "p": 0.007936507936507936,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "female",
+        "first": 610674.5,
+        "second": 535471.1666666666,
+        "difference": 75203.33333333336,
+        "p": 0.35714285714285715,
+        "method": "exact",
+        "n_relabelings": 56,
+        "replicates": {
+         "young": 5,
+         "old": 3
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "combined",
+        "first": 519093.55,
+        "second": 581779.7142857143,
+        "difference": -68092.58983050848,
+        "p": 0.24121315192743764,
+        "method": "exact",
+        "n_relabelings": 7056,
+        "replicates": {
+         "young": 10,
+         "old": 7
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "male",
+        "first": 3002.5,
+        "second": 1704.25,
+        "difference": 1298.25,
+        "p": 0.015873015873015872,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "female",
+        "first": 3133.8,
+        "second": 3392.5,
+        "difference": -258.6999999999998,
+        "p": 0.6428571428571429,
+        "method": "exact",
+        "n_relabelings": 56,
+        "replicates": {
+         "young": 5,
+         "old": 3
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "combined",
+        "first": 3068.15,
+        "second": 2427.785714285714,
+        "difference": 585.7474576271187,
+        "p": 0.11408730158730158,
+        "method": "exact",
+        "n_relabelings": 7056,
+        "replicates": {
+         "young": 10,
+         "old": 7
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "male",
+        "first": 703755.5,
+        "second": 1052672.25,
+        "difference": -348916.75,
+        "p": 0.11904761904761904,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "female",
+        "difference": null,
+        "reason": "a group without replicates"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "combined",
+        "first": 703755.5,
+        "second": 1052672.25,
+        "difference": -348916.75,
+        "p": 0.11904761904761904,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "male",
+        "first": 3503.7,
+        "second": 2337.5,
+        "difference": 1166.1999999999998,
+        "p": 0.015873015873015872,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "female",
+        "difference": null,
+        "reason": "a group without replicates"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "combined",
+        "first": 3503.7,
+        "second": 2337.5,
+        "difference": 1166.1999999999998,
+        "p": 0.015873015873015872,
+        "method": "exact",
+        "n_relabelings": 126,
+        "replicates": {
+         "young": 5,
+         "old": 4
+        }
+       }
+      ],
+      "differs": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "male"
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "male"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "male"
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "combined"
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "case_sha256": "13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44"
+ }
+}

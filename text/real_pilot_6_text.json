@@ -1,0 +1,625 @@
+{
+ "synthetic": false,
+ "sources": [
+  {
+   "source": "tms-epmc",
+   "what": "the Nature paper, Europe PMC's full text (an NIH author manuscript)",
+   "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8240505/fullTextXML",
+   "outcome": "FAIL HTTPError: HTTP Error 500: "
+  },
+  {
+   "source": "tms-bioc",
+   "what": "the Nature paper, NCBI's BioC (PMC open access and author manuscripts)",
+   "url": "https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi/BioC_xml/PMC8240505/unicode",
+   "outcome": "ok 200",
+   "bytes": 108731,
+   "sha256": "1f19e3bc7c096bd7ce1d8dde042010fa10596bc4c58d6818b5a37927b2ee235a",
+   "paragraphs": 211,
+   "sentences": 502,
+   "matched": 43,
+   "quotes": [
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\btime ?points?\\b"
+     ],
+     "text": "Data were collected for all six age groups using microfluidic droplets (droplet), while the 3m, 18m and 24m time points were also analyzed using single cells sorted in microtiter well plates (FACS) (Extended Data Figures 1-3; Supplementary Tables 1&2).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Due to technical constraints, not every tissue was analyzed at all timepoints; a complete list is in Extended Data Figure 4a.",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "previously (?:published|described|generated|reported)",
+      "\\bTabula Muris\\b(?! Senis)",
+      "\\btime ?points?\\b"
+     ],
+     "text": "The previously published 3m time point, referred to as the Tabula Muris, represents ~20% of the cells in the entire dataset and was used as a basis to perform semi-automated cell type annotation of the additional time points (Figure 1b, Extended Data Figure 4b).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "To investigate whether cell annotations were consistent across the entire organism, we used bbknn to correct for method-associated batch effects (Supplementary Table 3).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "Following batch correction, we clustered all cells using an unbiased, graph-based clustering approach (Figure 1c,d) and assessed the co-occurrence of similarly annotated cells in the same clusters.",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "The cellular composition of each tissue tends to vary with age, and we investigated changes for tissues with at least three time points (Supplementary Table 5).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The number of cells with assembled BCRs was 1,818 for 3m, 1,356 for 18m and 2,876 for 24m old mice.",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We parsed the singlecell-ige output to define B-cell clonotypes based on the sequence of the assembled BCR (Supplementary Table 9) and found that while most of the cells at 3m were not part of a clone (9% were part of a clonal family), the number of B-cells belonging to a clonotype doubled at 18m (20%) when compared to 3m and doubled again from 18m to 24m (~38%).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The number of cells with assembled TCRs were roughly equal between 3m, 18m and 24m (2,076, 2,056 and 1,868 cells, respectively).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Interestingly, only ~3% (55 out of 1,895) of the cells at 3m were part of a clone.",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "In brain myeloid microglial cells, the majority of young (3m) microglia occupy clusters 1 and 6, while old (18m, 24m) microglia constitute the vast majority of cells in clusters 10, 12 and 14 (Figure 4d).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "When contrasting with clusters 1 and 6, which contain mostly 3m microglia, clusters 10, 12 and 14 gene expression is enriched with interferon responsive or regulatory genes (e.g.",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "previously (?:published|described|generated|reported)"
+     ],
+     "text": "Moreover, the list of differentially expressed genes between \u201cyoung\u201d and \u201cold\u201d clusters resembled the Alzheimer\u2019s disease specific microglial signature previously reported, with 55 out of the top 200 differential expressed genes being shared between the two differential gene expression lists (Figure 4e; Supplementary Table 10).",
+     "cut": false
+    },
+    {
+     "section": "INTRO",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Cluster 10 is primarily composed of cells of 1m- and 3-month old mice while cluster 13 is mostly composed of cells of 18-, 21-, 24- and 30-month old mice (Figure 4f).",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "previously (?:published|described|generated|reported)"
+     ],
+     "text": "All tissues were processed as previously described.",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "When performing batch correction to remove the technical artifacts introduced by the technologies, we replaced the neighborhood graph computation with bbknn.",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\bTabula Muris\\b(?! Senis)"
+     ],
+     "text": "Next we subset the data for 3m (Tabula Muris) and compute how many cell types map to each individual cluster.",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We performed differential gene expression analysis on each tissue with a well-powered sample size (>100 cells in both young (1m and 3m) and old age group (18m, 21m, 24m and 30m)).",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We defined two groups of cells based on age: young cells with age <= 3 months (Y) and old cells with age > 3 months (O).",
+     "cut": false
+    },
+    {
+     "section": "METHODS",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Then for each tissue we selected genes expressed in at least 75% of the cells for all the time points to avoid confounding the mutation results with differential gene expression associated with age.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=6,393; 3,635; and 5,549 individual cells for mammary gland 3m; 18m and 21m, respectively. e, Marrow precursor B cell relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using two-sided Wald Test with t-distribution of the test statistic). f, Top 20 upregulated and downregulated genes in marrow computed using MAST, treating age as a continuous covariate wh",
+     "cut": true
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=3,027; 8,559; 11,496; 5,216; 12,943 and 13,496 individual cells for marrow 1m; 3m; 18m; 21m; 24m and 30m, respectively. g, Skin keratinocyte stem cell relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using two-sided Wald Test with t-distribution of the test statistic). h, Top 20 upregulated and downregulated genes in skin computed using MAST, treating ",
+     "cut": true
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=2,346; 1,494; 4,352= and 1,122 individual cells for skin 3m; 18m; 21m and 24m, respectively.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "a, Liver hepatocyte relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using two-sided Wald Test with t-distribution of the test statistic). n=2,791; 2,832; 3,806; 2,257; 6,384 and 5,713 individual cells for liver 1m; 3m; 18m; 21m; 24m and 30m, respectively.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "a,b, Mean number of somatic mutations in genes and ERCC spike-in controls across all tissues per age group (3m and 24m (a), 3m and 18m (b), 18m and 24 (c)).",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "a,b,c, Gene raw expression and ERCC spike-inn control raw expression across all tissues per age group (3m and 24m (a), 3m and 18m (b), 18m and 24 (c)).",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "For each time point, the clonal families are represented in a tree structure for which the central node is age.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "For each time point, clonal families are represented in a tree structure for which the central node is age.",
+     "cut": false
+    },
+    {
+     "section": "SUPPL",
+     "matched": [
+      "\\bTabula Muris\\b(?! Senis)"
+     ],
+     "text": "The Tabula Muris Consortium",
+     "cut": false
+    },
+    {
+     "section": "REF",
+     "matched": [
+      "\\bTabula Muris\\b(?! Senis)"
+     ],
+     "text": "Single-cell transcriptomics of 20 mouse organs creates a Tabula Muris.",
+     "cut": false
+    },
+    {
+     "section": "REF",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "BBKNN: fast batch alignment of single cell transcriptomes.",
+     "cut": false
+    },
+    {
+     "section": "REF",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "Batch effects and the effective design of single-cell gene expression studies.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "a, 23 organs from 19 male and 11 female mice were analyzed at 6 different time points.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Data were clustered together across all time points.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\bTabula Muris\\b(?! Senis)",
+      "\\btime ?points?\\b"
+     ],
+     "text": "We used the Tabula Muris (3m time point) as a reference for the automated pipeline and the annotations were manually curated by tissue experts. c,d, UMAP plot of all cells, colored by organ and overlaid with the Louvain cluster numbers (c) and age (d); n = 356,213 individual cells.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "All data are expressed as mean \u00b1 s.d. with individual data points shown. p-values were obtained using a Mann-Whitney-Wilcoxon rank-sum two-sided test. n=44,518; 34,027 and 31,551 individual cells for FACS 3m; 18m and 24m, respectively. n=25,980; 45,602; 44,645; 35,828; 37,660 and 55,674 individual cells for droplet 1m; 3m; 18m; 21m; 24m and 30m, respectively. e, Bladder cell (left) and bladder urothelial cell (right) relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using two-sided Wald Test with t-",
+     "cut": true
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=970; 3,804; 2,739 and 3,864 individual cells for bladder 1m; 3m; 18m and 24m, respectively. g, Kidney capillary endothelial cell (top-left), mesangial cell (top-right), loop of Henle ascending limb epithelial cell (bottom-left) and loop of Henle thick ascending limb epithelial cell (bottom-right) relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using t",
+     "cut": true
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=2,488; 2,832; 3,806; 2,257; 6,384 and 5,713 individual cells for kidney 1m; 3m; 18m; 21m; 24m and 30m, respectively. i, Spleen plasma cell (left) and T cell (right) relative abundances change significantly with age (p-value<0.05 and r2>0.7 for a hypothesis test whose null hypothesis is that the slope is zero, using two-sided Wald Test with t-distribution of the test statistic). j, Top 20 upregulated and downregulated genes in spleen computed using",
+     "cut": true
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Genes were classified as significant under an FDR threshold of 0.01 and an age coefficient threshold of 0.005 (corresponding to ~10% fold change). n=2,986; 8,839; 7,141; 6,395; 5,245 and 8,946 individual cells for spleen 1m; 3m; 18m; 21m; 24m and 30m, respectively.",
+     "cut": false
+    },
+    {
+     "section": "FIG",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Distribution of the difference of the mean mutation in the gene set (and ERCC spike-in controls) per cell between 24m and 3m and 18m and 3m for all tissues and cells (a) and with the cell types split in five functional groups, endothelial (b), immune (c), parenchymal (d), stem/progenitor cell (e) and stromal (f).",
+     "cut": false
+    }
+   ],
+   "quotes_cut": 3
+  },
+  {
+   "source": "tms-biorxiv",
+   "what": "the bioRxiv preprint, its JATS full text (the newest version, by bioRxiv's API)",
+   "url": "https://api.biorxiv.org/details/biorxiv/10.1101/661728",
+   "outcome": "ok 200",
+   "details_sha256": "341c2edd8af93a9e02a559ef5d962cb9100eef80c7e056c7828be85deedcfb17",
+   "version": "3",
+   "license": "cc_by_nc_nd",
+   "jats_url": "https://www.biorxiv.org/content/early/2020/02/21/661728.source.xml",
+   "bytes": 153512,
+   "sha256": "86f47ce066c1fefcf95daf114e2806f9f5485c126f170f7a0f503c42ec85b49e",
+   "paragraphs": 116,
+   "sentences": 416,
+   "matched": 31,
+   "quotes": [
+    {
+     "section": "A Single Cell Transcriptomic Atlas Characterizes Aging Tissues in the Mouse * Corresponding author; email: angela.olivei",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\btime ?points?\\b"
+     ],
+     "text": "Data were collected for all six age groups using microfluidic droplets (droplet), while the 3m, 18m and 24m time points were also analyzed using single cells sorted in microtiter well plates (FACS) ( Extended Data Figure 1 ; Supplementary Tables 1&2; Supplementary Figures 1 - 3 ).",
+     "cut": false
+    },
+    {
+     "section": "A Single Cell Transcriptomic Atlas Characterizes Aging Tissues in the Mouse * Corresponding author; email: angela.olivei",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Due to technical constraints, not every tissue was analyzed across all timepoints; for a complete list refer to Extended Data Figure 2a .",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "a , 23 organs from 19 male and 11 female mice were analyzed at 6 different time points.",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Data were clustered together across all time points.",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\bTabula Muris\\b(?! Senis)",
+      "\\btime ?points?\\b"
+     ],
+     "text": "We used the Tabula Muris (3m time point) as a reference for the automated pipeline and the annotations were manually curated by tissue experts. c,d , UMAP plot of all cells, colored by organ and overlaid with the Louvain cluster numbers ( c ) and age ( d ); n = 356,213 individual cells.",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "previously (?:published|described|generated|reported)",
+      "\\bTabula Muris\\b(?! Senis)",
+      "\\btime ?points?\\b"
+     ],
+     "text": "The previously published 3m time point, referred to as the Tabula Muris 5 , represents \u223c20% of the cells in the entire dataset and was used as a basis to perform semi-automated cell type annotation of the additional time points ( Figure 1b , Extended Data Figure 2b ).",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "To investigate whether cell annotations were consistent across the entire organism, we used bbknn 6 to correct for method-associated batch effects.",
+     "cut": false
+    },
+    {
+     "section": "Overview of Tabula Muris Senis.",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "Following batch correction, we clustered all cells using an unbiased, graph-based clustering approach 7 , 8 ( Figure 1c,d ) and assessed the co-occurrence of similarly annotated cells in the same clusters.",
+     "cut": false
+    },
+    {
+     "section": "Cellular changes during aging.",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "While we present the cell composition for all tissues for which we have droplet data available, we only investigated the changes with age for tissues which had more than two time points (Supplementary Table 5).",
+     "cut": false
+    },
+    {
+     "section": "Mutational burden across tissues in the aging mice.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Distribution of the difference of the mean mutation in the gene set (and ERCC spike-in controls) per cell between 24m and 3m and 18m and 3m for all tissues and cells ( a ) and with the cell types split in five functional groups, endothelial ( b ), immune ( c ), parenchymal ( d ), stem/progenitor cell ( e ) and stromal ( f ).",
+     "cut": false
+    },
+    {
+     "section": "Mutational burden across tissues in the aging mice.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The number of cells with assembled BCRs was 1,818 for 3m, 1,356 for 18m and 2,876 for 24m old mice.",
+     "cut": false
+    },
+    {
+     "section": "Mutational burden across tissues in the aging mice.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We parsed the singlecell-ige 43 output to define B-cell clonotypes based on the sequence of the assembled BCR (Supplementary Table 9) and found that while most of the cells at 3m were not part of a clone (9% were part of a clonal family), the number of B-cells belonging to a clonotype doubled at 18m (20%) when compared to 3m and doubled again from 18m to 24m (\u223c38%).",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The pie chart shows the proportion of singleton B cells and B cells that are part of clonal families at 3m, 18m and 24m.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "For each time point, the clonal families are represented in a tree structure for which the central node is age.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The pie chart shows the proportion of singleton T cells and T cells that are part of clonal families at 3m, 18m and 24m.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "For each time point, clonal families are represented in a tree structure for which the central node is age.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "The number of cells with assembled TCRs were roughly equal between 3m, 18m and 24m (2,076, 2,056 and 1,868 cells, respectively).",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Interestingly, only \u223c3% (55 out of 1,895) of the cells at 3m were part of a clone.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We found that in brain myeloid microglial cells, the majority of young (3m) microglia occupy clusters 1 and 6, while old (18m, 24m) microglia constitute the vast majority of cells in clusters 10, 12 and 14 ( Figure 4d ).",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "When contrasting with clusters 1 and 6, which contain mostly 3m microglia, clusters 10, 12 and 14 gene expression is enriched with interferon responsive or regulatory genes (e.g.",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "previously (?:published|described|generated|reported)"
+     ],
+     "text": "Moreover, the list of differentially expressed genes between \u201cyoung\u201d and \u201cold\u201d clusters resembled the Alzheimer\u2019s disease specific microglial signature previously reported 47 , with 55 out of the top 200 differential expressed genes being shared between the two differential gene expression lists ( Figure 4e ; Supplementary Table 10).",
+     "cut": false
+    },
+    {
+     "section": "The aging immune system.",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "Cluster 10 is primarily composed of cells of 1m- and 3-month old mice while cluster 13 is mostly composed of cells of 18-, 21-, 24- and 30-month old mice ( Figure 4f ).",
+     "cut": false
+    },
+    {
+     "section": "Mutational burden across tissues in the aging mice (cont. 24m vs 3m).",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "a,b , Mean number of somatic mutations ( a ) and raw expression ( b ) across all tissues per age group (3m and 24m). c,d , Mean number of mutations in ERCC spike-in ( c ) and ERCC raw expression ( d ) across all tissues per age group (3m and 24m).",
+     "cut": false
+    },
+    {
+     "section": "Mutational burden across tissues in the aging mice (cont. 18m vs 3m).",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "a,b , Mean number of somatic mutations ( a ) and raw expression ( b ) across all tissues per age group (3m and 18m). c,d , Mean number of mutations in ERCC spike-in ( c ) and ERCC raw expression ( d ) across all tissues per age group (3m and 18m).",
+     "cut": false
+    },
+    {
+     "section": "Supplementary Tables",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "Summary of the batch corrected dataset.",
+     "cut": false
+    },
+    {
+     "section": "Tissue dissociation and sample preparation",
+     "matched": [
+      "previously (?:published|described|generated|reported)"
+     ],
+     "text": "All tissues were processed as previously described 5 .",
+     "cut": false
+    },
+    {
+     "section": "Data pre-processing",
+     "matched": [
+      "\\bbatch(?:es)?\\b"
+     ],
+     "text": "When performing batch correction to remove the technical artifacts introduced by the technologies, we replaced the neighborhood graph computation with bbknn 6 .",
+     "cut": false
+    },
+    {
+     "section": "Cell type annotation",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b",
+      "\\bTabula Muris\\b(?! Senis)"
+     ],
+     "text": "Next we subset the data for 3m (Tabula Muris 5 ) and compute how many cell types map to each individual cluster.",
+     "cut": false
+    },
+    {
+     "section": "Differential gene expression",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We performed differential gene expression analysis on each tissue with a well-powered sample size (>100 cells in both young (1m and 3m) and old age group (18m, 21m, 24m and 30m)).",
+     "cut": false
+    },
+    {
+     "section": "Comparison between bulk and single-cell datasets",
+     "matched": [
+      "\\b3[- ]?(?:m|mo|month)s?\\b"
+     ],
+     "text": "We defined two group of cells based on age: young cells with age <= 3 months (Y) and old cells with age > 3 months (O).",
+     "cut": false
+    },
+    {
+     "section": "Mutation analysis",
+     "matched": [
+      "\\btime ?points?\\b"
+     ],
+     "text": "Then for each tissue we selected genes expressed in at least 75% of the cells for all the time points to avoid confounding the mutation results with differential gene expression associated with age.",
+     "cut": false
+    }
+   ],
+   "quotes_cut": 0
+  }
+ ]
+}

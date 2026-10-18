@@ -1,0 +1,15 @@
+[
+ {
+  "soma_joinid":"1629",
+  "citation":"Publication: https:\/\/doi.org\/10.1038\/s41586-020-2496-1 Dataset Version: https:\/\/datasets.cellxgene.cziscience.com\/6fe2c25b-bf92-454a-98b6-c5f8b0690507.h5ad curated and distributed by CZ CELLxGENE Discover in Collection: https:\/\/cellxgene.cziscience.com\/collections\/0b9d8a04-bb9d-44da-aa27-705bb65b54eb",
+  "collection_id":"0b9d8a04-bb9d-44da-aa27-705bb65b54eb",
+  "collection_name":"Tabula Muris Senis",
+  "collection_doi":"10.1038\/s41586-020-2496-1",
+  "collection_doi_label":"The Tabula Muris Consortium et al. (2020) Nature",
+  "dataset_id":"98e5ea9f-16d6-47ec-a529-686e76515e39",
+  "dataset_version_id":"6fe2c25b-bf92-454a-98b6-c5f8b0690507",
+  "dataset_title":"All - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2",
+  "dataset_h5ad_path":"98e5ea9f-16d6-47ec-a529-686e76515e39.h5ad",
+  "dataset_total_cell_count":"110824"
+ }
+]

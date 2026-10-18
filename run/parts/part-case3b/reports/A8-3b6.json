@@ -1,0 +1,2360 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "norm_pearson",
+ "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.03671 [-0.01475, +0.08817] within the domain's types, equally weighted: the 90% interval lies within \u00b10.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates; TOST); absence shown only after the depth correction: on the uncorrected data the 90% interval [+0.005673, +0.09052] is not within \u00b10.08936 [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+ "cause": "no_detectable_effect",
+ "fields": {
+  "metric_validity": {
+   "status": "PASS",
+   "reason": "no nuisance bias; responds to coupling(CUX2, DAPK1, strength=0.427966): coupling(CUX2, DAPK1, strength=0.427966) injected into A (24.3 probed counts per cell against 20.75 in B), its values move by +0.08936 against the sham (95% CI [+0.07881, +0.09992] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.08936; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.08936.",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": null,
+    "gate4": "PASS",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u221234%; MDE 0.07238 vs the SESOI in the metric's units 0.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates); the design's floor 0.09379: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+   "flags": [
+    "SESOI_BELOW_FLOOR",
+    "ATTENUATION"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "permutation",
+    "replication": {
+     "kind": "paired",
+     "counts": {
+      "pairs": 16
+     },
+     "n_eff": 16
+    },
+    "power": {
+     "mde": 0.07237633474954645,
+     "power": 0.8,
+     "sesoi": 0.08936251375505841,
+     "lambda_": 1.0,
+     "effective_sesoi": 0.08936251375505841,
+     "attenuation": {
+      "model": "observed scale (pre-registered sesoi_scale): no attenuation applied"
+     },
+     "floor": 0.09378736339832616,
+     "floor_power": 0.95,
+     "sesoi_source": "declared",
+     "sesoi_label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates"
+    },
+    "attenuation": {
+     "depth_downsample": 0.3380294458623044
+    },
+    "equalization": {
+     "strata": [
+      {
+       "stratum": {
+        "cell_type": "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+       },
+       "thinned_group": "A",
+       "n_thinned": 8000,
+       "mean_before": 28231.011625,
+       "mean_after": 26181.449617429647,
+       "mean_other": 26181.449617429647,
+       "depth_ratio": 0.9274003342566952,
+       "ks_after": 0.05007298015821554
+      }
+     ],
+     "depth_ratio": 0.9274003342566952,
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.678625,
+        "genes": 1810.334125,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01649913054003138,
+        "genes": 0.0017846636126399584
+       }
+      }
+     }
+    },
+    "notes": [],
+    "composite_units": null,
+    "sesoi": {
+     "value": 0.08936251375505841,
+     "source": "s_m",
+     "ci": [
+      0.07880567661894822,
+      0.0999193508911686
+     ],
+     "construct": 0.1,
+     "label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates"
+    }
+   }
+  },
+  "effect": {
+   "status": "NO_DETECTABLE_EFFECT",
+   "reason": "effect +0.03671 [-0.01475, +0.08817] within the domain's types, equally weighted: the 90% interval lies within \u00b10.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates; TOST); absence shown only after the depth correction: on the uncorrected data the 90% interval [+0.005673, +0.09052] is not within \u00b10.08936",
+   "flags": [
+    "ABSENCE_ONLY_AFTER_CORRECTION"
+   ],
+   "detail": {
+    "cell_level_raw": 0.04309029255368235,
+    "cell_level_corrected": 0.0314395075856322,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.08936251375505841,
+    "alpha": 0.05,
+    "unmeasured": [],
+    "mixture": {
+     "corrected": {
+      "effect": 0.03646425741532973,
+      "ci": [
+       -0.016315063675201684,
+       0.08924357850586115
+      ],
+      "ci_level": 0.95,
+      "se": 0.024762172391310414,
+      "df": 15.0,
+      "p": 0.16983016983016982,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.048097316891877594,
+      "ci": [
+       -0.0034839643581369983,
+       0.09967859814189219
+      ],
+      "ci_level": 0.95,
+      "se": 0.02420009488728853,
+      "df": 15.0,
+      "p": 0.053946053946053944,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "H21.33.006",
+       "raw": 0.05731538960776933,
+       "corrected": 0.056167670890294785
+      },
+      {
+       "replicate": "H20.33.013",
+       "raw": 0.08424501903413256,
+       "corrected": 0.07255452264759535
+      },
+      {
+       "replicate": "H20.33.014",
+       "raw": 0.149616253701328,
+       "corrected": 0.1487496669499186
+      },
+      {
+       "replicate": "H20.33.012",
+       "raw": 0.04112366185178562,
+       "corrected": 0.03175214037060246
+      },
+      {
+       "replicate": "H20.33.019",
+       "raw": 0.045373668423025704,
+       "corrected": 0.022824255261024627
+      },
+      {
+       "replicate": "H20.33.027",
+       "raw": -0.09219621046116275,
+       "corrected": -0.10021510969634662
+      },
+      {
+       "replicate": "H20.33.044",
+       "raw": 0.017507834269478106,
+       "corrected": 0.008586209803344602
+      },
+      {
+       "replicate": "H20.33.008",
+       "raw": 0.16509433192304107,
+       "corrected": 0.15225585681891923
+      },
+      {
+       "replicate": "H21.33.019",
+       "raw": 0.09871102332866422,
+       "corrected": 0.09657750856731577
+      },
+      {
+       "replicate": "H20.33.043",
+       "raw": 0.22082520633542396,
+       "corrected": 0.2157636565132044
+      },
+      {
+       "replicate": "H21.33.003",
+       "raw": 0.10901374651076084,
+       "corrected": 0.08707882249217887
+      },
+      {
+       "replicate": "H20.33.039",
+       "raw": 0.091155970084623,
+       "corrected": 0.08191247148406015
+      },
+      {
+       "replicate": "H20.33.002",
+       "raw": -0.05250156547575746,
+       "corrected": -0.07055805648308429
+      },
+      {
+       "replicate": "H20.33.001",
+       "raw": -0.13084429594662472,
+       "corrected": -0.13341019234842166
+      },
+      {
+       "replicate": "H20.33.025",
+       "raw": 0.036420389706670664,
+       "corrected": 0.013084427953527355
+      },
+      {
+       "replicate": "H20.33.005",
+       "raw": -0.0713033526231166,
+       "corrected": -0.09969573257885786
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "A",
+        "n_thinned": 8000,
+        "mean_before": 28231.011625,
+        "mean_after": 26181.449617429647,
+        "mean_other": 26181.449617429647,
+        "depth_ratio": 0.9274003342566952,
+        "ks_after": 0.05007298015821554
+       }
+      ],
+      "depth_ratio": 0.9274003342566952,
+      "capture_check": {
+       "raw": {
+        "A": {
+         "depth": 28231.011625,
+         "genes": 1824.0016249999999,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.06048297653496926,
+         "genes": 0.009347848607523579
+        }
+       },
+       "equalized": {
+        "A": {
+         "depth": 26182.681875000002,
+         "genes": 1810.306625,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.016461443985955948,
+         "genes": 0.0017694459365937831
+        }
+       }
+      }
+     },
+     "unmeasured": []
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "CUX2": 0.65575,
+         "DAPK1": 0.944875
+        },
+        "B": {
+         "CUX2": 0.6202654028436019,
+         "DAPK1": 0.944736374407583
+        }
+       },
+       "index": {
+        "A": 1.987228211685542,
+        "B": 1.9153131247296296
+       },
+       "corrected": {
+        "effect": 0.03670866031659677,
+        "ci": [
+         -0.014753056294636475,
+         0.08817037692783
+        ],
+        "ci_level": 0.95,
+        "se": 0.024143999429138734,
+        "df": 15.0,
+        "p": 0.14985014985014986,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.048097316891877594,
+        "ci": [
+         -0.0034839643581369983,
+         0.09967859814189219
+        ],
+        "ci_level": 0.95,
+        "se": 0.02420009488728853,
+        "df": 15.0,
+        "p": 0.06593406593406594,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.678625,
+        "genes": 1810.334125,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01649913054003138,
+        "genes": 0.0017846636126399584
+       }
+      }
+     },
+     "n_units": 16,
+     "n_cells": 15711,
+     "units": [
+      {
+       "replicate": "H20.33.001",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.13084429594662472,
+       "corrected": -0.14457475426595207,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.002",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.05250156547575746,
+       "corrected": -0.05993679363275772,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.005",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.0713033526231166,
+       "corrected": -0.08694376628354068,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.008",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.16509433192304107,
+       "corrected": 0.14736390127747537,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.012",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.04112366185178562,
+       "corrected": 0.02974470254665996,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.013",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08424501903413256,
+       "corrected": 0.06501594899453825,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.014",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.149616253701328,
+       "corrected": 0.14214963115912568,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.045373668423025704,
+       "corrected": 0.0373632971587753,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.025",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.036420389706670664,
+       "corrected": 0.021909108239898743,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.027",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.09219621046116275,
+       "corrected": -0.09671651941457868,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.039",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.091155970084623,
+       "corrected": 0.08051194632665082,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.043",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.22082520633542396,
+       "corrected": 0.21301911307740423,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.044",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.017507834269478106,
+       "corrected": 0.006215715124912447,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.003",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.10901374651076084,
+       "corrected": 0.08677612389856323,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.006",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.05731538960776933,
+       "corrected": 0.04882882113942895,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.09871102332866422,
+       "corrected": 0.09661208971894443,
+       "measured": true
+      }
+     ],
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "unmeasured": [],
+     "unmeasured_insufficient": false,
+     "n_before": 16,
+     "n_after": 16,
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "CUX2",
+       "DAPK1"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "groups_needed": "each",
+      "text": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.03670866031659677,
+    "raw_effect": 0.048097316891877594,
+    "se": 0.024143999429138734,
+    "df": 15.0,
+    "t_method": "domain: cluster-robust over replicates (paired)",
+    "ci": [
+     -0.014753056294636475,
+     0.08817037692783
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.005616986470496146,
+     0.07903430710368968
+    ],
+    "p_t": 0.14920614669487953,
+    "p_perm": 0.15284715284715283,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.011379143232848065,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": false,
+    "p_raw": 0.08091908091908091,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": 0.05731538960776933,
+      "corrected": 0.056167670890294785,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": 0.08424501903413256,
+      "corrected": 0.07255452264759535,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": 0.149616253701328,
+      "corrected": 0.1487496669499186,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": 0.04112366185178562,
+      "corrected": 0.03175214037060246,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": 0.045373668423025704,
+      "corrected": 0.022824255261024627,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": -0.09219621046116275,
+      "corrected": -0.10021510969634662,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": 0.017507834269478106,
+      "corrected": 0.008586209803344602,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.16509433192304107,
+      "corrected": 0.15225585681891923,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.09871102332866422,
+      "corrected": 0.09657750856731577,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": 0.22082520633542396,
+      "corrected": 0.2157636565132044,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.10901374651076084,
+      "corrected": 0.08707882249217887,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": 0.091155970084623,
+      "corrected": 0.08191247148406015,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": -0.05250156547575746,
+      "corrected": -0.07055805648308429,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": -0.13084429594662472,
+      "corrected": -0.13341019234842166,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.036420389706670664,
+      "corrected": 0.013084427953527355,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": -0.0713033526231166,
+      "corrected": -0.09969573257885786,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.7632163847957997,
+    "effective_sesoi": 0.08936251375505841,
+    "sesoi_source": "declared",
+    "floor": 0.09378736339832616,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.08936251375505841,
+    "ci_2alpha_raw": [
+     0.0056733319419224396,
+     0.09052130184183274
+    ]
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias; attenuation depth_downsample \u221234% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+   "detail": {
+    "baseline": 0.36737477689781656,
+    "baseline_sd": 0.011083557861921675,
+    "null_center": 0.039539965884717435,
+    "null_sd": 0.008622501915741031,
+    "signal": 0.32783481101309914,
+    "has_signal": true,
+    "immaterial_signal": false,
+    "scale": 0.32783481101309914,
+    "scale_source": "signal above null",
+    "effect_scale": 0.08936251375505841,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.3692162035479674,
+      "shift": 0.001841426650150857,
+      "z": 0.8118123435898604,
+      "shift_std": 0.005616934469101513,
+      "rel_change": 0.005616934469101513,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.2598919276380289,
+      "shift": -0.10748284925978768,
+      "z": 51.79102381466811,
+      "shift_std": -0.3278567304296829,
+      "rel_change": 0.3278567304296829,
+      "null_perturbed": 0.04287493612606093,
+      "null_shift": 0.0033349702413434934,
+      "null_shift_std": 0.01017271543262146,
+      "null_shift_z": 0.7102015237149337,
+      "signal": 0.32783481101309914,
+      "signal_perturbed": 0.21701699151196796,
+      "null_construction": "depth-matched",
+      "signal_change": -0.3380294458623044,
+      "signal_loss": 0.3380294458623044,
+      "classification": "attenuation",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.36596545736069797,
+      "shift": -0.0014093195371185918,
+      "z": 0.9849312224005826,
+      "shift_std": -0.0042988709245470585,
+      "rel_change": 0.0042988709245470585,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {
+     "depth_downsample": 0.3380294458623044
+    },
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.08936251375505841,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.044681256877529205,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 8000,
+      "n_b": 7711,
+      "median_n_genes_a": 1878.0,
+      "median_n_genes_b": 1869.0,
+      "n_genes_ratio": 1.0048154093097914,
+      "overlap": 0.9940298507462687,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       0.0027253280102355303,
+       0.0068823766150549505
+      ],
+      "ratio_ci": [
+       1.0027290450926065,
+       1.0069061145956506
+      ],
+      "overlap_upper": 1.0
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.0048154093097914,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw +0.0481 -> corrected +0.03671",
+   "detail": {
+    "cell_level_raw": 0.04309029255368235,
+    "cell_level_corrected": 0.0314395075856322,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.08936251375505841,
+    "alpha": 0.05,
+    "unmeasured": [],
+    "mixture": {
+     "corrected": {
+      "effect": 0.03646425741532973,
+      "ci": [
+       -0.016315063675201684,
+       0.08924357850586115
+      ],
+      "ci_level": 0.95,
+      "se": 0.024762172391310414,
+      "df": 15.0,
+      "p": 0.16983016983016982,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.048097316891877594,
+      "ci": [
+       -0.0034839643581369983,
+       0.09967859814189219
+      ],
+      "ci_level": 0.95,
+      "se": 0.02420009488728853,
+      "df": 15.0,
+      "p": 0.053946053946053944,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "H21.33.006",
+       "raw": 0.05731538960776933,
+       "corrected": 0.056167670890294785
+      },
+      {
+       "replicate": "H20.33.013",
+       "raw": 0.08424501903413256,
+       "corrected": 0.07255452264759535
+      },
+      {
+       "replicate": "H20.33.014",
+       "raw": 0.149616253701328,
+       "corrected": 0.1487496669499186
+      },
+      {
+       "replicate": "H20.33.012",
+       "raw": 0.04112366185178562,
+       "corrected": 0.03175214037060246
+      },
+      {
+       "replicate": "H20.33.019",
+       "raw": 0.045373668423025704,
+       "corrected": 0.022824255261024627
+      },
+      {
+       "replicate": "H20.33.027",
+       "raw": -0.09219621046116275,
+       "corrected": -0.10021510969634662
+      },
+      {
+       "replicate": "H20.33.044",
+       "raw": 0.017507834269478106,
+       "corrected": 0.008586209803344602
+      },
+      {
+       "replicate": "H20.33.008",
+       "raw": 0.16509433192304107,
+       "corrected": 0.15225585681891923
+      },
+      {
+       "replicate": "H21.33.019",
+       "raw": 0.09871102332866422,
+       "corrected": 0.09657750856731577
+      },
+      {
+       "replicate": "H20.33.043",
+       "raw": 0.22082520633542396,
+       "corrected": 0.2157636565132044
+      },
+      {
+       "replicate": "H21.33.003",
+       "raw": 0.10901374651076084,
+       "corrected": 0.08707882249217887
+      },
+      {
+       "replicate": "H20.33.039",
+       "raw": 0.091155970084623,
+       "corrected": 0.08191247148406015
+      },
+      {
+       "replicate": "H20.33.002",
+       "raw": -0.05250156547575746,
+       "corrected": -0.07055805648308429
+      },
+      {
+       "replicate": "H20.33.001",
+       "raw": -0.13084429594662472,
+       "corrected": -0.13341019234842166
+      },
+      {
+       "replicate": "H20.33.025",
+       "raw": 0.036420389706670664,
+       "corrected": 0.013084427953527355
+      },
+      {
+       "replicate": "H20.33.005",
+       "raw": -0.0713033526231166,
+       "corrected": -0.09969573257885786
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "A",
+        "n_thinned": 8000,
+        "mean_before": 28231.011625,
+        "mean_after": 26181.449617429647,
+        "mean_other": 26181.449617429647,
+        "depth_ratio": 0.9274003342566952,
+        "ks_after": 0.05007298015821554
+       }
+      ],
+      "depth_ratio": 0.9274003342566952,
+      "capture_check": {
+       "raw": {
+        "A": {
+         "depth": 28231.011625,
+         "genes": 1824.0016249999999,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.06048297653496926,
+         "genes": 0.009347848607523579
+        }
+       },
+       "equalized": {
+        "A": {
+         "depth": 26182.681875000002,
+         "genes": 1810.306625,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.016461443985955948,
+         "genes": 0.0017694459365937831
+        }
+       }
+      }
+     },
+     "unmeasured": []
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "CUX2": 0.65575,
+         "DAPK1": 0.944875
+        },
+        "B": {
+         "CUX2": 0.6202654028436019,
+         "DAPK1": 0.944736374407583
+        }
+       },
+       "index": {
+        "A": 1.987228211685542,
+        "B": 1.9153131247296296
+       },
+       "corrected": {
+        "effect": 0.03670866031659677,
+        "ci": [
+         -0.014753056294636475,
+         0.08817037692783
+        ],
+        "ci_level": 0.95,
+        "se": 0.024143999429138734,
+        "df": 15.0,
+        "p": 0.14985014985014986,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.048097316891877594,
+        "ci": [
+         -0.0034839643581369983,
+         0.09967859814189219
+        ],
+        "ci_level": 0.95,
+        "se": 0.02420009488728853,
+        "df": 15.0,
+        "p": 0.06593406593406594,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.678625,
+        "genes": 1810.334125,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01649913054003138,
+        "genes": 0.0017846636126399584
+       }
+      }
+     },
+     "n_units": 16,
+     "n_cells": 15711,
+     "units": [
+      {
+       "replicate": "H20.33.001",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.13084429594662472,
+       "corrected": -0.14457475426595207,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.002",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.05250156547575746,
+       "corrected": -0.05993679363275772,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.005",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.0713033526231166,
+       "corrected": -0.08694376628354068,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.008",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.16509433192304107,
+       "corrected": 0.14736390127747537,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.012",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.04112366185178562,
+       "corrected": 0.02974470254665996,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.013",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08424501903413256,
+       "corrected": 0.06501594899453825,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.014",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.149616253701328,
+       "corrected": 0.14214963115912568,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.045373668423025704,
+       "corrected": 0.0373632971587753,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.025",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.036420389706670664,
+       "corrected": 0.021909108239898743,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.027",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.09219621046116275,
+       "corrected": -0.09671651941457868,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.039",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.091155970084623,
+       "corrected": 0.08051194632665082,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.043",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.22082520633542396,
+       "corrected": 0.21301911307740423,
+       "measured": true
+      },
+      {
+       "replicate": "H20.33.044",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.017507834269478106,
+       "corrected": 0.006215715124912447,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.003",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.10901374651076084,
+       "corrected": 0.08677612389856323,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.006",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.05731538960776933,
+       "corrected": 0.04882882113942895,
+       "measured": true
+      },
+      {
+       "replicate": "H21.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.09871102332866422,
+       "corrected": 0.09661208971894443,
+       "measured": true
+      }
+     ],
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "unmeasured": [],
+     "unmeasured_insufficient": false,
+     "n_before": 16,
+     "n_after": 16,
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "CUX2",
+       "DAPK1"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "groups_needed": "each",
+      "text": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.03670866031659677,
+    "raw_effect": 0.048097316891877594,
+    "se": 0.024143999429138734,
+    "df": 15.0,
+    "t_method": "domain: cluster-robust over replicates (paired)",
+    "ci": [
+     -0.014753056294636475,
+     0.08817037692783
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.005616986470496146,
+     0.07903430710368968
+    ],
+    "p_t": 0.14920614669487953,
+    "p_perm": 0.15284715284715283,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.011379143232848065,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": false,
+    "p_raw": 0.08091908091908091,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": 0.05731538960776933,
+      "corrected": 0.056167670890294785,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": 0.08424501903413256,
+      "corrected": 0.07255452264759535,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": 0.149616253701328,
+      "corrected": 0.1487496669499186,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": 0.04112366185178562,
+      "corrected": 0.03175214037060246,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": 0.045373668423025704,
+      "corrected": 0.022824255261024627,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": -0.09219621046116275,
+      "corrected": -0.10021510969634662,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": 0.017507834269478106,
+      "corrected": 0.008586209803344602,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.16509433192304107,
+      "corrected": 0.15225585681891923,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.09871102332866422,
+      "corrected": 0.09657750856731577,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": 0.22082520633542396,
+      "corrected": 0.2157636565132044,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.10901374651076084,
+      "corrected": 0.08707882249217887,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": 0.091155970084623,
+      "corrected": 0.08191247148406015,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": -0.05250156547575746,
+      "corrected": -0.07055805648308429,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": -0.13084429594662472,
+      "corrected": -0.13341019234842166,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.036420389706670664,
+      "corrected": 0.013084427953527355,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": -0.0713033526231166,
+      "corrected": -0.09969573257885786,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.7632163847957997,
+    "effective_sesoi": 0.08936251375505841,
+    "sesoi_source": "declared",
+    "floor": 0.09378736339832616,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.08936251375505841,
+    "ci_2alpha_raw": [
+     0.0056733319419224396,
+     0.09052130184183274
+    ]
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "zero-fractions comparable (0.36 vs 0.40) \u2014 inspect the scatter for real coupling",
+   "detail": {
+    "group_a": {
+     "n": 8000,
+     "zero_frac": 0.36125
+    },
+    "group_b": {
+     "n": 7711,
+     "zero_frac": 0.3968356892750616
+    },
+    "dropout_gap": 0.03558568927506156,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "PASS",
+   "message": "responds to coupling(CUX2, DAPK1, strength=0.427966): coupling(CUX2, DAPK1, strength=0.427966) injected into A (24.3 probed counts per cell against 20.75 in B), its values move by +0.08936 against the sham (95% CI [+0.07881, +0.09992] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.08936; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.08936",
+   "detail": {
+    "injection": "coupling(CUX2, DAPK1, strength=0.427966)",
+    "declared_injection": "coupling(CUX2, DAPK1, strength=1)",
+    "direction": "increase",
+    "base": 0.3659654573606979,
+    "reference": "sham",
+    "alpha": 0.05,
+    "all_cells": {
+     "mean_response": 0.08591147382390339,
+     "sd_response": 0.010308114855169834,
+     "n_rep": 200,
+     "ci": [
+      0.08447412694162337,
+      0.08734882070618341
+     ],
+     "ci_level": 0.95,
+     "signed_lower": 0.08447412694162337,
+     "signed_upper": 0.08734882070618341,
+     "z": 117.86555849665449
+    },
+    "construct_change": 0.1,
+    "delta_min": null,
+    "delta_min_declared": null,
+    "mode": "claim statistic",
+    "injected_group": "A",
+    "probed_counts_per_cell": {
+     "A": 24.29675,
+     "B": 20.747130331753553
+    },
+    "tie": false,
+    "replicate_responses": {
+     "H20.33.001 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.08580522499719416,
+     "H20.33.002 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.11328804643979896,
+     "H20.33.005 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.05972741747215017,
+     "H20.33.008 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.048951691886423516,
+     "H20.33.012 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.09079274789107936,
+     "H20.33.013 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.09800864145362473,
+     "H20.33.014 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0972331358096597,
+     "H20.33.019 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0695492440830714,
+     "H20.33.025 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.11029897932633687,
+     "H20.33.027 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.1239453142816897,
+     "H20.33.039 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.08335997453584336,
+     "H20.33.043 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.08817627809613963,
+     "H20.33.044 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.07058281248975252,
+     "H21.33.003 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.10130676415154272,
+     "H21.33.006 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.09898167445211498,
+     "H21.33.019 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.08979227271451283
+    },
+    "statistic_change": 0.08936251375505841,
+    "statistic_ci": [
+     0.07880567661894822,
+     0.0999193508911686
+    ],
+    "depth_loss": null,
+    "n_rep_replicate": 50,
+    "runs": null,
+    "dose": {
+     "kind": "coupling",
+     "construct_change": 0.1,
+     "scale": "correlation of the pair's log expected expression",
+     "strength": 0.4279659716792863,
+     "added_variance": 0.046751211566224776,
+     "var_a": 0.6917205601757778,
+     "var_b": 0.24922161590611797,
+     "floored": []
+    },
+    "dose_response": [
+     {
+      "construct_change": 0.05,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.05,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.2951023359679047,
+       "added_variance": 0.021998582179729317,
+       "var_a": 0.6917205601757778,
+       "var_b": 0.24922161590611797,
+       "floored": []
+      },
+      "response": 0.04274551019585783,
+      "ci": [
+       0.037096754054783077,
+       0.048394266336932584
+      ],
+      "n_rep": 20
+     },
+     {
+      "construct_change": 0.1,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.1,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.4279659716792863,
+       "added_variance": 0.046751211566224776,
+       "var_a": 0.6917205601757778,
+       "var_b": 0.24922161590611797,
+       "floored": []
+      },
+      "response": 0.08936251375505841,
+      "ci": [
+       0.07880567661894822,
+       0.0999193508911686
+      ],
+      "n_rep": 50
+     },
+     {
+      "construct_change": 0.2,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.2,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.6394292727466602,
+       "added_variance": 0.10659298600452416,
+       "var_a": 0.6917205601757778,
+       "var_b": 0.24922161590611797,
+       "floored": []
+      },
+      "response": 0.15616328032011378,
+      "ci": [
+       0.13578462783535505,
+       0.17654193280487251
+      ],
+      "n_rep": 20
+     }
+    ],
+    "units": {
+     "n": 16,
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "domain": true
+    },
+    "mean_response": 0.08936251375505841,
+    "se": 0.004952890936640812,
+    "df": 15.0,
+    "n_rep": 16,
+    "ci": [
+     0.07880567661894822,
+     0.0999193508911686
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.07880567661894822,
+    "signed_upper": 0.0999193508911686,
+    "z": 18.042495766253747,
+    "sesoi_metric": 0.08936251375505841,
+    "sesoi_metric_ci": [
+     0.07880567661894822,
+     0.0999193508911686
+    ],
+    "outcome": "PASS"
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "two-sided",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "norm_pearson",
+  "group_col": "group",
+  "groups": [
+   "A",
+   "B"
+  ],
+  "within": [],
+  "gene_pair": [
+   "CUX2",
+   "DAPK1"
+  ],
+  "pair_metric": "norm_pearson",
+  "gene_metric": null,
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "donor",
+  "signal_test": "coupling(CUX2, DAPK1, strength=1)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000,
+  "composition": [
+   "cell_type"
+  ],
+  "specificity": true,
+  "specificity_pool": [
+   15711,
+   35465
+  ],
+  "claim": {
+   "metric": "norm_pearson",
+   "genes": [
+    "CUX2",
+    "DAPK1"
+   ],
+   "groups": [
+    "A",
+    "B"
+   ],
+   "direction": "two-sided"
+  }
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-18T20:50:53+00:00",
+  "environment": {
+   "metric_autopsy": "0.4.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "0eb9f2604b2b83d26dcf58bc242ebb124108a0568e82b86a44e971ebe43a8445",
+  "data_shape": [
+   15711,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "29762e7a01a6461c5da7d02ead54841af659f91db868787bdc9f8e9cbcbae6bf",
+  "claim_id": "87b34db30f32cfdaa0b491f2261c3e65ee71d940dbcd61627cce398b5b97d2e0",
+  "log": null
+ },
+ "composition": {
+  "columns": {
+   "cell_type": {
+    "column": "cell_type",
+    "groups": [
+     "A",
+     "B"
+    ],
+    "design": "paired",
+    "replicates": {
+     "pairs": 16
+    },
+    "tvd": 0.0,
+    "tvd_p": 1.0,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "differs": false,
+    "levels": [
+     {
+      "level": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+      "first": 1.0,
+      "second": 1.0,
+      "difference": 0.0,
+      "p": 1.0
+     }
+    ],
+    "absent": {}
+   }
+  },
+  "domain": {
+   "column": "cell_type",
+   "rule": {
+    "threshold": 0.1,
+    "kind": "pair",
+    "genes": [
+     "CUX2",
+     "DAPK1"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "groups_needed": "each",
+    "text": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "design": "paired",
+   "strata": [
+    {
+     "stratum": "all",
+     "key": "",
+     "types": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "cells": {
+        "A": 8000,
+        "B": 7711
+       },
+       "replicates": {
+        "pairs": [
+         "H20.33.001",
+         "H20.33.002",
+         "H20.33.005",
+         "H20.33.008",
+         "H20.33.012",
+         "H20.33.013",
+         "H20.33.014",
+         "H20.33.019",
+         "H20.33.025",
+         "H20.33.027",
+         "H20.33.039",
+         "H20.33.043",
+         "H20.33.044",
+         "H21.33.003",
+         "H21.33.006",
+         "H21.33.019"
+        ]
+       },
+       "detection": {
+        "A": {
+         "CUX2": 0.65575,
+         "DAPK1": 0.944875
+        },
+        "B": {
+         "CUX2": 0.6202654028436019,
+         "DAPK1": 0.944736374407583
+        }
+       },
+       "index": {
+        "A": 1.987228211685542,
+        "B": 1.9153131247296296
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "detected_in": [
+        "A",
+        "B"
+       ],
+       "in_domain": true
+      }
+     ]
+    }
+   ],
+   "domain": {
+    "": [
+     "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+    ]
+   },
+   "outside": {
+    "": []
+   },
+   "n_domain_types": 1,
+   "one_group": [],
+   "unlabelled_cells": 0
+  }
+ },
+ "reference": {
+  "measure": "norm_pearson (the engine's)",
+  "genes": [
+   "CUX2",
+   "DAPK1"
+  ],
+  "groups": [
+   "A",
+   "B"
+  ],
+  "data": "uncorrected",
+  "over": "the domain's types, equally weighted",
+  "rows": [
+   {
+    "stratum": "all",
+    "metric": {
+     "difference": -0.048097316891877594,
+     "p": 0.06393606393606394,
+     "tier": "permutation",
+     "n": {
+      "pairs": 16
+     }
+    },
+    "reference": {
+     "difference": -0.048097316891877594,
+     "p": 0.08391608391608392,
+     "tier": "permutation",
+     "n": {
+      "pairs": 16
+     }
+    }
+   }
+  ]
+ },
+ "specificity": {
+  "applicable": true,
+  "statistic": "the donor-level t of the claim's estimate within the domain's types",
+  "data": "uncorrected",
+  "side": "in the claim's observed direction (a two-sided claim)",
+  "t_claim": 1.9232724646814134,
+  "t_claim_signed": 1.9232724646814134,
+  "k_requested": 1000,
+  "n_controls": 1000,
+  "in_direction": {
+   "k": 44,
+   "n": 1000,
+   "share": 0.044,
+   "share_ci": [
+    0.03214949701077785,
+    0.058620419206363295
+   ],
+   "p": 0.04495504495504495,
+   "outcome": "undecided"
+  },
+  "absolute": {
+   "k": 114,
+   "n": 1000,
+   "share": 0.114,
+   "share_ci": [
+    0.09496128197361031,
+    0.1353439130712104
+   ],
+   "p": 0.11488511488511488,
+   "outcome": "not specific"
+  },
+  "nearest": [
+   {
+    "genes": [
+     "ALCAM",
+     "ANO5"
+    ],
+    "t": 1.9278540462805145,
+    "t_signed": 1.9278540462805145,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "TSHZ2",
+     "ANO5"
+    ],
+    "t": 1.9320353516809088,
+    "t_signed": 1.9320353516809088,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "POU6F2",
+     "BASP1-AS1"
+    ],
+    "t": 1.909348904981593,
+    "t_signed": 1.909348904981593,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "KCNH5",
+     "TRMT11"
+    ],
+    "t": 1.9006378716638925,
+    "t_signed": 1.9006378716638925,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "CBLN2",
+     "NOL4"
+    ],
+    "t": 1.899718466822986,
+    "t_signed": 1.899718466822986,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "LINC02306",
+     "NCALD"
+    ],
+    "t": 1.9518800225948114,
+    "t_signed": 1.9518800225948114,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "SLIT3",
+     "PARP8"
+    ],
+    "t": 1.9625881342296663,
+    "t_signed": 1.9625881342296663,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "PDE7B",
+     "ZSWIM6"
+    ],
+    "t": 1.8687237991069716,
+    "t_signed": 1.8687237991069716,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "TOX",
+     "ZEB1"
+    ],
+    "t": 1.8527423646221433,
+    "t_signed": 1.8527423646221433,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "POU6F2",
+     "BBS9"
+    ],
+    "t": 1.843871388721627,
+    "t_signed": 1.843871388721627,
+    "at_least_as_far": false
+   }
+  ],
+  "at_least_as_far": [
+   {
+    "genes": [
+     "FOXP2",
+     "OSBPL8"
+    ],
+    "t_signed": 4.923170067651112
+   },
+   {
+    "genes": [
+     "GPC5",
+     "ZDHHC21"
+    ],
+    "t_signed": 4.740262667608302
+   },
+   {
+    "genes": [
+     "ENSG00000257060",
+     "GAB1"
+    ],
+    "t_signed": 3.908748015608504
+   },
+   {
+    "genes": [
+     "CBLN2",
+     "DCAF6"
+    ],
+    "t_signed": 3.6160513194715516
+   },
+   {
+    "genes": [
+     "SPOCK3",
+     "CTDSPL"
+    ],
+    "t_signed": 3.253517766074629
+   },
+   {
+    "genes": [
+     "FOXP2",
+     "HIVEP3"
+    ],
+    "t_signed": 3.225158889256594
+   },
+   {
+    "genes": [
+     "LINC01322",
+     "SPATS2L"
+    ],
+    "t_signed": 3.2005749032478747
+   },
+   {
+    "genes": [
+     "PDE7B",
+     "ZDHHC21"
+    ],
+    "t_signed": 3.139240022973769
+   },
+   {
+    "genes": [
+     "SPOCK3",
+     "SLC44A1"
+    ],
+    "t_signed": 3.052391884250148
+   },
+   {
+    "genes": [
+     "LINC01322",
+     "NCALD"
+    ],
+    "t_signed": 2.9976904675846576
+   },
+   {
+    "genes": [
+     "KCNMB2",
+     "KIFAP3"
+    ],
+    "t_signed": 2.9791511280129903
+   },
+   {
+    "genes": [
+     "POU6F2",
+     "NOL4"
+    ],
+    "t_signed": 2.8836935906917907
+   },
+   {
+    "genes": [
+     "LINC01378",
+     "SEPTIN11"
+    ],
+    "t_signed": 2.670344071047504
+   },
+   {
+    "genes": [
+     "ADAM7-AS1",
+     "COBL"
+    ],
+    "t_signed": 2.622910269771702
+   },
+   {
+    "genes": [
+     "PDGFC",
+     "FAM13A"
+    ],
+    "t_signed": 2.4070515394948604
+   },
+   {
+    "genes": [
+     "TSHZ2",
+     "BICD1"
+    ],
+    "t_signed": 2.379184240084806
+   },
+   {
+    "genes": [
+     "LINC02885",
+     "AGTPBP1"
+    ],
+    "t_signed": 2.376408355234359
+   },
+   {
+    "genes": [
+     "KCNT2",
+     "UGGT2"
+    ],
+    "t_signed": 2.373457034121885
+   },
+   {
+    "genes": [
+     "FOXP2",
+     "PRICKLE2"
+    ],
+    "t_signed": 2.370061396906801
+   },
+   {
+    "genes": [
+     "PDE4B",
+     "CSMD2"
+    ],
+    "t_signed": 2.369603875026322
+   },
+   {
+    "genes": [
+     "GAREM1",
+     "AGTPBP1"
+    ],
+    "t_signed": 2.3574292910201096
+   },
+   {
+    "genes": [
+     "ELAVL2",
+     "ENSG00000242593"
+    ],
+    "t_signed": 2.306720361896331
+   },
+   {
+    "genes": [
+     "SPOCK3",
+     "DCAF6"
+    ],
+    "t_signed": 2.2503929436678547
+   },
+   {
+    "genes": [
+     "KCNT2",
+     "ENSG00000231533"
+    ],
+    "t_signed": 2.2166030452284677
+   },
+   {
+    "genes": [
+     "TMTC2",
+     "CARMIL1"
+    ],
+    "t_signed": 2.210997343925331
+   },
+   {
+    "genes": [
+     "ITGA9",
+     "GAB1"
+    ],
+    "t_signed": 2.1736880247660046
+   },
+   {
+    "genes": [
+     "SLC35F1",
+     "FAM13A"
+    ],
+    "t_signed": 2.1705098546506303
+   },
+   {
+    "genes": [
+     "CDH13",
+     "ZSWIM6"
+    ],
+    "t_signed": 2.162646141312593
+   },
+   {
+    "genes": [
+     "MSC-AS1",
+     "CCDC3"
+    ],
+    "t_signed": 2.1462462891069394
+   },
+   {
+    "genes": [
+     "ALCAM",
+     "CAMK4"
+    ],
+    "t_signed": 2.1261072040376616
+   },
+   {
+    "genes": [
+     "TCERG1L",
+     "ELMO1"
+    ],
+    "t_signed": 2.120337043237525
+   },
+   {
+    "genes": [
+     "LRRK1",
+     "PIK3R1"
+    ],
+    "t_signed": 2.115502793929305
+   },
+   {
+    "genes": [
+     "MIR181A1HG",
+     "ANO5"
+    ],
+    "t_signed": 2.1018610281293952
+   },
+   {
+    "genes": [
+     "TRPM3",
+     "ARFGEF3"
+    ],
+    "t_signed": 2.088025431821477
+   },
+   {
+    "genes": [
+     "ROBO1",
+     "CSGALNACT1"
+    ],
+    "t_signed": 2.0859006875084822
+   },
+   {
+    "genes": [
+     "MGAT4C",
+     "HIVEP2"
+    ],
+    "t_signed": 2.0826713195954913
+   },
+   {
+    "genes": [
+     "ROBO1",
+     "WASF1"
+    ],
+    "t_signed": 2.0430068219481385
+   },
+   {
+    "genes": [
+     "LRRK1",
+     "NOL4"
+    ],
+    "t_signed": 2.041581979267633
+   },
+   {
+    "genes": [
+     "CXXC4-AS1",
+     "FAM13A"
+    ],
+    "t_signed": 2.0351167815073357
+   },
+   {
+    "genes": [
+     "SLC38A11",
+     "SPARCL1"
+    ],
+    "t_signed": 2.0092033102467646
+   },
+   {
+    "genes": [
+     "SLIT3",
+     "PARP8"
+    ],
+    "t_signed": 1.9625881342296663
+   },
+   {
+    "genes": [
+     "LINC02306",
+     "NCALD"
+    ],
+    "t_signed": 1.9518800225948114
+   },
+   {
+    "genes": [
+     "TSHZ2",
+     "ANO5"
+    ],
+    "t_signed": 1.9320353516809088
+   },
+   {
+    "genes": [
+     "ALCAM",
+     "ANO5"
+    ],
+    "t_signed": 1.9278540462805145
+   }
+  ],
+  "shift": {
+   "median_t": -0.17053491984134522,
+   "ci": [
+    -0.43948225484139963,
+    0.08357521602904133
+   ],
+   "ci_level": 0.95,
+   "p_one_sided": 0.8511488511488512,
+   "method": "monte-carlo",
+   "n_relabelings": 1000,
+   "significant": false,
+   "warning": null
+  },
+  "pool": {
+   "genes": 35465,
+   "same_as_data": false
+  },
+  "tie": null,
+  "candidates": 33342,
+  "matched": {
+   "CUX2": {
+    "mean": 11.174336452167271,
+    "detection": 0.6374514671249443,
+    "mean_range": [
+     3.1162879511170516,
+     33.30424543313602
+    ],
+    "detection_range": [
+     0.5204633696136465,
+     0.7490293424988861
+    ]
+   },
+   "DAPK1": {
+    "mean": 11.155559798867035,
+    "detection": 0.9440519381325186,
+    "mean_range": [
+     8.569791865571892,
+     14.211953408439946
+    ],
+    "detection_range": [
+     0.9186557189230475,
+     0.9699573547196232
+    ]
+   }
+  },
+  "eligible": 10000,
+  "known_pairs_excluded": 0
+ },
+ "technical": {
+  "groups": [
+   "A",
+   "B"
+  ],
+  "design": "paired",
+  "source": "pool",
+  "alpha": 0.05,
+  "rows": [
+   {
+    "cells": "all cells",
+    "covariate": "counts per cell",
+    "stratum": "all",
+    "first": 32683.625,
+    "second": 31769.625,
+    "difference": 914.0,
+    "p": 0.7452547452547452,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "replicates": {
+     "pairs": 16
+    }
+   },
+   {
+    "cells": "all cells",
+    "covariate": "genes per cell",
+    "stratum": "all",
+    "first": 6953.5,
+    "second": 6606.03125,
+    "difference": 347.46875,
+    "p": 0.15884115884115885,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "replicates": {
+     "pairs": 16
+    }
+   },
+   {
+    "cells": "the domain's cells",
+    "covariate": "counts per cell",
+    "stratum": "all",
+    "first": 32683.625,
+    "second": 31769.625,
+    "difference": 914.0,
+    "p": 0.7482517482517482,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "replicates": {
+     "pairs": 16
+    }
+   },
+   {
+    "cells": "the domain's cells",
+    "covariate": "genes per cell",
+    "stratum": "all",
+    "first": 6953.5,
+    "second": 6606.03125,
+    "difference": 347.46875,
+    "p": 0.18181818181818182,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "replicates": {
+     "pairs": 16
+    }
+   }
+  ],
+  "differs": []
+ }
+}

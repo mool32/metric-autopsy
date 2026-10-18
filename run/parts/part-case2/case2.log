@@ -1,0 +1,14 @@
+# part case2 (validation/exploratory/real_pilot_6_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A1: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional] (15.9 s)
+    effect 0.22152022929431608 CI [0.052466026321236314, 0.39057443226739585] over the domain's cell types, equally weighted; s_m 0.0585509102788086; domain ['fibroblast of cardiac tissue']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    dossier: effect DETECTED; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+- A2: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional] (15.1 s)
+    effect -0.6698668081520598 CI [-0.739349827408054, -0.6003837888960656] over the domain's cell types, equally weighted; s_m 0.17007302840714333; domain ['fibroblast of cardiac tissue']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+    dossier: effect DETECTED; GATE 0 PASS, between the groups None; unmeasured 0 replicates, 0 units of the domain; one group only []
+
+part case2: 31.5 s

@@ -1,0 +1,6435 @@
+{
+ "part": "case3a",
+ "synthetic": false,
+ "engine": "0.4.0.dev0",
+ "seconds": 1209.7,
+ "result": {
+  "claims": [
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(HS6ST3, DGKB, strength=0.424421): coupling(HS6ST3, DGKB, strength=0.424421) injected into A (109.7 probed counts per cell against 106.7 in B), its values move by +0.05636 against the sham (95% CI [+0.04977, +0.06295] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05636; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05636.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127%; MDE 0.05372 vs the SESOI in the metric's units 0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates); the design's floor 0.06961: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+      "flags": [
+       "SESOI_BELOW_FLOOR",
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.008674 -> corrected +0.005107"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.11 vs 0.13) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(HS6ST3, DGKB, strength=0.424421): coupling(HS6ST3, DGKB, strength=0.424421) injected into A (109.7 probed counts per cell against 106.7 in B), its values move by +0.05636 against the sham (95% CI [+0.04977, +0.06295] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05636; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05636"
+     }
+    ],
+    "effect": {
+     "effect": 0.005107427466086122,
+     "raw_effect": 0.00867402508299387,
+     "ci": [
+      -0.033086220649349726,
+      0.043301075581521964
+     ],
+     "p_perm": 0.7872127872127872,
+     "p_raw": 0.6133866133866134,
+     "p_t": 0.7795211138383438,
+     "raw_detected": false,
+     "tost_equivalent": true,
+     "sesoi": 0.05635913724723111,
+     "effective_sesoi": 0.05635913724723111,
+     "sesoi_source": "declared",
+     "floor": 0.0696067249829802,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "HS6ST3": 0.926875,
+         "DGKB": 0.946625
+        },
+        "B": {
+         "HS6ST3": 0.911247037914692,
+         "DGKB": 0.9399129146919432
+        }
+       },
+       "index": {
+        "A": 3.2628796078457345,
+        "B": 3.2725031764087547
+       },
+       "corrected": {
+        "effect": 0.005107427466086122,
+        "ci": [
+         -0.033086220649349726,
+         0.043301075581521964
+        ],
+        "ci_level": 0.95,
+        "se": 0.017919095572776114,
+        "df": 15.0,
+        "p": 0.7932067932067932,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.00867402508299387,
+        "ci": [
+         -0.028688167489810748,
+         0.04603621765579849
+        ],
+        "ci_level": 0.95,
+        "se": 0.017529006328410323,
+        "df": 15.0,
+        "p": 0.6213786213786214,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.003490335567678039,
+      "ci": [
+       -0.034966188006848434,
+       0.041946859142204515
+      ],
+      "ci_level": 0.95,
+      "se": 0.01804242734933083,
+      "df": 15.0,
+      "p": 0.8521478521478522,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.00867402508299387,
+      "ci": [
+       -0.028688167489810748,
+       0.04603621765579849
+      ],
+      "ci_level": 0.95,
+      "se": 0.017529006328410323,
+      "df": 15.0,
+      "p": 0.6273726273726273,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.05635913724723111,
+     "sesoi_metric_ci": [
+      0.04976909094055811,
+      0.06294918355390411
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.4244214938483154,
+      "added_variance": 0.04596563170647132,
+      "var_a": 0.4649136259900932,
+      "var_b": 0.36760357595744164,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.29355130133286866,
+        "added_variance": 0.021765681748755386,
+        "var_a": 0.4649136259900932,
+        "var_b": 0.36760357595744164,
+        "floored": []
+       },
+       "response": 0.0249809150712299,
+       "ci": [
+        0.02147892274504438,
+        0.02848290739741542
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.4244214938483154,
+        "added_variance": 0.04596563170647132,
+        "var_a": 0.4649136259900932,
+        "var_b": 0.36760357595744164,
+        "floored": []
+       },
+       "response": 0.05635913724723111,
+       "ci": [
+        0.04976909094055811,
+        0.06294918355390411
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.6303743669037045,
+        "added_variance": 0.10349406138998982,
+        "var_a": 0.4649136259900932,
+        "var_b": 0.36760357595744164,
+        "floored": []
+       },
+       "response": 0.12098233267937225,
+       "ci": [
+        0.10984943712969063,
+        0.1321152282290539
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 0.5136844319340579,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 296,
+      "n": 1000,
+      "share": 0.296,
+      "share_ci": [
+       0.26784219752016725,
+       0.32536435340489334
+      ],
+      "p": 0.2967032967032967,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 649,
+      "n": 1000,
+      "share": 0.649,
+      "share_ci": [
+       0.6185133989069982,
+       0.678606206880886
+      ],
+      "p": 0.6493506493506493,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "SLC8A1",
+        "FTX"
+       ],
+       "t": 0.5176161557783717,
+       "t_signed": 0.5176161557783717,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "PDZD2",
+        "SMYD3"
+       ],
+       "t": 0.5178313097850633,
+       "t_signed": 0.5178313097850633,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "DOCK3",
+        "RIMS2"
+       ],
+       "t": 0.5197580943936299,
+       "t_signed": 0.5197580943936299,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "TMEM132D",
+        "ASIC2"
+       ],
+       "t": 0.5235756050641934,
+       "t_signed": 0.5235756050641934,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "PPP3CA"
+       ],
+       "t": 0.5024357330191191,
+       "t_signed": 0.5024357330191191,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "RORA",
+        "GRM7"
+       ],
+       "t": 0.5012176917805486,
+       "t_signed": 0.5012176917805486,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "KALRN",
+        "THRB"
+       ],
+       "t": 0.49553973550089686,
+       "t_signed": 0.49553973550089686,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "GPM6A",
+        "SYN3"
+       ],
+       "t": 0.49503139396012863,
+       "t_signed": 0.49503139396012863,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "GRIK2",
+        "ROBO2"
+       ],
+       "t": 0.5362279086793232,
+       "t_signed": 0.5362279086793232,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "DMD",
+        "SNTG1"
+       ],
+       "t": 0.5377973619615767,
+       "t_signed": 0.5377973619615767,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": -0.0829819749112705,
+      "ci": [
+       -0.38768166587114494,
+       0.23055075556719062
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.6963036963036963,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "PLCG2",
+        "RGS7"
+       ],
+       "t_signed": 4.769295325009493
+      },
+      {
+       "genes": [
+        "NCAM2",
+        "MDGA2"
+       ],
+       "t_signed": 4.1582667910650155
+      },
+      {
+       "genes": [
+        "PLCG2",
+        "CTNND2"
+       ],
+       "t_signed": 3.8237363490404115
+      },
+      {
+       "genes": [
+        "KIRREL3",
+        "CTNND2"
+       ],
+       "t_signed": 3.679832033888384
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "ANK3"
+       ],
+       "t_signed": 3.5288371509846983
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "DLGAP2"
+       ],
+       "t_signed": 3.501155650271637
+      },
+      {
+       "genes": [
+        "CACNA2D3",
+        "CTNND2"
+       ],
+       "t_signed": 3.499922112403884
+      },
+      {
+       "genes": [
+        "PLCG2",
+        "IL1RAPL1"
+       ],
+       "t_signed": 3.4400039050159408
+      },
+      {
+       "genes": [
+        "CNTN1",
+        "LRRC4C"
+       ],
+       "t_signed": 3.363877894708149
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "CNTN4"
+       ],
+       "t_signed": 3.3403412508881707
+      },
+      {
+       "genes": [
+        "RGS6",
+        "RGS7"
+       ],
+       "t_signed": 3.326821172205641
+      },
+      {
+       "genes": [
+        "GUSBP5",
+        "AUTS2"
+       ],
+       "t_signed": 3.055116306983129
+      },
+      {
+       "genes": [
+        "NCAM2",
+        "MEF2C"
+       ],
+       "t_signed": 3.0300707518847187
+      },
+      {
+       "genes": [
+        "CNTNAP5",
+        "GRIK2"
+       ],
+       "t_signed": 2.9802675667332914
+      },
+      {
+       "genes": [
+        "GRIA2",
+        "MDGA2"
+       ],
+       "t_signed": 2.9082799615868287
+      },
+      {
+       "genes": [
+        "KALRN",
+        "PLEKHA5"
+       ],
+       "t_signed": 2.9031669652876824
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "ROBO2"
+       ],
+       "t_signed": 2.8370177645576735
+      },
+      {
+       "genes": [
+        "MDGA2",
+        "KCNH1"
+       ],
+       "t_signed": 2.8139847478184077
+      },
+      {
+       "genes": [
+        "LDB2",
+        "KIRREL3"
+       ],
+       "t_signed": 2.747044751855655
+      },
+      {
+       "genes": [
+        "PLCG2",
+        "DSCAM"
+       ],
+       "t_signed": 2.7394152026552674
+      },
+      {
+       "genes": [
+        "KHDRBS3",
+        "STXBP5L"
+       ],
+       "t_signed": 2.6481178401538337
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "DSCAM"
+       ],
+       "t_signed": 2.639473339979556
+      },
+      {
+       "genes": [
+        "NTM",
+        "ERC2"
+       ],
+       "t_signed": 2.6166360431634774
+      },
+      {
+       "genes": [
+        "RGS6",
+        "LDB2"
+       ],
+       "t_signed": 2.5229925164721996
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "NTM"
+       ],
+       "t_signed": 2.506545033343982
+      },
+      {
+       "genes": [
+        "CACNA1C",
+        "ERC2"
+       ],
+       "t_signed": 2.483002222822023
+      },
+      {
+       "genes": [
+        "ENSG00000229618",
+        "FGF12"
+       ],
+       "t_signed": 2.4610822479572696
+      },
+      {
+       "genes": [
+        "SORCS1",
+        "ST6GALNAC5"
+       ],
+       "t_signed": 2.4372787597284544
+      },
+      {
+       "genes": [
+        "ST6GALNAC5",
+        "KCNH1"
+       ],
+       "t_signed": 2.397763715063999
+      },
+      {
+       "genes": [
+        "CACNA2D3",
+        "CNTNAP5"
+       ],
+       "t_signed": 2.3833333743088163
+      },
+      {
+       "genes": [
+        "RGS6",
+        "FGF12"
+       ],
+       "t_signed": 2.336114637647252
+      },
+      {
+       "genes": [
+        "ADGRL3",
+        "PLCG2"
+       ],
+       "t_signed": 2.2891579149595818
+      },
+      {
+       "genes": [
+        "CADPS2",
+        "DCLK1"
+       ],
+       "t_signed": 2.248246259296874
+      },
+      {
+       "genes": [
+        "SORCS1",
+        "CDH18"
+       ],
+       "t_signed": 2.243057833017323
+      },
+      {
+       "genes": [
+        "CACNA1C",
+        "ROBO2"
+       ],
+       "t_signed": 2.2347412032919496
+      },
+      {
+       "genes": [
+        "FTX",
+        "DSCAM"
+       ],
+       "t_signed": 2.1971245042146754
+      },
+      {
+       "genes": [
+        "PLCG2",
+        "SLC4A10"
+       ],
+       "t_signed": 2.1867731068875305
+      },
+      {
+       "genes": [
+        "NBEA",
+        "TAFA1"
+       ],
+       "t_signed": 2.180151742181977
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "NTM"
+       ],
+       "t_signed": 2.151839250985308
+      },
+      {
+       "genes": [
+        "CCSER1",
+        "KCNH1"
+       ],
+       "t_signed": 2.1484118859204115
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "HS6ST3",
+      "DGKB"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": -0.00867402508299387,
+        "p": 0.6413586413586414,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": -0.00867402508299387,
+        "p": 0.6183816183816184,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a1",
+    "claim": {
+     "id": "A8-3a1",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "HS6ST3",
+      "DGKB"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a1.json",
+    "report_sha256": "c4ac70a13dde0ab4da92ae52716424b450c849b473e520ccb38c38bbf969977c",
+    "seconds": 151.4,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.028179568623615554,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7132867132867133,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16583416583416583,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7382617382617382,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16083916083916083,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(SYN3, PDZD2, strength=0.438367): coupling(SYN3, PDZD2, strength=0.438367) injected into A (94.66 probed counts per cell against 68.99 in B), its values move by +0.05052 against the sham (95% CI [+0.0453, +0.05574] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05052; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05052.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127%; MDE 0.03394 vs the SESOI in the metric's units 0.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates); the design's floor 0.04399",
+      "flags": [
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.02724 -> corrected +0.02382"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.09 vs 0.12) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(SYN3, PDZD2, strength=0.438367): coupling(SYN3, PDZD2, strength=0.438367) injected into A (94.66 probed counts per cell against 68.99 in B), its values move by +0.05052 against the sham (95% CI [+0.0453, +0.05574] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05052; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05052"
+     }
+    ],
+    "effect": {
+     "effect": 0.0238191477145085,
+     "raw_effect": 0.02724110526526583,
+     "ci": [
+      -0.00031598605494743276,
+      0.04795428148396443
+     ],
+     "p_perm": 0.059940059940059943,
+     "p_raw": 0.03796203796203796,
+     "p_t": 0.05270258235164271,
+     "raw_detected": true,
+     "tost_equivalent": true,
+     "sesoi": 0.05052186167665575,
+     "effective_sesoi": 0.05052186167665575,
+     "sesoi_source": "declared",
+     "floor": 0.04398552381381458,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "SYN3": 0.98675,
+         "PDZD2": 0.9165
+        },
+        "B": {
+         "SYN3": 0.9826439573459715,
+         "PDZD2": 0.8893204976303318
+        }
+       },
+       "index": {
+        "A": 3.234719501030911,
+        "B": 3.0046585511956354
+       },
+       "corrected": {
+        "effect": 0.0238191477145085,
+        "ci": [
+         -0.00031598605494743276,
+         0.04795428148396443
+        ],
+        "ci_level": 0.95,
+        "se": 0.011323342755043915,
+        "df": 15.0,
+        "p": 0.061938061938061936,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.02724110526526583,
+        "ci": [
+         0.0036399950877457135,
+         0.05084221544278595
+        ],
+        "ci_level": 0.95,
+        "se": 0.011072797958875369,
+        "df": 15.0,
+        "p": 0.03696303696303696,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.024962851910084398,
+      "ci": [
+       0.0010447526752412027,
+       0.04888095114492759
+      ],
+      "ci_level": 0.95,
+      "se": 0.011221517903001386,
+      "df": 15.0,
+      "p": 0.04995004995004995,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": true,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.02724110526526583,
+      "ci": [
+       0.0036399950877457135,
+       0.05084221544278595
+      ],
+      "ci_level": 0.95,
+      "se": 0.011072797958875369,
+      "df": 15.0,
+      "p": 0.02197802197802198,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": true,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.05052186167665575,
+     "sesoi_metric_ci": [
+      0.045302029973748756,
+      0.05574169337956274
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.43836673928376,
+      "added_variance": 0.04909672941937847,
+      "var_a": 0.30676211170222367,
+      "var_b": 0.6282754645894151,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.30284975538085834,
+        "added_variance": 0.023181003909559274,
+        "var_a": 0.30676211170222367,
+        "var_b": 0.6282754645894151,
+        "floored": []
+       },
+       "response": 0.02485453494761806,
+       "ci": [
+        0.021145351192206036,
+        0.028563718703030087
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.43836673928376,
+        "added_variance": 0.04909672941937847,
+        "var_a": 0.30676211170222367,
+        "var_b": 0.6282754645894151,
+        "floored": []
+       },
+       "response": 0.05052186167665575,
+       "ci": [
+        0.045302029973748756,
+        0.05574169337956274
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.6525918707681069,
+        "added_variance": 0.11118562695535894,
+        "var_a": 0.30676211170222367,
+        "var_b": 0.6282754645894151,
+        "floored": []
+       },
+       "response": 0.10263396213628243,
+       "ci": [
+        0.09347673761831833,
+        0.11179118665424652
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 2.478586336277303,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 16,
+      "n": 1000,
+      "share": 0.016,
+      "share_ci": [
+       0.009172319269509899,
+       0.02585324908113762
+      ],
+      "p": 0.016983016983016984,
+      "outcome": "specific"
+     },
+     "absolute": {
+      "k": 38,
+      "n": 1000,
+      "share": 0.038,
+      "share_ci": [
+       0.027028815983157983,
+       0.05178710362224592
+      ],
+      "p": 0.03896103896103896,
+      "outcome": "undecided"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "DCLK1",
+        "ENSG00000225689"
+       ],
+       "t": 2.464241546243069,
+       "t_signed": 2.464241546243069,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "ATP8A2",
+        "CLSTN2"
+       ],
+       "t": 2.448364119058825,
+       "t_signed": 2.448364119058825,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "OXR1",
+        "LY86-AS1"
+       ],
+       "t": 2.5108993498180654,
+       "t_signed": 2.5108993498180654,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "LDB2",
+        "RGS6"
+       ],
+       "t": 2.5229925164722,
+       "t_signed": 2.5229925164722,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "HECW1",
+        "TMEFF2"
+       ],
+       "t": 2.4180007562766628,
+       "t_signed": 2.4180007562766628,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "KIRREL3",
+        "LINC01122"
+       ],
+       "t": 2.6140424120467456,
+       "t_signed": 2.6140424120467456,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "MIR99AHG",
+        "SLC35F3"
+       ],
+       "t": 2.337309380644305,
+       "t_signed": 2.337309380644305,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "RAPGEF5",
+        "RGS6"
+       ],
+       "t": 2.2778903054134507,
+       "t_signed": 2.2778903054134507,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "KIRREL3"
+       ],
+       "t": 2.2560931947890075,
+       "t_signed": 2.2560931947890075,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "JMJD1C",
+        "CNTN4"
+       ],
+       "t": 2.2556653543375838,
+       "t_signed": 2.2556653543375838,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": -0.032749483604539074,
+      "ci": [
+       -0.2350193775524307,
+       0.1581301189825726
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.6133866133866134,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "CACNA1C",
+        "PLCG2"
+       ],
+       "t_signed": 5.351342664586356
+      },
+      {
+       "genes": [
+        "ATP8A2",
+        "MEG8"
+       ],
+       "t_signed": 5.192235314888798
+      },
+      {
+       "genes": [
+        "MDGA2",
+        "NCAM2"
+       ],
+       "t_signed": 4.158266791065015
+      },
+      {
+       "genes": [
+        "CAMK1D",
+        "PLCG2"
+       ],
+       "t_signed": 3.802653695495242
+      },
+      {
+       "genes": [
+        "RIMS2",
+        "PLCG2"
+       ],
+       "t_signed": 3.7724075429347685
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "RGS6"
+       ],
+       "t_signed": 3.668161215831163
+      },
+      {
+       "genes": [
+        "KCNMA1",
+        "PLCG2"
+       ],
+       "t_signed": 3.5283329015706903
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "CNTN4"
+       ],
+       "t_signed": 3.3403412508881707
+      },
+      {
+       "genes": [
+        "TMEM178B",
+        "PTPRG"
+       ],
+       "t_signed": 3.3195772082962507
+      },
+      {
+       "genes": [
+        "MYT1L",
+        "CNTN3"
+       ],
+       "t_signed": 3.0986975154064345
+      },
+      {
+       "genes": [
+        "KCNH1",
+        "PLCG2"
+       ],
+       "t_signed": 3.091079780670635
+      },
+      {
+       "genes": [
+        "MEF2C",
+        "NCAM2"
+       ],
+       "t_signed": 3.030070751884718
+      },
+      {
+       "genes": [
+        "PLEKHA5",
+        "PLCG2"
+       ],
+       "t_signed": 2.7631243870055253
+      },
+      {
+       "genes": [
+        "KIRREL3",
+        "LINC01122"
+       ],
+       "t_signed": 2.6140424120467456
+      },
+      {
+       "genes": [
+        "LDB2",
+        "RGS6"
+       ],
+       "t_signed": 2.5229925164722
+      },
+      {
+       "genes": [
+        "OXR1",
+        "LY86-AS1"
+       ],
+       "t_signed": 2.5108993498180654
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "SYN3",
+      "PDZD2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": -0.02724110526526583,
+        "p": 0.026973026973026972,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": -0.02724110526526583,
+        "p": 0.029970029970029972,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a2",
+    "claim": {
+     "id": "A8-3a2",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "SYN3",
+      "PDZD2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a2.json",
+    "report_sha256": "fb936ada7d2659352bdaaa52dfc097be010dba199362f3c8b7eccafbf4f69892",
+    "seconds": 152.1,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.025260930838327873,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7462537462537463,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.18281718281718282,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7422577422577422,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16683316683316685,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within \u00b10.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(LRP1B, DPP10, strength=0.537412): coupling(LRP1B, DPP10, strength=0.537412) injected into A (231.1 probed counts per cell against 223.6 in B), its values move by +0.07032 against the sham (95% CI [+0.06593, +0.0747] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.07032; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.07032.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22121%; MDE 0.03353 vs the SESOI in the metric's units 0.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates); the design's floor 0.04345",
+      "flags": [
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within \u00b10.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22121% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw -0.02214 -> corrected -0.02398"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.02 vs 0.03) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(LRP1B, DPP10, strength=0.537412): coupling(LRP1B, DPP10, strength=0.537412) injected into A (231.1 probed counts per cell against 223.6 in B), its values move by +0.07032 against the sham (95% CI [+0.06593, +0.0747] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.07032; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.07032"
+     }
+    ],
+    "effect": {
+     "effect": -0.023976029198154763,
+     "raw_effect": -0.022144673682182793,
+     "ci": [
+      -0.04781679790515238,
+      -0.00013526049115714436
+     ],
+     "p_perm": 0.05094905094905095,
+     "p_raw": 0.06893106893106893,
+     "p_t": 0.04886905734233715,
+     "raw_detected": false,
+     "tost_equivalent": true,
+     "sesoi": 0.07031728154647177,
+     "effective_sesoi": 0.07031728154647177,
+     "sesoi_source": "declared",
+     "floor": 0.0434490527261299,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "LRP1B": 0.981625,
+         "DPP10": 0.995
+        },
+        "B": {
+         "LRP1B": 0.9753667061611375,
+         "DPP10": 0.9937037914691944
+        }
+       },
+       "index": {
+        "A": 3.8911227519168006,
+        "B": 3.910049650656762
+       },
+       "corrected": {
+        "effect": -0.023976029198154763,
+        "ci": [
+         -0.04781679790515238,
+         -0.00013526049115714436
+        ],
+        "ci_level": 0.95,
+        "se": 0.011185237181270642,
+        "df": 15.0,
+        "p": 0.04295704295704296,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": true,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": -0.022144673682182793,
+        "ci": [
+         -0.04619487648394758,
+         0.0019055291195819932
+        ],
+        "ci_level": 0.95,
+        "se": 0.01128349617839467,
+        "df": 15.0,
+        "p": 0.06493506493506493,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": -0.024247436925193735,
+      "ci": [
+       -0.047756050655010554,
+       -0.0007388231953769121
+      ],
+      "ci_level": 0.95,
+      "se": 0.01102940192921284,
+      "df": 15.0,
+      "p": 0.03596403596403597,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": true,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": -0.022144673682182793,
+      "ci": [
+       -0.04619487648394758,
+       0.0019055291195819932
+      ],
+      "ci_level": 0.95,
+      "se": 0.01128349617839467,
+      "df": 15.0,
+      "p": 0.07592407592407592,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.07031728154647177,
+     "sesoi_metric_ci": [
+      0.0659320000651605,
+      0.07470256302778303
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.5374122308373968,
+      "added_variance": 0.07449193176131727,
+      "var_a": 0.7001456243186021,
+      "var_b": 0.6418492595454794,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.37266411019410506,
+        "added_variance": 0.03528398494408384,
+        "var_a": 0.7001456243186021,
+        "var_b": 0.6418492595454794,
+        "floored": []
+       },
+       "response": 0.03612318588741424,
+       "ci": [
+        0.03217682254233025,
+        0.04006954923249823
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.5374122308373968,
+        "added_variance": 0.07449193176131727,
+        "var_a": 0.7001456243186021,
+        "var_b": 0.6418492595454794,
+        "floored": []
+       },
+       "response": 0.07031728154647177,
+       "ci": [
+        0.0659320000651605,
+        0.07470256302778303
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.7949267175503278,
+        "added_variance": 0.1676226831494101,
+        "var_a": 0.7001456243186021,
+        "var_b": 0.6418492595454794,
+        "floored": []
+       },
+       "response": 0.1433946206272747,
+       "ci": [
+        0.13524981484056656,
+        0.15153942641398285
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": -1.7617825202826467,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 145,
+      "n": 1000,
+      "share": 0.145,
+      "share_ci": [
+       0.12374721727201177,
+       0.16836632209151503
+      ],
+      "p": 0.14585414585414586,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 180,
+      "n": 1000,
+      "share": 0.18,
+      "share_ci": [
+       0.15665810167092786,
+       0.20524249402797068
+      ],
+      "p": 0.18081918081918083,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "RYR2",
+        "RBFOX1"
+       ],
+       "t": -1.7571594241929114,
+       "t_signed": 1.7571594241929114,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "DPP6",
+        "PPP2R2B"
+       ],
+       "t": -1.7688365093301064,
+       "t_signed": 1.7688365093301064,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CADM2",
+        "OXR1"
+       ],
+       "t": -1.7518648291499148,
+       "t_signed": 1.7518648291499148,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "CTNNA2"
+       ],
+       "t": -1.7449848058397575,
+       "t_signed": 1.7449848058397575,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "DLGAP1"
+       ],
+       "t": -1.7862881327807374,
+       "t_signed": 1.7862881327807374,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "ANKS1B",
+        "IQCJ-SCHIP1"
+       ],
+       "t": -1.7340188273131898,
+       "t_signed": 1.7340188273131898,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "CDH12"
+       ],
+       "t": -1.7328619832600742,
+       "t_signed": 1.7328619832600742,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "CDH18"
+       ],
+       "t": -1.7910966923857246,
+       "t_signed": 1.7910966923857246,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CADM2",
+        "DCLK1"
+       ],
+       "t": -1.730466097564761,
+       "t_signed": 1.730466097564761,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "SNTG1",
+        "IL1RAPL1"
+       ],
+       "t": -1.7221319437239244,
+       "t_signed": 1.7221319437239244,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": 0.46090505567548956,
+      "ci": [
+       -0.10377475937329095,
+       1.03034869588449
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.055944055944055944,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "CNTN5",
+        "ANKS1B"
+       ],
+       "t_signed": 6.9597245238721115
+      },
+      {
+       "genes": [
+        "LRRTM4",
+        "LSAMP"
+       ],
+       "t_signed": 5.85826549338215
+      },
+      {
+       "genes": [
+        "CADM2",
+        "IL1RAPL1"
+       ],
+       "t_signed": 5.397502157045571
+      },
+      {
+       "genes": [
+        "NRG3",
+        "NRXN1"
+       ],
+       "t_signed": 4.768008394479793
+      },
+      {
+       "genes": [
+        "NRG3",
+        "FGF14"
+       ],
+       "t_signed": 4.646039615052641
+      },
+      {
+       "genes": [
+        "SYT1",
+        "PLCB1"
+       ],
+       "t_signed": 4.525739791243651
+      },
+      {
+       "genes": [
+        "CADM2",
+        "SYT1"
+       ],
+       "t_signed": 4.521414350081946
+      },
+      {
+       "genes": [
+        "SYT1",
+        "DPP6"
+       ],
+       "t_signed": 4.3489669807705225
+      },
+      {
+       "genes": [
+        "RBFOX1",
+        "AGBL4"
+       ],
+       "t_signed": 4.200629331786409
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "NRXN1"
+       ],
+       "t_signed": 4.076624690214913
+      },
+      {
+       "genes": [
+        "CNTN1",
+        "NRXN3"
+       ],
+       "t_signed": 3.8804703092869444
+      },
+      {
+       "genes": [
+        "FGF14",
+        "NEGR1"
+       ],
+       "t_signed": 3.857472019327109
+      },
+      {
+       "genes": [
+        "MEG3",
+        "CDH12"
+       ],
+       "t_signed": 3.8236746394882792
+      },
+      {
+       "genes": [
+        "SYT1",
+        "CNTN1"
+       ],
+       "t_signed": 3.767891595780661
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "KCNQ5"
+       ],
+       "t_signed": 3.5629963860440625
+      },
+      {
+       "genes": [
+        "NEGR1",
+        "NRXN1"
+       ],
+       "t_signed": 3.557747076590725
+      },
+      {
+       "genes": [
+        "RORA",
+        "ANKS1B"
+       ],
+       "t_signed": 3.5063419005077083
+      },
+      {
+       "genes": [
+        "SYT1",
+        "RBFOX1"
+       ],
+       "t_signed": 3.3257619208621323
+      },
+      {
+       "genes": [
+        "PHACTR1",
+        "SNHG14"
+       ],
+       "t_signed": 3.2728628075420594
+      },
+      {
+       "genes": [
+        "MDGA2",
+        "NRXN1"
+       ],
+       "t_signed": 3.2545979493076
+      },
+      {
+       "genes": [
+        "OXR1",
+        "RIMS2"
+       ],
+       "t_signed": 3.2380134900045823
+      },
+      {
+       "genes": [
+        "RIMS2",
+        "GRM7"
+       ],
+       "t_signed": 3.1474975948339936
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "PPP2R2B"
+       ],
+       "t_signed": 3.143784688316218
+      },
+      {
+       "genes": [
+        "NALF1",
+        "FGF14"
+       ],
+       "t_signed": 3.112309571641869
+      },
+      {
+       "genes": [
+        "SYT1",
+        "LINGO2"
+       ],
+       "t_signed": 3.1058586152553933
+      },
+      {
+       "genes": [
+        "DSCAM",
+        "ANKS1B"
+       ],
+       "t_signed": 3.101275385756444
+      },
+      {
+       "genes": [
+        "LRRTM4",
+        "IQCJ-SCHIP1"
+       ],
+       "t_signed": 3.0939827654212735
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "DOCK3"
+       ],
+       "t_signed": 3.0915364163618784
+      },
+      {
+       "genes": [
+        "SYT1",
+        "RGS7"
+       ],
+       "t_signed": 3.0804822120340694
+      },
+      {
+       "genes": [
+        "PTPRK",
+        "LRFN5"
+       ],
+       "t_signed": 3.064222389822883
+      },
+      {
+       "genes": [
+        "CHRM3",
+        "NALF1"
+       ],
+       "t_signed": 3.0553326945873343
+      },
+      {
+       "genes": [
+        "CSMD3",
+        "IL1RAPL1"
+       ],
+       "t_signed": 3.05137652085017
+      },
+      {
+       "genes": [
+        "ATRNL1",
+        "PTPRD"
+       ],
+       "t_signed": 2.958246116890842
+      },
+      {
+       "genes": [
+        "ANKS1B",
+        "AGBL4"
+       ],
+       "t_signed": 2.9502056415802125
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "PCDH7"
+       ],
+       "t_signed": 2.922054121275411
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "NRXN1"
+       ],
+       "t_signed": 2.92012992990123
+      },
+      {
+       "genes": [
+        "AUTS2",
+        "SYT1"
+       ],
+       "t_signed": 2.896441875389082
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "OXR1"
+       ],
+       "t_signed": 2.8851715034634564
+      },
+      {
+       "genes": [
+        "CCSER1",
+        "RBFOX1"
+       ],
+       "t_signed": 2.871378741305727
+      },
+      {
+       "genes": [
+        "NRXN3",
+        "RIMS2"
+       ],
+       "t_signed": 2.813918206043404
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "LRP1B",
+      "DPP10"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": 0.022144673682182793,
+        "p": 0.07792207792207792,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": 0.022144673682182793,
+        "p": 0.08591408591408592,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a3",
+    "claim": {
+     "id": "A8-3a3",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "LRP1B",
+      "DPP10"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a3.json",
+    "report_sha256": "e7839d294aef7b28d7639ba33674fb2ee46101c989c0b8e49a327dc4569e360f",
+    "seconds": 151.5,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within \u00b10.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22121% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.03515864077323588,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7492507492507493,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.1848151848151848,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7302697302697303,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.17682317682317683,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(LSAMP, KAZN, strength=0.425904): coupling(LSAMP, KAZN, strength=0.425904) injected into A (172.5 probed counts per cell against 154.6 in B), its values move by +0.05345 against the sham (95% CI [+0.04752, +0.05938] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05345; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05345.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22124%; MDE 0.04862 vs the SESOI in the metric's units 0.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates); the design's floor 0.06301: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+      "flags": [
+       "SESOI_BELOW_FLOOR",
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22124% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.001931 -> corrected -0.001348"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.02 vs 0.04) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(LSAMP, KAZN, strength=0.425904): coupling(LSAMP, KAZN, strength=0.425904) injected into A (172.5 probed counts per cell against 154.6 in B), its values move by +0.05345 against the sham (95% CI [+0.04752, +0.05938] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05345; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05345"
+     }
+    ],
+    "effect": {
+     "effect": -0.0013482949413966766,
+     "raw_effect": 0.001931190892497183,
+     "ci": [
+      -0.03591998608823375,
+      0.033223396205440396
+     ],
+     "p_perm": 0.952047952047952,
+     "p_raw": 0.9210789210789211,
+     "p_t": 0.9348501651396814,
+     "raw_detected": false,
+     "tost_equivalent": true,
+     "sesoi": 0.05345201563189507,
+     "effective_sesoi": 0.05345201563189507,
+     "sesoi_source": "declared",
+     "floor": 0.06300582208280521,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "LSAMP": 0.990875,
+         "KAZN": 0.98475
+        },
+        "B": {
+         "LSAMP": 0.9857689573459716,
+         "KAZN": 0.9749075829383885
+        }
+       },
+       "index": {
+        "A": 3.748364366847654,
+        "B": 3.711518640907951
+       },
+       "corrected": {
+        "effect": -0.0013482949413966766,
+        "ci": [
+         -0.03591998608823375,
+         0.033223396205440396
+        ],
+        "ci_level": 0.95,
+        "se": 0.016219802724796666,
+        "df": 15.0,
+        "p": 0.9400599400599401,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.001931190892497183,
+        "ci": [
+         -0.032791786175485935,
+         0.036654167960480294
+        ],
+        "ci_level": 0.95,
+        "se": 0.016290780675675777,
+        "df": 15.0,
+        "p": 0.9140859140859141,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": -0.0014375293297739095,
+      "ci": [
+       -0.03596524980896685,
+       0.03309019114941903
+      ],
+      "ci_level": 0.95,
+      "se": 0.016199173257992854,
+      "df": 15.0,
+      "p": 0.936063936063936,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.001931190892497183,
+      "ci": [
+       -0.032791786175485935,
+       0.036654167960480294
+      ],
+      "ci_level": 0.95,
+      "se": 0.016290780675675777,
+      "df": 15.0,
+      "p": 0.913086913086913,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.05345201563189507,
+     "sesoi_metric_ci": [
+      0.04752474053300434,
+      0.0593792907307858
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.4259038314543464,
+      "added_variance": 0.04629332045904175,
+      "var_a": 0.40735716775560094,
+      "var_b": 0.42611254590686176,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.29463409125612894,
+        "added_variance": 0.02192813725131869,
+        "var_a": 0.40735716775560094,
+        "var_b": 0.42611254590686176,
+        "floored": []
+       },
+       "response": 0.024593599412667734,
+       "ci": [
+        0.020107728486216097,
+        0.02907947033911937
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.4259038314543464,
+        "added_variance": 0.04629332045904175,
+        "var_a": 0.40735716775560094,
+        "var_b": 0.42611254590686176,
+        "floored": []
+       },
+       "response": 0.05345201563189507,
+       "ci": [
+        0.04752474053300434,
+        0.0593792907307858
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.632340043056218,
+        "added_variance": 0.10416260924357798,
+        "var_a": 0.40735716775560094,
+        "var_b": 0.42611254590686176,
+        "floored": []
+       },
+       "response": 0.11199073308328292,
+       "ci": [
+        0.10065243000073583,
+        0.12332903616583
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 0.1401213610499265,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 340,
+      "n": 1000,
+      "share": 0.34,
+      "share_ci": [
+       0.3106473225011541,
+       0.3702982205027183
+      ],
+      "p": 0.34065934065934067,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 915,
+      "n": 1000,
+      "share": 0.915,
+      "share_ci": [
+       0.895968014222035,
+       0.931542721229107
+      ],
+      "p": 0.9150849150849151,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "LRRC7",
+        "PEX5L"
+       ],
+       "t": 0.1389513394528417,
+       "t_signed": 0.1389513394528417,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "LRP1B",
+        "OXR1"
+       ],
+       "t": 0.1373543531969947,
+       "t_signed": 0.1373543531969947,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "MEG3",
+        "DOCK3"
+       ],
+       "t": 0.14710025387423586,
+       "t_signed": 0.14710025387423586,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "NALF1",
+        "THRB"
+       ],
+       "t": 0.1330998468897644,
+       "t_signed": 0.1330998468897644,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "CCSER1"
+       ],
+       "t": 0.1478896433929412,
+       "t_signed": 0.1478896433929412,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "KCNMA1"
+       ],
+       "t": 0.148685253606134,
+       "t_signed": 0.148685253606134,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "IQCJ-SCHIP1",
+        "MAP2"
+       ],
+       "t": 0.14958170467372303,
+       "t_signed": 0.14958170467372303,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "ADGRL3",
+        "NBEA"
+       ],
+       "t": 0.14994917504435828,
+       "t_signed": 0.14994917504435828,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CNTNAP2",
+        "THRB"
+       ],
+       "t": 0.1522128055081662,
+       "t_signed": 0.1522128055081662,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "PTPRD",
+        "MAPK10"
+       ],
+       "t": 0.1547907952619911,
+       "t_signed": 0.1547907952619911,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": -0.3867961393018405,
+      "ci": [
+       -0.8642319639865002,
+       0.08999061943347175
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.949050949050949,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "FGF12",
+        "NCAM2"
+       ],
+       "t_signed": 3.890431800963872
+      },
+      {
+       "genes": [
+        "SNHG14",
+        "PTPRK"
+       ],
+       "t_signed": 3.312485888128535
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "NRCAM"
+       ],
+       "t_signed": 3.058802653962135
+      },
+      {
+       "genes": [
+        "PTPRK",
+        "DSCAM"
+       ],
+       "t_signed": 2.9060003388430653
+      },
+      {
+       "genes": [
+        "CELF2",
+        "ADGRL2"
+       ],
+       "t_signed": 2.5416483492918647
+      },
+      {
+       "genes": [
+        "FGF12",
+        "DMD"
+       ],
+       "t_signed": 2.5032744277301195
+      },
+      {
+       "genes": [
+        "NAV3",
+        "LRRC4C"
+       ],
+       "t_signed": 2.4810663713182204
+      },
+      {
+       "genes": [
+        "DOCK3",
+        "DCLK1"
+       ],
+       "t_signed": 2.4799726620888936
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "SLC4A10"
+       ],
+       "t_signed": 2.47969328864043
+      },
+      {
+       "genes": [
+        "OPCML",
+        "KIRREL3"
+       ],
+       "t_signed": 2.3809992080136917
+      },
+      {
+       "genes": [
+        "ANKS1B",
+        "CACNA2D3"
+       ],
+       "t_signed": 2.379656598239315
+      },
+      {
+       "genes": [
+        "AGBL4",
+        "THRB"
+       ],
+       "t_signed": 2.3712512485325226
+      },
+      {
+       "genes": [
+        "CSMD1",
+        "ERC2"
+       ],
+       "t_signed": 2.343854299638736
+      },
+      {
+       "genes": [
+        "DLGAP2",
+        "GPM6A"
+       ],
+       "t_signed": 2.327339042018224
+      },
+      {
+       "genes": [
+        "PTPRD",
+        "NCAM2"
+       ],
+       "t_signed": 2.291723274389467
+      },
+      {
+       "genes": [
+        "RALYL",
+        "PDE1A"
+       ],
+       "t_signed": 2.2836148586020117
+      },
+      {
+       "genes": [
+        "CCSER1",
+        "GRIA2"
+       ],
+       "t_signed": 2.2613125678554065
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "CACNA1C"
+       ],
+       "t_signed": 2.2347412032919487
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "LRRC4C"
+       ],
+       "t_signed": 2.1877351246536723
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "GRM7"
+       ],
+       "t_signed": 2.1782551282471805
+      },
+      {
+       "genes": [
+        "FGF12",
+        "KIRREL3"
+       ],
+       "t_signed": 2.1399456109512163
+      },
+      {
+       "genes": [
+        "SYN3",
+        "SMYD3"
+       ],
+       "t_signed": 2.108311422612759
+      },
+      {
+       "genes": [
+        "SNHG14",
+        "DCLK1"
+       ],
+       "t_signed": 2.090083437298347
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "SIPA1L1"
+       ],
+       "t_signed": 2.0201934775615347
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "SYN3"
+       ],
+       "t_signed": 2.006950470587249
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "MEG3"
+       ],
+       "t_signed": 1.9974503180634056
+      },
+      {
+       "genes": [
+        "ANK3",
+        "NBEA"
+       ],
+       "t_signed": 1.9894090865524336
+      },
+      {
+       "genes": [
+        "ROBO2",
+        "PLEKHA5"
+       ],
+       "t_signed": 1.9681472029925389
+      },
+      {
+       "genes": [
+        "CADM2",
+        "ANK3"
+       ],
+       "t_signed": 1.9471788618877377
+      },
+      {
+       "genes": [
+        "LRRTM4",
+        "ADGRL3"
+       ],
+       "t_signed": 1.9438075753678232
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "LRRC4C"
+       ],
+       "t_signed": 1.9053324670287757
+      },
+      {
+       "genes": [
+        "PDE4D",
+        "RGS7"
+       ],
+       "t_signed": 1.8803489840937226
+      },
+      {
+       "genes": [
+        "DLG2",
+        "NRCAM"
+       ],
+       "t_signed": 1.852248902817737
+      },
+      {
+       "genes": [
+        "CHRM3",
+        "KALRN"
+       ],
+       "t_signed": 1.8513090494036883
+      },
+      {
+       "genes": [
+        "CNTN1",
+        "KCTD16"
+       ],
+       "t_signed": 1.8396973728240638
+      },
+      {
+       "genes": [
+        "NBEA",
+        "NCAM2"
+       ],
+       "t_signed": 1.8103564249526631
+      },
+      {
+       "genes": [
+        "MDGA2",
+        "STXBP5L"
+       ],
+       "t_signed": 1.797184734405691
+      },
+      {
+       "genes": [
+        "GRIA2",
+        "ANK2"
+       ],
+       "t_signed": 1.779770178541643
+      },
+      {
+       "genes": [
+        "GRIN2A",
+        "DLGAP2"
+       ],
+       "t_signed": 1.7754109295448066
+      },
+      {
+       "genes": [
+        "LRRC7",
+        "GRM7"
+       ],
+       "t_signed": 1.759989271471433
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "LSAMP",
+      "KAZN"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": -0.001931190892497183,
+        "p": 0.9180819180819181,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": -0.001931190892497183,
+        "p": 0.9300699300699301,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a4",
+    "claim": {
+     "id": "A8-3a4",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "LSAMP",
+      "KAZN"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a4.json",
+    "report_sha256": "eb062d58734a4fbc691bcd05fa9a9b396061a35a49a8d8a2643d762a9724948f",
+    "seconds": 151.3,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22124% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.026726007815947535,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7492507492507493,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16683316683316685,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7592407592407593,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.18181818181818182,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(PTPRD, CNTNAP2, strength=0.311284): coupling(PTPRD, CNTNAP2, strength=0.311284) injected into A (297.6 probed counts per cell against 291.7 in B), its values move by +0.06585 against the sham (95% CI [+0.06146, +0.07023] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.06585; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.06585.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22124%; MDE 0.04754 vs the SESOI in the metric's units 0.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates); the design's floor 0.06161",
+      "flags": [
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22124% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw -0.002554 -> corrected -0.005123"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.00 vs 0.00) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(PTPRD, CNTNAP2, strength=0.311284): coupling(PTPRD, CNTNAP2, strength=0.311284) injected into A (297.6 probed counts per cell against 291.7 in B), its values move by +0.06585 against the sham (95% CI [+0.06146, +0.07023] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.06585; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.06585"
+     }
+    ],
+    "effect": {
+     "effect": -0.0051229851979706035,
+     "raw_effect": -0.0025542784273981725,
+     "ci": [
+      -0.038928233643593324,
+      0.02868226324765212
+     ],
+     "p_perm": 0.7602397602397603,
+     "p_raw": 0.8861138861138861,
+     "p_t": 0.7511476853355386,
+     "raw_detected": false,
+     "tost_equivalent": true,
+     "sesoi": 0.0658476741291236,
+     "effective_sesoi": 0.0658476741291236,
+     "sesoi_source": "declared",
+     "floor": 0.06160900431464134,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "PTPRD": 1.0,
+         "CNTNAP2": 0.99975
+        },
+        "B": {
+         "PTPRD": 0.99975,
+         "CNTNAP2": 0.999375
+        }
+       },
+       "index": {
+        "A": 4.495211068765,
+        "B": 4.526066299264788
+       },
+       "corrected": {
+        "effect": -0.0051229851979706035,
+        "ci": [
+         -0.038928233643593324,
+         0.02868226324765212
+        ],
+        "ci_level": 0.95,
+        "se": 0.015860215183627326,
+        "df": 15.0,
+        "p": 0.7352647352647352,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": -0.0025542784273981725,
+        "ci": [
+         -0.036255177144699,
+         0.031146620289902657
+        ],
+        "ci_level": 0.95,
+        "se": 0.015811258018049903,
+        "df": 15.0,
+        "p": 0.8711288711288712,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": -0.005494353367841926,
+      "ci": [
+       -0.03950903742725532,
+       0.02852033069157147
+      ],
+      "ci_level": 0.95,
+      "se": 0.01595847489342293,
+      "df": 15.0,
+      "p": 0.7372627372627373,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": -0.0025542784273981725,
+      "ci": [
+       -0.036255177144699,
+       0.031146620289902657
+      ],
+      "ci_level": 0.95,
+      "se": 0.015811258018049903,
+      "df": 15.0,
+      "p": 0.8751248751248751,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.0658476741291236,
+     "sesoi_metric_ci": [
+      0.061461661625066596,
+      0.0702336866331806
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.3112837146830736,
+      "added_variance": 0.024504432775567922,
+      "var_a": 0.18493841891713003,
+      "var_b": 0.26219297455984897,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.21478811918784219,
+        "added_variance": 0.011598505896114442,
+        "var_a": 0.18493841891713003,
+        "var_b": 0.26219297455984897,
+        "floored": []
+       },
+       "response": 0.03307152848843788,
+       "ci": [
+        0.029725087650626404,
+        0.03641796932624936
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.3112837146830736,
+        "added_variance": 0.024504432775567922,
+        "var_a": 0.18493841891713003,
+        "var_b": 0.26219297455984897,
+        "floored": []
+       },
+       "response": 0.0658476741291236,
+       "ci": [
+        0.061461661625066596,
+        0.0702336866331806
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.4643440437204538,
+        "added_variance": 0.055219177689648416,
+        "var_a": 0.18493841891713003,
+        "var_b": 0.26219297455984897,
+        "floored": []
+       },
+       "response": 0.13677340171083524,
+       "ci": [
+        0.126984935615426,
+        0.14656186780624447
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": -0.2817964334683459,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 548,
+      "n": 1000,
+      "share": 0.548,
+      "share_ci": [
+       0.5165502619406652,
+       0.5791663711238471
+      ],
+      "p": 0.5484515484515484,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 834,
+      "n": 1000,
+      "share": 0.834,
+      "share_ci": [
+       0.8094632114584783,
+       0.8565513384160113
+      ],
+      "p": 0.8341658341658341,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "SLC8A1",
+        "LSAMP"
+       ],
+       "t": -0.28249346581264334,
+       "t_signed": 0.28249346581264334,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "ADGRL3",
+        "GRIN2A"
+       ],
+       "t": -0.2836877518508504,
+       "t_signed": 0.2836877518508504,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "KALRN"
+       ],
+       "t": -0.2784935427350521,
+       "t_signed": 0.2784935427350521,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "OXR1",
+        "LINGO2"
+       ],
+       "t": -0.2721902568965327,
+       "t_signed": 0.2721902568965327,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "NLGN1"
+       ],
+       "t": -0.27185627679701563,
+       "t_signed": 0.27185627679701563,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "ADGRL3",
+        "PHACTR1"
+       ],
+       "t": -0.29364645214941176,
+       "t_signed": 0.29364645214941176,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "CNTN5"
+       ],
+       "t": -0.2981233160605132,
+       "t_signed": 0.2981233160605132,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "SNTG1",
+        "IQCJ-SCHIP1"
+       ],
+       "t": -0.2993998903809356,
+       "t_signed": 0.2993998903809356,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "ADGRL3",
+        "MDGA2"
+       ],
+       "t": -0.3011223545433085,
+       "t_signed": 0.3011223545433085,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "STXBP5L",
+        "CNTN5"
+       ],
+       "t": -0.2612391354403091,
+       "t_signed": 0.2612391354403091,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": 0.40136942790418284,
+      "ci": [
+       -0.1993115717022227,
+       0.9696063039948482
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.1008991008991009,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "CNTN5",
+        "ANKS1B"
+       ],
+       "t_signed": 6.9597245238721115
+      },
+      {
+       "genes": [
+        "SYT1",
+        "NRXN1"
+       ],
+       "t_signed": 6.037779350218613
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "FGF14"
+       ],
+       "t_signed": 5.492774580142394
+      },
+      {
+       "genes": [
+        "CADM2",
+        "ADGRB3"
+       ],
+       "t_signed": 5.346127723695822
+      },
+      {
+       "genes": [
+        "CADM2",
+        "PCDH9"
+       ],
+       "t_signed": 5.1819951834318
+      },
+      {
+       "genes": [
+        "KCNIP4",
+        "CADM2"
+       ],
+       "t_signed": 4.85981578277835
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "PCDH7"
+       ],
+       "t_signed": 4.795211227494166
+      },
+      {
+       "genes": [
+        "CADM2",
+        "SYT1"
+       ],
+       "t_signed": 4.521414350081946
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "ANK2"
+       ],
+       "t_signed": 4.325688136772375
+      },
+      {
+       "genes": [
+        "NRXN3",
+        "NEGR1"
+       ],
+       "t_signed": 4.293418827151517
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "CADM2"
+       ],
+       "t_signed": 4.165242079414176
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "NRXN1"
+       ],
+       "t_signed": 4.076624690214913
+      },
+      {
+       "genes": [
+        "MEG3",
+        "TENM2"
+       ],
+       "t_signed": 3.997089545068073
+      },
+      {
+       "genes": [
+        "NRG3",
+        "RBFOX1"
+       ],
+       "t_signed": 3.9089452990389493
+      },
+      {
+       "genes": [
+        "PPP2R2B",
+        "RGS7"
+       ],
+       "t_signed": 3.8996037351304946
+      },
+      {
+       "genes": [
+        "RBFOX1",
+        "CSMD3"
+       ],
+       "t_signed": 3.8989044841826526
+      },
+      {
+       "genes": [
+        "SYT1",
+        "CNTN1"
+       ],
+       "t_signed": 3.767891595780661
+      },
+      {
+       "genes": [
+        "RBFOX1",
+        "NKAIN2"
+       ],
+       "t_signed": 3.7279027035688848
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "RALYL"
+       ],
+       "t_signed": 3.6338156752545663
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "FRMD4A"
+       ],
+       "t_signed": 3.624204940161696
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "KCNQ5"
+       ],
+       "t_signed": 3.5629963860440625
+      },
+      {
+       "genes": [
+        "PDE4D",
+        "PLCB1"
+       ],
+       "t_signed": 3.529172317627043
+      },
+      {
+       "genes": [
+        "RORA",
+        "ANKS1B"
+       ],
+       "t_signed": 3.5063419005077083
+      },
+      {
+       "genes": [
+        "RBFOX1",
+        "MDGA2"
+       ],
+       "t_signed": 3.447081047139048
+      },
+      {
+       "genes": [
+        "SNTG1",
+        "ANKS1B"
+       ],
+       "t_signed": 3.4427721532422195
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "FRMD4A"
+       ],
+       "t_signed": 3.3993544615449482
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "PCDH9"
+       ],
+       "t_signed": 3.3761266673650328
+      },
+      {
+       "genes": [
+        "SYT1",
+        "RBFOX1"
+       ],
+       "t_signed": 3.3257619208621323
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "FRMPD4"
+       ],
+       "t_signed": 3.305452076380564
+      },
+      {
+       "genes": [
+        "CSMD1",
+        "AGBL4"
+       ],
+       "t_signed": 3.292321638502973
+      },
+      {
+       "genes": [
+        "PHACTR1",
+        "SNHG14"
+       ],
+       "t_signed": 3.2728628075420594
+      },
+      {
+       "genes": [
+        "MDGA2",
+        "NRXN1"
+       ],
+       "t_signed": 3.2545979493076
+      },
+      {
+       "genes": [
+        "OXR1",
+        "RIMS2"
+       ],
+       "t_signed": 3.2380134900045823
+      },
+      {
+       "genes": [
+        "PDE4D",
+        "NRXN1"
+       ],
+       "t_signed": 3.198623309941518
+      },
+      {
+       "genes": [
+        "SYT1",
+        "GRIN2A"
+       ],
+       "t_signed": 3.1657123521796144
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "PPP2R2B"
+       ],
+       "t_signed": 3.143784688316218
+      },
+      {
+       "genes": [
+        "PPP3CA",
+        "ADGRB3"
+       ],
+       "t_signed": 3.1329477849214182
+      },
+      {
+       "genes": [
+        "NALF1",
+        "PLCB1"
+       ],
+       "t_signed": 3.0587913469611876
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "RGS7"
+       ],
+       "t_signed": 2.9933362228826637
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "NRXN1"
+       ],
+       "t_signed": 2.92012992990123
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "PTPRD",
+      "CNTNAP2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": 0.0025542784273981725,
+        "p": 0.8761238761238761,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": 0.0025542784273981725,
+        "p": 0.8701298701298701,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a5",
+    "claim": {
+     "id": "A8-3a5",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "PTPRD",
+      "CNTNAP2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a5.json",
+    "report_sha256": "ea794d8af6409dc504d4ab1427ee17387cb07b7aaccc8ad525fd09c126a7efa8",
+    "seconds": 150.8,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22124% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.0329238370645618,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7412587412587412,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16383616383616384,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7292707292707292,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.15584415584415584,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within \u00b10.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(LRRTM4, ADGRL3, strength=0.282254): coupling(LRRTM4, ADGRL3, strength=0.282254) injected into A (225 probed counts per cell against 224.6 in B), its values move by +0.0599 against the sham (95% CI [+0.05589, +0.06391] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.0599; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.0599.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127%; MDE 0.03366 vs the SESOI in the metric's units 0.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates); the design's floor 0.04362",
+      "flags": [
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within \u00b10.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.02463 -> corrected +0.02103"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.00 vs 0.00) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(LRRTM4, ADGRL3, strength=0.282254): coupling(LRRTM4, ADGRL3, strength=0.282254) injected into A (225 probed counts per cell against 224.6 in B), its values move by +0.0599 against the sham (95% CI [+0.05589, +0.06391] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.0599; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.0599"
+     }
+    ],
+    "effect": {
+     "effect": 0.02102689510828206,
+     "raw_effect": 0.024627819666031912,
+     "ci": [
+      -0.0029073014703279443,
+      0.044961091686892066
+     ],
+     "p_perm": 0.07992007992007992,
+     "p_raw": 0.04595404595404595,
+     "p_t": 0.08075654613823446,
+     "raw_detected": true,
+     "tost_equivalent": true,
+     "sesoi": 0.0599005400896533,
+     "effective_sesoi": 0.0599005400896533,
+     "sesoi_source": "declared",
+     "floor": 0.043619322089910324,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "LRRTM4": 0.9995,
+         "ADGRL3": 0.999625
+        },
+        "B": {
+         "LRRTM4": 0.99975,
+         "ADGRL3": 0.9995
+        }
+       },
+       "index": {
+        "A": 4.28371586324399,
+        "B": 4.341353181957922
+       },
+       "corrected": {
+        "effect": 0.02102689510828206,
+        "ci": [
+         -0.0029073014703279443,
+         0.044961091686892066
+        ],
+        "ci_level": 0.95,
+        "se": 0.011229070201764613,
+        "df": 15.0,
+        "p": 0.07592407592407592,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.024627819666031912,
+        "ci": [
+         0.000648914610015823,
+         0.048606724722048
+        ],
+        "ci_level": 0.95,
+        "se": 0.011250045822557148,
+        "df": 15.0,
+        "p": 0.056943056943056944,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.020800707679285154,
+      "ci": [
+       -0.003367069094836944,
+       0.04496848445340725
+      ],
+      "ci_level": 0.95,
+      "se": 0.011338657686956879,
+      "df": 15.0,
+      "p": 0.07892107892107893,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.024627819666031912,
+      "ci": [
+       0.000648914610015823,
+       0.048606724722048
+      ],
+      "ci_level": 0.95,
+      "se": 0.011250045822557148,
+      "df": 15.0,
+      "p": 0.052947052947052944,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.0599005400896533,
+     "sesoi_metric_ci": [
+      0.055893338383075974,
+      0.06390774179623063
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.28225406033257083,
+      "added_variance": 0.02010767177079594,
+      "var_a": 0.18939201132030342,
+      "var_b": 0.1728847271085136,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.19473147247368527,
+        "added_variance": 0.009524191494293253,
+        "var_a": 0.18939201132030342,
+        "var_b": 0.1728847271085136,
+        "floored": []
+       },
+       "response": 0.027925677723536654,
+       "ci": [
+        0.024194214387857054,
+        0.03165714105921625
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.28225406033257083,
+        "added_variance": 0.02010767177079594,
+        "var_a": 0.18939201132030342,
+        "var_b": 0.1728847271085136,
+        "floored": []
+       },
+       "response": 0.0599005400896533,
+       "ci": [
+        0.055893338383075974,
+        0.06390774179623063
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.42115101371164676,
+        "added_variance": 0.045246965495461824,
+        "var_a": 0.18939201132030342,
+        "var_b": 0.1728847271085136,
+        "floored": []
+       },
+       "response": 0.1270624617301196,
+       "ci": [
+        0.11996665338879293,
+        0.13415827007144626
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 1.9438075753678232,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 20,
+      "n": 1000,
+      "share": 0.02,
+      "share_ci": [
+       0.012258267972811154,
+       0.03072003268289336
+      ],
+      "p": 0.02097902097902098,
+      "outcome": "specific"
+     },
+     "absolute": {
+      "k": 114,
+      "n": 1000,
+      "share": 0.114,
+      "share_ci": [
+       0.09496128197361031,
+       0.1353439130712104
+      ],
+      "p": 0.11488511488511488,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "STXBP5L",
+        "RALYL"
+       ],
+       "t": 1.954309529140842,
+       "t_signed": 1.954309529140842,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "HS6ST3",
+        "CTNND2"
+       ],
+       "t": 1.9110224077329767,
+       "t_signed": 1.9110224077329767,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "GRIA2",
+        "CNTNAP2"
+       ],
+       "t": 1.9044698727728617,
+       "t_signed": 1.9044698727728617,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "ANK3"
+       ],
+       "t": 1.8519769944981919,
+       "t_signed": 1.8519769944981919,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "DSCAM",
+        "ERC2"
+       ],
+       "t": 1.8511631596662377,
+       "t_signed": 1.8511631596662377,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "NLGN1",
+        "PDE1A"
+       ],
+       "t": 1.8381143433097662,
+       "t_signed": 1.8381143433097662,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "PTPRD",
+        "MEG3"
+       ],
+       "t": 2.055408656547177,
+       "t_signed": 2.055408656547177,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "DOCK3",
+        "RALYL"
+       ],
+       "t": 1.815942453514664,
+       "t_signed": 1.815942453514664,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "RYR2",
+        "MEG3"
+       ],
+       "t": 1.8131328877742348,
+       "t_signed": 1.8131328877742348,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "CHRM3",
+        "ATRNL1"
+       ],
+       "t": 1.8061071344821122,
+       "t_signed": 1.8061071344821122,
+       "at_least_as_far": false
+      }
+     ],
+     "shift": {
+      "median_t": -0.3698346543106632,
+      "ci": [
+       -0.9059836028756963,
+       0.12749476782259517
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.926073926073926,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "FGF12",
+        "NCAM2"
+       ],
+       "t_signed": 3.890431800963872
+      },
+      {
+       "genes": [
+        "KALRN",
+        "DOCK3"
+       ],
+       "t_signed": 3.6611792565949925
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "ANK3"
+       ],
+       "t_signed": 3.5288371509846983
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "MACROD2"
+       ],
+       "t_signed": 3.5035754707078692
+      },
+      {
+       "genes": [
+        "HS6ST3",
+        "LRFN5"
+       ],
+       "t_signed": 3.0839473447386494
+      },
+      {
+       "genes": [
+        "DSCAM",
+        "PTPRK"
+       ],
+       "t_signed": 2.9060003388430666
+      },
+      {
+       "genes": [
+        "MEG3",
+        "RORA"
+       ],
+       "t_signed": 2.8621793656511807
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "SYN3"
+       ],
+       "t_signed": 2.860492689267075
+      },
+      {
+       "genes": [
+        "ANK3",
+        "KHDRBS2"
+       ],
+       "t_signed": 2.758092893802877
+      },
+      {
+       "genes": [
+        "MEG3",
+        "ANKS1B"
+       ],
+       "t_signed": 2.7157815351453283
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "DSCAM"
+       ],
+       "t_signed": 2.639473339979556
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "STXBP5L"
+       ],
+       "t_signed": 2.381833292884739
+      },
+      {
+       "genes": [
+        "GPM6A",
+        "AGBL4"
+       ],
+       "t_signed": 2.364250155738338
+      },
+      {
+       "genes": [
+        "CSMD1",
+        "ERC2"
+       ],
+       "t_signed": 2.343854299638736
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "GPM6A"
+       ],
+       "t_signed": 2.252688794665293
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "NRXN1"
+       ],
+       "t_signed": 2.13343087551781
+      },
+      {
+       "genes": [
+        "PTPRD",
+        "ANK3"
+       ],
+       "t_signed": 2.0892010459201154
+      },
+      {
+       "genes": [
+        "ATRNL1",
+        "SYN3"
+       ],
+       "t_signed": 2.082176424661075
+      },
+      {
+       "genes": [
+        "PTPRD",
+        "MEG3"
+       ],
+       "t_signed": 2.055408656547177
+      },
+      {
+       "genes": [
+        "STXBP5L",
+        "RALYL"
+       ],
+       "t_signed": 1.954309529140842
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "LRRTM4",
+      "ADGRL3"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": -0.024627819666031912,
+        "p": 0.04295704295704296,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": -0.024627819666031912,
+        "p": 0.03796203796203796,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a6",
+    "claim": {
+     "id": "A8-3a6",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "LRRTM4",
+      "ADGRL3"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a6.json",
+    "report_sha256": "88e80374bab6d2d9bdb6a0188a827850a197602ee528696fd376cca8d16476dd",
+    "seconds": 150.7,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within \u00b10.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.02995027004482665,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7392607392607392,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.17582417582417584,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7262737262737263,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16883116883116883,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "NO DETECTABLE EFFECT",
+    "cause": "no_detectable_effect",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(NKAIN2, MDGA2, strength=0.315443): coupling(NKAIN2, MDGA2, strength=0.315443) injected into B (135.3 probed counts per cell against 132.8 in A), its values move by +0.06701 against the sham (95% CI [+0.0624, +0.07162] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by -0.06701; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.06701.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22129%; MDE 0.04053 vs the SESOI in the metric's units 0.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates); the design's floor 0.05252",
+      "flags": [
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "NO_DETECTABLE_EFFECT",
+      "reason": "effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22129% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw +0.01852 -> corrected +0.01287"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.01 vs 0.01) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(NKAIN2, MDGA2, strength=0.315443): coupling(NKAIN2, MDGA2, strength=0.315443) injected into B (135.3 probed counts per cell against 132.8 in A), its values move by +0.06701 against the sham (95% CI [+0.0624, +0.07162] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by -0.06701; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.06701"
+     }
+    ],
+    "effect": {
+     "effect": 0.012870158698401087,
+     "raw_effect": 0.018516353299899094,
+     "ci": [
+      -0.015948218119567814,
+      0.04168853551636999
+     ],
+     "p_perm": 0.37162837162837165,
+     "p_raw": 0.1878121878121878,
+     "p_t": 0.3562375158664579,
+     "raw_detected": false,
+     "tost_equivalent": true,
+     "sesoi": 0.06701236379149698,
+     "effective_sesoi": 0.06701236379149698,
+     "sesoi_source": "declared",
+     "floor": 0.05252058728617637,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "NKAIN2": 0.99425,
+         "MDGA2": 0.9981249999999999
+        },
+        "B": {
+         "NKAIN2": 0.9940787914691943,
+         "MDGA2": 0.997875
+        }
+       },
+       "index": {
+        "A": 3.688973795830463,
+        "B": 3.754291677395634
+       },
+       "corrected": {
+        "effect": 0.012870158698401087,
+        "ci": [
+         -0.015948218119567814,
+         0.04168853551636999
+        ],
+        "ci_level": 0.95,
+        "se": 0.013520553126862978,
+        "df": 15.0,
+        "p": 0.32967032967032966,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.018516353299899094,
+        "ci": [
+         -0.010245651254808533,
+         0.047278357854606726
+        ],
+        "ci_level": 0.95,
+        "se": 0.01349410527433055,
+        "df": 15.0,
+        "p": 0.2007992007992008,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": 0.013720036571666469,
+      "ci": [
+       -0.015537374894693944,
+       0.04297744803802688
+      ],
+      "ci_level": 0.95,
+      "se": 0.013726532503342288,
+      "df": 15.0,
+      "p": 0.33666333666333664,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.018516353299899094,
+      "ci": [
+       -0.010245651254808533,
+       0.047278357854606726
+      ],
+      "ci_level": 0.95,
+      "se": 0.01349410527433055,
+      "df": 15.0,
+      "p": 0.1968031968031968,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.06701236379149698,
+     "sesoi_metric_ci": [
+      0.0624032720611103,
+      0.07162145552188368
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.3154425739065452,
+      "added_variance": 0.025170961755270622,
+      "var_a": 0.26309195504003524,
+      "var_b": 0.1946205128918817,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.21769458634238037,
+        "added_variance": 0.01191630510842867,
+        "var_a": 0.26309195504003524,
+        "var_b": 0.1946205128918817,
+        "floored": []
+       },
+       "response": 0.03219224978120726,
+       "ci": [
+        0.027139682312860056,
+        0.03724481724955446
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.3154425739065452,
+        "added_variance": 0.025170961755270622,
+        "var_a": 0.26309195504003524,
+        "var_b": 0.1946205128918817,
+        "floored": []
+       },
+       "response": 0.06701236379149698,
+       "ci": [
+        0.0624032720611103,
+        0.07162145552188368
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.4703923954209337,
+        "added_variance": 0.0566991289943425,
+        "var_a": 0.26309195504003524,
+        "var_b": 0.1946205128918817,
+        "floored": []
+       },
+       "response": 0.13269117657711382,
+       "ci": [
+        0.12568865869828388,
+        0.13969369445594376
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 1.2358978111051275,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 91,
+      "n": 1000,
+      "share": 0.091,
+      "share_ci": [
+       0.07389912994267434,
+       0.11055149410231024
+      ],
+      "p": 0.0919080919080919,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 271,
+      "n": 1000,
+      "share": 0.271,
+      "share_ci": [
+       0.2436592375656801,
+       0.2996959955148668
+      ],
+      "p": 0.27172827172827174,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "PLCB1",
+        "RGS7"
+       ],
+       "t": 1.2187967714143235,
+       "t_signed": 1.2187967714143235,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "FGF12",
+        "RGS7"
+       ],
+       "t": 1.2597569199418444,
+       "t_signed": 1.2597569199418444,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "PTPRK",
+        "PEX5L"
+       ],
+       "t": 1.2643659399689482,
+       "t_signed": 1.2643659399689482,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "MAGI2",
+        "GPM6A"
+       ],
+       "t": 1.2053245118679112,
+       "t_signed": 1.2053245118679112,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "ANK3",
+        "CSMD3"
+       ],
+       "t": 1.2717653484093254,
+       "t_signed": 1.2717653484093254,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "PTPRN2"
+       ],
+       "t": 1.1997099224773178,
+       "t_signed": 1.1997099224773178,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "NAV3",
+        "GRIK2"
+       ],
+       "t": 1.19813719516829,
+       "t_signed": 1.19813719516829,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "DCLK1"
+       ],
+       "t": 1.198077730052982,
+       "t_signed": 1.198077730052982,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "DGKB",
+        "KIRREL3"
+       ],
+       "t": 1.1956340392323934,
+       "t_signed": 1.1956340392323934,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "LSAMP",
+        "UNC5D"
+       ],
+       "t": 1.277260969303865,
+       "t_signed": 1.277260969303865,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": -0.2730031559179543,
+      "ci": [
+       -0.7255158367467474,
+       0.15247403898628242
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.8601398601398601,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "MAPK10",
+        "NRCAM"
+       ],
+       "t_signed": 4.727121558900741
+      },
+      {
+       "genes": [
+        "GPM6A",
+        "HECW1"
+       ],
+       "t_signed": 3.034153975375524
+      },
+      {
+       "genes": [
+        "GRIN2A",
+        "SYN3"
+       ],
+       "t_signed": 2.911688883287672
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "ANK2"
+       ],
+       "t_signed": 2.8614162228579927
+      },
+      {
+       "genes": [
+        "NBEA",
+        "LRRC4C"
+       ],
+       "t_signed": 2.8526444648483102
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "KIRREL3"
+       ],
+       "t_signed": 2.8132265066581303
+      },
+      {
+       "genes": [
+        "ANK3",
+        "KHDRBS2"
+       ],
+       "t_signed": 2.758092893802877
+      },
+      {
+       "genes": [
+        "CACNA2D3",
+        "ADGRL2"
+       ],
+       "t_signed": 2.749203982068152
+      },
+      {
+       "genes": [
+        "LDB2",
+        "RGS7"
+       ],
+       "t_signed": 2.495929497438815
+      },
+      {
+       "genes": [
+        "CNTN5",
+        "GRIA2"
+       ],
+       "t_signed": 2.4607393708202325
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "LRRC4C"
+       ],
+       "t_signed": 2.3748846275919537
+      },
+      {
+       "genes": [
+        "DSCAM",
+        "PEX5L"
+       ],
+       "t_signed": 2.3383902900520237
+      },
+      {
+       "genes": [
+        "PCDH9",
+        "NRCAM"
+       ],
+       "t_signed": 2.3329853129689804
+      },
+      {
+       "genes": [
+        "MAPK10",
+        "MAP2"
+       ],
+       "t_signed": 2.3120944667573227
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "AGBL4"
+       ],
+       "t_signed": 2.268098098009693
+      },
+      {
+       "genes": [
+        "LRFN5",
+        "KIRREL3"
+       ],
+       "t_signed": 2.2560931947890075
+      },
+      {
+       "genes": [
+        "PCDH7",
+        "KIRREL3"
+       ],
+       "t_signed": 2.2194633401285695
+      },
+      {
+       "genes": [
+        "FRMPD4",
+        "KIRREL3"
+       ],
+       "t_signed": 2.2135425330935763
+      },
+      {
+       "genes": [
+        "CELF2",
+        "DLGAP2"
+       ],
+       "t_signed": 2.198648162604757
+      },
+      {
+       "genes": [
+        "PHACTR1",
+        "MYT1L"
+       ],
+       "t_signed": 2.1132454243276064
+      },
+      {
+       "genes": [
+        "SYN3",
+        "SMYD3"
+       ],
+       "t_signed": 2.108311422612759
+      },
+      {
+       "genes": [
+        "FRMD4A",
+        "DCLK1"
+       ],
+       "t_signed": 2.1026104081708663
+      },
+      {
+       "genes": [
+        "RGS7",
+        "KIRREL3"
+       ],
+       "t_signed": 2.048977987832102
+      },
+      {
+       "genes": [
+        "PPFIA2",
+        "TAFA2"
+       ],
+       "t_signed": 1.99170440887379
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "MSRA"
+       ],
+       "t_signed": 1.9519898138921368
+      },
+      {
+       "genes": [
+        "FGF14",
+        "DLGAP2"
+       ],
+       "t_signed": 1.9163080365023788
+      },
+      {
+       "genes": [
+        "KCNMA1",
+        "CADPS"
+       ],
+       "t_signed": 1.9109809356352465
+      },
+      {
+       "genes": [
+        "ADGRB3",
+        "LRRC4C"
+       ],
+       "t_signed": 1.9053324670287757
+      },
+      {
+       "genes": [
+        "DSCAM",
+        "RAPGEF5"
+       ],
+       "t_signed": 1.8952079420894299
+      },
+      {
+       "genes": [
+        "MEG3",
+        "THRB"
+       ],
+       "t_signed": 1.8656362048979016
+      },
+      {
+       "genes": [
+        "KHDRBS3",
+        "RAPGEF5"
+       ],
+       "t_signed": 1.8447497323903268
+      },
+      {
+       "genes": [
+        "PDE1A",
+        "PTPRN2"
+       ],
+       "t_signed": 1.8420004057993724
+      },
+      {
+       "genes": [
+        "GRM5",
+        "KIRREL3"
+       ],
+       "t_signed": 1.8261035299540895
+      },
+      {
+       "genes": [
+        "DLG2",
+        "MSRA"
+       ],
+       "t_signed": 1.7926602056258374
+      },
+      {
+       "genes": [
+        "PDE1A",
+        "CAMK1D"
+       ],
+       "t_signed": 1.7915327694277707
+      },
+      {
+       "genes": [
+        "FGF14",
+        "STXBP5L"
+       ],
+       "t_signed": 1.7641213010907264
+      },
+      {
+       "genes": [
+        "NCAM2",
+        "CNTN1"
+       ],
+       "t_signed": 1.7497382170701894
+      },
+      {
+       "genes": [
+        "NALF1",
+        "NRCAM"
+       ],
+       "t_signed": 1.741842936238535
+      },
+      {
+       "genes": [
+        "DMD",
+        "ADGRL2"
+       ],
+       "t_signed": 1.7403169340783742
+      },
+      {
+       "genes": [
+        "CTNNA2",
+        "RGS7"
+       ],
+       "t_signed": 1.7390284337492083
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "NKAIN2",
+      "MDGA2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": -0.018516353299899094,
+        "p": 0.1848151848151848,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": -0.018516353299899094,
+        "p": 0.18581418581418582,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a7",
+    "claim": {
+     "id": "A8-3a7",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "NKAIN2",
+      "MDGA2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a7.json",
+    "report_sha256": "4b129ca9a37b20cea965b08335fa334e7788ddcd16acd478bad6c49608d9573c",
+    "seconds": 149.7,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "NO_DETECTABLE_EFFECT",
+     "effect_reason": "effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within \u00b10.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST)",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22129% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.03350618189574849,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7412587412587412,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.14685314685314685,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7292707292707292,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.15084915084915085,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   },
+   {
+    "verdict": "INCONCLUSIVE \u2014 effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within \u00b10.05599 [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+    "label": "INCONCLUSIVE",
+    "cause": "effect_inconclusive",
+    "fields": {
+     "metric_validity": {
+      "status": "PASS",
+      "reason": "no nuisance bias; responds to coupling(CNTN5, TAFA2, strength=0.439858): coupling(CNTN5, TAFA2, strength=0.439858) injected into B (96.81 probed counts per cell against 94.76 in A), its values move by +0.05599 against the sham (95% CI [+0.05086, +0.06113] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by -0.05599; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05599.",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22125%; MDE 0.08729 vs the SESOI in the metric's units 0.05599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05086, +0.06113] over the replicates); the design's floor 0.1131: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+      "flags": [
+       "UNDERPOWERED",
+       "SESOI_BELOW_FLOOR",
+       "ATTENUATION"
+      ]
+     },
+     "effect": {
+      "status": "INCONCLUSIVE",
+      "reason": "effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within \u00b10.05599",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22125% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 2,
+      "name": "Estimand-dependent correction",
+      "status": "PASS",
+      "message": "depth_thinning: raw -0.009087 -> corrected -0.01174"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.09 vs 0.10) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(CNTN5, TAFA2, strength=0.439858): coupling(CNTN5, TAFA2, strength=0.439858) injected into B (96.81 probed counts per cell against 94.76 in A), its values move by +0.05599 against the sham (95% CI [+0.05086, +0.06113] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by -0.05599; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05599"
+     }
+    ],
+    "effect": {
+     "effect": -0.011743846432340624,
+     "raw_effect": -0.009086658999724963,
+     "ci": [
+      -0.07380618993156443,
+      0.05031849706688318
+     ],
+     "p_perm": 0.6853146853146853,
+     "p_raw": 0.7632367632367633,
+     "p_t": 0.6923983939643348,
+     "raw_detected": false,
+     "tost_equivalent": false,
+     "sesoi": 0.05599373417285648,
+     "effective_sesoi": 0.05599373417285648,
+     "sesoi_source": "declared",
+     "floor": 0.11310667320108195,
+     "tier": "permutation",
+     "test": "monte-carlo permutation over replicates (n=1000)",
+     "n_replicates": {
+      "pairs": 16
+     },
+     "estimate_over": "the domain's cell types, equally weighted",
+     "detected_only_after_correction": false,
+     "explained_by_depth": false
+    },
+    "domain": {
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "empty": false,
+     "n_units": 16,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "CNTN5": 0.9425,
+         "TAFA2": 0.9664999999999999
+        },
+        "B": {
+         "CNTN5": 0.9344727488151658,
+         "TAFA2": 0.9641439573459716
+        }
+       },
+       "index": {
+        "A": 3.2908208497301783,
+        "B": 3.368398769344303
+       },
+       "corrected": {
+        "effect": -0.011743846432340624,
+        "ci": [
+         -0.07380618993156443,
+         0.05031849706688318
+        ],
+        "ci_level": 0.95,
+        "se": 0.029117434953368587,
+        "df": 15.0,
+        "p": 0.6653346653346653,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": -0.009086658999724963,
+        "ci": [
+         -0.07130498132136324,
+         0.05313166332191331
+        ],
+        "ci_level": 0.95,
+        "se": 0.029190614645911345,
+        "df": 15.0,
+        "p": 0.7722277722277723,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "mixture": {
+     "corrected": {
+      "effect": -0.012480348222012407,
+      "ci": [
+       -0.07416018201265792,
+       0.049199485568633114
+      ],
+      "ci_level": 0.95,
+      "se": 0.028937975059806886,
+      "df": 15.0,
+      "p": 0.6703296703296703,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": -0.009086658999724963,
+      "ci": [
+       -0.07130498132136324,
+       0.05313166332191331
+      ],
+      "ci_level": 0.95,
+      "se": 0.029190614645911345,
+      "df": 15.0,
+      "p": 0.7662337662337663,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     }
+    },
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.05599373417285648,
+     "sesoi_metric_ci": [
+      0.05085958325213771,
+      0.06112788509357525
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.4398579522698256,
+      "added_variance": 0.049437961192275046,
+      "var_a": 0.5101797615604422,
+      "var_b": 0.3873087513361438,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.3043062735063109,
+        "added_variance": 0.023406855357516368,
+        "var_a": 0.5101797615604422,
+        "var_b": 0.3873087513361438,
+        "floored": []
+       },
+       "response": 0.02862342988676979,
+       "ci": [
+        0.02451619109855381,
+        0.032730668674985766
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.4398579522698256,
+        "added_variance": 0.049437961192275046,
+        "var_a": 0.5101797615604422,
+        "var_b": 0.3873087513361438,
+        "floored": []
+       },
+       "response": 0.05599373417285648,
+       "ci": [
+        0.05085958325213771,
+        0.06112788509357525
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.6530324575137503,
+        "added_variance": 0.11134116105152944,
+        "var_a": 0.5101797615604422,
+        "var_b": 0.3873087513361438,
+        "floored": []
+       },
+       "response": 0.11506572698499609,
+       "ci": [
+        0.10553276313787859,
+        0.1245986908321136
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": -0.33383338165492576,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 446,
+      "n": 1000,
+      "share": 0.446,
+      "share_ci": [
+       0.4148893786591543,
+       0.4774294172880218
+      ],
+      "p": 0.44655344655344653,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 792,
+      "n": 1000,
+      "share": 0.792,
+      "share_ci": [
+       0.7655014748720532,
+       0.8167666804260989
+      ],
+      "p": 0.7922077922077922,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "IL1RAPL1",
+        "EFNA5"
+       ],
+       "t": -0.3329518848305814,
+       "t_signed": 0.3329518848305814,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "PEX5L",
+        "GRM7"
+       ],
+       "t": -0.3354210234113117,
+       "t_signed": 0.3354210234113117,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "MARCHF1",
+        "LINC03051"
+       ],
+       "t": -0.3365064557959391,
+       "t_signed": 0.3365064557959391,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CCSER1",
+        "NBEA"
+       ],
+       "t": -0.32840625819599123,
+       "t_signed": 0.32840625819599123,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "RIMS2"
+       ],
+       "t": -0.3405272215263401,
+       "t_signed": 0.3405272215263401,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "EFNA5"
+       ],
+       "t": -0.32490659381697085,
+       "t_signed": 0.32490659381697085,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "PEX5L",
+        "LRRC4C"
+       ],
+       "t": -0.3433616625609223,
+       "t_signed": 0.3433616625609223,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "CDH12",
+        "TMEM178B"
+       ],
+       "t": -0.32379677706244553,
+       "t_signed": 0.32379677706244553,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "FGF12",
+        "DOCK3"
+       ],
+       "t": -0.34748264345841806,
+       "t_signed": 0.34748264345841806,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "PDZD2",
+        "GRIK2"
+       ],
+       "t": -0.3497054899042275,
+       "t_signed": 0.3497054899042275,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": 0.1337683874588083,
+      "ci": [
+       -0.19760445805511728,
+       0.45602613260693825
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.23376623376623376,
+      "method": "monte-carlo",
+      "n_relabelings": 1000,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 35465,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "PPP2R2B",
+        "RGS7"
+       ],
+       "t_signed": 3.8996037351304946
+      },
+      {
+       "genes": [
+        "PTPRK",
+        "CNTNAP5"
+       ],
+       "t_signed": 3.537769477965925
+      },
+      {
+       "genes": [
+        "DAB1",
+        "LINC03051"
+       ],
+       "t_signed": 3.2800238269082773
+      },
+      {
+       "genes": [
+        "CADPS2",
+        "RGS7"
+       ],
+       "t_signed": 3.190218628277079
+      },
+      {
+       "genes": [
+        "LDB2",
+        "GPHN"
+       ],
+       "t_signed": 3.119199252879676
+      },
+      {
+       "genes": [
+        "R3HDM1",
+        "DOCK3"
+       ],
+       "t_signed": 3.0915364163618784
+      },
+      {
+       "genes": [
+        "PLEKHA5",
+        "KCNH1"
+       ],
+       "t_signed": 3.0903222648679134
+      },
+      {
+       "genes": [
+        "LDB2",
+        "IL1RAPL1"
+       ],
+       "t_signed": 2.856084878805308
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "FGF12"
+       ],
+       "t_signed": 2.8453844729033517
+      },
+      {
+       "genes": [
+        "DCLK1",
+        "LRFN5"
+       ],
+       "t_signed": 2.808634839058538
+      },
+      {
+       "genes": [
+        "SYN3",
+        "GPHN"
+       ],
+       "t_signed": 2.8046953768261362
+      },
+      {
+       "genes": [
+        "SMYD3",
+        "RIMS2"
+       ],
+       "t_signed": 2.8042622599914444
+      },
+      {
+       "genes": [
+        "SLC4A10",
+        "ARHGAP26"
+       ],
+       "t_signed": 2.7928509330014766
+      },
+      {
+       "genes": [
+        "FTX",
+        "CDH12"
+       ],
+       "t_signed": 2.736590368247496
+      },
+      {
+       "genes": [
+        "PLEKHA5",
+        "GPHN"
+       ],
+       "t_signed": 2.7098845952269417
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "RIMS2"
+       ],
+       "t_signed": 2.6725478519694787
+      },
+      {
+       "genes": [
+        "LRRC4C",
+        "TMEM132D"
+       ],
+       "t_signed": 2.6674460078514324
+      },
+      {
+       "genes": [
+        "PPP3CA",
+        "ARHGAP26"
+       ],
+       "t_signed": 2.649920257343989
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "KHDRBS2"
+       ],
+       "t_signed": 2.5546113488290074
+      },
+      {
+       "genes": [
+        "RIMS2",
+        "RGS7"
+       ],
+       "t_signed": 2.5384795256397643
+      },
+      {
+       "genes": [
+        "GRIA2",
+        "TMEM178B"
+       ],
+       "t_signed": 2.5101488502460385
+      },
+      {
+       "genes": [
+        "PLCB1",
+        "PPP3CA"
+       ],
+       "t_signed": 2.490355675232156
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "CHSY3"
+       ],
+       "t_signed": 2.4831099894164517
+      },
+      {
+       "genes": [
+        "PDZD2",
+        "RAPGEF5"
+       ],
+       "t_signed": 2.4756630007520206
+      },
+      {
+       "genes": [
+        "CTNND2",
+        "JMJD1C"
+       ],
+       "t_signed": 2.465189943728917
+      },
+      {
+       "genes": [
+        "DGKB",
+        "GPHN"
+       ],
+       "t_signed": 2.444773724408193
+      },
+      {
+       "genes": [
+        "PDZD2",
+        "GPHN"
+       ],
+       "t_signed": 2.419012655600499
+      },
+      {
+       "genes": [
+        "AUTS2",
+        "JMJD1C"
+       ],
+       "t_signed": 2.3948660148695584
+      },
+      {
+       "genes": [
+        "LDB2",
+        "SLC4A10"
+       ],
+       "t_signed": 2.381463835837357
+      },
+      {
+       "genes": [
+        "NCAM2",
+        "GRIA2"
+       ],
+       "t_signed": 2.3582155044089084
+      },
+      {
+       "genes": [
+        "KIRREL3",
+        "CDH12"
+       ],
+       "t_signed": 2.34238432343812
+      },
+      {
+       "genes": [
+        "SMYD3",
+        "GPHN"
+       ],
+       "t_signed": 2.3342741427731206
+      },
+      {
+       "genes": [
+        "KHDRBS2",
+        "LRFN5"
+       ],
+       "t_signed": 2.31073243833522
+      },
+      {
+       "genes": [
+        "GRIA2",
+        "RAPGEF5"
+       ],
+       "t_signed": 2.3071689709522976
+      },
+      {
+       "genes": [
+        "CCSER1",
+        "PLEKHA5"
+       ],
+       "t_signed": 2.2764317023087983
+      },
+      {
+       "genes": [
+        "AUTS2",
+        "KHDRBS2"
+       ],
+       "t_signed": 2.275787092490185
+      },
+      {
+       "genes": [
+        "PLEKHA5",
+        "RGS7"
+       ],
+       "t_signed": 2.2742539575498943
+      },
+      {
+       "genes": [
+        "SLC8A1",
+        "JMJD1C"
+       ],
+       "t_signed": 2.262363128564112
+      },
+      {
+       "genes": [
+        "KCNQ3",
+        "LRFN5"
+       ],
+       "t_signed": 2.2610585803377234
+      },
+      {
+       "genes": [
+        "CNTN1",
+        "PPP2R2B"
+       ],
+       "t_signed": 2.2598762450144325
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "CNTN5",
+      "TAFA2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "all",
+       "metric": {
+        "difference": 0.009086658999724963,
+        "p": 0.7552447552447552,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       },
+       "reference": {
+        "difference": 0.009086658999724963,
+        "p": 0.7712287712287712,
+        "tier": "permutation",
+        "n": {
+         "pairs": 16
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.0,
+      "tvd_p": 1.0,
+      "differs": false
+     }
+    },
+    "id": "A8-3a8",
+    "claim": {
+     "id": "A8-3a8",
+     "case": "case3",
+     "metric": "norm_pearson",
+     "genes": [
+      "CNTN5",
+      "TAFA2"
+     ],
+     "groups": [
+      "A",
+      "B"
+     ],
+     "group_col": "group",
+     "replicate": "donor",
+     "within": [],
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "composition": [
+      "cell_type"
+     ],
+     "criterion": "no SUPPORTED; INCONCLUSIVE allowed",
+     "attempt": 1
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "two-sided",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A8-3a8.json",
+    "report_sha256": "4c4600f333ed17901af26a4782fb3e68c875a20e992f0cea7ce2d5921c2ff34f",
+    "seconds": 149.2,
+    "cells": 15711,
+    "dossier": {
+     "dossier_only": false,
+     "effect_status": "INCONCLUSIVE",
+     "effect_reason": "effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within \u00b10.05599",
+     "gate0": {
+      "status": "PASS",
+      "message": "no bias; attenuation depth_downsample \u22125% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+      "handling": {},
+      "tolerance": 0.02799686708642824,
+      "between_groups": null
+     },
+     "unmeasured": [],
+     "domain_unmeasured": [],
+     "domain_rule": "types where, in each group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group",
+     "one_group": [],
+     "technical": {
+      "groups": [
+       "A",
+       "B"
+      ],
+      "design": "paired",
+      "source": "pool",
+      "alpha": 0.05,
+      "rows": [
+       {
+        "cells": "all cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7502497502497503,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "all cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16783216783216784,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "counts per cell",
+        "stratum": "all",
+        "first": 32683.625,
+        "second": 31769.625,
+        "difference": 914.0,
+        "p": 0.7482517482517482,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       },
+       {
+        "cells": "the domain's cells",
+        "covariate": "genes per cell",
+        "stratum": "all",
+        "first": 6953.5,
+        "second": 6606.03125,
+        "difference": 347.46875,
+        "p": 0.16483516483516483,
+        "method": "monte-carlo",
+        "n_relabelings": 1000,
+        "replicates": {
+         "pairs": 16
+        }
+       }
+      ],
+      "differs": []
+     }
+    }
+   }
+  ],
+  "case_sha256": "31c297fe83adac9d93ff905695301bf69f09d583f9306ef980ae4210bedc8568"
+ }
+}
