@@ -130,6 +130,10 @@ nothing here is validated.
   isolated from GATE 0's dropout (`test_underpowered_design_is_flagged_and_named_in_the_verdict`);
   the rate's own test records the failure. Change 12 (GATE 0 blocks only a bias it cannot show to be
   equal between the groups) is decided, not yet coded.
+- **`norm_pearson` returns 0.0 where fewer than 3 cells carry both genes** or a gene does not vary
+  among them. On the third diagnostics' Marsh primary contrast (`validation/exploratory/real_pilot_5_summary.log`)
+  all three ENZ-INHIB mice take this value against 0.336 to 0.394 in ENZ-NONE, so that contrast's
+  SUPPORTED compares measured correlations with the fallback.
 - **Two expectations of the dev set conflict with changes 3 and 4** (`validation/probes/JOURNAL.md`,
   D8): at p14's low expression level, where log-normalized Pearson does not respond to the injected
   coupling, GATE 4 FAILs 1 of 8 datasets (4 PASS, 3 UNTESTED) against the expected 7 or more; on p09's

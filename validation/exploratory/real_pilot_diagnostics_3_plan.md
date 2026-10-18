@@ -279,3 +279,81 @@ scores; for (a), the domains with their detections and the two predictions' scor
 acceptance tests, each claim's verdict, cause, fields, the domain, the mixture and the outside
 estimates, s_m and the dose, the line of specificity, and each criterion's score; the hashes of the
 inputs and the engine's commit. One report to the owner.
+
+## The run
+
+Workflow run 39120635021 of `real-pilot-5.yml`, started by the label `pilot-run-5` at 10:47 UTC on the
+pull request's head f5e1df0 (the engine's `src/` git tree fe2596bd0469cca1e3c4f9a8269d394c2b789367),
+one attempt, every job green (the extraction 732 s; the nine parts 5 s to 21 min); its outputs on
+`results/real-pilot-5` at 2a18e31, every file as its SHA256SUMS. Copied here: the log as
+`real_pilot_5.log`, the extraction's as `real_pilot_5_extract.log`, the inputs' as
+`real_pilot_5_inputs.log`, the tallies as `real_pilot_5_summary.log`. After the run
+`real_pilot_5_summary.py` was extended to print what the run's JSON and the engine's reports hold and
+the log does not ((a1)'s detections, (b4)'s columns, GATE 0's responses, the Marsh mice's values, the
+claims' own t); its first 270 lines are the run's own summary, unchanged, and nothing is recomputed.
+
+The extraction: the counts of the case files' genes equal the Census's (62 of 62 checked in case 1,
+55 of 55 in case 2, 50 of 50 in case 3); 21,025 genes for cases 1 and 2, 35,465 for case 3 (9 symbols
+that name several features left out). **Loxl1, a gene of (b)'s list, is not measured in case 1's
+dataset**, so (b1) ran on nine genes and the index on seven. The source h5ad of case 1's dataset
+(2,548,184,202 bytes, sha256 e311a6191473aca2452b18c28e93e72666f7fda68f687091faa3d1271f4155a0) holds
+110,824 cells. Marsh: the 12 samples as registered, 28,426 cells (every barcode) and 30,982 genes, all
+25 genes of the set found.
+
+**The scores, as fixed above:**
+
+| test | criterion | verdict | met |
+|---|---|---|---|
+| A1, Xist | SUPPORTED | SUPPORTED (provisional; parametric only) | yes |
+| A2, the Y genes | SUPPORTED | SUPPORTED (provisional; parametric only) | yes |
+| A3, §4 in males | not SUPPORTED; no effect in the domain; the drop of the mixture from outside | NOT SUPPORTED — metric invalid (GATE 0) | **no**: the effect was not estimated |
+| A4, §4 within sex | not SUPPORTED | NOT SUPPORTED — metric invalid (GATE 0) | yes |
+| A5, Marsh M1 | SUPPORTED | SUPPORTED (provisional; parametric only) | yes |
+| A7, Marsh M3 | not SUPPORTED | INCONCLUSIVE (empty domain) | yes |
+| A8, SEA-AD | strict / lenient | 18 NO DETECTABLE EFFECT, 1 EFFECT BELOW SESOI (3c3), 1 INCONCLUSIVE (3a8) | strict **no**, lenient yes |
+
+- **(b), the owner's prediction: does not hold.** In the non-fibroblast types the young units detect
+  six of the nine genes more often (exact p < 0.05; for example Col3a1 +0.135, Dcn +0.315, Sparc
+  +0.237), but the index F is higher by +0.0791 with exact p 0.0556 over the 126 relabelings (the
+  first part needs p < 0.05), and within type and age MI goes with F by r +0.089, p 0.19 (the
+  second part). Reported, not scored: within type alone r +0.319 (p 0.0007), across types r +0.566
+  (p 0.022).
+- **(b4), the owner's statement on Tabula Muris: undecided** by its score: GSE109774's 46 records
+  are by tissue ("age: 3 months") and name none of case 1's units, nor do GSE132042's 996. No column
+  of the Census's obs separates the ages; in the source h5ad `FACS.selection` does, in both sexes
+  (empty in every young cell, set in every old one). In males the young units have more genes per
+  cell and fewer counts (the Census's `nnz`, young − old +1,298, exact p 0.0159; `raw_sum` −188,999,
+  p 0.0079); in females neither differs (p 0.64 and 0.36).
+- **(a1): does not hold.** The domain has 11 types, the four fibroblast-like and seven others
+  (enterocyte of epithelium of large intestine, epithelial cell of large intestine, granulocyte,
+  granulocytopoietic cell, keratinocyte, precursor B cell, skeletal muscle satellite cell), which
+  enter by the young group: Col1a1 detected in 10.5–12.3% of their young cells and 0–4.3% of their
+  old ones, except the granulocytopoietic cells (10.9% and 10.4%).
+- **(a2): holds.** M1's type is in its domain (ENZ-NONE: Fos 23.0%, Jun 61.2%; ENZ-INHIB: Fos 0.2%,
+  Jun 17.3%); recorded, not used: under "in both groups" it would drop out, over the pooled cells it
+  would stay. M3's domain is empty (Fos 1.2% and 0.2%).
+
+**Beside the scores** (the summary's later sections):
+- A3 and A4 stop at GATE 0, which runs on the domain's cells: `extra_dropout` moves the null (each
+  gene's counts drawn independently from cells at least as deep: no coupling, the same technology)
+  by −0.00258 and −0.00246 (z 7.6 and 5.3) against tolerances of
+  0.00077 and 0.00074, 0.5 × s_m (s_m +0.00155 [+0.00058, +0.00252] and +0.00147 [+0.00015,
+  +0.00280]). The engine stops at the first FAIL, so the effect within the domain, the mixture's and
+  the outside's were not estimated, and the second and third parts of A3's criterion cannot be met.
+  Change 12 of v0.4 (GATE 0 blocks only a bias it cannot show to be equal between the groups) is
+  decided and not coded. The claim's own donor-level t within the domain, as the line of specificity
+  computes it, is +1.63 in the claimed direction (234 of 1,000 controls at least as far: not specific).
+- A5's three ENZ-INHIB mice have `norm_pearson` exactly 0, the value the metric returns where fewer
+  than 3 cells carry both genes or a gene does not vary among them (`metrics.norm_pearson`); the
+  ENZ-NONE mice have 0.336, 0.361 and 0.394. In A6 one DNC-NONE mouse has 1 and one 0. `mi_3bin` on
+  the same mice (A5m) has 0.00017, 0.00044 and 0.00009 against 0.067, 0.055 and 0.141: INCONCLUSIVE
+  (t, p 0.082), its GATE 4 response not established (s_m +0.0092 [−0.0025, +0.0210]). The caveat,
+  as registered: the genes' mean and detection move together with their coupling; the control
+  checks that the engine does not refuse a real change of coupling, not that it tells a change of
+  coupling from a change of detection.
+- A8: 3c3 (RBFOX1) is EFFECT BELOW SESOI (+0.1211, detected, within ±0.4913); 3a2, SUPPORTED by
+  v0.3 in the first run, is NO DETECTABLE EFFECT (+0.0238 within ±0.0505); 3a8 (CNTN5–TAFA2) is
+  INCONCLUSIVE, −0.0117 [−0.0738, +0.0503], neither detected nor equivalent within ±0.0560.
+- The line of specificity: A1 1 and A2 0 of 1,000 controls at least as far (specific); the controls'
+  median t is −1.27 [−2.22, −0.28] for A1 and +2.63 [+1.14, +4.24] for A2 (in the claim's direction,
+  with the warning): in case 2 the matched genes tend to be higher in males. A5: 0 of 1,000.

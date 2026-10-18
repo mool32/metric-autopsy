@@ -237,3 +237,44 @@ def test_the_verdicts_label():
     assert R.label_of("SUPPORTED — replicated") == "SUPPORTED"
     assert R.label_of("EFFECT BELOW SESOI — effect +0.1") == "EFFECT BELOW SESOI"
     assert R.label_of("NOT SUPPORTED — metric invalid: x") == "NOT SUPPORTED"
+
+
+def test_the_summary_prints_what_the_json_holds_beside_the_log(tmp_path):
+    import json
+
+    import real_pilot_5_summary as T
+
+    a = dict(a1=dict(rule=dict(genes=["G1", "G2"], text="the rule"), rows=[
+        dict(type="t1", qualifies=True, fibroblast_like=False, in_domain=True,
+             detection=dict(young=dict(G1=0.2, G2=0.11), old=dict(G1=0.1, G2=0.01))),
+        dict(type="t2", qualifies=False, fibroblast_like=False, in_domain=True,
+             detection=dict(young=dict(G1=0.5, G2=0.5), old=dict(G1=0.5, G2=0.5)))]))
+    lines = T.a1_lines(a)
+    assert "| t1 | False | 0.200 | 0.110 | 0.100 | 0.010 | True |" in lines and not any("t2" in x for x in lines)
+    b = dict(b4_columns=[
+        dict(source="s", column="batch", sex="male", outcome="separates the ages (shared within an age)", values=2,
+             young_values=["x"], old_values=["y"], kind="categorical"),
+        dict(source="s", column="plate", sex="male", outcome="shared between the ages", values=3,
+             young_values=["p"], old_values=["p"], kind="categorical"),
+        dict(source="s", column="nnz", sex="male", kind="numeric", young_minus_old=12.0, p=0.0159, relabelings=126)],
+        b4_geo=dict(GSE1=dict(samples=2, units_named=dict(u=0), series_lines=["l"], titles=["A | GSM1 | x"]),
+                    statement_score="undecided"))
+    text = "\n".join(T.b4_lines(b))
+    assert "batch (male): separates the ages" in text and "plate" not in text
+    assert "nnz (male): +12, p +0.0159 (126 relabelings)" in text and "GSE1: 2 samples" in text
+    rep = dict(gates=[dict(gate=0, status="FAIL", detail=dict(
+        baseline=0.03, null_center=0.004, signal=0.026, bias_tolerance_abs=0.0007, bias_tolerance=0.5, sesoi=0.0014,
+        responses=dict(extra_dropout=dict(shift=-0.017, z=42.0, null_shift=-0.0026, null_shift_z=7.6,
+                                          classification="bias", handling="blocking"),
+                       library_scale=dict(shift=0.0001, z=0.2, classification="none"))))],
+        fields=dict(effect=dict(detail=dict(domain=dict(units=[
+            dict(replicate="GSM4605690", raw=0.0, corrected=0.0)])))))
+    g0 = "\n".join(T.gate0_lines(rep, "A3"))
+    assert "the null moves -0.0026 (z +7.6); bias, blocking" in g0 and "library_scale" in g0
+    assert T.gate0_lines(dict(gates=[dict(gate=0, status="PASS", detail={})]), "A1") == []
+    assert "- GSM4605690 ENZ-INHIB, Batch 1: +0 / +0" in T.unit_lines(rep, "A5")
+    parts = tmp_path / "parts" / "part-marsh" / "reports"
+    parts.mkdir(parents=True)
+    (parts / "A5.json").write_text(json.dumps(rep))
+    assert T.report_of(str(tmp_path / "parts"), "marsh", "A5") == rep
+    assert T.report_of(str(tmp_path / "parts"), "marsh", "A6") is None
