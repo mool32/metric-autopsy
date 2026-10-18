@@ -4,7 +4,10 @@
 # are checked from the metadata alone, and the set of genes is taken from the paper before any count is
 # read. This job reads no count: GEO's SOFT and MINiML records and series matrices, the lists and sizes
 # of the supplementary files (never the files), and Europe PMC's record of the paper (with its full text
-# where its licence is CC BY). This environment's network reaches only GitHub, hence the job.
+# and supplementary archive where its licence is a Creative Commons one). The same job fetches the
+# records (and Creative Commons full texts) of the sources the third diagnostics' plan cites for its
+# list of fibroblast genes and for the origin of Tabula Muris Senis's 3-month mice. This environment's
+# network reaches only GitHub, hence the job.
 #
 # Started once by the label "marsh-metadata" on the pull request; commits what it fetched, as it is, to
 # the new branch results/marsh-metadata (a second start finds the branch and stops).
@@ -22,6 +25,9 @@ env:
   DOI: 10.1038/s41593-022-01022-8
   # the SuperSeries and the series that the paper's data statement and its code's README name
   SERIES: GSE152184 GSE152183 GSE152182 GSE188441
+  # the third diagnostics' sources: Muhl et al. 2020 (fibroblast and mural cell markers), Buechler et
+  # al. 2021 (the fibroblast lineage across tissues), Tabula Muris 2018 and Tabula Muris Senis 2020
+  LITERATURE: 10.1038/s41467-020-17740-1 10.1038/s41586-021-03549-5 10.1038/s41586-018-0590-4 10.1038/s41586-020-2496-1
 
 jobs:
   fetch:
@@ -63,15 +69,30 @@ jobs:
               done
             fi
           done
-          q="https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%22$DOI%22&resultType=core&format=json"
-          get "$q" paper/europepmc_search.json || true
-          pmcid=$(python3 -I -c "import json,sys; r=json.load(open('paper/europepmc_search.json'))['resultList']['result']; print(r[0].get('pmcid','') if r else '')" 2>/dev/null || true)
-          license=$(python3 -I -c "import json,sys; r=json.load(open('paper/europepmc_search.json'))['resultList']['result']; print(r[0].get('license','') if r else '')" 2>/dev/null || true)
-          echo "pmcid=$pmcid license=$license" | tee -a fetch.log
-          case "$license" in
-            cc\ by|cc-by|"cc by "*) [ -n "$pmcid" ] && get "https://www.ebi.ac.uk/europepmc/webservices/rest/$pmcid/fullTextXML" paper/fulltext.xml || true ;;
-            *) echo "the licence is not CC BY ('$license'): the full text is not copied" | tee -a fetch.log ;;
-          esac
+          # the papers: Marsh et al. 2022, and for the third diagnostics' plan the sources of the list of
+          # fibroblast genes and of the 3-month mice of Tabula Muris Senis
+          for doi in $DOI $LITERATURE; do
+            tag=$(echo "$doi" | tr '/.' '__')
+            q="https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%22$doi%22&resultType=core&format=json"
+            get "$q" "paper/${tag}_europepmc.json" || continue
+            pmcid=$(python3 -I -c "import json,sys; r=json.load(open(sys.argv[1]))['resultList']['result']; print(r[0].get('pmcid','') if r else '')" "paper/${tag}_europepmc.json" 2>/dev/null || true)
+            license=$(python3 -I -c "import json,sys; r=json.load(open(sys.argv[1]))['resultList']['result']; print(r[0].get('license','') if r else '')" "paper/${tag}_europepmc.json" 2>/dev/null || true)
+            echo "doi=$doi pmcid=$pmcid license=$license" | tee -a fetch.log
+            case "$license" in
+              cc*) if [ -n "$pmcid" ]; then
+                     get "https://www.ebi.ac.uk/europepmc/webservices/rest/$pmcid/fullTextXML" "paper/${tag}_fulltext.xml" || true
+                     if [ "$doi" = "$DOI" ]; then
+                       get "https://www.ebi.ac.uk/europepmc/webservices/rest/$pmcid/supplementaryFiles" "paper/${tag}_supplementary.zip" || true
+                       if [ -f "paper/${tag}_supplementary.zip" ] && [ "$(stat -c %s "paper/${tag}_supplementary.zip")" -gt 45000000 ]; then
+                         echo "the supplementary archive is over 45 MB: only its listing is kept" | tee -a fetch.log
+                         unzip -l "paper/${tag}_supplementary.zip" > "paper/${tag}_supplementary_listing.txt" || true
+                         rm -f "paper/${tag}_supplementary.zip"
+                       fi
+                     fi
+                   fi ;;
+              *) echo "the licence is not a Creative Commons one ('$license'): the full text is not copied" | tee -a fetch.log ;;
+            esac
+          done
           cat fetch.log
       - name: Commit everything, as it is, to results/marsh-metadata
         run: |
@@ -85,7 +106,7 @@ jobs:
             echo
             echo "- Workflow run ${{ github.run_id }} (attempt $GITHUB_RUN_ATTEMPT) of \`.github/workflows/marsh-metadata.yml\`, at the pull request's head ${{ github.event.pull_request.head.sha }}."
             echo "- geo/: GEO's SOFT and MINiML records, series matrices and the index and file list of the supplementary files of $SERIES (NCBI GEO; public records). No supplementary file itself was fetched: no count."
-            echo "- paper/: Europe PMC's record of doi:$DOI, and its full text only where the record names a CC BY licence (Marsh SE et al., Nat Neurosci 2022;25:306-316)."
+            echo "- paper/: Europe PMC's records of doi:$DOI (Marsh SE et al., Nat Neurosci 2022;25:306-316) and of $LITERATURE, with each full text (and Marsh et al.'s supplementary archive) only where the record names a Creative Commons licence, copied as published under it."
             echo "- fetch.log: every URL and its outcome."
           } > README.md
           find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
