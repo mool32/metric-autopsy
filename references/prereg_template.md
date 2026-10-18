@@ -41,18 +41,26 @@ SESOI:               ___  smallest effect size of interest (needed for "no detec
                           for the power check, for "explained by depth", and to size GATE 0's
                           nuisance biases: without it a bias cannot block, and SUPPORTED is
                           withheld while one is unsized)
-SESOI scale:         construct | observed  (default construct: the SESOI is about the construct
-                          and is attenuated by GATE 0's lambda before the equivalence test and
-                          the power check; observed: it is on the metric's observed scale)
+SESOI scale:         construct | observed  (default construct: since v0.4 a change of the
+                          construct, of the correlation of the pair's log expected expression for
+                          a coupling probe, of the natural-log expression for a module probe,
+                          which GATE 4's probe translates into the metric's units (s_m); without a
+                          probe it is not translated and the design's floor stands in; observed:
+                          it is on the metric's observed scale, used as declared)
+Cell-type column:    ___  (optional, v0.4: the claim is judged within its domain, the types where
+                          its genes are detected in at least 10% of the cells in at least one
+                          group, the types weighted equally; the mixture is reported beside)
 Bias tolerance:      ___  (default 0.5 SESOI: a dropout or library-size bias blocks only if
                           it and the lower bound of its 95% interval exceed this; a depth bias
                           the declared correction removes between groups never blocks)
 Alpha / power:       ___ / ___  (defaults 0.05 / 0.8)
 Signal direction:    increase | decrease   (for an injected-signal test)
 Positive control pair: ___   Negative control pair: ___
-delta_min:           ___  (default 0.5 SESOI: the smallest response to an injected signal
-                          that matters; GATE 4 and GATE 5 call the metric invalid only when its
-                          response is shown below it, by the upper bound of its 95% interval)
+delta_min:           ___  (recorded, not used since v0.4: GATE 4 and GATE 5 call the metric
+                          blind only when the upper bound of its response's 95% interval lies at
+                          or below 0; v0.3 used 0.5 SESOI)
+Known to differ:     ___  (optional, v0.4: genes left out of the check of specificity's controls;
+                          known interactions: pairs left out, likewise)
 Positive-control dose: ___  (default 2.0: a coupling of this dose is injected into a silent
                           positive control's genes; the control FAILs GATE 5 only if the metric
                           is shown blind to it)

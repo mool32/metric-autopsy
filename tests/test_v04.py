@@ -3,7 +3,9 @@
 - change 1: GATE 4 measures the response with the claim's own statistic, injected into the group
   where the probed genes have more counts per cell, its interval over the replicates; every random
   draw keyed by the data and the claim's canonical form;
-- change 2: the module probe lowers the module by thinning its own genes, without a sham.
+- change 2: the module probe lowers the module by thinning its own genes, without a sham;
+- changes 6, 7, 8, 14, 15 and 16 (the decisions of 2026-10-16 and 2026-10-17); those of 2026-10-18 are
+  in test_v04_domain.py.
 """
 from __future__ import annotations
 
@@ -221,8 +223,8 @@ def test_a_detected_effect_within_the_sesoi_is_effect_below_sesoi():
     assert small.cause in ("provisional", "replicated") and small.verdict.startswith("SUPPORTED")
     big = run_autopsy(mean_lognorm_xist, d, group_col="sex", groups=("female", "male"), replicate_col="mouse",
                       signal_test=injected_signal.module(["Xist"]),
-                      prereg={**RESOLVED, "direction": "decrease", "sesoi": 50.0, "delta_min": 0.05},
-                      log_path="off")  # delta_min on its own: GATE 4 is not what this test is about
+                      prereg={**RESOLVED, "direction": "decrease", "sesoi": 50.0, "sesoi_scale": "observed"},
+                      log_path="off")  # on the metric's scale: GATE 4 is not what this test is about
     assert big.effect.status == "DETECTED" and big.effect.detail["tost_equivalent"] is True
     assert big.cause == "effect_below_sesoi" and big.verdict.startswith("EFFECT BELOW SESOI")
     assert "smaller than the smallest effect that matters" in big.verdict
@@ -323,27 +325,32 @@ def test_the_composition_is_compared_at_the_replicate_level():
 
 
 def test_a_claim_about_a_mixture_carries_its_difference_of_composition():
+    """Since 2026-10-18 the claim is judged within its domain, the types weighted equally: within each
+    type the groups are alike, so the domain finds no rise, while the whole mixture, reported beside
+    with the difference of composition, rises."""
     a = _mixture(two_types())
     comp = a.composition["columns"]["cell_type"]
     assert comp["differs"] and "composition in cell_type differs" in a.verdict
-    # within each type the groups are alike: the claim per type, not combined, finds no rise
-    per = a.composition["per_type"]
-    assert per["column"] == "cell_type" and set(per["types"]) == {"A", "B"}
-    for t in ("A", "B"):
-        assert not per["types"][t]["verdict"].startswith("SUPPORTED"), per["types"][t]
-        assert per["types"][t]["replicates"] == {"young": 4, "old": 4}
+    dom = a.effect.detail["domain"]
+    assert dom["types"] == ["A", "B"] and not a.verdict.startswith("SUPPORTED")
+    assert {r["type"]: r["units"] for r in dom["per_type"]} == {"A": 8, "B": 8}
+    mix = a.effect.detail["mixture"]["raw"]
+    assert mix["effect"] < 0 and mix["detected"]  # young - old: the mixture rises with the share of B
+    assert abs(a.effect.detail["raw_effect"]) < abs(mix["effect"]) / 3
     md = a.to_markdown()
-    assert "## Composition (reported, not a gate)" in md and "The claim within each cell_type" in md
+    assert "## Composition (reported, not a gate)" in md and "## The domain (the verdict is judged within it)" in md
     assert a.to_dict()["composition"]["columns"]["cell_type"]["tvd"] == pytest.approx(0.4)
 
 
 def test_a_type_absent_from_one_group_is_unidentifiable_and_small_types_are_not_judged():
     a = _mixture(two_types(only_young_c=True))
-    per = a.composition["per_type"]["types"]
-    assert per["C"]["cause"] == "unidentifiable" and "absent from every replicate of old" in per["C"]["verdict"]
+    rows = {r["type"]: r for r in a.composition["domain"]["strata"][0]["types"]}
+    assert rows["C"]["absent_from"] == "old" and not rows["C"]["qualifies"]
     assert a.composition["columns"]["cell_type"]["absent"] == {"C": "old"}
+    assert "C" not in a.effect.detail["domain"]["types"]
     few = _mixture(two_types(cells=60, share_b=(0.2, 0.25)))  # 12 and 15 cells of B per mouse
-    assert few.composition["per_type"]["types"]["B"]["cause"] == "insufficient_replication"
+    rows = {r["type"]: r for r in few.composition["domain"]["strata"][0]["types"]}
+    assert not rows["B"]["qualifies"] and few.effect.detail["domain"]["types"] == ["A"]
 
 
 # --------------------------------------------------------------------------- #
@@ -412,8 +419,8 @@ def test_the_composition_reaches_the_same_report_through_the_api_the_cli_and_mcp
     for rep in reports:
         assert rep["verdict"] == api.verdict
         assert rep["composition"]["columns"]["cell_type"]["tvd"] == pytest.approx(api.composition["columns"]["cell_type"]["tvd"])
-        assert ({t: v["verdict"] for t, v in rep["composition"]["per_type"]["types"].items()}
-                == {t: v["verdict"] for t, v in api.composition["per_type"]["types"].items()})
+        assert ({r["type"]: r["raw"]["effect"] for r in rep["fields"]["effect"]["detail"]["domain"]["per_type"]}
+                == pytest.approx({r["type"]: r["raw"]["effect"] for r in api.effect.detail["domain"]["per_type"]}))
         assert rep["reference"]["rows"][0]["reference"]["difference"] == pytest.approx(
             api.reference["rows"][0]["reference"]["difference"])
 

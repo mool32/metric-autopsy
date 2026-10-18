@@ -13,8 +13,11 @@ Real analysis on your AnnData:
     metric-autopsy --h5ad data.h5ad \
         --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 \
         --group-col age --groups young old --within sex --replicate-col mouse \
-        --estimand composition --sesoi 0.1 \
+        --estimand composition --direction decrease --sesoi 0.1 --inject-signal coupling \
         --pos-pair Actb Gapdh --neg-pair Gene1 Gene2 --json autopsy.json
+
+(``--sesoi 0.1`` is on the construct's scale: a change of 0.1 in the correlation of the pair's log
+expected expression, which GATE 4's coupling probe translates into the metric's units.)
 
 ``--metric`` names a function in ``metric_autopsy.metrics``. Bring-your-own metrics are
 supported from Python via ``metric_autopsy.run_autopsy``; the CLI covers the reference set.
@@ -104,21 +107,23 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale, "
                    "unless --sesoi-scale observed)")
     p.add_argument("--sesoi-scale", choices=["construct", "observed"],
-                   help="the scale of the SESOI: 'construct' (default; equivalence within ±attenuation x "
-                        "SESOI) or 'observed' (a difference of the metric as measured at this depth)")
+                   help="the scale of the SESOI: 'construct' (default; a change of the correlation of the pair's "
+                        "log expected expression, translated into the metric's units by the --inject-signal probe) "
+                        "or 'observed' (a difference of the metric as measured at this depth)")
     p.add_argument("--bias-tolerance", type=float,
                    help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
     p.add_argument("--delta-min", type=float,
-                   help="GATE 4/5: the smallest response to an injected signal that matters, on the "
-                        "metric's scale (default 0.5 x SESOI); a metric is invalid only if shown below it")
+                   help="recorded in the pre-registration, not used since v0.4: GATE 4/5 call a metric "
+                        "blind only where its response is shown at or below zero")
     p.add_argument("--min-replicates", type=int, help="minimum replicates per group (>= 3)")
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
     p.add_argument("--inject-signal", choices=["coupling"],
                    help="test the metric's response to an injected coupling of the gene pair")
     p.add_argument("--composition", nargs="*", default=[],
                    help="obs columns of an annotation, the cell type first (e.g. cell_type tissue): their shares "
-                        "are compared between the groups at the replicate level and the claim is judged within "
-                        "each cell type, the verdicts not combined (reported, not gates)")
+                        "are compared between the groups at the replicate level, and the claim is judged within "
+                        "its domain, the cell types where its genes are expressed, the types weighted equally; the "
+                        "whole mixture's estimate is reported beside")
     p.add_argument("--pos-pair", nargs=2)
     p.add_argument("--neg-pair", nargs=2)
     p.add_argument("--data2", help="second .h5ad for GATE 6 replication")

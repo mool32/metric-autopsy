@@ -39,9 +39,9 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 `decide` reads them in this order; the first matching line is the verdict:
 
 1. metric DEGENERATE → **DEGENERATE METRIC**
-2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a failed control, a response to an injected signal shown below `delta_min`) → **NOT SUPPORTED — metric invalid**
+2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a positive control shown blind, a response to an injected signal shown at or below zero — v0.4; v0.3 failed it below `delta_min`) → **NOT SUPPORTED — metric invalid**
 3. design UNIDENTIFIABLE (no estimand, content estimand without spike-ins, partially crossed replicates, groups confounded with a stratifier) → **UNIDENTIFIABLE**
-4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
+4. effect not evaluated → **INCONCLUSIVE**; the claim's domain holds no type (v0.4) → **INCONCLUSIVE** (`empty_domain`); the raw difference is explained by depth/capture → **NOT SUPPORTED**
 5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
 6. effect NO_DETECTABLE_EFFECT → **NO DETECTABLE EFFECT**, only if the metric is PASS (absence of an effect cannot be claimed with a metric whose response is untested)
 7. an effect that only the corrected data show (v0.4) → **INCONCLUSIVE** (`detected_only_after_correction`): a correction can only remove a conclusion, never create one
@@ -56,12 +56,27 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 14. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
 15. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
 
+**The claim's domain (v0.4, decided 2026-10-18).** With `composition=` naming a cell-type column
+(first), the effect is judged in the claim's domain: the types where, in at least one group, both
+genes of a pair (any gene of a set) are detected in at least 10% of the type's cells, with at least
+20 cells in at least 3 replicates of each group, per stratum (`domain.claim_domain`; a claim without
+genes takes every type). The effect field is the combined estimate over the domain's types, each
+weighted equally (strata by precision), on (replicate, type) units at equal depth within each
+(stratum, type), with its interval over the replicates (`combined.py`). GATE 4 and GATE 0 run on the
+domain's cells. The whole mixture's estimate, the estimate outside the domain and each type's are
+reported, not judged.
+
 Reported beside the verdict, not part of the rule (v0.4): the composition of the comparison in
-the annotations named by `composition=` (cell type, tissue), with the claim judged within each
-cell type and the verdicts not combined; a difference of composition is noted in the verdict
-itself, since a claim about a mixture stands only with it (change 7). For a pair, the engine's own
-`norm_pearson` beside the metric, by stratum (change 15). Units whose ids name several animals are
-flagged COMPOSITE_UNITS (change 16).
+the annotations named by `composition=` (cell type, tissue); a difference of composition is noted
+in the verdict itself, since a claim about a mixture stands only with it (change 7). For a pair,
+the engine's own `norm_pearson` beside the metric, by stratum (change 15). Units whose ids name
+several animals are flagged COMPOSITE_UNITS (change 16). For a claim about given genes, **the check
+of specificity** (change 13, decided 2026-10-18 as a line of the report): among K = 1,000 controls
+drawn from all the genes and matched on mean and detection (without the user's known interactions
+and genes known to differ), how many lie at least as far as the claim on the donor-level t, the
+nearest controls and all those as far, and the controls' common shift (the median t with its
+interval), with a warning where the shift is significant in the claim's direction
+(`specificity.check`).
 
 **Claims are directional.** The pre-registration states the claimed change of the metric from
 `groups[0]` to `groups[1]`: `increase`, `decrease`, or `two-sided`. SUPPORTED needs the effect in
@@ -317,8 +332,8 @@ group whose replicates have more of the probed genes' counts per cell (each repl
 equally; on an exact tie into each group, and the weaker response is judged), whatever the
 claim's wording: "Xist is higher in females" and "Xist is lower in males" are one claim (R1's
 lesson, D1). The response is the change of the replicate-level difference that the effect test
-uses, its 95% t interval taken over the injected group's replicates (50 injections within each),
-so that it is an uncertainty over donors; it is judged against the direction the injection must
+uses, its 95% interval taken over the injected group's replicates (50 injections within each, a
+cluster-robust mean), so that it is an uncertainty over donors; it is judged against the direction the injection must
 move the metric (`inject.direction`), not against the claim's. The all-cell response (below, the
 v0.3 gate) stays in the detail as a diagnostic, and is the judged response without a replicate
 unit. Every random draw of the engine is keyed by the data and the claim's canonical form (the
@@ -331,17 +346,30 @@ its own genes `fold`-times, against the untouched data and without a sham: the l
 then the signal itself, as for a real decrease of expression, and the depth falls only by the
 module's share of the counts, which is reported (v0.3 raised it by thinning every other gene
 against a sham that thinned all, and on shallow data the sham's loss of single counts made half
-the response). The mean response gets its two-sided 95% t interval (decided 2026-10-08):
+the response).
 
-- **PASS** — the lower bound in the declared direction is above 0: a response is shown.
-- **FAIL** — the upper bound is below `delta_min`, the smallest response that matters
-  (pre-registered `delta_min`; default 0.5 × SESOI): the metric is shown blind. This holds also
-  when the whole interval lies above 0: a response below `delta_min` is blindness by its definition.
+**The dose is the SESOI, on the construct's scale (v0.4 change 3, decided 2026-10-18).** The SESOI is
+declared as a change of the construct: for a coupling, of the correlation of the pair's log
+expected expression (in (0, 1)); for a module, of its natural-log expression. The probe is dosed to
+it (`injected_signal.at_construct_change`): the module lowered exp(SESOI)-fold; the coupling at the
+strength whose shared factor raises that correlation by the SESOI given the genes' biological
+variances in the probed cells (a Poisson-lognormal method of moments, floored at 0.01). The response
+to it, s_m, is the SESOI in the metric's units: GATE 0's tolerance, the TOST of absence and EFFECT
+BELOW SESOI use it, and design adequacy compares it with the design's floor (change 4). With a
+claim's domain the probe goes into the domain's cells only. The detail gives the dose–response at
+0.5×, 1× and 2× the SESOI. A SESOI on the metric's own scale (`sesoi_scale="observed"`) is used as
+declared. The mean response gets its two-sided 95% interval:
+
+- **PASS** — the lower bound in the injection's direction is above 0: a response is shown.
+- **FAIL** — the upper bound is at or below 0: the metric is shown blind.
 - **UNTESTED** (the gate reports WARN) — neither: absence of evidence, not invalidity, as
-  INCONCLUSIVE is to NO DETECTABLE EFFECT. Without a `delta_min` (no SESOI) the gate cannot FAIL.
+  INCONCLUSIVE is to NO DETECTABLE EFFECT.
 
-The former rule (z ≥ 3 over 10 injections) failed a valid metric whose response is real but
-weak (probe p14). Against the untouched data, instead of a sham, the thinning noise is confounded
+v0.3 failed a response below `delta_min` (0.5 × SESOI) even with the whole interval above 0; with
+the SESOI translated into the metric's units by the response itself, that threshold is no longer
+defined, and the protection it gave is carried by the checks that explain a difference away (depth,
+the domain and composition). `delta_min` is recorded, not used. The rule before v0.3 (z ≥ 3 over 10
+injections) failed a valid metric whose response is real but weak (probe p14). Against the untouched data, instead of a sham, the thinning noise is confounded
 with the signal: injecting coupling into an already strongly coupled pair *lowered* a valid
 correlation and failed it. A positive control that beats its null (GATE 5) is the other way to
 demonstrate response, except where GATE 4 ran on the analysed construct and is UNTESTED: a control
@@ -385,10 +413,13 @@ nulls instead of a fixed band, Bonferroni across strata:
 
 - the **negative control** pair is compared with 200 distinct unrelated pairs (never
   repeated) from the same expression neighbourhoods — the 20 genes closest in mean
-  expression, or 5% of all genes; it must not stand out. The null centre is reported: a centre far
-  from zero means the metric reports association between unrelated genes (e.g. closure from
-  library-size normalization, which made the "robust" `norm_pearson` fail its own negative
-  control on null data in v0.1; probe p06);
+  expression, or 5% of all genes. The null centre is reported: a centre far from zero means the
+  metric reports association between unrelated genes (e.g. closure from library-size
+  normalization, which made the "robust" `norm_pearson` fail its own negative control on null
+  data in v0.1; probe p06). Since v0.4 a pair outside its null is **reported, not a FAIL**
+  (`negative_control_outside_null`): an unrelated pair is exchangeable with the null's pairs, so
+  one pair fails a valid metric in about alpha of the claims by chance alone (the pilot's claim
+  1b, p = 0.0498); the check of specificity in the report judges the claim instead;
 - the **positive control** pair is compared with 200 self-nulls of the *same* pair: gene b is
   replaced, cell by cell, by the count of a random neighbouring cell at least as deep, thinned
   binomially to the cell's own depth. Coupling is destroyed and the dependence on depth is kept
@@ -414,23 +445,22 @@ does not beat its null, the engine asks GATE 4's question of the control's genes
 draw), injects a coupling of known dose (`injected_signal.coupling`; pre-registered
 `positive_control_dose`, default 2.0) 200 times against its sham, and gives the metric's own
 response its two-sided interval at alpha/K. The metric is shown blind when the bound in the
-declared direction is below `delta_min`; otherwise the silence says that the control is not
-coupled here (when the metric responds to the injection), or nothing. The former rule failed a
+declared direction is at or below 0 (v0.4; v0.3: below `delta_min`); otherwise the silence says
+that the control is not coupled here (when the metric responds to the injection), or nothing. The former rule failed a
 silent control wherever a reference detector had power ≥ 0.8 for the dose, and so failed a valid
 metric whose control was coupled, but weakly, in 17 of 20 p15 datasets.
 
 **Read-out.**
-- **FAIL** — the negative control stands out in some stratum (the metric reports association
-  where there is none), **or** the positive control is silent in a stratum where the metric is
-  shown blind to a coupling injected into its genes.
-- **WARN** — the negative control is fine everywhere, and the positive control is silent
-  somewhere without that proof: absence of evidence. If it fires nowhere, the metric's response
-  stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal shows it).
-- **PASS** — positive control beats its null and negative control stays inside its null, in
-  all strata.
+- **FAIL** — the positive control is silent in a stratum where the metric is shown blind to a
+  coupling injected into its genes (with the legacy band, also a negative control outside it).
+- **WARN** — the positive control is silent somewhere without that proof: absence of evidence.
+  If it fires nowhere, the metric's response stays undemonstrated (`metric_validity` UNTESTED,
+  unless an injected signal shows it).
+- **PASS** — the positive control beats its null in all strata. A negative control outside its
+  null is noted in the message, whatever the status.
 
-In the dev data a metric that ignores gene b fails GATE 5 in 20 of 20 p15 datasets (with a
-`delta_min`), and is UNTESTED in a 10-cell stratum where the interval is too wide. A positive control
+In the dev data of v0.3 a metric that ignores gene b failed GATE 5 in 20 of 20 p15 datasets (with
+a `delta_min`), and was UNTESTED in a 10-cell stratum where the interval is too wide. A positive control
 that fires in at least one stratum (Bonferroni across strata) is evidence of response for
 `metric_validity`. Passing `pos_min` / `neg_max` selects the legacy fixed band (not the
 default), where a silent positive control FAILs without an injection. A control that "passes" only after averaging over

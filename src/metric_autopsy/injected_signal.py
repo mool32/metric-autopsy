@@ -98,6 +98,8 @@ def module(genes: Sequence[str], fold: float = 2.0, frac: float = 1.0):
         return float(frac * (1.0 - 1.0 / fold) * X[:, idx].sum() / total) if total > 0 else 0.0
 
     inject.description = f"module({len(genes)} genes, 1/{fold:g} by thinning, frac={frac:g})"
+    inject.kind = "module"
+    inject.fold, inject.frac = float(fold), float(frac)
     inject.genes = tuple(genes)
     inject.columns = _columns
     inject.direction = "decrease"
@@ -143,7 +145,8 @@ def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
     def sham(data, rng):
         return _thin(data, rng, shared=False)
 
-    inject.description = f"coupling({gene_a}, {gene_b}, strength={strength})"
+    inject.description = f"coupling({gene_a}, {gene_b}, strength={strength:g})"
+    inject.kind = "coupling"
     inject.strength = strength
     inject.direction = "increase"
     inject.genes = sham.genes = genes
@@ -155,3 +158,89 @@ def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
 
 def describe(inject) -> str:
     return getattr(inject, "description", getattr(inject, "__name__", "custom injection"))
+
+
+# --------------------------------------------------------------------------- #
+# the probe's dose from a SESOI on the construct's scale (v0.4 change 3)
+# --------------------------------------------------------------------------- #
+BIO_VAR_FLOOR = 0.01  # the smallest variance of log expected expression the coupling dose assumes (SD 0.1)
+
+
+def log_sigmoid_variance(strength: float, n_nodes: int = 96) -> float:
+    """Var(log sigmoid(strength x z)), z ~ N(0, 1): the variance that the shared factor of
+    ``coupling`` adds to each gene's log expected expression (Gauss-Hermite quadrature)."""
+    z, w = np.polynomial.hermite_e.hermegauss(n_nodes)
+    w = w / w.sum()
+    f = -np.logaddexp(0.0, -float(strength) * z)
+    m = float((w * f).sum())
+    return float(max((w * (f - m) ** 2).sum(), 0.0))
+
+
+def biological_log_variance(counts, totals) -> float:
+    """The variance of a gene's log expected expression across cells, the counting noise removed: a
+    Poisson-lognormal method of moments on the counts scaled to the cells' mean depth,
+    exp(var) - 1 = (Var(x) - mean(x) mean(1/s)) / mean(x)^2 with x = count / s and s = depth / mean depth.
+    NaN without counts."""
+    y = np.asarray(counts, float)
+    t = np.asarray(totals, float)
+    ok = t > 0
+    y, t = y[ok], t[ok]
+    if len(y) < 3:
+        return float("nan")
+    s = t / t.mean()
+    x = y / s
+    mu = float(x.mean())
+    if mu <= 0:
+        return float("nan")
+    excess = (float(x.var(ddof=1)) - mu * float(np.mean(1.0 / s))) / mu ** 2
+    return float(np.log1p(max(excess, 0.0)))
+
+
+def coupling_strength_for(construct_change: float, var_a: float, var_b: float) -> dict:
+    """The strength at which ``coupling``'s shared factor raises the correlation of the two genes' log
+    expected expression by `construct_change` against its sham. The factor adds v = Var(log sigmoid(s z))
+    to both genes' variances and to their covariance; the sham adds v to the variances only, so the
+    correlation rises by v / sqrt((var_a + v)(var_b + v)) whatever the genes' own correlation. The
+    variances are floored at ``BIO_VAR_FLOOR``."""
+    S = float(construct_change)
+    if not 0 < S < 1:
+        raise ValueError(f"a change of correlation must lie in (0, 1), not {S!r}")
+    va, vb = (max(float(v), BIO_VAR_FLOOR) if np.isfinite(v) else BIO_VAR_FLOOR for v in (var_a, var_b))
+
+    def rise(v):
+        return v / np.sqrt((va + v) * (vb + v))
+    lo, hi = 0.0, 1.0
+    while rise(hi) < S:
+        hi *= 2.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if rise(mid) < S else (lo, mid)
+    v = 0.5 * (lo + hi)
+    a, b = 0.0, 1.0
+    while log_sigmoid_variance(b) < v:
+        b *= 2.0
+    for _ in range(200):
+        mid = 0.5 * (a + b)
+        a, b = (mid, b) if log_sigmoid_variance(mid) < v else (a, mid)
+    return dict(strength=float(0.5 * (a + b)), added_variance=float(v), var_a=float(va), var_b=float(vb),
+                floored=[g for g, x in (("a", var_a), ("b", var_b)) if not np.isfinite(x) or x < BIO_VAR_FLOOR])
+
+
+def at_construct_change(inject, construct_change: float, *, var_a: float | None = None, var_b: float | None = None):
+    """The probe of `inject`'s kind and genes whose construct change is `construct_change`, and a
+    record of the dose: a module lowered exp(change)-fold (a change of its log expression), a coupling
+    at the strength that raises the correlation of the pair's log expected expression by the change
+    (given the genes' biological variances, ``biological_log_variance``). Returns (probe, info); the
+    probe is None for an injector of another kind."""
+    kind = getattr(inject, "kind", None)
+    S = float(construct_change)
+    if kind == "module":
+        fold = float(np.exp(S))
+        return module(list(inject.genes), fold=fold, frac=getattr(inject, "frac", 1.0)), dict(
+            kind=kind, construct_change=S, scale="log expression (natural log)", fold=fold)
+    if kind == "coupling":
+        info = coupling_strength_for(S, var_a if var_a is not None else float("nan"),
+                                     var_b if var_b is not None else float("nan"))
+        return coupling(*inject.genes, strength=info["strength"]), dict(
+            kind=kind, construct_change=S, scale="correlation of the pair's log expected expression", **info)
+    return None, dict(kind=kind, construct_change=S, note="no rule translates this injector's dose")

@@ -54,13 +54,20 @@ and what would disprove the claim. Then the commitments the engine enforces:
   SUPPORTED needs the effect in this direction; a detected effect the other way is NOT SUPPORTED;
 - **replicate unit** and **minimum replicates** per group;
 - **SESOI** — the smallest effect size of interest (needed to claim "no detectable effect",
-  for the power check, for "explained by depth", and to size nuisance biases: a dropout or
+  for EFFECT BELOW SESOI, for "explained by depth", and to size nuisance biases: a dropout or
   library-size bias blocks only above `bias_tolerance` × SESOI, default 0.5; without a SESOI
-  SUPPORTED is withheld while a bias is unsized), and its scale (`sesoi_scale`: `construct`, the
-  default, attenuated by GATE 0's λ, or `observed`, the metric's own scale);
-- **delta_min** — the smallest response to an injected signal that matters (default 0.5 ×
-  SESOI): GATE 4 and GATE 5 call the metric invalid only when its response is shown below it;
-- alpha, power, controls (or an injected signal and its direction).
+  SUPPORTED is withheld while a bias is unsized), and its scale (`sesoi_scale`). Since v0.4 the
+  default, `construct`, is a change of the construct: of the correlation of the pair's log expected
+  expression for a coupling probe (in (0, 1)), of the natural-log expression for a module probe.
+  GATE 4 injects a change of that size and its response, s_m, is the SESOI in the metric's units;
+  without a probe it is not translated and the design's floor stands in. `observed` is the metric's
+  own scale, used as declared — and then a SESOI is in the metric's units: 0.1 is not a SESOI for
+  `mi_3bin`, whose values on real data are of the order of 0.01;
+- **the cell-type column** (`composition`, first) when the data carry one: the claim is then judged
+  within its domain, the types where its genes are expressed (both genes of a pair in at least 10%
+  of a type's cells in at least one group), the types weighted equally;
+- alpha, power, controls (or an injected signal and its direction). `delta_min` is no longer used
+  (v0.4: GATE 4 fails a metric only where its response is shown at or below zero).
 
 An empty field is not "TBD" — it is the reason the analysis will fail. Save the commitments as
 JSON for `--prereg`; the engine hashes them into the report. The form supplies the answers to
@@ -93,14 +100,17 @@ The gates, and what each catches (full detail in `references/gates.md`):
 | **1 QC parity** | groups differ in technical quality — *in any factorial stratum*; a diagnostic (WARN), not a kill switch | design adequacy |
 | **2 Estimand-dependent correction** | the raw difference is depth or capture: thinning to equal depth (composition) or spike-in capture (content), then replicate-level inference | effect |
 | **3 Raw visibility** | effect isn't visible in the raw scatter; a "shape change" is really dropout | export + judgment |
-| **4 Measures what you think** | the metric does not respond to an injected signal (auto); more than one non-biological scenario explains the result (judgment — you ask) | metric validity |
-| **5 Controls** | negative control fires, or positive control silent where the design had the power to show it (FAIL); positive control silent where it had not (WARN); per stratum, against empirical nulls; the controls must run the metric under judgment | metric validity |
+| **4 Measures what you think** | the metric is shown blind to an injected change of the SESOI's size, in the domain's cells (auto); more than one non-biological scenario explains the result (judgment — you ask) | metric validity; s_m → the SESOI in the metric's units |
+| **5 Controls** | positive control silent where the metric is shown blind to a coupling injected into its genes (FAIL); silent without that proof (WARN); per stratum, against empirical nulls; the negative control is reported, not failed (v0.4); the controls must run the metric under judgment | metric validity |
 | **6 Replication** | the corrected, replicate-level effect does not hold on independent data | replication |
 | **7 Effect size** | statistically real but biologically negligible — declare it as the SESOI | judgment — you ask |
 
-An invalid metric (GATE 0 bias, a failed negative control, no response to an injected
+An invalid metric (GATE 0 bias, a blind positive control, no response to an injected
 signal) is **blocking**: by default the effect is not even estimated. Do not let a later gate
 rescue it. GATE 1 is the highest-yield look at the data — always stratify by every factor.
+Beside the verdict, read the report's line of specificity for a claim about given genes (v0.4): how
+many of 1,000 matched control genes or pairs move at least as far, which, and whether the controls
+shift together in the claim's direction. It changes no verdict; say what it shows.
 
 ### 3. Resolve the judgment gates (4, 7) with the user
 

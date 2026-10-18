@@ -384,12 +384,22 @@ def test_p09_equivalence_requires_a_sesoi():
         assert a.effect.status != "NO_DETECTABLE_EFFECT"
         assert "do not differ" not in a.to_markdown()
     null = _mice(6, seed=0)
-    no_sesoi = run_autopsy(NPR, null, group_col="age", groups=("young", "old"),
-                           replicate_col="mouse", prereg=COMPOSITION)
     with_sesoi = run_autopsy(NPR, null, group_col="age", groups=("young", "old"),
                              replicate_col="mouse", prereg={**COMPOSITION, "sesoi": 0.15})
-    assert no_sesoi.effect.status == "INCONCLUSIVE"
     assert with_sesoi.effect.status == "NO_DETECTABLE_EFFECT"
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "JOURNAL.md D8: v0.4 change 4 (decided 2026-10-12 and 2026-10-18) makes the design's floor the margin "
+    "of absence without a SESOI, so the null's effect is NO_DETECTABLE_EFFECT flagged NO_SESOI_FLOOR (floor "
+    "0.1126 here); p09's expectation, unedited, is v0.3's INCONCLUSIVE"))
+def test_p09_without_a_sesoi_the_null_is_inconclusive():
+    """p09's second truth, split from the test above unedited (JOURNAL.md, D8): on null data without a
+    pre-registered SESOI the effect is INCONCLUSIVE."""
+    null = _mice(6, seed=0)
+    no_sesoi = run_autopsy(NPR, null, group_col="age", groups=("young", "old"),
+                           replicate_col="mouse", prereg=COMPOSITION)
+    assert no_sesoi.effect.status == "INCONCLUSIVE"
 
 
 # fixed in v0.3.0.dev0 — v0.1.1 failure (p09): null floor from 20 permutations flips verdicts
@@ -558,7 +568,19 @@ def test_p14_gate4_passes_the_valid_metric_and_fails_it_only_where_it_is_blind(p
     >= 0.8 (the log: 40/40 PASS, 0/40 FAIL, 39/40 FAIL). Under the former rule (z >= 3 over 10
     injections) the medium level failed 8/12 at strength 1.0."""
     bgs, pilot = p14_backgrounds
-    high, medium, low = (_p14_outcomes(bgs, pilot, lv) for lv in ("high", "medium", "low"))
+    high, medium = (_p14_outcomes(bgs, pilot, lv) for lv in ("high", "medium"))
     assert high == ["PASS"] * P14_DATASETS
     assert medium.count("FAIL") <= 1 and medium.count("PASS") >= P14_DATASETS - 1
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "JOURNAL.md D8: v0.4 change 3 (decided 2026-10-17 and 2026-10-18) drops delta_min, so GATE 4 FAILs only "
+    "where the response's upper bound is at or below 0; at the low level 1 of 8 datasets FAIL (4 PASS, 3 "
+    "UNTESTED); p14's expectation, unedited, is v0.3's (FAIL in at least 7 of 8)"))
+def test_p14_gate4_fails_the_metric_at_the_low_level_where_it_is_blind(p14_backgrounds):
+    """p14's low-level truth, split from the test above unedited (JOURNAL.md, D8): log-normalized
+    Pearson does not respond to an injected coupling at the low level (-0.023 to +0.019), and GATE 4
+    FAILs it with probability >= 0.8."""
+    bgs, pilot = p14_backgrounds
+    low = _p14_outcomes(bgs, pilot, "low")
     assert low.count("FAIL") >= 7

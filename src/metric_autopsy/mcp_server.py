@@ -88,10 +88,11 @@ def autopsy_report(
     'decrease' or 'two-sided' (non-directional); required for SUPPORTED.
     sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
     GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
-    sesoi_scale: 'construct' (default: equivalence within ±attenuation x SESOI) or 'observed'
+    sesoi_scale: 'construct' (default: a change of the correlation of the pair's log expected
+    expression, translated into the metric's units by the inject_signal probe) or 'observed'
     (the SESOI is a difference of the metric as measured at this depth).
-    delta_min: the smallest response to an injected signal that matters (GATE 4/5; default
-    0.5 x SESOI): the metric is invalid only if its response is shown below it.
+    delta_min: recorded in the pre-registration, not used since v0.4 (GATE 4/5 call a metric blind
+    only where its response is shown at or below zero).
     pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
     metric's response to an injected coupling of (gene_a, gene_b). data2_path: GATE 6.
     resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
@@ -99,8 +100,9 @@ def autopsy_report(
     JSON report. log_path: run log; a pre-registered run is always logged (default
     $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl; "off" disables).
     composition: obs columns of an annotation, the cell type first (e.g. ["cell_type", "tissue"]):
-    their shares are compared between the groups at the replicate level and the claim is judged
-    within each cell type, the verdicts not combined (reported, not gates).
+    their shares are compared between the groups at the replicate level, and the claim is judged
+    within its domain, the cell types where its genes are expressed, the types weighted equally;
+    the whole mixture's estimate is reported beside.
     """
     import json
 

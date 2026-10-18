@@ -211,3 +211,31 @@ called depth although the corrected effect was not shown to be negligible.
 `test_a_sesoi_on_the_observed_scale_is_not_attenuated`. The panel's allowed outcomes follow
 (validation/prereg/v1.md 3.2): below the SESOI, "explained by depth" is allowed on a real effect
 with a planted artifact (E2, E3), as NO DETECTABLE EFFECT is.
+
+## D8 — v0.4's changes 3 and 4 against p09 and p14 (2026-10-18; for the owner's decision)
+
+**The finding.** Two of the owner's decisions on v0.4 contradict two expectations of the dev set.
+- **Change 3** (decided 2026-10-17, on conditions 2026-10-18): GATE 4 decides only whether the metric
+  is blind, FAIL where the upper bound of its response lies at or below zero; delta_min is dropped.
+  p14 expects GATE 4 to FAIL log-normalized Pearson at the low expression level, where its population
+  response to the injected coupling is −0.023 to +0.019, in at least 7 of 8 datasets. With v0.4 the
+  low level gives FAIL in 1 of 8 (PASS 4, UNTESTED 3); the high and medium levels stay as expected
+  (8 of 8 PASS each).
+- **Change 4** (decided 2026-10-12, its final form 2026-10-18): without a declared SESOI the design's
+  floor is the margin of absence. p09 expects the effect on its null data without a SESOI to be
+  INCONCLUSIVE; with v0.4 it is NO_DETECTABLE_EFFECT, flagged NO_SESOI_FLOOR, absence confirmed only
+  for effects of at least the floor, 0.1126. The verdict stays INCONCLUSIVE there, because the metric's
+  response is untested. p09's other truth (a moderate real effect is never called "no difference")
+  holds.
+
+**What changed.** Nothing in the expectations. Each of the two tests is split, its assertions
+verbatim: the parts that hold stay ordinary tests; the parts that conflict with the decided changes,
+`test_p09_without_a_sesoi_the_null_is_inconclusive` and
+`test_p14_gate4_fails_the_metric_at_the_low_level_where_it_is_blind`, are `xfail(strict=True)`, so
+that a later change that meets them shows as an XPASS error.
+
+**For the owner.** Whether these expectations follow the decided changes (p14's low level PASSes
+where the response is shown above zero, however small; p09's null without a SESOI is an absence at
+the floor), or the changes are reconsidered where they meet them. At the low level the price of
+dropping delta_min is concrete: 4 of the 8 datasets certify a response that the truth calls absent.
+

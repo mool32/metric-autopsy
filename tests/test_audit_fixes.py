@@ -134,11 +134,15 @@ def test_gate5_skip_when_all_strata_too_small():
     assert res.status == GateStatus.SKIP
 
 
-def test_gate5_fails_broken_negative_control():
+def test_gate5_reports_a_broken_negative_control():
     d = make_clean()
-    # negative control is actually the (coupled) housekeeping pair -> must FAIL
+    # the negative control is the (coupled) housekeeping pair: since v0.4 (change 13) it is reported,
+    # not a failure (the check of specificity judges the claim instead); the legacy band still fails it
     res = gate5_controls(metrics.mi_3bin, d, ("Actb", "Gapdh"), ("Actb", "Gapdh"))
-    assert res.status == GateStatus.FAIL
+    assert res.status != GateStatus.FAIL and res.detail["negative_control_outside_null"] == ["pooled"]
+    assert "reported, not a failure" in res.message
+    legacy = gate5_controls(metrics.mi_3bin, d, ("Actb", "Gapdh"), ("Actb", "Gapdh"), pos_min=0.0, neg_max=0.01)
+    assert legacy.status == GateStatus.FAIL
 
 
 # --- #15 : KS asymptotic fallback ------------------------------------------
@@ -157,21 +161,20 @@ def test_markdown_cell_escapes_pipe_and_newline():
 
 
 # --- #21 : stop_on_first_fail honored for pairwise gates -------------------
-def test_stop_halts_before_gate6_after_gate5_fail():
-    # v0.3: the controls must test the judged metric (pair_metric was mi_3bin under a bound
-    # norm_pearson, which now skips GATE 5), so both are norm_pearson; the coupled pair offered
-    # as the negative control still fails GATE 5.
+def test_stop_halts_before_gate6_after_a_validity_fail():
+    # since v0.4 (change 13) a broken negative control no longer fails GATE 5, so the metric is made
+    # invalid by GATE 4: it falls where the injected coupling rises
+    from metric_autopsy import injected_signal
     d = make_clean()
     m = partial(metrics.norm_pearson, gene_a="Smad3", gene_b="Col1a1")
     autopsy = run_autopsy(
-        m, d, group_col="age", groups=("young", "old"), within=["sex"],
-        gene_pair=("Smad3", "Col1a1"),
-        pair_metric=metrics.norm_pearson, pos_pair=("Actb", "Gapdh"), neg_pair=("Actb", "Gapdh"),
+        lambda data: -m(data), d, group_col="age", groups=("young", "old"), within=["sex"],
+        gene_pair=("Smad3", "Col1a1"), signal_test=injected_signal.coupling("Smad3", "Col1a1"),
         data2=d, stop_on_first_fail=True,
     )
     gates_run = {r.gate for r in autopsy.results}
-    assert next(r for r in autopsy.results if r.gate == 5).status == GateStatus.FAIL
-    assert 5 in gates_run and 6 not in gates_run  # GATE 5 blocked -> GATE 6 never ran
+    assert next(r for r in autopsy.results if r.gate == 4).status == GateStatus.FAIL
+    assert 4 in gates_run and 6 not in gates_run  # GATE 4 blocked -> GATE 6 never ran
 
 
 # --- #22 : duplicate var_names rejected ------------------------------------

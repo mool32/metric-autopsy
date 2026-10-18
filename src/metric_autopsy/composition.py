@@ -7,13 +7,15 @@ The decided minimum:
 
 (i)   a diagnostic: the shares of each level of an annotation (a cell type, a tissue) per replicate,
       compared between the groups at the replicate level (``composition_difference``);
-(ii)  UNIDENTIFIABLE for a type absent from every replicate of one group;
-(iii) verdicts per type, by default not combined (``report.per_type_verdicts``);
+(ii)  a type absent from every replicate of one group cannot be compared, and is listed;
+(iii) estimates per type;
 (iv)  a claim about a mixture only together with its difference of composition (the verdict's note).
 
-Composition can only remove a conclusion (decided 2026-10-17); by which rule is not decided: on
-section 4 in males the drop of MI stayed within the cell types (68.7% of it, exact p 0.01587;
-``validation/exploratory/real_pilot_4.log``). This module reports; it removes nothing.
+On section 4 in males the drop of MI stayed within the cell types (68.7% of it, exact p 0.01587;
+``validation/exploratory/real_pilot_4.log``). The rule decided on 2026-10-18 is the claim's domain
+(``domain``): the verdict follows the estimate combined over the types where the claim's genes are
+expressed, the types weighted equally, and the whole mixture's estimate is reported beside the
+difference of composition. This module reports; it removes nothing.
 """
 from __future__ import annotations
 

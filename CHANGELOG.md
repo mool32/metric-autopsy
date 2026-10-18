@@ -7,12 +7,58 @@ comparability.
 
 ## [0.4.0.dev0] — in development, not released
 
-The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-17):
-1, 2, 6, 7 (its decided minimum), 8, 14, 15 and 16. Changes 3, 4 and 13 wait on the owner's decision
-after the second diagnostics on the pilot's data (`validation/exploratory/real_pilot_4.log`).
-Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-18):
+1, 2, 3, 4, 6, 7, 8, 13 (as a line of the report), 14, 15 and 16, and the claim's domain (the
+decisions of 2026-10-18, after the second diagnostics on the pilot's data,
+`validation/exploratory/real_pilot_4.log`). Validation v1's scope stays the tag `v0.3.0-prereg`'s:
+nothing here is validated.
 
 ### Changed
+- **The SESOI on the construct's scale, brought into the metric's units by GATE 4 (change 3,
+  decided 2026-10-18).** `prereg["sesoi"]` is by default a change of the construct
+  (`sesoi_scale="construct"`): for a coupling probe a change of the correlation of the pair's log
+  expected expression, in (0, 1); for a module probe a change of the module's natural-log
+  expression. GATE 4's probe is dosed to that change (`injected_signal.at_construct_change`): a
+  module lowered exp(SESOI)-fold; a coupling at the strength that raises the correlation by the
+  SESOI given the two genes' biological variances in the probed cells (`biological_log_variance`, a
+  Poisson-lognormal method of moments, floored at `BIO_VAR_FLOOR` = 0.01; `coupling_strength_for`).
+  Its response s_m, with a 95% interval over the replicates (the injection repeated within each,
+  a cluster-robust mean), is the SESOI in the metric's units for GATE 0's tolerance, the TOST and
+  EFFECT BELOW SESOI. A SESOI on the metric's own scale is declared with `sesoi_scale="observed"`
+  and used as declared; a SESOI on the construct's scale that no probe translates is not used
+  (SESOI_NOT_TRANSLATED), and the design's floor stands in.
+- **GATE 4 decides only blindness (change 3).** PASS where the lower 95% bound of s_m lies above
+  zero in the injection's direction, FAIL (blind) where the upper bound lies at or below zero,
+  UNTESTED (WARN) otherwise. `delta_min` is recorded, not used (the CLI's `--delta-min` and the MCP
+  tool's `delta_min` are accepted and ignored). The detail gives the dose–response at 0.5×, 1× and
+  2× the SESOI (`GATE4_CURVE`; `GATE4_N_REP_CURVE` = 20 injections per replicate at the extra
+  doses). The protection that delta_min gave is carried by the checks that explain a difference
+  away (depth, change 6; the domain and composition, change 7).
+- **The design's floor (change 4).** se × (t(1 − α, df) + t(0.975, df)) of the replicate-level
+  estimate (`effect.design_floor`): the smallest SESOI at which this design confirms absence by
+  the TOST with power 0.95 at a true difference of 0 (v1's rule). A SESOI in the metric's units
+  below it is flagged SESOI_BELOW_FLOOR; without a SESOI the floor is the margin of absence, flagged
+  NO_SESOI_FLOOR, with "absence is confirmed only for effects of at least X". EFFECT BELOW SESOI and
+  the TOST that explains a difference by depth need a pre-registered SESOI.
+- **The claim's domain (decided 2026-10-18).** With `composition` (the cell type first), the claim
+  is judged in the cell types where its genes are expressed: for a pair, both genes detected in at
+  least 10% of the type's cells in at least one group (`domain.DOMAIN_DETECTION`, the lower bound of
+  v1's low level); for a set, any of its genes; for a claim without genes, every type; each type
+  with at least 20 cells in at least 3 replicates of each group, per stratum
+  (`domain.claim_domain`). The verdict follows the combined estimate within the domain: the metric
+  of each (replicate, type) unit, at equal depth within its (stratum, type), the types weighted
+  equally within a stratum and the strata by precision, with a cluster-robust interval over the
+  replicates (Satterthwaite df) and relabelings of the replicates within strata (`combined.py`).
+  The whole mixture's estimate, the estimate outside the domain and each type's are reported beside
+  the difference of composition. An empty domain gives INCONCLUSIVE, cause `empty_domain`.
+- **GATE 4 and GATE 0 run on the domain's cells** (decided 2026-10-18), not on the whole mixture.
+- **GATE 5's negative control is reported, not failed.** An unrelated pair outside its null of
+  unrelated pairs is reported (`negative_control_outside_null`); GATE 5 fails only a positive
+  control that GATE 4's rule shows blind, or one in the legacy band. The 10 pairs with an
+  equivalence or Holm rule of the spec's proposal are not built (change 13, decided 2026-10-17).
+- The verdicts per type of change 7 (`report.per_type_verdicts`) give way to the domain's estimates
+  per type; a type absent from every replicate of one group cannot be estimated and is listed with
+  the group it is absent from (`absent_from`).
 - **GATE 4 on the claim's own statistic (change 1).** With a replicate unit the signal goes into
   the group whose replicates have more of the probed genes' counts per cell, whatever the claim's
   wording (on an exact tie into each group, the weaker response judged); the response is the
@@ -59,6 +105,41 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   units they overlap (`effect.composite_units`); a warning, not an exclusion.
 - `stats.nested_relabelings` and `stats.relabeling_p`: the effect test's relabelings for a
   statistic of any shape.
+- **The check of specificity, a line of the report (change 13, decided 2026-10-18).** For a claim
+  about given genes (a pair or a set), K = 1,000 controls drawn from every gene of
+  `specificity_pool` (the same cells with all their genes; by default the data), matched on the log10
+  mean and the detection, without the pairs of `prereg["known_interactions"]` and the genes of
+  `prereg["known_to_differ"]`; each control's donor-level t within the domain, on the uncorrected
+  data, as the claim's. The line gives how many of the K lie at least as far as the claim in its
+  direction (with the share's Clopper–Pearson interval and an outcome: specific, not specific,
+  undecided where the interval crosses α), the 10 nearest controls and every control at least as far,
+  and the controls' common shift (their median t, with an interval by relabelings of the replicates
+  under a shift model), with a warning where the shift is significant in the claim's direction. It
+  is not a condition of SUPPORTED (`specificity.check`; `run_autopsy(gene_metric=, specificity=,
+  specificity_pool=)`).
+- `combined.py` (the units, the cluster-robust estimator and its relabelings), `domain.py` (the
+  domain's rule), `specificity.py`.
+- **A test of GATE 0's false FAIL rate** over 40 seeds against a target of 5% fixed before measuring
+  (`tests/test_v04_domain.py`), xfail(strict=True) while the known issue below stands.
+
+### Known issues
+- **GATE 0 falsely fails a valid metric in 4 of 40 seeds.** On the nested-mice test data
+  (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's scale), the
+  `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against a tolerance
+  of 0.01 (0.5 × SESOI), and GATE 0 FAILs in seeds 8, 11, 36 and 37. The power test that met it is
+  isolated from GATE 0's dropout (`test_underpowered_design_is_flagged_and_named_in_the_verdict`);
+  the rate's own test records the failure. Change 12 (GATE 0 blocks only a bias it cannot show to be
+  equal between the groups) is decided, not yet coded.
+- **Two expectations of the dev set conflict with changes 3 and 4** (`validation/probes/JOURNAL.md`,
+  D8): at p14's low expression level, where log-normalized Pearson does not respond to the injected
+  coupling, GATE 4 FAILs 1 of 8 datasets (4 PASS, 3 UNTESTED) against the expected 7 or more; on p09's
+  null without a SESOI the effect is NO_DETECTABLE_EFFECT at the design's floor (flag
+  NO_SESOI_FLOOR) against the expected INCONCLUSIVE. Both parts are `xfail(strict=True)`, their
+  expectations unedited, for the owner's decision.
+- **v1's panel copies the tag's rules.** `validation/prereg/test_prereg.py` checks the panel's and the
+  oracle's copies against the tag's engine; on this branch it checks that v0.4 differs from them in
+  exactly the decided ways (the causes of changes 6, 14 and the domain; GATE 4's FAIL only at or below
+  zero; the module probe's default share and its direction).
 
 ### Removed
 - **The internal checklist's "2.4x" in `qc.py`'s docstring (change 8)**, a number without a

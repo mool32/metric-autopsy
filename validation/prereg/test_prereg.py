@@ -50,6 +50,17 @@ def _pilot(bgs, sesoi=0.15, dose=3.0, delta=0.3, truth=None):
     return out
 
 
+# The panel and the oracle copy the rules of the tag's engine (v0.3.0-prereg, version 0.3.0.dev0), with which
+# validation v1 ran. On the branch of v0.4 the engine installed differs from them by the owner's decisions:
+V04_CAUSES = {"detected_only_after_correction", "effect_below_sesoi", "empty_domain"}  # changes 6, 14, the domain
+TAG_MODULE_DEFAULTS = (2.0, 0.3)  # the tag's injected_signal.module(fold, frac)
+
+
+def _engine_is_the_tags() -> bool:
+    import metric_autopsy
+    return metric_autopsy.__version__.startswith("0.3.")
+
+
 @pytest.fixture(scope="module")
 def bgs():
     return {"B1": simulated_background("B1"), "B2": simulated_background("B2", donors=12, seed=1)}
@@ -413,12 +424,21 @@ def test_the_panels_copies_of_the_engines_rules_agree_with_it():
     from metric_autopsy.report import CAUSES
     assert P.DELTA_MIN_FRACTION == G.DELTA_MIN_FRACTION and O.GATE4_REPS == G.GATE4_N_REP
     assert (O.MODULE_FOLD, O.MODULE_FRAC) == (R.MODULE_FOLD, R.MODULE_FRAC)
-    assert set(CAUSES) == set(P.CAUSE_OUTCOME)
+    # the panel copies the rules of the tag's engine (0.3.0.dev0); v0.4 changes them by the owner's
+    # decisions, and on its branch the test checks that it differs from the copies in exactly those
+    tag_engine = _engine_is_the_tags()
+    assert set(CAUSES) == set(P.CAUSE_OUTCOME) | (set() if tag_engine else V04_CAUSES)
     rng = np.random.default_rng(0)
     for _ in range(300):
         d = rng.normal(rng.uniform(-0.05, 0.1), rng.uniform(0.001, 0.2), size=int(rng.integers(5, 60)))
         dmin = float(rng.uniform(0.01, 0.1))
-        assert O.shows_blind(d, dmin) == (G.judge_response(G.response_interval(d), dmin) == "FAIL")
+        iv = G.response_interval(d)
+        if tag_engine:
+            assert O.shows_blind(d, dmin) == (G.judge_response(iv, dmin) == "FAIL")
+        else:  # v0.4 change 3: blind only at or below 0, so v0.4's FAILs are a subset of v1's
+            engine_fails = G.judge_response(iv, dmin) == "FAIL"
+            assert O.shows_blind(d, dmin) or not engine_fails
+            assert engine_fails == (iv["signed_upper"] <= 0)
     # the engine's verdict order where GATE 4 ran (oracle.engine_outcome against report.decide_cause):
     # "explained by depth" comes before the metric's validity, which the second review found unmodelled
     from metric_autopsy.core import Assessment
@@ -540,7 +560,11 @@ def test_the_oracles_module_response_matches_the_engines_injection(bgs):
     import run_panel as R
     from metric_autopsy import SimpleData, gates as G, injected_signal
     sig = inspect.signature(injected_signal.module).parameters
-    assert (O.MODULE_FOLD, O.MODULE_FRAC) == (R.MODULE_FOLD, R.MODULE_FRAC) == (sig["fold"].default, sig["frac"].default)
+    tag_engine = _engine_is_the_tags()
+    assert (O.MODULE_FOLD, O.MODULE_FRAC) == (R.MODULE_FOLD, R.MODULE_FRAC) == (
+        (sig["fold"].default, sig["frac"].default) if tag_engine else TAG_MODULE_DEFAULTS)
+    if not tag_engine:  # v0.4 change 2: every cell by default
+        assert (sig["fold"].default, sig["frac"].default) == (2.0, 1.0)
     pilot = _pilot(bgs)
     X, obs, genes, _ = P.build(_entry("N6c", "random-genes", seed=4, pair=1), bgs, pilot)
     plan = bgs["B1"].plan
@@ -552,7 +576,13 @@ def test_the_oracles_module_response_matches_the_engines_injection(bgs):
                                           injected_signal.module(plan["g2m"], fold=R.MODULE_FOLD, frac=R.MODULE_FRAC),
                                           200, np.random.default_rng(2)))
     se = np.sqrt(ours.var(ddof=1) / len(ours) + theirs.var(ddof=1) / len(theirs))
-    assert abs(ours.mean() - theirs.mean()) < 4 * se and abs(theirs.mean()) > 4 * theirs.std(ddof=1) / np.sqrt(200)
+    if tag_engine:
+        assert abs(ours.mean() - theirs.mean()) < 4 * se and abs(theirs.mean()) > 4 * theirs.std(ddof=1) / np.sqrt(200)
+    else:  # v0.4 change 2 lowers the module by thinning its own genes, where v0.3 (the oracle's model) raised it
+        # by thinning every other gene: the random-gene score moves the other way (-0.0166 and +0.0117 here)
+        assert np.sign(ours.mean()) == -np.sign(theirs.mean())
+        assert abs(ours.mean()) > 4 * ours.std(ddof=1) / np.sqrt(200)
+        assert abs(theirs.mean()) > 4 * theirs.std(ddof=1) / np.sqrt(200)
 
 
 # --------------------------------------------------------------------------- #

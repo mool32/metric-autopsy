@@ -23,6 +23,7 @@ then believe**, never "compute → believe."
    - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --replicate-col mouse --estimand composition --direction decrease --sesoi 0.1 --pos-pair Actb Gapdh --neg-pair G1 G2 --json autopsy.json`
      **Wrong in scale:** the SESOI of 0.1 in this example does not fit `mi_3bin`. On real data its values are of the order of 0.01
      (0.0007 to 0.0162 per mouse in the pilot, `validation/exploratory/real_pilot_summary.log`). A SESOI is in the metric's own units.
+     In v0.4.0.dev0 (branch `claude/v0.4`, not released) the SESOI is on the construct's scale by default — for a pair, a change of the correlation of its log expected expression — and GATE 4's probe (`--inject-signal coupling`) translates it into the metric's units; `--sesoi-scale observed` declares it in the metric's own units.
    - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(..., replicate_col="mouse", prereg={"estimand": "composition", "direction": "decrease", "sesoi": 0.1})` → `.to_markdown()` / `.save_json(path)`.
 2. **As a Claude Code skill.** `SKILL.md` — elicit a pre-registration first, then run the gates, then emit the autopsy. This is the skill's required behavior; follow it verbatim when invoked.
 3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"` then `metric-autopsy-mcp` (not on PyPI yet). Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
@@ -54,7 +55,10 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 | `src/metric_autopsy/provenance.py` | data / pre-registration hashes, versions, run log |
 | `src/metric_autopsy/metrics.py` | reference metrics (`mi_3bin`, `norm_pearson`, …) |
 | `src/metric_autopsy/report.py` | `run_autopsy` orchestration, the four fields, `decide` (the verdict rule) |
-| `src/metric_autopsy/composition.py` | the comparison's composition in cell types and tissues, the claim per type (v0.4; reported, not a gate) |
+| `src/metric_autopsy/composition.py` | the comparison's composition in cell types and tissues (v0.4; reported, not a gate) |
+| `src/metric_autopsy/domain.py` | the claim's domain: the cell types where its genes are expressed, where the claim is judged (v0.4) |
+| `src/metric_autopsy/combined.py` | the estimate combined over the domain's types: units, cluster-robust SE, relabelings (v0.4) |
+| `src/metric_autopsy/specificity.py` | the claim among 1,000 matched controls — a line of the report, not a gate (v0.4) |
 | `src/metric_autopsy/mcp_server.py` | MCP tools |
 | `references/` | full gate definitions, red flags, the pre-reg form (load on demand) |
 | `examples/mi_coupling_tms/` | worked example + executed notebook |
