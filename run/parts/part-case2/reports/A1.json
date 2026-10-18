@@ -1,0 +1,1495 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "log_cp10k_mean",
+ "verdict": "SUPPORTED (provisional until replicated) [parametric only \u2014 too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside]",
+ "cause": "provisional",
+ "fields": {
+  "metric_validity": {
+   "status": "PASS",
+   "reason": "no nuisance bias; responds to module(1 genes, 1/1.64872 by thinning, frac=1): module(1 genes, 1/1.64872 by thinning, frac=1) injected into female (38.49 probed counts per cell against 0.389 in male), its values move by -0.05855 against the untouched data (95% CI [-0.1078, -0.009334] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by -0.05855; the injection removes 0.00% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.05855.",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": null,
+    "gate4": "PASS",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; nested replicates {'female': 3, 'male': 4}; MDE 0.2115 vs the SESOI in the metric's units 0.05855 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.009334, +0.1078] over the replicates); the design's floor 0.2847: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+   "flags": [
+    "PARAMETRIC_ONLY",
+    "UNDERPOWERED",
+    "SESOI_BELOW_FLOOR"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "parametric",
+    "replication": {
+     "kind": "nested",
+     "counts": {
+      "female": 3,
+      "male": 4
+     },
+     "n_eff": 3
+    },
+    "power": {
+     "mde": 0.21154677568882777,
+     "power": 0.8,
+     "sesoi": 0.0585509102788086,
+     "lambda_": 1.0,
+     "effective_sesoi": 0.0585509102788086,
+     "attenuation": {
+      "model": "observed scale (pre-registered sesoi_scale): no attenuation applied"
+     },
+     "floor": 0.28465252974642496,
+     "floor_power": 0.95,
+     "sesoi_source": "declared",
+     "sesoi_label": "s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.009334, +0.1078] over the replicates"
+    },
+    "attenuation": {},
+    "equalization": {
+     "strata": [
+      {
+       "stratum": {
+        "cell_type": "fibroblast of cardiac tissue"
+       },
+       "thinned_group": "male",
+       "n_thinned": 829,
+       "mean_before": 706373.7406513873,
+       "mean_after": 685963.1334392375,
+       "mean_other": 685963.1334392375,
+       "depth_ratio": 0.971105087806169,
+       "ks_after": 0.17268669200573722
+      }
+     ],
+     "depth_ratio": 0.971105087806169,
+     "capture_check": {
+      "raw": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 712145.5420795553,
+        "genes": 1373.8618668479614,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.03995816264864227,
+        "genes": -0.15306186257636145
+       }
+      },
+      "equalized": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 691572.2906380683,
+        "genes": 1372.4087166373524,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.011398339790566925,
+        "genes": -0.1521650974087767
+       }
+      }
+     }
+    },
+    "notes": [],
+    "composite_units": null,
+    "sesoi": {
+     "value": 0.0585509102788086,
+     "source": "s_m",
+     "ci": [
+      0.009334199117456463,
+      0.10776762144016074
+     ],
+     "construct": 0.5,
+     "label": "s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.009334, +0.1078] over the replicates"
+    }
+   }
+  },
+  "effect": {
+   "status": "DETECTED",
+   "reason": "effect +0.2215 [+0.05247, +0.3906] within the domain's types, equally weighted, p=0.0297 (t, parametric only)",
+   "flags": [
+    "PARAMETRIC_ONLY"
+   ],
+   "detail": {
+    "cell_level_raw": 0.20965145181183,
+    "cell_level_corrected": 0.20962800791902908,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.0585509102788086,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": 0.22147694930928044,
+      "ci": [
+       0.05246118823714083,
+       0.3904927103814201
+      ],
+      "ci_level": 0.95,
+      "se": 0.040337976672844555,
+      "df": 2.0572139250484924,
+      "p": 0.029691827837215357,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "raw": {
+      "effect": 0.2214970620277963,
+      "ci": [
+       0.0524618438288936,
+       0.39053228022669895
+      ],
+      "ci_level": 0.95,
+      "se": 0.04033622993670258,
+      "df": 2.0568610448969054,
+      "p": 0.02969539900455298,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "3_39_F",
+       "raw": 0.209238119635367,
+       "corrected": 0.20923811963536704
+      },
+      {
+       "replicate": "3_9_M",
+       "raw": 0.0197709502113368,
+       "corrected": 0.019834648772325412
+      },
+      {
+       "replicate": "3_8_M",
+       "raw": 0.0023128815022201345,
+       "corrected": 0.0023262418773176093
+      },
+      {
+       "replicate": "3_11_M",
+       "raw": 0.00011551791284644573,
+       "corrected": 0.00011890985082386135
+      },
+      {
+       "replicate": "3_10_M",
+       "raw": 0.0,
+       "corrected": 0.0
+      },
+      {
+       "replicate": "3_38_F",
+       "raw": 0.16831322871757795,
+       "corrected": 0.16831322871757795
+      },
+      {
+       "replicate": "3_56_F",
+       "raw": 0.30358934995024645,
+       "corrected": 0.30358934995024645
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "male",
+        "n_thinned": 829,
+        "mean_before": 706373.7406513873,
+        "mean_after": 685963.1334392375,
+        "mean_other": 685963.1334392375,
+        "depth_ratio": 0.971105087806169,
+        "ks_after": 0.17268669200573722
+       }
+      ],
+      "depth_ratio": 0.971105087806169,
+      "capture_check": {
+       "raw": {
+        "female": {
+         "depth": 683689.514679635,
+         "genes": 1163.5760105855754,
+         "unit": "replicates"
+        },
+        "male": {
+         "depth": 712145.5420795553,
+         "genes": 1373.8618668479614,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.03995816264864227,
+         "genes": -0.15306186257636145
+        }
+       },
+       "equalized": {
+        "female": {
+         "depth": 683689.514679635,
+         "genes": 1163.5760105855754,
+         "unit": "replicates"
+        },
+        "male": {
+         "depth": 691572.749927904,
+         "genes": 1372.3421433763638,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.011398996344333834,
+         "genes": -0.15212396835468633
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "female": {
+         "set": 0.3270379235084739
+        },
+        "male": {
+         "set": 0.010015771335111666
+        }
+       },
+       "corrected": {
+        "effect": 0.22152022929431608,
+        "ci": [
+         0.052466026321236314,
+         0.39057443226739585
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033452653550974,
+        "df": 2.05651694231451,
+        "p": 0.029697952576547504,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       "raw": {
+        "effect": 0.2214970620277963,
+        "ci": [
+         0.052461843828893684,
+         0.3905322802266989
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033622993670257,
+        "df": 2.056861044896905,
+        "p": 0.02969539900455298,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 712145.5420795553,
+        "genes": 1373.8618668479614,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.03995816264864227,
+        "genes": -0.15306186257636145
+       }
+      },
+      "equalized": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 691572.2906380683,
+        "genes": 1372.4087166373524,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.011398339790566925,
+        "genes": -0.1521650974087767
+       }
+      }
+     },
+     "n_units": 7,
+     "n_cells": 2088,
+     "units": [
+      {
+       "replicate": "3_38_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.16831322871757795,
+       "corrected": 0.16831322871757795
+      },
+      {
+       "replicate": "3_39_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.209238119635367,
+       "corrected": 0.20923811963536704
+      },
+      {
+       "replicate": "3_56_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.30358934995024645,
+       "corrected": 0.30358934995024645
+      },
+      {
+       "replicate": "3_10_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0,
+       "corrected": 0.0
+      },
+      {
+       "replicate": "3_11_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.00011551791284644573,
+       "corrected": 9.514404797764753e-05
+      },
+      {
+       "replicate": "3_8_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0023128815022201345,
+       "corrected": 0.0023076394424504723
+      },
+      {
+       "replicate": "3_9_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0197709502113368,
+       "corrected": 0.019703897069896108
+      }
+     ],
+     "types": [
+      "fibroblast of cardiac tissue"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "set",
+      "genes": [
+       "Xist"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, the set of genes is detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.22152022929431608,
+    "raw_effect": 0.2214970620277963,
+    "se": 0.04033452653550974,
+    "df": 2.05651694231451,
+    "t_method": "domain: cluster-robust over replicates",
+    "ci": [
+     0.052466026321236314,
+     0.39057443226739585
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     0.10592190252097089,
+     0.3371185560676613
+    ],
+    "p_t": 0.029697952576547504,
+    "p_perm": 0.02857142857142857,
+    "perm_method": "exact",
+    "perm_n": 35,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.02857142857142857,
+    "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "female": 3,
+     "male": 4
+    },
+    "design_kind": "nested",
+    "raw_detected": true,
+    "p_raw": 0.02969539900455298,
+    "replicate_values": [
+     {
+      "replicate": "3_39_F",
+      "raw": 0.209238119635367,
+      "corrected": 0.20923811963536704,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_9_M",
+      "raw": 0.0197709502113368,
+      "corrected": 0.019834648772325412,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_8_M",
+      "raw": 0.0023128815022201345,
+      "corrected": 0.0023262418773176093,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_11_M",
+      "raw": 0.00011551791284644573,
+      "corrected": 0.00011890985082386135,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_10_M",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_38_F",
+      "raw": 0.16831322871757795,
+      "corrected": 0.16831322871757795,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_56_F",
+      "raw": 0.30358934995024645,
+      "corrected": 0.30358934995024645,
+      "stratum": null,
+      "group": "female"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 1.0001045940127047,
+    "effective_sesoi": 0.0585509102788086,
+    "sesoi_source": "declared",
+    "floor": 0.28465252974642496,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.0585509102788086,
+    "ci_2alpha_raw": [
+     0.10590657390112199,
+     0.33708755015447056
+    ]
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias or attenuation beyond estimator noise under any nuisance perturbation",
+   "detail": {
+    "baseline": 0.13255649199392472,
+    "baseline_sd": 0.009372554273776626,
+    "null_center": 0.12986772787845602,
+    "null_sd": 0.005856316754570992,
+    "signal": 0.0026887641154687003,
+    "has_signal": false,
+    "immaterial_signal": false,
+    "scale": 0.20965145181183,
+    "scale_source": "effect",
+    "effect_scale": 0.20965145181183,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.11898192184804221,
+      "shift": -0.013574570145882509,
+      "z": 9.86376206324636,
+      "shift_std": -0.06474827638239392,
+      "rel_change": 0.06474827638239392,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.13247122608206463,
+      "shift": -8.526591186008847e-05,
+      "z": 0.07022464208811818,
+      "shift_std": -0.0004067031786482347,
+      "rel_change": 0.0004067031786482347,
+      "classification": "none",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.13281016352580993,
+      "shift": 0.0002536715318852134,
+      "z": 0.20964735752924596,
+      "shift_std": 0.0012099679238705824,
+      "rel_change": 0.0012099679238705824,
+      "classification": "none",
+      "confounded": false
+     },
+     "gene_subsample": {
+      "mean_perturbed": 0.14852485831741125,
+      "shift": 0.015968366323486527,
+      "z": 10.491905069696749,
+      "shift_std": 0.07616625683002058,
+      "rel_change": 0.07616625683002058,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {},
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.0585509102788086,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.0292754551394043,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.20x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 1259,
+      "n_b": 829,
+      "median_n_genes_a": 1169.0,
+      "median_n_genes_b": 1398.0,
+      "n_genes_ratio": 1.1958939264328485,
+      "overlap": 0.6536964980544747,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       -0.1983929625263114,
+       -0.15939496011706372
+      ],
+      "ratio_ci": [
+       0.8200475418601069,
+       0.8526595259495212
+      ],
+      "overlap_upper": 0.7049076001723811
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.1958939264328485,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw +0.2215 -> corrected +0.2215",
+   "detail": {
+    "cell_level_raw": 0.20965145181183,
+    "cell_level_corrected": 0.20962800791902908,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.0585509102788086,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": 0.22147694930928044,
+      "ci": [
+       0.05246118823714083,
+       0.3904927103814201
+      ],
+      "ci_level": 0.95,
+      "se": 0.040337976672844555,
+      "df": 2.0572139250484924,
+      "p": 0.029691827837215357,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "raw": {
+      "effect": 0.2214970620277963,
+      "ci": [
+       0.0524618438288936,
+       0.39053228022669895
+      ],
+      "ci_level": 0.95,
+      "se": 0.04033622993670258,
+      "df": 2.0568610448969054,
+      "p": 0.02969539900455298,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": true,
+      "n_replicates": {
+       "female": 3,
+       "male": 4
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "3_39_F",
+       "raw": 0.209238119635367,
+       "corrected": 0.20923811963536704
+      },
+      {
+       "replicate": "3_9_M",
+       "raw": 0.0197709502113368,
+       "corrected": 0.019834648772325412
+      },
+      {
+       "replicate": "3_8_M",
+       "raw": 0.0023128815022201345,
+       "corrected": 0.0023262418773176093
+      },
+      {
+       "replicate": "3_11_M",
+       "raw": 0.00011551791284644573,
+       "corrected": 0.00011890985082386135
+      },
+      {
+       "replicate": "3_10_M",
+       "raw": 0.0,
+       "corrected": 0.0
+      },
+      {
+       "replicate": "3_38_F",
+       "raw": 0.16831322871757795,
+       "corrected": 0.16831322871757795
+      },
+      {
+       "replicate": "3_56_F",
+       "raw": 0.30358934995024645,
+       "corrected": 0.30358934995024645
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "male",
+        "n_thinned": 829,
+        "mean_before": 706373.7406513873,
+        "mean_after": 685963.1334392375,
+        "mean_other": 685963.1334392375,
+        "depth_ratio": 0.971105087806169,
+        "ks_after": 0.17268669200573722
+       }
+      ],
+      "depth_ratio": 0.971105087806169,
+      "capture_check": {
+       "raw": {
+        "female": {
+         "depth": 683689.514679635,
+         "genes": 1163.5760105855754,
+         "unit": "replicates"
+        },
+        "male": {
+         "depth": 712145.5420795553,
+         "genes": 1373.8618668479614,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.03995816264864227,
+         "genes": -0.15306186257636145
+        }
+       },
+       "equalized": {
+        "female": {
+         "depth": 683689.514679635,
+         "genes": 1163.5760105855754,
+         "unit": "replicates"
+        },
+        "male": {
+         "depth": 691572.749927904,
+         "genes": 1372.3421433763638,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.011398996344333834,
+         "genes": -0.15212396835468633
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "units": 7,
+       "detection": {
+        "female": {
+         "set": 0.3270379235084739
+        },
+        "male": {
+         "set": 0.010015771335111666
+        }
+       },
+       "corrected": {
+        "effect": 0.22152022929431608,
+        "ci": [
+         0.052466026321236314,
+         0.39057443226739585
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033452653550974,
+        "df": 2.05651694231451,
+        "p": 0.029697952576547504,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       },
+       "raw": {
+        "effect": 0.2214970620277963,
+        "ci": [
+         0.052461843828893684,
+         0.3905322802266989
+        ],
+        "ci_level": 0.95,
+        "se": 0.04033622993670257,
+        "df": 2.056861044896905,
+        "p": 0.02969539900455298,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": true,
+        "n_replicates": {
+         "female": 3,
+         "male": 4
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 712145.5420795553,
+        "genes": 1373.8618668479614,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.03995816264864227,
+        "genes": -0.15306186257636145
+       }
+      },
+      "equalized": {
+       "female": {
+        "depth": 683689.514679635,
+        "genes": 1163.5760105855754,
+        "unit": "replicates"
+       },
+       "male": {
+        "depth": 691572.2906380683,
+        "genes": 1372.4087166373524,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.011398339790566925,
+        "genes": -0.1521650974087767
+       }
+      }
+     },
+     "n_units": 7,
+     "n_cells": 2088,
+     "units": [
+      {
+       "replicate": "3_38_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.16831322871757795,
+       "corrected": 0.16831322871757795
+      },
+      {
+       "replicate": "3_39_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.209238119635367,
+       "corrected": 0.20923811963536704
+      },
+      {
+       "replicate": "3_56_F",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.30358934995024645,
+       "corrected": 0.30358934995024645
+      },
+      {
+       "replicate": "3_10_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0,
+       "corrected": 0.0
+      },
+      {
+       "replicate": "3_11_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.00011551791284644573,
+       "corrected": 9.514404797764753e-05
+      },
+      {
+       "replicate": "3_8_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0023128815022201345,
+       "corrected": 0.0023076394424504723
+      },
+      {
+       "replicate": "3_9_M",
+       "type": "fibroblast of cardiac tissue",
+       "in_domain": true,
+       "raw": 0.0197709502113368,
+       "corrected": 0.019703897069896108
+      }
+     ],
+     "types": [
+      "fibroblast of cardiac tissue"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "set",
+      "genes": [
+       "Xist"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, the set of genes is detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.22152022929431608,
+    "raw_effect": 0.2214970620277963,
+    "se": 0.04033452653550974,
+    "df": 2.05651694231451,
+    "t_method": "domain: cluster-robust over replicates",
+    "ci": [
+     0.052466026321236314,
+     0.39057443226739585
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     0.10592190252097089,
+     0.3371185560676613
+    ],
+    "p_t": 0.029697952576547504,
+    "p_perm": 0.02857142857142857,
+    "perm_method": "exact",
+    "perm_n": 35,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.02857142857142857,
+    "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "female": 3,
+     "male": 4
+    },
+    "design_kind": "nested",
+    "raw_detected": true,
+    "p_raw": 0.02969539900455298,
+    "replicate_values": [
+     {
+      "replicate": "3_39_F",
+      "raw": 0.209238119635367,
+      "corrected": 0.20923811963536704,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_9_M",
+      "raw": 0.0197709502113368,
+      "corrected": 0.019834648772325412,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_8_M",
+      "raw": 0.0023128815022201345,
+      "corrected": 0.0023262418773176093,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_11_M",
+      "raw": 0.00011551791284644573,
+      "corrected": 0.00011890985082386135,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_10_M",
+      "raw": 0.0,
+      "corrected": 0.0,
+      "stratum": null,
+      "group": "male"
+     },
+     {
+      "replicate": "3_38_F",
+      "raw": 0.16831322871757795,
+      "corrected": 0.16831322871757795,
+      "stratum": null,
+      "group": "female"
+     },
+     {
+      "replicate": "3_56_F",
+      "raw": 0.30358934995024645,
+      "corrected": 0.30358934995024645,
+      "stratum": null,
+      "group": "female"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 1.0001045940127047,
+    "effective_sesoi": 0.0585509102788086,
+    "sesoi_source": "declared",
+    "floor": 0.28465252974642496,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.0585509102788086,
+    "ci_2alpha_raw": [
+     0.10590657390112199,
+     0.33708755015447056
+    ]
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "PASS",
+   "message": "responds to module(1 genes, 1/1.64872 by thinning, frac=1): module(1 genes, 1/1.64872 by thinning, frac=1) injected into female (38.49 probed counts per cell against 0.389 in male), its values move by -0.05855 against the untouched data (95% CI [-0.1078, -0.009334] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected decrease); the replicate-level difference female - male moves by -0.05855; the injection removes 0.00% of their counts; the probe is a change of 0.5 on the construct's scale (log expression (natural log)), so the SESOI in the metric's units is s_m = +0.05855",
+   "detail": {
+    "injection": "module(1 genes, 1/1.64872 by thinning, frac=1)",
+    "declared_injection": "module(1 genes, 1/2 by thinning, frac=1)",
+    "direction": "decrease",
+    "base": 0.13281016352580993,
+    "reference": "untouched data",
+    "alpha": 0.05,
+    "all_cells": {
+     "mean_response": -0.03402719251881962,
+     "sd_response": 0.00032239711227484956,
+     "n_rep": 200,
+     "ci": [
+      -0.034072147051311265,
+      -0.03398223798632797
+     ],
+     "ci_level": 0.95,
+     "signed_lower": 0.03398223798632797,
+     "signed_upper": 0.034072147051311265,
+     "z": -1492.6224620948328
+    },
+    "construct_change": 0.5,
+    "delta_min": null,
+    "delta_min_declared": null,
+    "mode": "claim statistic",
+    "injected_group": "female",
+    "probed_counts_per_cell": {
+     "female": 38.49083432695172,
+     "male": 0.3890126365388734
+    },
+    "tie": false,
+    "replicate_responses": {
+     "3_38_F | fibroblast of cardiac tissue": -0.04075345331589138,
+     "3_39_F | fibroblast of cardiac tissue": -0.05500099274964848,
+     "3_56_F | fibroblast of cardiac tissue": -0.07989828477088594
+    },
+    "statistic_change": -0.0585509102788086,
+    "statistic_ci": [
+     -0.10776762144016074,
+     -0.009334199117456463
+    ],
+    "depth_loss": 2.2194717374562122e-05,
+    "n_rep_replicate": 50,
+    "runs": null,
+    "dose": {
+     "kind": "module",
+     "construct_change": 0.5,
+     "scale": "log expression (natural log)",
+     "fold": 1.6487212707001282
+    },
+    "dose_response": [
+     {
+      "construct_change": 0.25,
+      "dose": {
+       "kind": "module",
+       "construct_change": 0.25,
+       "scale": "log expression (natural log)",
+       "fold": 1.2840254166877414
+      },
+      "response": -0.030671097032291678,
+      "ci": [
+       -0.05667713918726889,
+       -0.004665054877314466
+      ],
+      "n_rep": 20
+     },
+     {
+      "construct_change": 0.5,
+      "dose": {
+       "kind": "module",
+       "construct_change": 0.5,
+       "scale": "log expression (natural log)",
+       "fold": 1.6487212707001282
+      },
+      "response": -0.0585509102788086,
+      "ci": [
+       -0.10776762144016074,
+       -0.009334199117456463
+      ],
+      "n_rep": 50
+     },
+     {
+      "construct_change": 1.0,
+      "dose": {
+       "kind": "module",
+       "construct_change": 1.0,
+       "scale": "log expression (natural log)",
+       "fold": 2.718281828459045
+      },
+      "response": -0.10552654886598618,
+      "ci": [
+       -0.1923504735059508,
+       -0.01870262422602155
+      ],
+      "n_rep": 20
+     }
+    ],
+    "units": {
+     "n": 7,
+     "types": [
+      "fibroblast of cardiac tissue"
+     ],
+     "domain": true
+    },
+    "mean_response": -0.0585509102788086,
+    "se": 0.01143869009484713,
+    "df": 2.0,
+    "n_rep": 3,
+    "ci": [
+     -0.10776762144016074,
+     -0.009334199117456463
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.009334199117456463,
+    "signed_upper": 0.10776762144016074,
+    "z": -5.118672662107041,
+    "sesoi_metric": 0.0585509102788086,
+    "sesoi_metric_ci": [
+     0.009334199117456463,
+     0.10776762144016074
+    ],
+    "outcome": "PASS"
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "decrease",
+  "sesoi": 0.5,
+  "known_to_differ": [
+   "Xist",
+   "Tsix",
+   "Jpx",
+   "Ftx",
+   "Ddx3y",
+   "Eif2s3y",
+   "Kdm5d",
+   "Uty",
+   "Zfy1",
+   "Zfy2",
+   "Sry",
+   "Usp9y",
+   "Ube1y1",
+   "Ddx3x",
+   "Eif2s3x",
+   "Kdm5c",
+   "Kdm6a",
+   "Zfx",
+   "Usp9x",
+   "Uba1",
+   "Mid1",
+   "Erdr1",
+   "Sts"
+  ]
+ },
+ "params": {
+  "metric": "lcm",
+  "group_col": "sex",
+  "groups": [
+   "female",
+   "male"
+  ],
+  "within": [],
+  "gene_pair": null,
+  "pair_metric": null,
+  "gene_metric": "lcm",
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "mouse",
+  "signal_test": "module(1 genes, 1/2 by thinning, frac=1)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000,
+  "composition": [
+   "cell_type"
+  ],
+  "specificity": true,
+  "specificity_pool": [
+   2088,
+   21025
+  ],
+  "claim": {
+   "metric": "lcm",
+   "genes": [
+    "Xist"
+   ],
+   "groups": [
+    "female",
+    "male"
+   ],
+   "direction": "decrease"
+  }
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-18T11:03:53+00:00",
+  "environment": {
+   "metric_autopsy": "0.4.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "7d3e80e18d339c9cf1602a8b6749d5cb22081954705e2a6643f8b91bfe5df4c2",
+  "data_shape": [
+   2088,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "06f1e348be568279c97177e94dd56eda343357968cb6369ae8e91afe9093b1e3",
+  "claim_id": "18e2352849bc0601fa472837f8f9857564c16e7829797f240f4cc63a169e10ea",
+  "log": null
+ },
+ "composition": {
+  "columns": {
+   "cell_type": {
+    "column": "cell_type",
+    "groups": [
+     "female",
+     "male"
+    ],
+    "design": "nested",
+    "replicates": {
+     "female": 3,
+     "male": 4
+    },
+    "tvd": 0.0,
+    "tvd_p": 1.0,
+    "method": "exact",
+    "n_relabelings": 35,
+    "differs": false,
+    "levels": [
+     {
+      "level": "fibroblast of cardiac tissue",
+      "first": 1.0,
+      "second": 1.0,
+      "difference": 0.0,
+      "p": 1.0
+     }
+    ],
+    "absent": {}
+   }
+  },
+  "domain": {
+   "column": "cell_type",
+   "rule": {
+    "threshold": 0.1,
+    "kind": "set",
+    "genes": [
+     "Xist"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "text": "types where, in at least one group, the set of genes is detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "design": "nested",
+   "strata": [
+    {
+     "stratum": "all",
+     "key": "",
+     "types": [
+      {
+       "type": "fibroblast of cardiac tissue",
+       "cells": {
+        "female": 1259,
+        "male": 829
+       },
+       "replicates": {
+        "female": [
+         "3_38_F",
+         "3_39_F",
+         "3_56_F"
+        ],
+        "male": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ]
+       },
+       "detection": {
+        "female": {
+         "set": 0.3270379235084739
+        },
+        "male": {
+         "set": 0.010015771335111666
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      }
+     ]
+    }
+   ],
+   "domain": {
+    "": [
+     "fibroblast of cardiac tissue"
+    ]
+   },
+   "outside": {
+    "": []
+   },
+   "n_domain_types": 1,
+   "unlabelled_cells": 0
+  }
+ },
+ "reference": {},
+ "specificity": {
+  "applicable": true,
+  "statistic": "the donor-level t of the claim's estimate within the domain's types",
+  "data": "uncorrected",
+  "side": "in the claimed direction (decrease from female to male)",
+  "t_claim": 5.805819093188712,
+  "t_claim_signed": 5.805819093188712,
+  "k_requested": 1000,
+  "n_controls": 1000,
+  "in_direction": {
+   "k": 1,
+   "n": 1000,
+   "share": 0.001,
+   "share_ci": [
+    2.5317487143183826e-05,
+    0.0055589242797395855
+   ],
+   "p": 0.001998001998001998,
+   "outcome": "specific"
+  },
+  "absolute": {
+   "k": 30,
+   "n": 1000,
+   "share": 0.03,
+   "share_ci": [
+    0.020330485682734434,
+    0.04255140246959854
+   ],
+   "p": 0.030969030969030968,
+   "outcome": "specific"
+  },
+  "nearest": [
+   {
+    "genes": [
+     "Faim2"
+    ],
+    "t": 5.971950731784437,
+    "t_signed": 5.971950731784437,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Ccdc137"
+    ],
+    "t": 4.7168877534762546,
+    "t_signed": 4.7168877534762546,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Clybl"
+    ],
+    "t": 4.682153199543072,
+    "t_signed": 4.682153199543072,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Tceal3"
+    ],
+    "t": 3.5009243019938516,
+    "t_signed": 3.5009243019938516,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Dleu2"
+    ],
+    "t": 3.131568565878759,
+    "t_signed": 3.131568565878759,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Mgst3"
+    ],
+    "t": 2.645468334309737,
+    "t_signed": 2.645468334309737,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ppm1k"
+    ],
+    "t": 2.6227534873831786,
+    "t_signed": 2.6227534873831786,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ncam1"
+    ],
+    "t": 2.5154577399641465,
+    "t_signed": 2.5154577399641465,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Fadd"
+    ],
+    "t": 2.4869885785961596,
+    "t_signed": 2.4869885785961596,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Shfl"
+    ],
+    "t": 2.476748605093688,
+    "t_signed": 2.476748605093688,
+    "at_least_as_far": false
+   }
+  ],
+  "at_least_as_far": [
+   {
+    "genes": [
+     "Faim2"
+    ],
+    "t_signed": 5.971950731784437
+   }
+  ],
+  "shift": {
+   "median_t": -1.2702320515380903,
+   "ci": [
+    -2.21764867566461,
+    -0.28441466945240923
+   ],
+   "ci_level": 0.95,
+   "p_one_sided": 1.0,
+   "method": "exact",
+   "n_relabelings": 35,
+   "significant": false,
+   "warning": null
+  },
+  "pool": {
+   "genes": 21025,
+   "same_as_data": false
+  },
+  "tie": null,
+  "candidates": 18851,
+  "matched": {
+   "Xist": {
+    "mean": 22.439655172413794,
+    "detection": 0.19348659003831417,
+    "mean_range": [
+     8.57183908045977,
+     56.39894636015325
+    ],
+    "detection_range": [
+     0.13840996168582376,
+     0.24856321839080459
+    ]
+   }
+  },
+  "eligible": 2000
+ }
+}

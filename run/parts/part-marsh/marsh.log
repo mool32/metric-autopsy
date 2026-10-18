@@ -1,0 +1,24 @@
+# part marsh (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A5: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause provisional] (60.6 s)
+    effect -0.3639797500425672 CI [-0.4365975478166636, -0.29136195226847084] over the domain's cell types, equally weighted; s_m 0.08328563448054571; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A6: INCONCLUSIVE — effect +0.06794 [-1.22, +1.356] within the domain's types, equally weighted, p=0.842 (t, parametric only); neither detected nor equivalent within ±0.07354 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (65.1 s)
+    effect 0.0679378178633469 CI [-1.2201489316401382, 1.356024567366832] over the domain's cell types, equally weighted; s_m 0.07353831771580364; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A7: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain] (57.9 s)
+    effect None CI None over None; s_m None; domain None
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A5m: INCONCLUSIVE — effect -0.08764 [-0.2027, +0.02739] within the domain's types, equally weighted, p=0.0818 (t, parametric only); neither detected nor equivalent within ±0.009223 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (73.9 s)
+    effect -0.08763824437021052 CI [-0.2026695618925735, 0.02739307315215246] over the domain's cell types, equally weighted; s_m 0.00922340294131453; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A6m: INCONCLUSIVE — effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within ±0.009206 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (82.5 s)
+    effect -0.08321818927664554 CI [-0.19660205214450988, 0.030165673591218814] over the domain's cell types, equally weighted; s_m 0.009205559839548232; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A7m: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain] (71.2 s)
+    effect None CI None over None; s_m 0.00017006475566293215; domain None
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+
+part marsh: 412.3 s

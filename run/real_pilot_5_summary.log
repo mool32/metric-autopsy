@@ -1,0 +1,270 @@
+# The tallies of the third diagnostics and v0.4's acceptance tests (real_pilot_5_summary.py)
+
+| test | criterion | verdict | met |
+|---|---|---|---|
+| A1 | SUPPORTED | SUPPORTED | True |
+| A2 | SUPPORTED | SUPPORTED | True |
+| A3 | not SUPPORTED; no effect in the domain; the drop in the mixture from outside | NOT SUPPORTED | False |
+| A4 | not SUPPORTED | NOT SUPPORTED | True |
+| A5 | SUPPORTED | SUPPORTED | True |
+| A7 | not SUPPORTED | INCONCLUSIVE | True |
+| A8 | strict / lenient | 20 claims; SUPPORTED none | False / True |
+
+A8 verdicts: A8-3a1 NO DETECTABLE EFFECT; A8-3a2 NO DETECTABLE EFFECT; A8-3a3 NO DETECTABLE EFFECT; A8-3a4 NO DETECTABLE EFFECT; A8-3a5 NO DETECTABLE EFFECT; A8-3a6 NO DETECTABLE EFFECT; A8-3a7 NO DETECTABLE EFFECT; A8-3a8 INCONCLUSIVE; A8-3b1 NO DETECTABLE EFFECT; A8-3b2 NO DETECTABLE EFFECT; A8-3b3 NO DETECTABLE EFFECT; A8-3b4 NO DETECTABLE EFFECT; A8-3b5 NO DETECTABLE EFFECT; A8-3b6 NO DETECTABLE EFFECT; A8-3b7 NO DETECTABLE EFFECT; A8-3b8 NO DETECTABLE EFFECT; A8-3c1 NO DETECTABLE EFFECT; A8-3c2 NO DETECTABLE EFFECT; A8-3c3 EFFECT BELOW SESOI; A8-3c4 NO DETECTABLE EFFECT
+
+(b) the prediction: does not hold; (b4) the statement: undecided: GSE109774's records name none of case 1's units
+(a1): does not hold: the domain is ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']
+(a2): holds: M1's type is in its domain
+
+### A1: log_cp10k_mean(Xist), female -> male, decrease, SESOI 0.5 (construct)
+- verdict: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.2215 CI [+0.05247, +0.3906], raw +0.2215; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.05855 (declared); floor +0.2847
+- s_m +0.05855 CI [+0.009334, +0.1078]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['fibroblast of cardiac tissue']; mixture +0.2215 (p +0.0297, detected True); outside None: - (p -, detected None)
+- specificity: 1 of 1000 controls at least as far in the direction (share CI [+2.53e-05, +0.00556], specific); by |t| 30 (specific); the controls' median t -1.27 CI [-2.22, -0.284]
+
+### A2: log_cp10k_mean(Ddx3y, Eif2s3y, Kdm5d, Uty), female -> male, increase, SESOI 0.5 (construct)
+- verdict: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.6699 CI [-0.7393, -0.6004], raw -0.67; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.1701 (declared); floor +0.1209
+- s_m +0.1701 CI [+0.1516, +0.1886]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['fibroblast of cardiac tissue']; mixture -0.6699 (p +7.63e-05, detected True); outside None: - (p -, detected None)
+- specificity: 0 of 1000 controls at least as far in the direction (share CI [+0, +0.00368], specific); by |t| 0 (specific); the controls' median t +2.63 CI [+1.14, +4.24] — WARNING: the controls shift together in the claim's direction: the claim's change may be part of a change shared by many genes
+
+### A3: mi_3bin(Smad3, Col1a1), young -> old, decrease, SESOI 0.1 (construct)
+- verdict: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) — the nuisance can create a difference with no biology [cause metric_invalid_gate0]
+- gates: 0 FAIL; 1 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+- effect (None): - CI -, raw -; test None; SESOI used - (None); floor -
+- s_m +0.00155 CI [+0.0005801, +0.002519]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.9658116360304199, "added_variance": 0.25229329769497433, "var_a": 2.3643140625
+- domain None; mixture - (p -, detected None); outside None: - (p -, detected None)
+- specificity: 234 of 1000 controls at least as far in the direction (share CI [+0.208, +0.262], not specific); by |t| 247 (not specific); the controls' median t +0.712 CI [-0.697, +2.12]
+
+### A4: mi_3bin(Smad3, Col1a1), young -> old, decrease, SESOI 0.1 (construct)
+- verdict: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) — the nuisance can create a difference with no biology [cause metric_invalid_gate0]
+- gates: 0 FAIL; 1 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+- effect (None): - CI -, raw -; test None; SESOI used - (None); floor -
+- s_m +0.001473 CI [+0.0001459, +0.002801]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.9658116360304199, "added_variance": 0.25229329769497433, "var_a": 2.3643140625
+- domain None; mixture - (p -, detected None); outside None: - (p -, detected None)
+- specificity: 230 of 1000 controls at least as far in the direction (share CI [+0.204, +0.257], not specific); by |t| 253 (not specific); the controls' median t +0.775 CI [-0.586, +2.14]
+
+### A5: norm_pearson(Fos, Jun), ENZ-INHIB -> ENZ-NONE, increase, SESOI 0.1 (construct)
+- verdict: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.364 CI [-0.4366, -0.2914], raw -0.364; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.08329 (declared); floor +0.1219
+- s_m +0.08329 CI [+0.01864, +0.1479]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.7622854600119968, "added_variance": 0.1535700882659229, "var_a": 1.97380484268
+- domain ['CD45+/CD11b+ sorted cells']; mixture -0.364 (p +0.00214, detected True); outside None: - (p -, detected None)
+- specificity: 0 of 1000 controls at least as far in the direction (share CI [+0, +0.00368], specific); by |t| 0 (specific); the controls' median t +0.168 CI [-0.84, +1.18]
+
+### A6: norm_pearson(Fos, Jun), DNC-NONE -> ENZ-NONE, increase, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — effect +0.06794 [-1.22, +1.356] within the domain's types, equally weighted, p=0.842 (t, parametric only); neither detected nor equivalent within ±0.07354 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.06794 CI [-1.22, +1.356], raw +0.05356; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.07354 (declared); floor +2.163
+- s_m +0.07354 CI [+0.01278, +0.1343]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.7622854600119968, "added_variance": 0.1535700882659229, "var_a": 1.97380484268
+- domain ['CD45+/CD11b+ sorted cells']; mixture +0.06098 (p +0.858, detected False); outside None: - (p -, detected None)
+- specificity: 364 of 1000 controls at least as far in the direction (share CI [+0.334, +0.395], not specific); by |t| 885 (not specific); the controls' median t -0.468 CI [-1.43, +0.497]
+
+### A7: norm_pearson(Fos, Jun), DNC-NONE -> DNC-INHIB, two-sided, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- effect (None): - CI -, raw -; test None; SESOI used - (None); floor -
+- s_m - CI [-0.1214, +0.07558]; GATE 4 WARN; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.6992203398813888, "added_variance": 0.1282996446589998, "var_a": 2.34903530280
+- domain None; mixture +0.3689 (p +0.344, detected False); outside None: - (p -, detected None)
+- specificity: 157 of 1000 controls at least as far in the direction (share CI [+0.135, +0.181], not specific); by |t| 353 (not specific); the controls' median t -0.105 CI [-0.228, +0.0183]
+
+### A5m: mi_3bin(Fos, Jun), ENZ-INHIB -> ENZ-NONE, increase, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — effect -0.08764 [-0.2027, +0.02739] within the domain's types, equally weighted, p=0.0818 (t, parametric only); neither detected nor equivalent within ±0.009223 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- effect (the domain's cell types, equally weighted): -0.08764 CI [-0.2027, +0.02739], raw -0.08763; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.009223 (declared); floor +0.1931
+- s_m +0.009223 CI [-0.002514, +0.02096]; GATE 4 WARN; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.7622854600119968, "added_variance": 0.1535700882659229, "var_a": 1.97380484268
+- domain ['CD45+/CD11b+ sorted cells']; mixture -0.08761 (p +0.0819, detected False); outside None: - (p -, detected None)
+- specificity: 11 of 1000 controls at least as far in the direction (share CI [+0.0055, +0.0196], specific); by |t| 27 (specific); the controls' median t -0.0819 CI [-0.445, +0.281]
+
+### A6m: mi_3bin(Fos, Jun), DNC-NONE -> ENZ-NONE, increase, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within ±0.009206 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- effect (the domain's cell types, equally weighted): -0.08322 CI [-0.1966, +0.03017], raw -0.08646; test t interval on replicate values (domain: cluster-robust over replicates; parametric only); SESOI used +0.009206 (declared); floor +0.1903
+- s_m +0.009206 CI [-0.003546, +0.02196]; GATE 4 WARN; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.7622854600119968, "added_variance": 0.1535700882659229, "var_a": 1.97380484268
+- domain ['CD45+/CD11b+ sorted cells']; mixture -0.08364 (p +0.0789, detected False); outside None: - (p -, detected None)
+- specificity: 60 of 1000 controls at least as far in the direction (share CI [+0.0461, +0.0766], undecided); by |t| 62 (undecided); the controls' median t +1.03 CI [+0.222, +1.83] — WARNING: the controls shift together in the claim's direction: the claim's change may be part of a change shared by many genes
+
+### A7m: mi_3bin(Fos, Jun), DNC-NONE -> DNC-INHIB, two-sided, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- effect (None): - CI -, raw -; test None; SESOI used - (None); floor -
+- s_m +0.0001701 CI [-0.0004293, +0.0007694]; GATE 4 WARN; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.6992203398813888, "added_variance": 0.1282996446589998, "var_a": 2.34903530280
+- domain None; mixture +0.0006911 (p +0.189, detected False); outside None: - (p -, detected None)
+- specificity: 153 of 1000 controls at least as far in the direction (share CI [+0.131, +0.177], not specific); by |t| 329 (not specific); the controls' median t -0.00849 CI [-0.124, +0.107]
+
+### A8-3a1: norm_pearson(HS6ST3, DGKB), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within ±0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.005107 CI [-0.03309, +0.0433], raw +0.008674; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05636 (declared); floor +0.06961
+- s_m +0.05636 CI [+0.04977, +0.06295]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.4244214938483154, "added_variance": 0.04596563170647132, "var_a": 0.4649136259
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.00349 (p +0.852, detected False); outside None: - (p -, detected None)
+- specificity: 296 of 1000 controls at least as far in the direction (share CI [+0.268, +0.325], not specific); by |t| 649 (not specific); the controls' median t -0.083 CI [-0.388, +0.231]
+
+### A8-3a2: norm_pearson(SYN3, PDZD2), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within ±0.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.02382 CI [-0.000316, +0.04795], raw +0.02724; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05052 (declared); floor +0.04399
+- s_m +0.05052 CI [+0.0453, +0.05574]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.43836673928376, "added_variance": 0.04909672941937847, "var_a": 0.306762111702
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.02496 (p +0.05, detected True); outside None: - (p -, detected None)
+- specificity: 16 of 1000 controls at least as far in the direction (share CI [+0.00917, +0.0259], specific); by |t| 38 (undecided); the controls' median t -0.0327 CI [-0.235, +0.158]
+
+### A8-3a3: norm_pearson(LRP1B, DPP10), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within ±0.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.02398 CI [-0.04782, -0.0001353], raw -0.02214; test monte-carlo permutation over replicates (n=1000); SESOI used +0.07032 (declared); floor +0.04345
+- s_m +0.07032 CI [+0.06593, +0.0747]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.5374122308373968, "added_variance": 0.07449193176131727, "var_a": 0.7001456243
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.02425 (p +0.036, detected True); outside None: - (p -, detected None)
+- specificity: 145 of 1000 controls at least as far in the direction (share CI [+0.124, +0.168], not specific); by |t| 180 (not specific); the controls' median t +0.461 CI [-0.104, +1.03]
+
+### A8-3a4: norm_pearson(LSAMP, KAZN), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within ±0.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.001348 CI [-0.03592, +0.03322], raw +0.001931; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05345 (declared); floor +0.06301
+- s_m +0.05345 CI [+0.04752, +0.05938]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.4259038314543464, "added_variance": 0.04629332045904175, "var_a": 0.4073571677
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.001438 (p +0.936, detected False); outside None: - (p -, detected None)
+- specificity: 340 of 1000 controls at least as far in the direction (share CI [+0.311, +0.37], not specific); by |t| 915 (not specific); the controls' median t -0.387 CI [-0.864, +0.09]
+
+### A8-3a5: norm_pearson(PTPRD, CNTNAP2), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within ±0.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.005123 CI [-0.03893, +0.02868], raw -0.002554; test monte-carlo permutation over replicates (n=1000); SESOI used +0.06585 (declared); floor +0.06161
+- s_m +0.06585 CI [+0.06146, +0.07023]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.3112837146830736, "added_variance": 0.024504432775567922, "var_a": 0.184938418
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.005494 (p +0.737, detected False); outside None: - (p -, detected None)
+- specificity: 548 of 1000 controls at least as far in the direction (share CI [+0.517, +0.579], not specific); by |t| 834 (not specific); the controls' median t +0.401 CI [-0.199, +0.97]
+
+### A8-3a6: norm_pearson(LRRTM4, ADGRL3), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within ±0.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.02103 CI [-0.002907, +0.04496], raw +0.02463; test monte-carlo permutation over replicates (n=1000); SESOI used +0.0599 (declared); floor +0.04362
+- s_m +0.0599 CI [+0.05589, +0.06391]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.28225406033257083, "added_variance": 0.02010767177079594, "var_a": 0.189392011
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.0208 (p +0.0789, detected False); outside None: - (p -, detected None)
+- specificity: 20 of 1000 controls at least as far in the direction (share CI [+0.0123, +0.0307], specific); by |t| 114 (not specific); the controls' median t -0.37 CI [-0.906, +0.127]
+
+### A8-3a7: norm_pearson(NKAIN2, MDGA2), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within ±0.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.01287 CI [-0.01595, +0.04169], raw +0.01852; test monte-carlo permutation over replicates (n=1000); SESOI used +0.06701 (declared); floor +0.05252
+- s_m +0.06701 CI [+0.0624, +0.07162]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.3154425739065452, "added_variance": 0.025170961755270622, "var_a": 0.263091955
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.01372 (p +0.337, detected False); outside None: - (p -, detected None)
+- specificity: 91 of 1000 controls at least as far in the direction (share CI [+0.0739, +0.111], not specific); by |t| 271 (not specific); the controls' median t -0.273 CI [-0.726, +0.152]
+
+### A8-3a8: norm_pearson(CNTN5, TAFA2), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: INCONCLUSIVE — effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within ±0.05599 [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.01174 CI [-0.07381, +0.05032], raw -0.009087; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05599 (declared); floor +0.1131
+- s_m +0.05599 CI [+0.05086, +0.06113]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.4398579522698256, "added_variance": 0.049437961192275046, "var_a": 0.510179761
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.01248 (p +0.67, detected False); outside None: - (p -, detected None)
+- specificity: 446 of 1000 controls at least as far in the direction (share CI [+0.415, +0.477], not specific); by |t| 792 (not specific); the controls' median t +0.134 CI [-0.198, +0.456]
+
+### A8-3b1: norm_pearson(RASGRF2, KIAA1217), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.003164 [-0.0498, +0.04347] within the domain's types, equally weighted: the 90% interval lies within ±0.07089 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0608, +0.08099] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.003164 CI [-0.0498, +0.04347], raw +0.004759; test monte-carlo permutation over replicates (n=1000); SESOI used +0.07089 (declared); floor +0.08499
+- s_m +0.07089 CI [+0.0608, +0.08099]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.5628796739213411, "added_variance": 0.08193199513499361, "var_a": 0.6537301672
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.002298 (p +0.916, detected False); outside None: - (p -, detected None)
+- specificity: 420 of 1000 controls at least as far in the direction (share CI [+0.389, +0.451], not specific); by |t| 918 (not specific); the controls' median t -0.133 CI [-0.463, +0.189]
+
+### A8-3b2: norm_pearson(GALNT13, PDE8B), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.003132 [-0.03525, +0.02899] within the domain's types, equally weighted: the 90% interval lies within ±0.06563 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05727, +0.07398] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.003132 CI [-0.03525, +0.02899], raw +0.003696; test monte-carlo permutation over replicates (n=1000); SESOI used +0.06563 (declared); floor +0.05854
+- s_m +0.06563 CI [+0.05727, +0.07398]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.545457293843858, "added_variance": 0.0768014448865775, "var_a": 0.673399851210
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.004235 (p +0.791, detected False); outside None: - (p -, detected None)
+- specificity: 406 of 1000 controls at least as far in the direction (share CI [+0.375, +0.437], not specific); by |t| 927 (not specific); the controls' median t -0.172 CI [-0.544, +0.198]
+
+### A8-3b3: norm_pearson(TRHDE, SLC44A5), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.02142 [-0.05901, +0.01616] within the domain's types, equally weighted: the 90% interval lies within ±0.07203 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06601, +0.07805] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.02142 CI [-0.05901, +0.01616], raw -0.01634; test monte-carlo permutation over replicates (n=1000); SESOI used +0.07203 (declared); floor +0.06849
+- s_m +0.07203 CI [+0.06601, +0.07805]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.5486637792792914, "added_variance": 0.07773241390127353, "var_a": 0.8031311377
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.01891 (p +0.294, detected False); outside None: - (p -, detected None)
+- specificity: 239 of 1000 controls at least as far in the direction (share CI [+0.213, +0.267], not specific); by |t| 406 (not specific); the controls' median t +0.111 CI [-0.208, +0.414]
+
+### A8-3b4: norm_pearson(ENSG00000254394, SLC35F1), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.03253 [-0.09493, +0.02988] within the domain's types, equally weighted: the 90% interval lies within ±0.0874 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07809, +0.09672] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.03253 CI [-0.09493, +0.02988], raw -0.02247; test monte-carlo permutation over replicates (n=1000); SESOI used +0.0874 (declared); floor +0.1137
+- s_m +0.0874 CI [+0.07809, +0.09672]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.6635017508076817, "added_variance": 0.11507150480698985, "var_a": 1.4358413154
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.03103 (p +0.28, detected False); outside None: - (p -, detected None)
+- specificity: 256 of 1000 controls at least as far in the direction (share CI [+0.229, +0.284], not specific); by |t| 428 (not specific); the controls' median t +0.189 CI [-0.105, +0.503]
+
+### A8-3b5: norm_pearson(TLN2, DIAPH2), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.008448 [-0.05507, +0.03818] within the domain's types, equally weighted: the 90% interval lies within ±0.05114 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04469, +0.05759] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.008448 CI [-0.05507, +0.03818], raw -0.003134; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05114 (declared); floor +0.08497
+- s_m +0.05114 CI [+0.04469, +0.05759]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.3586790520488483, "added_variance": 0.03264919314771257, "var_a": 0.2428287990
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.009612 (p +0.711, detected False); outside None: - (p -, detected None)
+- specificity: 404 of 1000 controls at least as far in the direction (share CI [+0.373, +0.435], not specific); by |t| 786 (not specific); the controls' median t +0.0135 CI [-0.22, +0.235]
+
+### A8-3b6: norm_pearson(CUX2, DAPK1), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.03671 [-0.01475, +0.08817] within the domain's types, equally weighted: the 90% interval lies within ±0.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates; TOST); absence shown only after the depth correction: on the uncorrected data the 90% interval [+0.005673, +0.09052] is not within ±0.08936 [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.03671 CI [-0.01475, +0.08817], raw +0.0481; test monte-carlo permutation over replicates (n=1000); SESOI used +0.08936 (declared); floor +0.09379
+- s_m +0.08936 CI [+0.07881, +0.09992]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.4279659716792863, "added_variance": 0.046751211566224776, "var_a": 0.691720560
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.03646 (p +0.17, detected False); outside None: - (p -, detected None)
+- specificity: 44 of 1000 controls at least as far in the direction (share CI [+0.0321, +0.0586], undecided); by |t| 114 (not specific); the controls' median t -0.171 CI [-0.439, +0.0836]
+
+### A8-3b7: norm_pearson(CALN1, PTPRR), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -3.356e-05 [-0.04684, +0.04678] within the domain's types, equally weighted: the 90% interval lies within ±0.05283 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04821, +0.05746] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 WARN; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -3.356e-05 CI [-0.04684, +0.04678], raw +0.004253; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05283 (declared); floor +0.08531
+- s_m +0.05283 CI [+0.04821, +0.05746]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.4319614948675484, "added_variance": 0.047645131994505305, "var_a": 0.549082508
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.0001538 (p +0.986, detected False); outside None: - (p -, detected None)
+- specificity: 402 of 1000 controls at least as far in the direction (share CI [+0.371, +0.433], not specific); by |t| 891 (not specific); the controls' median t -0.13 CI [-0.473, +0.202]
+
+### A8-3b8: norm_pearson(STXBP5-AS1, ZMAT4), A -> B, two-sided, SESOI 0.1 (construct)
+- verdict: NO DETECTABLE EFFECT — effect -0.01056 [-0.04917, +0.02806] within the domain's types, equally weighted: the 90% interval lies within ±0.05655 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0522, +0.0609] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- effect (the domain's cell types, equally weighted): -0.01056 CI [-0.04917, +0.02806], raw -0.004667; test monte-carlo permutation over replicates (n=1000); SESOI used +0.05655 (declared); floor +0.07038
+- s_m +0.05655 CI [+0.0522, +0.0609]; GATE 4 PASS; dose {"kind": "coupling", "construct_change": 0.1, "scale": "correlation of the pair's log expected expression", "strength": 0.3990052625993733, "added_variance": 0.0405362375222334, "var_a": 0.42296095906
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture -0.009086 (p +0.592, detected False); outside None: - (p -, detected None)
+- specificity: 550 of 1000 controls at least as far in the direction (share CI [+0.519, +0.581], not specific); by |t| 894 (not specific); the controls' median t +0.301 CI [+0.0163, +0.57] — WARNING: the controls shift together in the claim's direction: the claim's change may be part of a change shared by many genes
+
+### A8-3c1: log_cp10k_mean(MALAT1), A -> B, two-sided, SESOI 0.5 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.05445 [-0.133, +0.2419] within the domain's types, equally weighted: the 90% interval lies within ±0.4844 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.481, +0.4878] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.05445 CI [-0.133, +0.2419], raw +0.05452; test monte-carlo permutation over replicates (n=1000); SESOI used +0.4844 (declared); floor +0.3417
+- s_m +0.4844 CI [+0.481, +0.4878]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.05432 (p +0.585, detected False); outside None: - (p -, detected None)
+- specificity: 386 of 1000 controls at least as far in the direction (share CI [+0.356, +0.417], not specific); by |t| 921 (not specific); the controls' median t -0.727 CI [-1.45, -0.0155]
+
+### A8-3c2: log_cp10k_mean(KCNIP4), A -> B, two-sided, SESOI 0.5 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.03067 [-0.01669, +0.07803] within the domain's types, equally weighted: the 90% interval lies within ±0.4897 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4893, +0.49] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.03067 CI [-0.01669, +0.07803], raw +0.03078; test monte-carlo permutation over replicates (n=1000); SESOI used +0.4897 (declared); floor +0.08631
+- s_m +0.4897 CI [+0.4893, +0.49]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.03059 (p +0.196, detected False); outside None: - (p -, detected None)
+- specificity: 387 of 1000 controls at least as far in the direction (share CI [+0.357, +0.418], not specific); by |t| 904 (not specific); the controls' median t -0.661 CI [-1.39, +0.128]
+
+### A8-3c3: log_cp10k_mean(RBFOX1), A -> B, two-sided, SESOI 0.5 (construct)
+- verdict: EFFECT BELOW SESOI — effect +0.1211 [+0.07505, +0.1671] within the domain's types, equally weighted, p=0.000999 (monte-carlo permutation); its 90% interval [+0.08322, +0.1589] lies within ±0.4913, the effective SESOI: detected, but smaller than the smallest effect that matters [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside; non-directional claim] [cause effect_below_sesoi]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.1211 CI [+0.07505, +0.1671], raw +0.1214; test monte-carlo permutation over replicates (n=1000); SESOI used +0.4913 (declared); floor +0.08387
+- s_m +0.4913 CI [+0.491, +0.4917]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.1212 (p +0.000999, detected True); outside None: - (p -, detected None)
+- specificity: 189 of 1000 controls at least as far in the direction (share CI [+0.165, +0.215], not specific); by |t| 439 (not specific); the controls' median t -0.728 CI [-1.5, +0.0414]
+
+### A8-3c4: log_cp10k_mean(CSMD1), A -> B, two-sided, SESOI 0.5 (construct)
+- verdict: NO DETECTABLE EFFECT — effect +0.04595 [-0.01083, +0.1027] within the domain's types, equally weighted: the 90% interval lies within ±0.4909 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4905, +0.4913] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- effect (the domain's cell types, equally weighted): +0.04595 CI [-0.01083, +0.1027], raw +0.04617; test monte-carlo permutation over replicates (n=1000); SESOI used +0.4909 (declared); floor +0.1035
+- s_m +0.4909 CI [+0.4905, +0.4913]; GATE 4 PASS; dose {"kind": "module", "construct_change": 0.5, "scale": "log expression (natural log)", "fold": 1.6487212707001282}
+- domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']; mixture +0.04577 (p +0.114, detected False); outside None: - (p -, detected None)
+- specificity: 370 of 1000 controls at least as far in the direction (share CI [+0.34, +0.401], not specific); by |t| 837 (not specific); the controls' median t -0.682 CI [-1.39, +0.0241]
+
+(b2) F young minus old +0.07909, exact p +0.0556 (126 relabelings); (b3-i) r +0.089 p +0.191; (b3-0) r +0.319 p +0.0007; (b3-ii) r +0.566 p +0.0218
+  Col1a1: detection +0.0652 (p +0.0159), level +0.01242 (p +0.0635)
+  Col1a2: detection +0.1094 (p +0.0238), level +0.02543 (p +0.0476)
+  Col3a1: detection +0.1348 (p +0.0159), level +0.06125 (p +0.0238)
+  Col5a1: detection +0.02404 (p +0.0159), level +0.00913 (p +0.0238)
+  Dcn: detection +0.3152 (p +0.0238), level -0.01871 (p +0.563)
+  Fbln1: detection +0.07505 (p +0.111), level +0.01047 (p +0.341)
+  Fbln2: detection +0.02492 (p +0.19), level +0.02016 (p +0.0556)
+  Lum: detection +0.05296 (p +0.206), level -0.003403 (p +0.54)
+  Sparc: detection +0.237 (p +0.0238), level +0.02653 (p +0.302)
+(b4) columns that separate the ages: [("the source h5ad's obs", 'FACS.selection', 'female'), ("the source h5ad's obs", 'FACS.selection', 'male')]
+(a1) domain ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']; outside 24 types

@@ -1,0 +1,9 @@
+# part case1m (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A3: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) — the nuisance can create a difference with no biology [cause metric_invalid_gate0] (105.7 s)
+    effect None CI None over None; s_m 0.0015497185351903203; domain None
+    gates: 0 FAIL; 1 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+
+part case1m: 114.0 s

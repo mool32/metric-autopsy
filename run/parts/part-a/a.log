@@ -1,0 +1,10 @@
+# part a (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+(a1) §4 in males: the domain ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']; does not hold: the domain is ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']
+(a2) Marsh M1 ENZ-INHIB -> ENZ-NONE: in the domain True; detection ENZ-INHIB: Fos 0.002, Jun 0.173, ENZ-NONE: Fos 0.230, Jun 0.612; under 'both groups' False, 'pooled cells' True
+(a2) Marsh M2 DNC-NONE -> ENZ-NONE: in the domain True; detection DNC-NONE: Fos 0.012, Jun 0.283, ENZ-NONE: Fos 0.230, Jun 0.612; under 'both groups' False, 'pooled cells' True
+(a2) Marsh M3 DNC-NONE -> DNC-INHIB: in the domain False; detection DNC-NONE: Fos 0.012, Jun 0.283, DNC-INHIB: Fos 0.002, Jun 0.174; under 'both groups' False, 'pooled cells' False
+
+part a: 5.3 s

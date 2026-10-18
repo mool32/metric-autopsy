@@ -1,0 +1,678 @@
+{
+ "part": "case1",
+ "synthetic": false,
+ "engine": "0.4.0.dev0",
+ "seconds": 99.2,
+ "result": {
+  "claims": [
+   {
+    "verdict": "NOT SUPPORTED \u2014 metric invalid: 'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) \u2014 the nuisance can create a difference with no biology",
+    "label": "NOT SUPPORTED",
+    "cause": "metric_invalid_gate0",
+    "fields": {
+     "metric_validity": {
+      "status": "FAIL",
+      "reason": "'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) \u2014 the nuisance can create a difference with no biology",
+      "flags": []
+     },
+     "design_adequacy": {
+      "status": "ADEQUATE",
+      "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 10, 'old': 7}",
+      "flags": [
+       "COMPOSITE_UNITS"
+      ]
+     },
+     "effect": {
+      "status": "NOT_RUN",
+      "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+      "flags": []
+     },
+     "replication": {
+      "status": "NOT_RUN",
+      "reason": "no independent dataset supplied",
+      "flags": []
+     }
+    },
+    "gates": [
+     {
+      "gate": 0,
+      "name": "Mathematical independence",
+      "status": "FAIL",
+      "message": "'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) \u2014 the nuisance can create a difference with no biology"
+     },
+     {
+      "gate": 1,
+      "name": "QC parity",
+      "status": "PASS",
+      "message": "no confident QC imbalance in 2 assessable strata (worst point ratio 1.32x; alpha 0.05 Bonferroni)"
+     },
+     {
+      "gate": 3,
+      "name": "Raw visibility",
+      "status": "JUDGMENT",
+      "message": "zero-fractions comparable (0.92 vs 0.97) \u2014 inspect the scatter for real coupling"
+     },
+     {
+      "gate": 4,
+      "name": "Construct response (injected signal)",
+      "status": "PASS",
+      "message": "responds to coupling(Smad3, Col1a1, strength=0.965812): coupling(Smad3, Col1a1, strength=0.965812) injected into young (728.1 probed counts per cell against 304.1 in old), its values move by +0.001473 against the sham (95% CI [+0.0001459, +0.002801] over 4 replicates, on the domain's 11 type(s), 50 injections per unit, expected increase); the replicate-level difference young - old moves by +0.001473; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.001473"
+     },
+     {
+      "gate": 5,
+      "name": "Controls",
+      "status": "PASS",
+      "message": "the positive control beats its empirical null in all 2 strata; null centre 0.00338..0.0103"
+     }
+    ],
+    "effect": {},
+    "domain": null,
+    "mixture": null,
+    "gate4": {
+     "status": "PASS",
+     "sesoi_metric": 0.0014733313172126618,
+     "sesoi_metric_ci": [
+      0.0001459286312897937,
+      0.00280073400313553
+     ],
+     "dose": {
+      "kind": "coupling",
+      "construct_change": 0.1,
+      "scale": "correlation of the pair's log expected expression",
+      "strength": 0.9658116360304199,
+      "added_variance": 0.25229329769497433,
+      "var_a": 2.364314062524601,
+      "var_b": 2.1803188331699137,
+      "floored": []
+     },
+     "dose_response": [
+      {
+       "construct_change": 0.05,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.05,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.6757021105090537,
+        "added_variance": 0.11950244842093477,
+        "var_a": 2.364314062524601,
+        "var_b": 2.1803188331699137,
+        "floored": []
+       },
+       "response": 0.0007957330216488632,
+       "ci": [
+        -0.00017767717325144162,
+        0.001769143216549168
+       ],
+       "n_rep": 20
+      },
+      {
+       "construct_change": 0.1,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.1,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 0.9658116360304199,
+        "added_variance": 0.25229329769497433,
+        "var_a": 2.364314062524601,
+        "var_b": 2.1803188331699137,
+        "floored": []
+       },
+       "response": 0.0014733313172126618,
+       "ci": [
+        0.0001459286312897937,
+        0.00280073400313553
+       ],
+       "n_rep": 50
+      },
+      {
+       "construct_change": 0.2,
+       "dose": {
+        "kind": "coupling",
+        "construct_change": 0.2,
+        "scale": "correlation of the pair's log expected expression",
+        "strength": 1.414886717250778,
+        "added_variance": 0.5677065013052671,
+        "var_a": 2.364314062524601,
+        "var_b": 2.1803188331699137,
+        "floored": []
+       },
+       "response": 0.00333856899263824,
+       "ci": [
+        -0.0008986231956821947,
+        0.0075757611809586746
+       ],
+       "n_rep": 20
+      }
+     ]
+    },
+    "specificity": {
+     "applicable": true,
+     "error": null,
+     "t_claim": 1.6295995119654865,
+     "n_controls": 1000,
+     "in_direction": {
+      "k": 230,
+      "n": 1000,
+      "share": 0.23,
+      "share_ci": [
+       0.20424301848606774,
+       0.2573569175033299
+      ],
+      "p": 0.23076923076923078,
+      "outcome": "not specific"
+     },
+     "absolute": {
+      "k": 253,
+      "n": 1000,
+      "share": 0.253,
+      "share_ci": [
+       0.22631524866437758,
+       0.2811472625830902
+      ],
+      "p": 0.25374625374625376,
+      "outcome": "not specific"
+     },
+     "nearest": [
+      {
+       "genes": [
+        "Mlx",
+        "Timp3"
+       ],
+       "t": 1.6302731215890476,
+       "t_signed": 1.6302731215890476,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Pgs1",
+        "Prelp"
+       ],
+       "t": 1.6313901021085213,
+       "t_signed": 1.6313901021085213,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Rrp7a",
+        "Zbtb20"
+       ],
+       "t": 1.634147448746261,
+       "t_signed": 1.634147448746261,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Nfkb2",
+        "Aebp1"
+       ],
+       "t": 1.6395261535626386,
+       "t_signed": 1.6395261535626386,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Tsnax",
+        "Sqor"
+       ],
+       "t": 1.6189624139569416,
+       "t_signed": 1.6189624139569416,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Lipa",
+        "Rcn3"
+       ],
+       "t": 1.6139858677936754,
+       "t_signed": 1.6139858677936754,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Mgat4b",
+        "Tubb2a"
+       ],
+       "t": 1.6138897838833863,
+       "t_signed": 1.6138897838833863,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tbc1d15",
+        "Hsd11b1"
+       ],
+       "t": 1.6132791031636142,
+       "t_signed": 1.6132791031636142,
+       "at_least_as_far": false
+      },
+      {
+       "genes": [
+        "Tmem39a",
+        "Timp3"
+       ],
+       "t": 1.6461848812362394,
+       "t_signed": 1.6461848812362394,
+       "at_least_as_far": true
+      },
+      {
+       "genes": [
+        "Rars1",
+        "Myc"
+       ],
+       "t": 1.6508337333160823,
+       "t_signed": 1.6508337333160823,
+       "at_least_as_far": true
+      }
+     ],
+     "shift": {
+      "median_t": 0.7754514797529205,
+      "ci": [
+       -0.5864812718815443,
+       2.137384231387387
+      ],
+      "ci_level": 0.95,
+      "p_one_sided": 0.15714285714285714,
+      "method": "exact",
+      "n_relabelings": 70,
+      "significant": false,
+      "warning": null
+     },
+     "pool": {
+      "genes": 21025,
+      "same_as_data": false
+     },
+     "at_least_as_far": [
+      {
+       "genes": [
+        "Sh3bp5",
+        "Fbln1"
+       ],
+       "t_signed": 7.0810272339317235
+      },
+      {
+       "genes": [
+        "Tmx2",
+        "Col6a2"
+       ],
+       "t_signed": 6.97073482391879
+      },
+      {
+       "genes": [
+        "Nosip",
+        "Ogn"
+       ],
+       "t_signed": 6.969973091752083
+      },
+      {
+       "genes": [
+        "Med21",
+        "Hspa1a"
+       ],
+       "t_signed": 6.815737006074077
+      },
+      {
+       "genes": [
+        "Plekha2",
+        "C1ra"
+       ],
+       "t_signed": 6.103699004730171
+      },
+      {
+       "genes": [
+        "Ppp6c",
+        "Itgb5"
+       ],
+       "t_signed": 5.463167545559789
+      },
+      {
+       "genes": [
+        "Chpt1",
+        "Ddr2"
+       ],
+       "t_signed": 5.076698264373741
+      },
+      {
+       "genes": [
+        "Tsnax",
+        "Col6a2"
+       ],
+       "t_signed": 4.907842402011103
+      },
+      {
+       "genes": [
+        "Rnf19b",
+        "Col6a1"
+       ],
+       "t_signed": 4.874143125927552
+      },
+      {
+       "genes": [
+        "Gpatch8",
+        "Ddr2"
+       ],
+       "t_signed": 4.869817791720896
+      },
+      {
+       "genes": [
+        "Dnttip1",
+        "Lpar1"
+       ],
+       "t_signed": 4.824746651441846
+      },
+      {
+       "genes": [
+        "Tsnax",
+        "Ly6c1"
+       ],
+       "t_signed": 4.821531795008687
+      },
+      {
+       "genes": [
+        "Itga5",
+        "Hspb1"
+       ],
+       "t_signed": 4.812941151114062
+      },
+      {
+       "genes": [
+        "Mpv17l2",
+        "Col6a2"
+       ],
+       "t_signed": 4.46630852468053
+      },
+      {
+       "genes": [
+        "Pgs1",
+        "Ddr2"
+       ],
+       "t_signed": 4.459650599044319
+      },
+      {
+       "genes": [
+        "Trafd1",
+        "Gfpt2"
+       ],
+       "t_signed": 4.433678616839573
+      },
+      {
+       "genes": [
+        "Emc8",
+        "Ddr2"
+       ],
+       "t_signed": 4.349376020779957
+      },
+      {
+       "genes": [
+        "Dym",
+        "Lpar1"
+       ],
+       "t_signed": 4.210283299060179
+      },
+      {
+       "genes": [
+        "Erg28",
+        "Axl"
+       ],
+       "t_signed": 4.201593302152769
+      },
+      {
+       "genes": [
+        "Ergic2",
+        "C1ra"
+       ],
+       "t_signed": 4.163899703054638
+      },
+      {
+       "genes": [
+        "Papss1",
+        "Itih5"
+       ],
+       "t_signed": 4.1004393218158
+      },
+      {
+       "genes": [
+        "Chpt1",
+        "Gfpt2"
+       ],
+       "t_signed": 4.09838292361637
+      },
+      {
+       "genes": [
+        "Pmm2",
+        "Itgb5"
+       ],
+       "t_signed": 4.045435046953026
+      },
+      {
+       "genes": [
+        "Il6ra",
+        "Egfr"
+       ],
+       "t_signed": 3.970102978529076
+      },
+      {
+       "genes": [
+        "Chpt1",
+        "Zbtb20"
+       ],
+       "t_signed": 3.9200833401660464
+      },
+      {
+       "genes": [
+        "Slc31a1",
+        "Ddr2"
+       ],
+       "t_signed": 3.889881459028837
+      },
+      {
+       "genes": [
+        "Ncbp2",
+        "Col4a1"
+       ],
+       "t_signed": 3.766119808044599
+      },
+      {
+       "genes": [
+        "Il6ra",
+        "Pdlim1"
+       ],
+       "t_signed": 3.7620292007434557
+      },
+      {
+       "genes": [
+        "Wbp1l",
+        "Col6a2"
+       ],
+       "t_signed": 3.724814884130178
+      },
+      {
+       "genes": [
+        "Itga5",
+        "Aebp1"
+       ],
+       "t_signed": 3.7085154273338214
+      },
+      {
+       "genes": [
+        "Dym",
+        "Col6a2"
+       ],
+       "t_signed": 3.587963079549681
+      },
+      {
+       "genes": [
+        "Rrp7a",
+        "Itgb5"
+       ],
+       "t_signed": 3.5714148393344294
+      },
+      {
+       "genes": [
+        "Dcaf11",
+        "Lpar1"
+       ],
+       "t_signed": 3.5701328916588464
+      },
+      {
+       "genes": [
+        "Slc25a12",
+        "Sparcl1"
+       ],
+       "t_signed": 3.5411390598347516
+      },
+      {
+       "genes": [
+        "Il6ra",
+        "Lpar1"
+       ],
+       "t_signed": 3.5406809813580136
+      },
+      {
+       "genes": [
+        "Pigx",
+        "Lpar1"
+       ],
+       "t_signed": 3.5378377075854885
+      },
+      {
+       "genes": [
+        "Med21",
+        "Abi3bp"
+       ],
+       "t_signed": 3.5358769007429993
+      },
+      {
+       "genes": [
+        "1700123O20Rik",
+        "Col6a2"
+       ],
+       "t_signed": 3.5143320020692457
+      },
+      {
+       "genes": [
+        "Sh3bp5",
+        "Itgb5"
+       ],
+       "t_signed": 3.472093792353787
+      },
+      {
+       "genes": [
+        "Pdzd11",
+        "Abi3bp"
+       ],
+       "t_signed": 3.3797519591102905
+      }
+     ]
+    },
+    "reference": {
+     "measure": "norm_pearson (the engine's)",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "groups": [
+      "young",
+      "old"
+     ],
+     "data": "uncorrected",
+     "over": "the domain's types, equally weighted",
+     "rows": [
+      {
+       "stratum": "male",
+       "metric": {
+        "difference": -0.007877799100173666,
+        "p": 0.2,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "reference": {
+        "difference": -0.015235808196046939,
+        "p": 0.8285714285714286,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      },
+      {
+       "stratum": "over the strata",
+       "metric": {
+        "difference": -0.007877799100173666,
+        "p": 0.2,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       },
+       "reference": {
+        "difference": -0.015235808196046939,
+        "p": 0.8285714285714286,
+        "tier": "permutation",
+        "n": {
+         "young": 4,
+         "old": 4
+        }
+       }
+      }
+     ]
+    },
+    "composition": {
+     "cell_type": {
+      "tvd": 0.43003220209245135,
+      "tvd_p": 0.01927437641723356,
+      "differs": true
+     },
+     "tissue": {
+      "tvd": 0.3934202742927202,
+      "tvd_p": 0.03259637188208617,
+      "differs": true
+     }
+    },
+    "id": "A4",
+    "claim": {
+     "id": "A4",
+     "case": "case1",
+     "metric": "mi_3bin",
+     "genes": [
+      "Smad3",
+      "Col1a1"
+     ],
+     "groups": [
+      "young",
+      "old"
+     ],
+     "group_col": "age",
+     "replicate": "mouse",
+     "within": [
+      "sex"
+     ],
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "probe": "coupling",
+     "controls": true,
+     "composition": [
+      "cell_type",
+      "tissue"
+     ],
+     "criterion": "not SUPPORTED"
+    },
+    "prereg": {
+     "estimand": "composition",
+     "direction": "decrease",
+     "sesoi": 0.1,
+     "judgment_pending": false
+    },
+    "report": "reports/A4.json",
+    "report_sha256": "d88151375052cafe672d3d43ece72c6172e2d8ced5e08097b23b738fdf221361",
+    "seconds": 92.1,
+    "cells": 76797
+   }
+  ],
+  "case_sha256": "13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44"
+ }
+}

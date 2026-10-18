@@ -1,0 +1,68 @@
+# part b (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+(b) males: 9 units (5 young, 4 old); 35 types with >= 20 cells in >= 3 units of each group: 4 fibroblast-like (fibroblast, fibroblast of cardiac tissue, mesenchymal stem cell, mesenchymal stem cell of adipose tissue), 31 others; the list's genes not measured: ['Loxl1']
+(b4) the Census's obs: 30 column x sex checks; the unit's ids left out: ['_case_unit', 'donor_id']; columns that separate the ages: none
+(b4) the source h5ad's obs: 38 column x sex checks; the unit's ids left out: ['donor_id']; columns that separate the ages: [('FACS.selection', 'female'), ('FACS.selection', 'male')]
+(b4) GEO GSE109774: 46 samples; units named: 3_8_M 0, 3_9_M 0, 3_10_M 0, 3_11_M 0, 3_38_F 0, 3_39_F 0, 3_56_F 0, 3_57_F 0, 24_58_M 0, 24_59_M 0, 24_60_M 0, 24_61_M 0, 21_48_F 0, 21_54_F 0, 21_55_F 0; series lines quoted: 2
+(b4) GEO GSE132042: 996 samples; units named: 3_8_M 0, 3_9_M 0, 3_10_M 0, 3_11_M 0, 3_38_F 0, 3_39_F 0, 3_56_F 0, 3_57_F 0, 24_58_M 0, 24_59_M 0, 24_60_M 0, 24_61_M 0, 21_48_F 0, 21_54_F 0, 21_55_F 0; series lines quoted: 0
+
+### (b1) detection and level of the list's genes, young minus old, combined over the non-fibroblast types
+| gene | detection Δ | p | level Δ | p | fibroblast-like: detection Δ | level Δ |
+|---|---|---|---|---|---|---|
+| Col1a1 | +0.0652 | 0.0159 | +0.01242 | 0.0635 | +0.2654 | +1.473 |
+| Col1a2 | +0.1094 | 0.0238 | +0.02543 | 0.0476 | +0.1283 | +1.676 |
+| Col3a1 | +0.1348 | 0.0159 | +0.06125 | 0.0238 | +0.2358 | +1.983 |
+| Col5a1 | +0.02404 | 0.0159 | +0.00913 | 0.0238 | +0.4862 | +0.6564 |
+| Dcn | +0.3152 | 0.0238 | -0.01871 | 0.563 | +0.01428 | -0.1824 |
+| Fbln1 | +0.07505 | 0.111 | +0.01047 | 0.341 | +0.1623 | +0.8287 |
+| Fbln2 | +0.02492 | 0.19 | +0.02016 | 0.0556 | +0.1585 | +0.8138 |
+| Lum | +0.05296 | 0.206 | -0.003403 | 0.54 | +0.08674 | +0.6811 |
+| Sparc | +0.237 | 0.0238 | +0.02653 | 0.302 | +0.03023 | +0.7818 |
+(b2) F (the index genes): young minus old +0.07909, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+(b2) F⁺ (with Col1a1): young minus old +0.07987, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+MI within the non-fibroblast types: young minus old +0.01636, exact p 0.01587
+(b3-i) within type and age, scored: r +0.089, p 0.1905 (227 values, 62 cells, 9999 permutations)
+(b3-0) within type, reported: r +0.319, p 0.0007 (227 values, 31 cells, 9999 permutations)
+(b3-ii) across types, reported: r +0.566, p 0.0218 (31 values, 1 cells, 9999 permutations)
+
+| type | fibroblast-like | units young/old | Δ MI | Δ F |
+|---|---|---|---|---|
+| B cell | False | 4/4 | +0.001333 | -0.01558 |
+| CD4-positive, alpha-beta T cell | False | 4/4 | +0.03427 | -0.09338 |
+| CD8-positive, alpha-beta T cell | False | 4/4 | -0.0002567 | -0.04106 |
+| DN4 thymocyte | False | 3/4 | +0.008699 | -0.04111 |
+| T cell | False | 4/4 | +0.0101 | +0.06181 |
+| basal cell of epidermis | False | 4/4 | +0.00348 | +0.06278 |
+| bladder urothelial cell | False | 3/3 | +0.01936 | +0.03037 |
+| bronchial smooth muscle cell | False | 3/4 | +0.001209 | +0.09481 |
+| cardiac valve cell | False | 3/4 | +0.09668 | +0.9055 |
+| endothelial cell | False | 4/4 | +0.004041 | +0.2169 |
+| endothelial cell of coronary artery | False | 4/4 | +0.009685 | +0.2492 |
+| enterocyte of epithelium of large intestine | False | 4/4 | +0.01186 | +0.106 |
+| epidermal cell | False | 4/3 | +0.003867 | +0.05806 |
+| epithelial cell of large intestine | False | 4/4 | +0.008971 | +0.01221 |
+| fibroblast | True | 3/4 | -0.03036 | -0.02875 |
+| fibroblast of cardiac tissue | True | 4/4 | -0.009285 | +0.323 |
+| granulocyte | False | 3/4 | +0.02075 | -0.01898 |
+| granulocytopoietic cell | False | 3/3 | +0.01179 | -0.03732 |
+| hematopoietic stem cell | False | 3/4 | +0.002582 | +0.002345 |
+| intestinal crypt stem cell | False | 4/3 | +0.04041 | +0.03976 |
+| keratinocyte | False | 3/4 | +0.01184 | +0.02898 |
+| keratinocyte stem cell | False | 4/4 | +0.008537 | +0.2007 |
+| large intestine goblet cell | False | 4/4 | +0.0272 | +0.1022 |
+| macrophage | False | 4/4 | +0.01243 | -0.01292 |
+| mesenchymal stem cell | True | 3/4 | +0.007052 | +0.2405 |
+| mesenchymal stem cell of adipose tissue | True | 4/4 | +9.85e-05 | +0.188 |
+| microglial cell | False | 3/4 | +0.005171 | +0.01342 |
+| monocyte | False | 4/4 | +0.02027 | -0.1067 |
+| myeloid cell | False | 4/4 | +0.01479 | -0.113 |
+| naive B cell | False | 3/4 | +0.01551 | -0.03861 |
+| natural killer cell | False | 3/3 | -0.0004627 | -0.03893 |
+| precursor B cell | False | 3/3 | +0.0295 | -0.0454 |
+| promonocyte | False | 3/4 | +0.03096 | -0.01124 |
+| skeletal muscle satellite cell | False | 4/4 | +0.02445 | +0.8291 |
+| thymocyte | False | 3/3 | +0.01814 | +0.05188 |
+
+part b: 26.4 s

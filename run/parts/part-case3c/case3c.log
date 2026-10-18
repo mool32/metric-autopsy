@@ -1,0 +1,18 @@
+# part case3c (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A8-3c1: NO DETECTABLE EFFECT — effect +0.05445 [-0.133, +0.2419] within the domain's types, equally weighted: the 90% interval lies within ±0.4844 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.481, +0.4878] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (131.8 s)
+    effect 0.054449013866056474 CI [-0.13303586366561615, 0.24193389139772908] over the domain's cell types, equally weighted; s_m 0.48439779631416524; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c2: NO DETECTABLE EFFECT — effect +0.03067 [-0.01669, +0.07803] within the domain's types, equally weighted: the 90% interval lies within ±0.4897 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4893, +0.49] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (131.4 s)
+    effect 0.03066924719508162 CI [-0.01669049933714218, 0.07802899372730543] over the domain's cell types, equally weighted; s_m 0.4896863391470796; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c3: EFFECT BELOW SESOI — effect +0.1211 [+0.07505, +0.1671] within the domain's types, equally weighted, p=0.000999 (monte-carlo permutation); its 90% interval [+0.08322, +0.1589] lies within ±0.4913, the effective SESOI: detected, but smaller than the smallest effect that matters [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside; non-directional claim] [cause effect_below_sesoi] (130.8 s)
+    effect 0.12106750599028579 CI [0.07504778955888738, 0.1670872224216842] over the domain's cell types, equally weighted; s_m 0.49132535369823827; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c4: NO DETECTABLE EFFECT — effect +0.04595 [-0.01083, +0.1027] within the domain's types, equally weighted: the 90% interval lies within ±0.4909 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4905, +0.4913] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (129.7 s)
+    effect 0.04594686291824991 CI [-0.010828057155469986, 0.10272178299196981] over the domain's cell types, equally weighted; s_m 0.49086988448289026; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+
+part case3c: 526.7 s

@@ -1,0 +1,2707 @@
+{
+ "part": "a",
+ "synthetic": false,
+ "engine": "0.4.0.dev0",
+ "seconds": 5.3,
+ "result": {
+  "a1": {
+   "rule": {
+    "threshold": 0.1,
+    "kind": "pair",
+    "genes": [
+     "Smad3",
+     "Col1a1"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "domain": [
+    "enterocyte of epithelium of large intestine",
+    "epithelial cell of large intestine",
+    "fibroblast",
+    "fibroblast of cardiac tissue",
+    "granulocyte",
+    "granulocytopoietic cell",
+    "keratinocyte",
+    "mesenchymal stem cell",
+    "mesenchymal stem cell of adipose tissue",
+    "precursor B cell",
+    "skeletal muscle satellite cell"
+   ],
+   "outside": [
+    "B cell",
+    "CD4-positive, alpha-beta T cell",
+    "CD8-positive, alpha-beta T cell",
+    "DN4 thymocyte",
+    "T cell",
+    "basal cell of epidermis",
+    "bladder urothelial cell",
+    "bronchial smooth muscle cell",
+    "cardiac valve cell",
+    "endothelial cell",
+    "endothelial cell of coronary artery",
+    "epidermal cell",
+    "hematopoietic stem cell",
+    "intestinal crypt stem cell",
+    "keratinocyte stem cell",
+    "large intestine goblet cell",
+    "macrophage",
+    "microglial cell",
+    "monocyte",
+    "myeloid cell",
+    "naive B cell",
+    "natural killer cell",
+    "promonocyte",
+    "thymocyte"
+   ],
+   "rows": [
+    {
+     "stratum": "all",
+     "type": "B cell",
+     "cells": {
+      "young": 1241,
+      "old": 1770
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.09961601778991575,
+       "Col1a1": 0.053791839422870316
+      },
+      "old": {
+       "Smad3": 0.04679124595315435,
+       "Col1a1": 0.02081042181798492
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "Bergmann glial cell",
+     "cells": {
+      "young": 29,
+      "old": 9
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "CD4-positive, alpha-beta T cell",
+     "cells": {
+      "young": 232,
+      "old": 420
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.1936295657175726,
+       "Col1a1": 0.08541846419327005
+      },
+      "old": {
+       "Smad3": 0.13617540936519798,
+       "Col1a1": 0.012437960665209823
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "CD8-positive, alpha-beta T cell",
+     "cells": {
+      "young": 136,
+      "old": 396
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.23876555126555127,
+       "Col1a1": 0.025605963105963105
+      },
+      "old": {
+       "Smad3": 0.16112607880990235,
+       "Col1a1": 0.009697933227344992
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "DN4 thymocyte",
+     "cells": {
+      "young": 253,
+      "old": 565
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.1699485144658528,
+       "Col1a1": 0.040583908437704125
+      },
+      "old": {
+       "Smad3": 0.1829970771333131,
+       "Col1a1": 0.001953125
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "Kupffer cell",
+     "cells": {
+      "young": 47,
+      "old": 108
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.09090909090909091,
+       "Col1a1": 0.030303030303030304
+      },
+      "old": {
+       "Smad3": 0.125,
+       "Col1a1": 0.006944444444444444
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "T cell",
+     "cells": {
+      "young": 245,
+      "old": 514
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.2527422427636255,
+       "Col1a1": 0.09356633073668
+      },
+      "old": {
+       "Smad3": 0.2054592521726124,
+       "Col1a1": 0.021477618431443593
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "adventitial cell",
+     "cells": {
+      "young": 133,
+      "old": 51
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.3833741138088964,
+       "Col1a1": 0.9780193236714976
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "aortic endothelial cell",
+     "cells": {
+      "young": 129,
+      "old": 160
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.1512820512820513,
+       "Col1a1": 0.06623931623931624
+      },
+      "old": {
+       "Smad3": 0.03125,
+       "Col1a1": 0.0546875
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "astrocyte",
+     "cells": {
+      "young": 352,
+      "old": 31
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.16789529914529913,
+       "Col1a1": 0.08383760683760684
+      },
+      "old": {
+       "Smad3": 0.03225806451612903,
+       "Col1a1": 0.0967741935483871
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "basal cell of epidermis",
+     "cells": {
+      "young": 1204,
+      "old": 1242
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.34672240037884006,
+       "Col1a1": 0.0824308025488702
+      },
+      "old": {
+       "Smad3": 0.21085598380470216,
+       "Col1a1": 0.03207880010689187
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "basal epithelial cell of tracheobronchial tree",
+     "cells": {
+      "young": 39,
+      "old": 134
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.2727272727272727,
+       "Col1a1": 0.13636363636363635
+      },
+      "old": {
+       "Smad3": 0.06926406926406926,
+       "Col1a1": 0.03896103896103896
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "basophil",
+     "cells": {
+      "young": 14,
+      "old": 28
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "bladder cell",
+     "cells": {
+      "young": 521,
+      "old": 85
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.8184035819458826,
+       "Col1a1": 1.0
+      },
+      "old": {
+       "Smad3": 0.6388888888888888,
+       "Col1a1": 1.0
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "bladder urothelial cell",
+     "cells": {
+      "young": 457,
+      "old": 349
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.7712393341448331,
+       "Col1a1": 0.03439931928650965
+      },
+      "old": {
+       "Smad3": 0.4241395958341954,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "brain pericyte",
+     "cells": {
+      "young": 146,
+      "old": 40
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.2753322259136213,
+       "Col1a1": 0.0473421926910299
+      },
+      "old": {
+       "Smad3": 0.075,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "bronchial smooth muscle cell",
+     "cells": {
+      "young": 154,
+      "old": 753
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.01694915254237288,
+       "Col1a1": 0.08893793639556352
+      },
+      "old": {
+       "Smad3": 0.002617801047120419,
+       "Col1a1": 0.006756227073414849
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "cardiac valve cell",
+     "cells": {
+      "young": 124,
+      "old": 116
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.0864315302772478,
+       "Col1a1": 0.507158940511181
+      },
+      "old": {
+       "Smad3": 0.008928571428571428,
+       "Col1a1": 0.28202121736604496
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "chondrocyte",
+     "cells": {
+      "young": 109,
+      "old": 11
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.5473684210526316,
+       "Col1a1": 0.6105263157894737
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "classical monocyte",
+     "cells": {
+      "young": 41,
+      "old": 54
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.3181818181818182,
+       "Col1a1": 0.13636363636363635
+      },
+      "old": {
+       "Smad3": 0.08333333333333333,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "club cell",
+     "cells": {
+      "young": 3,
+      "old": 11
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "dendritic cell",
+     "cells": {
+      "young": 0,
+      "old": 43
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0,
+       "Col1a1": 0.125
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "early pro-B cell",
+     "cells": {
+      "young": 19,
+      "old": 27
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "endocardial cell",
+     "cells": {
+      "young": 49,
+      "old": 164
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.15533280922431866,
+       "Col1a1": 0.07547169811320754
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "endothelial cell",
+     "cells": {
+      "young": 1224,
+      "old": 891
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.12979988577281373,
+       "Col1a1": 0.09024187432802189
+      },
+      "old": {
+       "Smad3": 0.04061088568617244,
+       "Col1a1": 0.028502473833768215
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "endothelial cell of coronary artery",
+     "cells": {
+      "young": 534,
+      "old": 1057
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.040771813191908396,
+       "Col1a1": 0.07137046621065662
+      },
+      "old": {
+       "Smad3": 0.01746542012816351,
+       "Col1a1": 0.026805908058490348
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "endothelial cell of hepatic sinusoid",
+     "cells": {
+      "young": 189,
+      "old": 98
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.1474752241623407,
+       "Col1a1": 0.046838131193959416
+      },
+      "old": {
+       "Smad3": 0.13793103448275862,
+       "Col1a1": 0.022988505747126436
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "endothelial cell of lymphatic vessel",
+     "cells": {
+      "young": 48,
+      "old": 35
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.2727272727272727,
+       "Col1a1": 0.0
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "enterocyte of epithelium of large intestine",
+     "cells": {
+      "young": 621,
+      "old": 552
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.3610643676959244,
+       "Col1a1": 0.11911049451087652
+      },
+      "old": {
+       "Smad3": 0.16422971858376278,
+       "Col1a1": 0.00967741935483871
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "enteroendocrine cell",
+     "cells": {
+      "young": 31,
+      "old": 57
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "ependymal cell",
+     "cells": {
+      "young": 6,
+      "old": 4
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "epidermal cell",
+     "cells": {
+      "young": 171,
+      "old": 129
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.16419939350267218,
+       "Col1a1": 0.059527562601333094
+      },
+      "old": {
+       "Smad3": 0.09792429792429792,
+       "Col1a1": 0.012820512820512822
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "epithelial cell",
+     "cells": {
+      "young": 38,
+      "old": 272
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0655330750466351,
+       "Col1a1": 0.07567800258286699
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "epithelial cell of large intestine",
+     "cells": {
+      "young": 517,
+      "old": 282
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.11453574880818303,
+       "Col1a1": 0.12324299531719077
+      },
+      "old": {
+       "Smad3": 0.09543636089152394,
+       "Col1a1": 0.02536525974025974
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "epithelial cell of proximal tubule",
+     "cells": {
+      "young": 43,
+      "old": 221
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.042911255411255414,
+       "Col1a1": 0.01544187519797276
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "epithelial cell of thymus",
+     "cells": {
+      "young": 5,
+      "old": 70
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0,
+       "Col1a1": 0.022727272727272728
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "fenestrated endothelial cell",
+     "cells": {
+      "young": 56,
+      "old": 105
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.17391304347826086,
+       "Col1a1": 0.0
+      },
+      "old": {
+       "Smad3": 0.12185802703044082,
+       "Col1a1": 0.017241379310344827
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "fibroblast",
+     "cells": {
+      "young": 333,
+      "old": 421
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.5227676353445271,
+       "Col1a1": 0.994910941475827
+      },
+      "old": {
+       "Smad3": 0.33969459743796027,
+       "Col1a1": 0.7261052477427974
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "fibroblast of cardiac tissue",
+     "cells": {
+      "young": 830,
+      "old": 831
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.4351357329993012,
+       "Col1a1": 0.9702732508204772
+      },
+      "old": {
+       "Smad3": 0.2582787936877769,
+       "Col1a1": 0.7156784086176904
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "fibroblast of lung",
+     "cells": {
+      "young": 43,
+      "old": 185
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.23070126813708328,
+       "Col1a1": 0.665171208231221
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "fibrocyte",
+     "cells": {
+      "young": 25,
+      "old": 15
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "granulocyte",
+     "cells": {
+      "young": 548,
+      "old": 981
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.22663527088235333,
+       "Col1a1": 0.10546092780613908
+      },
+      "old": {
+       "Smad3": 0.09720857684748935,
+       "Col1a1": 0.027159402006470827
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "granulocyte monocyte progenitor cell",
+     "cells": {
+      "young": 51,
+      "old": 44
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.5483870967741935,
+       "Col1a1": 0.06451612903225806
+      },
+      "old": {
+       "Smad3": 0.3333333333333333,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "granulocytopoietic cell",
+     "cells": {
+      "young": 166,
+      "old": 117
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.19252767376166077,
+       "Col1a1": 0.10855382012876101
+      },
+      "old": {
+       "Smad3": 0.13039926115373687,
+       "Col1a1": 0.10446859903381643
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "hematopoietic stem cell",
+     "cells": {
+      "young": 956,
+      "old": 1174
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.5525539866174936,
+       "Col1a1": 0.0697375290956634
+      },
+      "old": {
+       "Smad3": 0.25540671057867403,
+       "Col1a1": 0.004563796191988771
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "hepatocyte",
+     "cells": {
+      "young": 240,
+      "old": 378
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.2742361927144536,
+       "Col1a1": 0.04670975323149236
+      },
+      "old": {
+       "Smad3": 0.24583333333333332,
+       "Col1a1": 0.022771317829457363
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "immature B cell",
+     "cells": {
+      "young": 239,
+      "old": 44
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.08359704641350212,
+       "Col1a1": 0.08880537974683544
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "intermediate monocyte",
+     "cells": {
+      "young": 9,
+      "old": 0
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "old",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "interneuron",
+     "cells": {
+      "young": 54,
+      "old": 59
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.06451612903225806,
+       "Col1a1": 0.12903225806451613
+      },
+      "old": {
+       "Smad3": 0.03636363636363636,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "intestinal crypt stem cell",
+     "cells": {
+      "young": 412,
+      "old": 371
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.500304771856496,
+       "Col1a1": 0.09231172174329502
+      },
+      "old": {
+       "Smad3": 0.2367267577037692,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "keratinocyte",
+     "cells": {
+      "young": 263,
+      "old": 546
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.28879190576864994,
+       "Col1a1": 0.11014799154334039
+      },
+      "old": {
+       "Smad3": 0.17822080696428277,
+       "Col1a1": 0.04264705882352941
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "keratinocyte stem cell",
+     "cells": {
+      "young": 1019,
+      "old": 545
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.11071039251805939,
+       "Col1a1": 0.07404028677987701
+      },
+      "old": {
+       "Smad3": 0.0648976589160738,
+       "Col1a1": 0.031648781378333046
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "kidney collecting duct epithelial cell",
+     "cells": {
+      "young": 84,
+      "old": 70
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.05555555555555555,
+       "Col1a1": 0.027777777777777776
+      },
+      "old": {
+       "Smad3": 0.03125,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "kidney collecting duct principal cell",
+     "cells": {
+      "young": 26,
+      "old": 60
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.17857142857142858,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "kidney interstitial fibroblast",
+     "cells": {
+      "young": 0,
+      "old": 16
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "kidney loop of Henle ascending limb epithelial cell",
+     "cells": {
+      "young": 49,
+      "old": 39
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.037037037037037035,
+       "Col1a1": 0.037037037037037035
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "large intestine goblet cell",
+     "cells": {
+      "young": 183,
+      "old": 504
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.3147474932001786,
+       "Col1a1": 0.08340412251857265
+      },
+      "old": {
+       "Smad3": 0.23164945871655596,
+       "Col1a1": 0.02586206896551724
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "late pro-B cell",
+     "cells": {
+      "young": 213,
+      "old": 50
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.17629196554421264,
+       "Col1a1": 0.10036214396512733
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "leukocyte",
+     "cells": {
+      "young": 39,
+      "old": 59
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.20833333333333334,
+       "Col1a1": 0.08333333333333333
+      },
+      "old": {
+       "Smad3": 0.1794871794871795,
+       "Col1a1": 0.07692307692307693
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "lung macrophage",
+     "cells": {
+      "young": 0,
+      "old": 8
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "lymphocyte",
+     "cells": {
+      "young": 0,
+      "old": 2
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "macrophage",
+     "cells": {
+      "young": 352,
+      "old": 891
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.17385069612103654,
+       "Col1a1": 0.07472114920328343
+      },
+      "old": {
+       "Smad3": 0.10424583741245905,
+       "Col1a1": 0.017287746185208303
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "mature NK T cell",
+     "cells": {
+      "young": 32,
+      "old": 76
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.4642857142857143,
+       "Col1a1": 0.07142857142857142
+      },
+      "old": {
+       "Smad3": 0.20663265306122447,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "mature alpha-beta T cell",
+     "cells": {
+      "young": 73,
+      "old": 82
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.3058755760368664,
+       "Col1a1": 0.10195852534562211
+      },
+      "old": {
+       "Smad3": 0.07109557109557109,
+       "Col1a1": 0.07109557109557109
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "medium spiny neuron",
+     "cells": {
+      "young": 78,
+      "old": 3
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.36363636363636365,
+       "Col1a1": 0.07272727272727272
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "megakaryocyte-erythroid progenitor cell",
+     "cells": {
+      "young": 4,
+      "old": 50
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "mesangial cell",
+     "cells": {
+      "young": 18,
+      "old": 19
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "mesenchymal stem cell",
+     "cells": {
+      "young": 245,
+      "old": 529
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.3538774733637748,
+       "Col1a1": 0.9869444444444445
+      },
+      "old": {
+       "Smad3": 0.1948789757560101,
+       "Col1a1": 0.531330662549705
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "mesenchymal stem cell of adipose tissue",
+     "cells": {
+      "young": 1225,
+      "old": 1253
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.5181423082371557,
+       "Col1a1": 0.9964686992243784
+      },
+      "old": {
+       "Smad3": 0.34201659286322617,
+       "Col1a1": 0.913817776392775
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "microglial cell",
+     "cells": {
+      "young": 2253,
+      "old": 4269
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.4290563946833692,
+       "Col1a1": 0.06340695268857266
+      },
+      "old": {
+       "Smad3": 0.19262251859110857,
+       "Col1a1": 0.008802388100955728
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "monocyte",
+     "cells": {
+      "young": 315,
+      "old": 447
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.22490569986774595,
+       "Col1a1": 0.09141801772718608
+      },
+      "old": {
+       "Smad3": 0.11678784551017952,
+       "Col1a1": 0.07156694747238007
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "mucus secreting cell",
+     "cells": {
+      "young": 25,
+      "old": 16
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "multiciliated columnar cell of tracheobronchial tree",
+     "cells": {
+      "young": 10,
+      "old": 23
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "myeloid cell",
+     "cells": {
+      "young": 558,
+      "old": 867
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.2228721240912608,
+       "Col1a1": 0.09370018527828461
+      },
+      "old": {
+       "Smad3": 0.13901471557726072,
+       "Col1a1": 0.05795810325923552
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "myeloid dendritic cell",
+     "cells": {
+      "young": 2,
+      "old": 213
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.06748394736199614,
+       "Col1a1": 0.053555537244561635
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "myeloid leukocyte",
+     "cells": {
+      "young": 17,
+      "old": 116
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.19874274661508703,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "naive B cell",
+     "cells": {
+      "young": 401,
+      "old": 1166
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.07282063325142703,
+       "Col1a1": 0.08946349931591256
+      },
+      "old": {
+       "Smad3": 0.044093366856747446,
+       "Col1a1": 0.024360879755582075
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "natural killer cell",
+     "cells": {
+      "young": 192,
+      "old": 246
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.49250631997110866,
+       "Col1a1": 0.08517247836496662
+      },
+      "old": {
+       "Smad3": 0.17308522401386006,
+       "Col1a1": 0.03017106297932225
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "neural stem cell",
+     "cells": {
+      "young": 72,
+      "old": 1
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.2619047619047619,
+       "Col1a1": 0.023809523809523808
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "neuroepithelial stem cell",
+     "cells": {
+      "young": 4,
+      "old": 7
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "neuron",
+     "cells": {
+      "young": 134,
+      "old": 207
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.22153209109730848,
+       "Col1a1": 0.015873015873015872
+      },
+      "old": {
+       "Smad3": 0.10402609086819614,
+       "Col1a1": 0.011111111111111112
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "neutrophil",
+     "cells": {
+      "young": 15,
+      "old": 45
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.045454545454545456,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "non-classical monocyte",
+     "cells": {
+      "young": 46,
+      "old": 57
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.10818181818181818,
+       "Col1a1": 0.045454545454545456
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "oligodendrocyte",
+     "cells": {
+      "young": 1234,
+      "old": 134
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.07525272485231715,
+       "Col1a1": 0.034767997545552876
+      },
+      "old": {
+       "Smad3": 0.022388059701492536,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "oligodendrocyte precursor cell",
+     "cells": {
+      "young": 155,
+      "old": 12
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.3588431677018633,
+       "Col1a1": 0.019285714285714285
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic A cell",
+     "cells": {
+      "young": 183,
+      "old": 92
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.08889180672268908,
+       "Col1a1": 0.046218487394957986
+      },
+      "old": {
+       "Smad3": 0.041122399612965654,
+       "Col1a1": 0.009433962264150943
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic D cell",
+     "cells": {
+      "young": 82,
+      "old": 33
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.11732522796352583,
+       "Col1a1": 0.056838905775075985
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic PP cell",
+     "cells": {
+      "young": 26,
+      "old": 8
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.043478260869565216,
+       "Col1a1": 0.0
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic acinar cell",
+     "cells": {
+      "young": 91,
+      "old": 214
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.21495098039215685,
+       "Col1a1": 0.1267156862745098
+      },
+      "old": {
+       "Smad3": 0.09833916083916083,
+       "Col1a1": 0.01818181818181818
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic ductal cell",
+     "cells": {
+      "young": 106,
+      "old": 72
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.5125718390804598,
+       "Col1a1": 0.09518678160919541
+      },
+      "old": {
+       "Smad3": 0.1509433962264151,
+       "Col1a1": 0.05660377358490566
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pancreatic stellate cell",
+     "cells": {
+      "young": 23,
+      "old": 8
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pericyte",
+     "cells": {
+      "young": 10,
+      "old": 4
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "plasma cell",
+     "cells": {
+      "young": 0,
+      "old": 9
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "plasmacytoid dendritic cell",
+     "cells": {
+      "young": 0,
+      "old": 3
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "precursor B cell",
+     "cells": {
+      "young": 346,
+      "old": 167
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.1510802581902326,
+       "Col1a1": 0.10813542808427719
+      },
+      "old": {
+       "Smad3": 0.04859659310878823,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "proerythroblast",
+     "cells": {
+      "young": 38,
+      "old": 42
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.07692307692307693,
+       "Col1a1": 0.038461538461538464
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "professional antigen presenting cell",
+     "cells": {
+      "young": 39,
+      "old": 17
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "promonocyte",
+     "cells": {
+      "young": 172,
+      "old": 415
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.24409722222222222,
+       "Col1a1": 0.07569444444444444
+      },
+      "old": {
+       "Smad3": 0.10093291283601304,
+       "Col1a1": 0.01673199767711963
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pulmonary alveolar type 1 cell",
+     "cells": {
+      "young": 2,
+      "old": 0
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "old",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pulmonary alveolar type 2 cell",
+     "cells": {
+      "young": 45,
+      "old": 33
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.36,
+       "Col1a1": 0.04
+      },
+      "old": {
+       "Smad3": 0.2,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "pulmonary interstitial fibroblast",
+     "cells": {
+      "young": 34,
+      "old": 7
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": true
+    },
+    {
+     "stratum": "all",
+     "type": "pulmonary neuroendocrine cell",
+     "cells": {
+      "young": 0,
+      "old": 2
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "regular atrial cardiac myocyte",
+     "cells": {
+      "young": 76,
+      "old": 144
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.21052631578947367,
+       "Col1a1": 0.15789473684210525
+      },
+      "old": {
+       "Smad3": 0.07012048192771084,
+       "Col1a1": 0.12409638554216867
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "regular ventricular cardiac myocyte",
+     "cells": {
+      "young": 16,
+      "old": 101
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.46586486849168013,
+       "Col1a1": 0.1679247181964573
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "regulatory T cell",
+     "cells": {
+      "young": 0,
+      "old": 26
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "young",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "respiratory basal cell",
+     "cells": {
+      "young": 1,
+      "old": 0
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": "old",
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "secretory cell",
+     "cells": {
+      "young": 214,
+      "old": 135
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.44541427623619406,
+       "Col1a1": 0.0970231822971549
+      },
+      "old": {
+       "Smad3": 0.28728294177732383,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "skeletal muscle satellite cell",
+     "cells": {
+      "young": 492,
+      "old": 975
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.3454944578413551,
+       "Col1a1": 0.12127994708749779
+      },
+      "old": {
+       "Smad3": 0.10752149932391933,
+       "Col1a1": 0.010697602885641196
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "smooth muscle cell",
+     "cells": {
+      "young": 29,
+      "old": 30
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "smooth muscle cell of the pulmonary artery",
+     "cells": {
+      "young": 14,
+      "old": 9
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "smooth muscle cell of trachea",
+     "cells": {
+      "young": 60,
+      "old": 8
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.32887700534759357,
+       "Col1a1": 0.24064171122994654
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "thymocyte",
+     "cells": {
+      "young": 422,
+      "old": 335
+     },
+     "qualifies": true,
+     "detection": {
+      "young": {
+       "Smad3": 0.17249801359359895,
+       "Col1a1": 0.06582723072173609
+      },
+      "old": {
+       "Smad3": 0.20215695575407802,
+       "Col1a1": 0.0023980815347721825
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "tuft cell of large intestine",
+     "cells": {
+      "young": 30,
+      "old": 54
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": 0.0,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "type B pancreatic cell",
+     "cells": {
+      "young": 241,
+      "old": 453
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": 0.0797604967474867,
+       "Col1a1": 0.08715257244234181
+      },
+      "old": {
+       "Smad3": 0.02976284584980237,
+       "Col1a1": 0.0
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    {
+     "stratum": "all",
+     "type": "vein endothelial cell",
+     "cells": {
+      "young": 9,
+      "old": 53
+     },
+     "qualifies": false,
+     "detection": {
+      "young": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      },
+      "old": {
+       "Smad3": NaN,
+       "Col1a1": NaN
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    }
+   ],
+   "score": "does not hold: the domain is ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']"
+  },
+  "a2": {
+   "M1": {
+    "groups": [
+     "ENZ-INHIB",
+     "ENZ-NONE"
+    ],
+    "row": {
+     "stratum": "all",
+     "type": "CD45+/CD11b+ sorted cells",
+     "cells": {
+      "ENZ-INHIB": 6263,
+      "ENZ-NONE": 6415
+     },
+     "qualifies": true,
+     "detection": {
+      "ENZ-INHIB": {
+       "Fos": 0.002366665816606137,
+       "Jun": 0.1734327951034886
+      },
+      "ENZ-NONE": {
+       "Fos": 0.23031836832669086,
+       "Jun": 0.6119483232718741
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    "pooled_detection": {
+     "Fos": 0.11689540937056318,
+     "Jun": 0.39446284902981543
+    },
+    "in_domain": true,
+    "alternatives_not_used": {
+     "both_groups": false,
+     "pooled_cells": true
+    }
+   },
+   "M2": {
+    "groups": [
+     "DNC-NONE",
+     "ENZ-NONE"
+    ],
+    "row": {
+     "stratum": "all",
+     "type": "CD45+/CD11b+ sorted cells",
+     "cells": {
+      "DNC-NONE": 7797,
+      "ENZ-NONE": 6415
+     },
+     "qualifies": true,
+     "detection": {
+      "DNC-NONE": {
+       "Fos": 0.012288768833137785,
+       "Jun": 0.2828057096411489
+      },
+      "ENZ-NONE": {
+       "Fos": 0.23031836832669086,
+       "Jun": 0.6119483232718741
+      }
+     },
+     "in_domain": true,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    "pooled_detection": {
+     "Fos": 0.10983675766957501,
+     "Jun": 0.42914438502673796
+    },
+    "in_domain": true,
+    "alternatives_not_used": {
+     "both_groups": false,
+     "pooled_cells": true
+    }
+   },
+   "M3": {
+    "groups": [
+     "DNC-NONE",
+     "DNC-INHIB"
+    ],
+    "row": {
+     "stratum": "all",
+     "type": "CD45+/CD11b+ sorted cells",
+     "cells": {
+      "DNC-NONE": 7797,
+      "DNC-INHIB": 7951
+     },
+     "qualifies": true,
+     "detection": {
+      "DNC-NONE": {
+       "Fos": 0.012288768833137785,
+       "Jun": 0.2828057096411489
+      },
+      "DNC-INHIB": {
+       "Fos": 0.0017556180441279298,
+       "Jun": 0.17413846957015824
+      }
+     },
+     "in_domain": false,
+     "absent_from": null,
+     "fibroblast_like": false
+    },
+    "pooled_detection": {
+     "Fos": 0.006858013716027432,
+     "Jun": 0.22713995427990857
+    },
+    "in_domain": false,
+    "alternatives_not_used": {
+     "both_groups": false,
+     "pooled_cells": false
+    }
+   }
+  },
+  "a2_score": "holds: M1's type is in its domain"
+ }
+}

@@ -1,0 +1,6775 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "mi_3bin",
+ "verdict": "NOT SUPPORTED \u2014 metric invalid: 'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) \u2014 the nuisance can create a difference with no biology",
+ "cause": "metric_invalid_gate0",
+ "fields": {
+  "metric_validity": {
+   "status": "FAIL",
+   "reason": "'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) \u2014 the nuisance can create a difference with no biology",
+   "flags": [],
+   "detail": {
+    "gate0": "FAIL",
+    "level_shifts": {},
+    "gate5": "PASS",
+    "gate4": "PASS",
+    "bias_handling": {
+     "extra_dropout": "blocking"
+    },
+    "unsized_bias": [],
+    "failed_gate": 0
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; nested replicates {'young': 5, 'old': 4}",
+   "flags": [
+    "COMPOSITE_UNITS"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "permutation",
+    "replication": {
+     "kind": "nested",
+     "counts": {
+      "young": 5,
+      "old": 4
+     },
+     "n_eff": 4
+    },
+    "power": null,
+    "attenuation": {},
+    "equalization": null,
+    "notes": [
+     "units whose ids name several animals: 3_10_M/3_11_M (overlaps 3_10_M, 3_11_M) \u2014 each counts as one replicate; check that it is one"
+    ],
+    "composite_units": [
+     {
+      "unit": "3_10_M/3_11_M",
+      "names": [
+       "3_10_M",
+       "3_11_M"
+      ],
+      "overlaps": [
+       "3_10_M",
+       "3_11_M"
+      ]
+     }
+    ],
+    "sesoi": {
+     "value": 0.0015497185351903203,
+     "source": "s_m",
+     "ci": [
+      0.0005800849463584591,
+      0.0025193521240221813
+     ],
+     "construct": 0.1,
+     "label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0005801, +0.002519] over the replicates"
+    }
+   }
+  },
+  "effect": {
+   "status": "NOT_RUN",
+   "reason": "metric_validity is FAIL; the effect is not estimated (stop_on_first_fail)",
+   "flags": [],
+   "detail": {}
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "FAIL",
+   "message": "'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) \u2014 the nuisance can create a difference with no biology",
+   "detail": {
+    "baseline": 0.03577343615151518,
+    "baseline_sd": 0.0023274812344811144,
+    "null_center": 0.0046798239869261776,
+    "null_sd": 0.0010017478650104913,
+    "signal": 0.031093612164589002,
+    "has_signal": true,
+    "immaterial_signal": false,
+    "scale": 0.031093612164589002,
+    "scale_source": "signal above null",
+    "effect_scale": 0.007807733267811277,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.018207944075968478,
+      "shift": -0.017565492075546703,
+      "z": 42.67039225699252,
+      "shift_std": -0.5649228524034652,
+      "rel_change": 0.5649228524034652,
+      "null_perturbed": 0.002095850536287485,
+      "null_shift": -0.0025839734506386924,
+      "null_shift_std": -0.08310303212636883,
+      "null_shift_z": 7.644220955625472,
+      "signal": 0.031093612164589002,
+      "signal_perturbed": 0.016112093539680992,
+      "null_construction": "depth-matched",
+      "signal_change": -0.48181982027709636,
+      "bias_kind": "null moves",
+      "bias_size": 0.0025839734506386924,
+      "bias_se": 0.00033802966523843297,
+      "bias_ci_low": 0.001921435306771364,
+      "bias_tolerance": 0.0007748592675951601,
+      "handling": "blocking",
+      "classification": "bias",
+      "confounded": true
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.035269321134295255,
+      "shift": -0.0005041150172199263,
+      "z": 1.531097757365181,
+      "shift_std": -0.016212816142154057,
+      "rel_change": 0.016212816142154057,
+      "classification": "none",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.03583278334265738,
+      "shift": 5.934719114220055e-05,
+      "z": 0.1835654862928587,
+      "shift_std": 0.0019086618443703422,
+      "rel_change": 0.0019086618443703422,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {},
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.0015497185351903203,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.0007748592675951601,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {
+     "extra_dropout": "blocking"
+    }
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.32x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 25203,
+      "n_b": 31551,
+      "median_n_genes_a": 985.0,
+      "median_n_genes_b": 745.0,
+      "n_genes_ratio": 1.3221476510067114,
+      "overlap": 0.810062893081761,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       0.26993069104800743,
+       0.28858415453705116
+      ],
+      "ratio_ci": [
+       1.3098736616163051,
+       1.3345366521115831
+      ],
+      "overlap_upper": 0.8191042015633724
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.3221476510067114,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "zero-fractions comparable (0.91 vs 0.97) \u2014 inspect the scatter for real coupling",
+   "detail": {
+    "group_a": {
+     "n": 25203,
+     "zero_frac": 0.9107645915168829
+    },
+    "group_b": {
+     "n": 31551,
+     "zero_frac": 0.970682387246046
+    },
+    "dropout_gap": 0.059917795729163115,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "PASS",
+   "message": "responds to coupling(Smad3, Col1a1, strength=0.965812): coupling(Smad3, Col1a1, strength=0.965812) injected into young (728.1 probed counts per cell against 304.1 in old), its values move by +0.00155 against the sham (95% CI [+0.0005801, +0.002519] over 4 replicates, on the domain's 11 type(s), 50 injections per unit, expected increase); the replicate-level difference young - old moves by +0.00155; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.00155",
+   "detail": {
+    "injection": "coupling(Smad3, Col1a1, strength=0.965812)",
+    "declared_injection": "coupling(Smad3, Col1a1, strength=1)",
+    "direction": "increase",
+    "base": 0.03520822074191522,
+    "reference": "sham",
+    "alpha": 0.05,
+    "all_cells": {
+     "mean_response": 0.0014692746236370827,
+     "sd_response": 0.0010719573494751085,
+     "n_rep": 200,
+     "ci": [
+      0.0013198026226113612,
+      0.0016187466246628042
+     ],
+     "ci_level": 0.95,
+     "signed_lower": 0.0013198026226113612,
+     "signed_upper": 0.0016187466246628042,
+     "z": 19.383869149417468
+    },
+    "construct_change": 0.1,
+    "delta_min": null,
+    "delta_min_declared": null,
+    "mode": "claim statistic",
+    "injected_group": "young",
+    "probed_counts_per_cell": {
+     "young": 728.1380177402972,
+     "old": 304.11310763924183
+    },
+    "tie": false,
+    "replicate_responses": {
+     "3_10_M | enterocyte of epithelium of large intestine": -0.0010259262098564472,
+     "3_11_M | enterocyte of epithelium of large intestine": -0.0007630760599775037,
+     "3_8_M | enterocyte of epithelium of large intestine": 0.0006235615581392704,
+     "3_9_M | enterocyte of epithelium of large intestine": 0.00022028587825295584,
+     "3_10_M | epithelial cell of large intestine": 0.002627209295121917,
+     "3_11_M | epithelial cell of large intestine": 0.0007777637587757069,
+     "3_8_M | epithelial cell of large intestine": 0.0006135923459912402,
+     "3_9_M | epithelial cell of large intestine": -5.434636491815491e-05,
+     "3_10_M | fibroblast": 0.002358387599031575,
+     "3_8_M | fibroblast": 0.010667170479145636,
+     "3_9_M | fibroblast": -0.0014169618578536187,
+     "3_10_M | fibroblast of cardiac tissue": 0.004318611839335799,
+     "3_11_M | fibroblast of cardiac tissue": 0.000455556046792744,
+     "3_8_M | fibroblast of cardiac tissue": 0.008208281308150635,
+     "3_9_M | fibroblast of cardiac tissue": 0.008105392968583513,
+     "3_10_M | granulocyte": 4.0350886410037044e-05,
+     "3_8_M | granulocyte": 0.000134601357070542,
+     "3_9_M | granulocyte": 0.0013199363822222387,
+     "3_10_M | granulocytopoietic cell": 0.0025499582237932007,
+     "3_8_M | granulocytopoietic cell": 0.0007523283476544945,
+     "3_9_M | granulocytopoietic cell": 0.0053066308333378906,
+     "3_10_M | keratinocyte": 0.0007311018932504426,
+     "3_8_M | keratinocyte": -0.00039805922178605754,
+     "3_9_M | keratinocyte": -0.00014803323407474504,
+     "3_10_M | mesenchymal stem cell": 0.003340549945122451,
+     "3_11_M | mesenchymal stem cell": -0.00018782134899052345,
+     "3_8_M | mesenchymal stem cell": 0.0022787169489635055,
+     "3_10_M | mesenchymal stem cell of adipose tissue": 0.000759971345422534,
+     "3_11_M | mesenchymal stem cell of adipose tissue": 0.0022810055470472053,
+     "3_8_M | mesenchymal stem cell of adipose tissue": 0.004729958955117381,
+     "3_9_M | mesenchymal stem cell of adipose tissue": 0.005362024844298845,
+     "3_10_M | precursor B cell": -5.453559754736062e-05,
+     "3_8_M | precursor B cell": -0.0023237878154080994,
+     "3_9_M | precursor B cell": 0.00011843415588662663,
+     "3_10_M | skeletal muscle satellite cell": 0.0005444962985356234,
+     "3_11_M | skeletal muscle satellite cell": -0.000252800114869711,
+     "3_8_M | skeletal muscle satellite cell": -0.002089159677676554,
+     "3_9_M | skeletal muscle satellite cell": -0.0006800786488638863
+    },
+    "statistic_change": 0.0015497185351903203,
+    "statistic_ci": [
+     0.0005800849463584591,
+     0.0025193521240221813
+    ],
+    "depth_loss": null,
+    "n_rep_replicate": 50,
+    "runs": null,
+    "dose": {
+     "kind": "coupling",
+     "construct_change": 0.1,
+     "scale": "correlation of the pair's log expected expression",
+     "strength": 0.9658116360304199,
+     "added_variance": 0.25229329769497433,
+     "var_a": 2.364314062524601,
+     "var_b": 2.1803188331699137,
+     "floored": []
+    },
+    "dose_response": [
+     {
+      "construct_change": 0.05,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.05,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.6757021105090537,
+       "added_variance": 0.11950244842093477,
+       "var_a": 2.364314062524601,
+       "var_b": 2.1803188331699137,
+       "floored": []
+      },
+      "response": 0.001108892387408669,
+      "ci": [
+       -0.0011243018828949439,
+       0.0033420866577122815
+      ],
+      "n_rep": 20
+     },
+     {
+      "construct_change": 0.1,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.1,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.9658116360304199,
+       "added_variance": 0.25229329769497433,
+       "var_a": 2.364314062524601,
+       "var_b": 2.1803188331699137,
+       "floored": []
+      },
+      "response": 0.0015497185351903203,
+      "ci": [
+       0.0005800849463584591,
+       0.0025193521240221813
+      ],
+      "n_rep": 50
+     },
+     {
+      "construct_change": 0.2,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.2,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 1.414886717250778,
+       "added_variance": 0.5677065013052671,
+       "var_a": 2.364314062524601,
+       "var_b": 2.1803188331699137,
+       "floored": []
+      },
+      "response": 0.00322234962709781,
+      "ci": [
+       0.0011543064656258937,
+       0.0052903927885697265
+      ],
+      "n_rep": 20
+     }
+    ],
+    "units": {
+     "n": 80,
+     "types": [
+      "enterocyte of epithelium of large intestine",
+      "epithelial cell of large intestine",
+      "fibroblast",
+      "fibroblast of cardiac tissue",
+      "granulocyte",
+      "granulocytopoietic cell",
+      "keratinocyte",
+      "mesenchymal stem cell",
+      "mesenchymal stem cell of adipose tissue",
+      "precursor B cell",
+      "skeletal muscle satellite cell"
+     ],
+     "domain": true
+    },
+    "mean_response": 0.0015497185351903203,
+    "se": 0.000304681837749159,
+    "df": 3.0,
+    "n_rep": 4,
+    "ci": [
+     0.0005800849463584591,
+     0.0025193521240221813
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.0005800849463584591,
+    "signed_upper": 0.0025193521240221813,
+    "z": 5.086350228943366,
+    "sesoi_metric": 0.0015497185351903203,
+    "sesoi_metric_ci": [
+     0.0005800849463584591,
+     0.0025193521240221813
+    ],
+    "outcome": "PASS"
+   }
+  },
+  {
+   "gate": 5,
+   "name": "Controls",
+   "status": "PASS",
+   "message": "the positive control beats its empirical null in all 1 strata; null centre 0.0134..0.0134",
+   "detail": {
+    "rows": [
+     {
+      "stratum": "pooled",
+      "n_cells": 56754,
+      "pos": 0.09416078435240313,
+      "neg": 0.03338815800425733,
+      "null_center": 0.013379381188344832,
+      "null_sd": 0.015301919079328324,
+      "pos_null_center": 0.060612006396409526,
+      "n_null": [
+       200,
+       200
+      ],
+      "n_pairs_available": 8775,
+      "p_neg": 0.13432835820895522,
+      "p_pos": 0.004975124378109453,
+      "method": "empirical/empirical",
+      "pos_fires": true,
+      "neg_ok": true,
+      "ok": true
+     }
+    ],
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "n_null": 200,
+    "legacy_band": false,
+    "pos_min": null,
+    "neg_max": null,
+    "pos_demonstrated": true,
+    "n_pos_fires": 1,
+    "pos_dose": 2.0,
+    "delta_min": null,
+    "direction": "increase",
+    "n_rep": 200,
+    "neg_test_unattainable": [],
+    "negative_control_outside_null": [],
+    "controls_tied": true,
+    "metric_value": 0.017215321696063417,
+    "pair_metric_value": 0.017215321696063417
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "decrease",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "mi_3bin",
+  "group_col": "age",
+  "groups": [
+   "young",
+   "old"
+  ],
+  "within": [],
+  "gene_pair": [
+   "Smad3",
+   "Col1a1"
+  ],
+  "pair_metric": "mi_3bin",
+  "gene_metric": null,
+  "pos_pair": [
+   "Actb",
+   "Gapdh"
+  ],
+  "neg_pair": [
+   "Tst",
+   "Lrrc42"
+  ],
+  "replicate_col": "mouse",
+  "signal_test": "coupling(Smad3, Col1a1, strength=1)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000,
+  "composition": [
+   "cell_type",
+   "tissue"
+  ],
+  "specificity": true,
+  "specificity_pool": [
+   56754,
+   21025
+  ],
+  "claim": {
+   "metric": "mi_3bin",
+   "genes": [
+    "Smad3",
+    "Col1a1"
+   ],
+   "groups": [
+    "old",
+    "young"
+   ],
+   "direction": "increase"
+  }
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-18T11:05:01+00:00",
+  "environment": {
+   "metric_autopsy": "0.4.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "0209d309a3f43bca9eb081cb9749d7cb428003d0c97051ec0ba2a50dbd490ce7",
+  "data_shape": [
+   56754,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "798363099e7555bdbb18ba8ae06ebda11ab180fe360fa51e9ca90c0e567511ea",
+  "claim_id": "61787de8476ab7b7bd7c7de267db9e0c87531abce674787b5204fe067ab2f276",
+  "log": null
+ },
+ "composition": {
+  "columns": {
+   "cell_type": {
+    "column": "cell_type",
+    "groups": [
+     "young",
+     "old"
+    ],
+    "design": "nested",
+    "replicates": {
+     "young": 5,
+     "old": 4
+    },
+    "tvd": 0.34114065080585726,
+    "tvd_p": 0.031746031746031744,
+    "method": "exact",
+    "n_relabelings": 126,
+    "differs": true,
+    "levels": [
+     {
+      "level": "regular atrial cardiac myocyte",
+      "first": 0.12211188368046352,
+      "second": 0.004474000195185746,
+      "difference": -0.11763788348527779,
+      "p": 0.9365079365079365
+     },
+     {
+      "level": "microglial cell",
+      "first": 0.06322231666716575,
+      "second": 0.13490405037915196,
+      "difference": 0.0716817337119862,
+      "p": 0.07142857142857142
+     },
+     {
+      "level": "regular ventricular cardiac myocyte",
+      "first": 0.050793650793650794,
+      "second": 0.003192640375636891,
+      "difference": -0.0476010104180139,
+      "p": 1.0
+     },
+     {
+      "level": "oligodendrocyte",
+      "first": 0.035756872271427834,
+      "second": 0.004010535137076499,
+      "difference": -0.031746337134351335,
+      "p": 0.11904761904761904
+     },
+     {
+      "level": "naive B cell",
+      "first": 0.011303562787964327,
+      "second": 0.03727459611188649,
+      "difference": 0.025971033323922164,
+      "p": 0.031746031746031744
+     },
+     {
+      "level": "bronchial smooth muscle cell",
+      "first": 0.005416726365520205,
+      "second": 0.023907217357939832,
+      "difference": 0.018490490992419627,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "keratinocyte stem cell",
+      "first": 0.034331574378781496,
+      "second": 0.0172336540334427,
+      "difference": -0.017097920345338795,
+      "p": 0.20634920634920634
+     },
+     {
+      "level": "macrophage",
+      "first": 0.011065364081299524,
+      "second": 0.028110955382735718,
+      "difference": 0.017045591301436194,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "granulocyte",
+      "first": 0.015448105387623779,
+      "second": 0.031093066378682716,
+      "difference": 0.015644960991058936,
+      "p": 0.07142857142857142
+     },
+     {
+      "level": "endothelial cell",
+      "first": 0.04298413683541217,
+      "second": 0.027973064667743214,
+      "difference": -0.015011072167668955,
+      "p": 0.5
+     },
+     {
+      "level": "B cell",
+      "first": 0.04402454661788725,
+      "second": 0.056368078462892636,
+      "difference": 0.012343531845005383,
+      "p": 0.5396825396825397
+     },
+     {
+      "level": "bladder cell",
+      "first": 0.014719821700590215,
+      "second": 0.0027224659889548285,
+      "difference": -0.011997355711635387,
+      "p": 0.19047619047619047
+     },
+     {
+      "level": "skeletal muscle satellite cell",
+      "first": 0.018991013067394653,
+      "second": 0.030667936196717666,
+      "difference": 0.011676923129323013,
+      "p": 0.35714285714285715
+     },
+     {
+      "level": "hematopoietic stem cell",
+      "first": 0.026891271607566936,
+      "second": 0.037298500586979984,
+      "difference": 0.010407228979413048,
+      "p": 0.42857142857142855
+     },
+     {
+      "level": "large intestine goblet cell",
+      "first": 0.005963515778624982,
+      "second": 0.015891254916800802,
+      "difference": 0.00992773913817582,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "keratinocyte",
+      "first": 0.007393153248882077,
+      "second": 0.017288357011470867,
+      "difference": 0.009895203762588789,
+      "p": 0.07142857142857142
+     },
+     {
+      "level": "endothelial cell of coronary artery",
+      "first": 0.024276670712507057,
+      "second": 0.033432141292810566,
+      "difference": 0.009155470580303509,
+      "p": 0.07936507936507936
+     },
+     {
+      "level": "astrocyte",
+      "first": 0.010080177679518267,
+      "second": 0.000927810367532623,
+      "difference": -0.009152367311985644,
+      "p": 0.12698412698412698
+     },
+     {
+      "level": "epithelial cell of large intestine",
+      "first": 0.018068031753335177,
+      "second": 0.008976969270108836,
+      "difference": -0.009091062483226341,
+      "p": 0.2777777777777778
+     },
+     {
+      "level": "monocyte",
+      "first": 0.023002029673246563,
+      "second": 0.014187966024187891,
+      "difference": -0.008814063649058672,
+      "p": 0.8174603174603174
+     },
+     {
+      "level": "T cell",
+      "first": 0.007798220109439827,
+      "second": 0.01620879590473238,
+      "difference": 0.008410575795292554,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "promonocyte",
+      "first": 0.004836617079757796,
+      "second": 0.013176228882327636,
+      "difference": 0.00833961180256984,
+      "p": 0.015873015873015872
+     },
+     {
+      "level": "DN4 thymocyte",
+      "first": 0.010098281464483636,
+      "second": 0.018102524110095174,
+      "difference": 0.008004242645611538,
+      "p": 0.30158730158730157
+     },
+     {
+      "level": "myeloid cell",
+      "first": 0.020011992501531718,
+      "second": 0.027826375622575217,
+      "difference": 0.0078143831210435,
+      "p": 0.42063492063492064
+     },
+     {
+      "level": "mesenchymal stem cell",
+      "first": 0.008813735220120555,
+      "second": 0.01662135492789524,
+      "difference": 0.007807619707774687,
+      "p": 0.15873015873015872
+     },
+     {
+      "level": "CD8-positive, alpha-beta T cell",
+      "first": 0.004735359148526587,
+      "second": 0.012535832772366142,
+      "difference": 0.007800473623839554,
+      "p": 0.023809523809523808
+     },
+     {
+      "level": "type B pancreatic cell",
+      "first": 0.006756456423179862,
+      "second": 0.014449708865893546,
+      "difference": 0.007693252442713684,
+      "p": 0.4444444444444444
+     },
+     {
+      "level": "epithelial cell",
+      "first": 0.0011619013392033233,
+      "second": 0.008614695271868339,
+      "difference": 0.007452793932665016,
+      "p": 0.03968253968253968
+     },
+     {
+      "level": "myeloid dendritic cell",
+      "first": 5.682335528291323e-05,
+      "second": 0.0068782788621022375,
+      "difference": 0.006821455506819324,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "endothelial cell of hepatic sinusoid",
+      "first": 0.009282747932524885,
+      "second": 0.0030564890162939743,
+      "difference": -0.006226258916230911,
+      "p": 0.8809523809523809
+     },
+     {
+      "level": "epithelial cell of proximal tubule",
+      "first": 0.0014775959639108135,
+      "second": 0.007106651928736241,
+      "difference": 0.005629055964825427,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "immature B cell",
+      "first": 0.006711432229517418,
+      "second": 0.0014114440811045068,
+      "difference": -0.005299988148412911,
+      "p": 0.16666666666666666
+     },
+     {
+      "level": "CD4-positive, alpha-beta T cell",
+      "first": 0.00802654021703975,
+      "second": 0.013161015185163417,
+      "difference": 0.005134474968123668,
+      "p": 0.2857142857142857
+     },
+     {
+      "level": "oligodendrocyte precursor cell",
+      "first": 0.004944448285383211,
+      "second": 0.0003591524003352089,
+      "difference": -0.0045852958850480015,
+      "p": 0.047619047619047616
+     },
+     {
+      "level": "late pro-B cell",
+      "first": 0.006012104595655361,
+      "second": 0.0016059373737165098,
+      "difference": -0.004406167221938851,
+      "p": 0.19047619047619047
+     },
+     {
+      "level": "precursor B cell",
+      "first": 0.009685786176740556,
+      "second": 0.005352320221400055,
+      "difference": -0.004333465955340501,
+      "p": 0.47619047619047616
+     },
+     {
+      "level": "pancreatic acinar cell",
+      "first": 0.0025468738981854868,
+      "second": 0.006868571464329053,
+      "difference": 0.004321697566143566,
+      "p": 0.36507936507936506
+     },
+     {
+      "level": "fibroblast of lung",
+      "first": 0.0016703300422014275,
+      "second": 0.005921409535268211,
+      "difference": 0.004251079493066783,
+      "p": 0.023809523809523808
+     },
+     {
+      "level": "fibroblast",
+      "first": 0.009385188873389903,
+      "second": 0.013400025235439992,
+      "difference": 0.004014836362050089,
+      "p": 0.3888888888888889
+     },
+     {
+      "level": "mesenchymal stem cell of adipose tissue",
+      "first": 0.04350798754415878,
+      "second": 0.03952338254212458,
+      "difference": -0.003984605002034201,
+      "p": 0.8650793650793651
+     },
+     {
+      "level": "fibroblast of cardiac tissue",
+      "first": 0.030309204464139504,
+      "second": 0.026365924881045326,
+      "difference": -0.003943279583094178,
+      "p": 0.5873015873015873
+     },
+     {
+      "level": "basal cell of epidermis",
+      "first": 0.03582546859840518,
+      "second": 0.03956201160325046,
+      "difference": 0.003736543004845279,
+      "p": 0.8095238095238095
+     },
+     {
+      "level": "brain pericyte",
+      "first": 0.004488485591096344,
+      "second": 0.0011971746677840297,
+      "difference": -0.003291310923312314,
+      "p": 0.2619047619047619
+     },
+     {
+      "level": "smooth muscle cell",
+      "first": 0.004113033727001716,
+      "second": 0.0009589904527004043,
+      "difference": -0.0031540432743013117,
+      "p": 0.6111111111111112
+     },
+     {
+      "level": "basal epithelial cell of tracheobronchial tree",
+      "first": 0.0010910334225708584,
+      "second": 0.004147096847823562,
+      "difference": 0.003056063425252703,
+      "p": 0.03968253968253968
+     },
+     {
+      "level": "thymocyte",
+      "first": 0.013706555692087907,
+      "second": 0.010666405562691193,
+      "difference": -0.003040150129396714,
+      "p": 0.7380952380952381
+     },
+     {
+      "level": "myeloid leukocyte",
+      "first": 0.0007714601105604224,
+      "second": 0.00366065982099534,
+      "difference": 0.0028891997104349178,
+      "p": 0.40476190476190477
+     },
+     {
+      "level": "adventitial cell",
+      "first": 0.004313437268836026,
+      "second": 0.0016089607873005529,
+      "difference": -0.0027044764815354733,
+      "p": 0.11904761904761904
+     },
+     {
+      "level": "chondrocyte",
+      "first": 0.003019606704006743,
+      "second": 0.00034586835088084536,
+      "difference": -0.0026737383531258976,
+      "p": 0.6746031746031746
+     },
+     {
+      "level": "enterocyte of epithelium of large intestine",
+      "first": 0.01981696509368124,
+      "second": 0.017416149557679835,
+      "difference": -0.0024008155360014036,
+      "p": 0.8095238095238095
+     },
+     {
+      "level": "neuron",
+      "first": 0.004040314241958958,
+      "second": 0.0063614727566175195,
+      "difference": 0.0023211585146585617,
+      "p": 0.40476190476190477
+     },
+     {
+      "level": "epithelial cell of thymus",
+      "first": 0.00016629815140647964,
+      "second": 0.0023101439033420858,
+      "difference": 0.002143845751935606,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "neural stem cell",
+      "first": 0.0021545722776246763,
+      "second": 2.992936669460074e-05,
+      "difference": -0.0021246429109300757,
+      "p": 0.0873015873015873
+     },
+     {
+      "level": "medium spiny neuron",
+      "first": 0.00219716641918628,
+      "second": 8.978810008380222e-05,
+      "difference": -0.0021073783191024775,
+      "p": 0.2857142857142857
+     },
+     {
+      "level": "pancreatic A cell",
+      "first": 0.005095688356506432,
+      "second": 0.0029898037605117123,
+      "difference": -0.00210588459599472,
+      "p": 0.6428571428571429
+     },
+     {
+      "level": "natural killer cell",
+      "first": 0.005769067352052121,
+      "second": 0.007659342850936833,
+      "difference": 0.0018902754988847118,
+      "p": 0.6111111111111112
+     },
+     {
+      "level": "bladder urothelial cell",
+      "first": 0.012808028600057753,
+      "second": 0.011027216436689549,
+      "difference": -0.001780812163368204,
+      "p": 0.8571428571428571
+     },
+     {
+      "level": "secretory cell",
+      "first": 0.006117235131041792,
+      "second": 0.004515715468944341,
+      "difference": -0.0016015196620974516,
+      "p": 0.6507936507936508
+     },
+     {
+      "level": "megakaryocyte-erythroid progenitor cell",
+      "first": 0.00011271695355073098,
+      "second": 0.0016650339200265309,
+      "difference": 0.0015523169664758,
+      "p": 0.06349206349206349
+     },
+     {
+      "level": "hepatocyte",
+      "first": 0.01038035201806865,
+      "second": 0.011830289387519146,
+      "difference": 0.0014499373694504963,
+      "p": 0.9206349206349206
+     },
+     {
+      "level": "smooth muscle cell of trachea",
+      "first": 0.0017030157927299192,
+      "second": 0.00026858612011879004,
+      "difference": -0.0014344296726111292,
+      "p": 0.36507936507936506
+     },
+     {
+      "level": "epidermal cell",
+      "first": 0.005478233770898925,
+      "second": 0.0041140045416984085,
+      "difference": -0.0013642292292005169,
+      "p": 0.5158730158730159
+     },
+     {
+      "level": "vein endothelial cell",
+      "first": 0.0003279158477949732,
+      "second": 0.001682758183252597,
+      "difference": 0.001354842335457624,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "dendritic cell",
+      "first": 0.0,
+      "second": 0.0013390003816844448,
+      "difference": 0.0013390003816844448,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "Kupffer cell",
+      "first": 0.002128650007237509,
+      "second": 0.003400004039683696,
+      "difference": 0.001271354032446187,
+      "p": 0.6031746031746031
+     },
+     {
+      "level": "pancreatic D cell",
+      "first": 0.0022956904493439227,
+      "second": 0.0010634640899471744,
+      "difference": -0.0012322263593967484,
+      "p": 0.48412698412698413
+     },
+     {
+      "level": "fenestrated endothelial cell",
+      "first": 0.002136760337359874,
+      "second": 0.0033175313076449606,
+      "difference": 0.0011807709702850865,
+      "p": 0.38095238095238093
+     },
+     {
+      "level": "kidney collecting duct epithelial cell",
+      "first": 0.003234848662145823,
+      "second": 0.0022242613259840687,
+      "difference": -0.001010587336161754,
+      "p": 0.7857142857142857
+     },
+     {
+      "level": "kidney collecting duct principal cell",
+      "first": 0.0009980223907709949,
+      "second": 0.0019393702047814003,
+      "difference": 0.0009413478140104055,
+      "p": 0.29365079365079366
+     },
+     {
+      "level": "granulocytopoietic cell",
+      "first": 0.004666313960060562,
+      "second": 0.0037309931248553294,
+      "difference": -0.0009353208352052329,
+      "p": 0.6904761904761905
+     },
+     {
+      "level": "pulmonary interstitial fibroblast",
+      "first": 0.0011533195221610725,
+      "second": 0.00023252435631450943,
+      "difference": -0.000920795165846563,
+      "p": 0.07936507936507936
+     },
+     {
+      "level": "leukocyte",
+      "first": 0.0010868854759499003,
+      "second": 0.0019541153406519396,
+      "difference": 0.0008672298647020393,
+      "p": 0.5555555555555556
+     },
+     {
+      "level": "professional antigen presenting cell",
+      "first": 0.001389158584566854,
+      "second": 0.0005370026976480328,
+      "difference": -0.0008521558869188212,
+      "p": 0.36507936507936506
+     },
+     {
+      "level": "neutrophil",
+      "first": 0.0005424709252544916,
+      "second": 0.001386321307615243,
+      "difference": 0.0008438503823607514,
+      "p": 0.20634920634920634
+     },
+     {
+      "level": "regulatory T cell",
+      "first": 0.0,
+      "second": 0.000817330130098115,
+      "difference": 0.000817330130098115,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "kidney loop of Henle ascending limb epithelial cell",
+      "first": 0.002030403320871275,
+      "second": 0.0012244675892935579,
+      "difference": -0.000805935731577717,
+      "p": 0.9126984126984127
+     },
+     {
+      "level": "mature NK T cell",
+      "first": 0.001581276026619677,
+      "second": 0.0023679967068440727,
+      "difference": 0.0007867206802243958,
+      "p": 0.6031746031746031
+     },
+     {
+      "level": "enteroendocrine cell",
+      "first": 0.0010644925963202523,
+      "second": 0.0018382874515161017,
+      "difference": 0.0007737948551958494,
+      "p": 0.19047619047619047
+     },
+     {
+      "level": "pancreatic ductal cell",
+      "first": 0.002958983274558179,
+      "second": 0.0022396264485689977,
+      "difference": -0.0007193568259891811,
+      "p": 0.8412698412698413
+     },
+     {
+      "level": "Bergmann glial cell",
+      "first": 0.0008640978779935575,
+      "second": 0.00026936430025140666,
+      "difference": -0.0005947335777421508,
+      "p": 0.23015873015873015
+     },
+     {
+      "level": "tuft cell of large intestine",
+      "first": 0.001109134100579398,
+      "second": 0.00170046467204508,
+      "difference": 0.000591330571465682,
+      "p": 0.5317460317460317
+     },
+     {
+      "level": "aortic endothelial cell",
+      "first": 0.004528304670885155,
+      "second": 0.005119311567184249,
+      "difference": 0.0005910068962990938,
+      "p": 0.8333333333333334
+     },
+     {
+      "level": "kidney interstitial fibroblast",
+      "first": 0.0,
+      "second": 0.0005502063273727648,
+      "difference": 0.0005502063273727648,
+      "p": 0.4444444444444444
+     },
+     {
+      "level": "mature alpha-beta T cell",
+      "first": 0.0020494177579869063,
+      "second": 0.0025721315132728956,
+      "difference": 0.0005227137552859893,
+      "p": 0.6111111111111112
+     },
+     {
+      "level": "non-classical monocyte",
+      "first": 0.0013438383972848823,
+      "second": 0.001860258094185223,
+      "difference": 0.0005164196969003408,
+      "p": 0.5634920634920635
+     },
+     {
+      "level": "basophil",
+      "first": 0.00039429872920787373,
+      "second": 0.0008774996554913308,
+      "difference": 0.0004832009262834571,
+      "p": 0.11904761904761904
+     },
+     {
+      "level": "pancreatic PP cell",
+      "first": 0.0007333716447539553,
+      "second": 0.00026172757738779123,
+      "difference": -0.0004716440673661641,
+      "p": 0.8809523809523809
+     },
+     {
+      "level": "multiciliated columnar cell of tracheobronchial tree",
+      "first": 0.0003056944037124078,
+      "second": 0.0007410192713511873,
+      "difference": 0.00043532486763877946,
+      "p": 0.2222222222222222
+     },
+     {
+      "level": "classical monocyte",
+      "first": 0.0012668942964029187,
+      "second": 0.0016934974164093694,
+      "difference": 0.00042660312000645075,
+      "p": 0.5476190476190477
+     },
+     {
+      "level": "pulmonary alveolar type 2 cell",
+      "first": 0.0014224859644623306,
+      "second": 0.0010374183339925047,
+      "difference": -0.0003850676304698259,
+      "p": 0.6507936507936508
+     },
+     {
+      "level": "pancreatic stellate cell",
+      "first": 0.0006451405836252178,
+      "second": 0.00026172757738779123,
+      "difference": -0.0003834130062374266,
+      "p": 0.5634920634920635
+     },
+     {
+      "level": "endocardial cell",
+      "first": 0.004765543626719311,
+      "second": 0.005120431796883156,
+      "difference": 0.00035488817016384507,
+      "p": 0.9682539682539683
+     },
+     {
+      "level": "early pro-B cell",
+      "first": 0.0005379225501499099,
+      "second": 0.0008585222118375558,
+      "difference": 0.00032059966168764584,
+      "p": 0.46825396825396826
+     },
+     {
+      "level": "cardiac valve cell",
+      "first": 0.00403653594819687,
+      "second": 0.003720490815509523,
+      "difference": -0.00031604513268734683,
+      "p": 0.873015873015873
+     },
+     {
+      "level": "intestinal crypt stem cell",
+      "first": 0.012324250513978575,
+      "second": 0.012030971229620454,
+      "difference": -0.00029327928435812084,
+      "p": 0.9761904761904762
+     },
+     {
+      "level": "plasma cell",
+      "first": 0.0,
+      "second": 0.0002828054521602035,
+      "difference": 0.0002828054521602035,
+      "p": 0.16666666666666666
+     },
+     {
+      "level": "endothelial cell of lymphatic vessel",
+      "first": 0.0013816191260273773,
+      "second": 0.0011261186929169401,
+      "difference": -0.00025550043311043714,
+      "p": 0.746031746031746
+     },
+     {
+      "level": "intermediate monocyte",
+      "first": 0.0002539727198868501,
+      "second": 0.0,
+      "difference": -0.0002539727198868501,
+      "p": 0.16666666666666666
+     },
+     {
+      "level": "lung macrophage",
+      "first": 0.0,
+      "second": 0.00025248022984984046,
+      "difference": 0.00025248022984984046,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "interneuron",
+      "first": 0.0015251153728816226,
+      "second": 0.0017706326629110473,
+      "difference": 0.00024551729002942474,
+      "p": 0.8571428571428571
+     },
+     {
+      "level": "fibrocyte",
+      "first": 0.0007086391841653057,
+      "second": 0.0004676986889129995,
+      "difference": -0.00024094049525230613,
+      "p": 0.8888888888888888
+     },
+     {
+      "level": "club cell",
+      "first": 0.0001094747961235664,
+      "second": 0.0003455380608752887,
+      "difference": 0.00023606326475172226,
+      "p": 0.21428571428571427
+     },
+     {
+      "level": "pericyte",
+      "first": 0.0003314122755100008,
+      "second": 0.00012537600252700092,
+      "difference": -0.00020603627298299986,
+      "p": 0.15079365079365079
+     },
+     {
+      "level": "mucus secreting cell",
+      "first": 0.0007068746963926782,
+      "second": 0.0005060168953265566,
+      "difference": -0.00020085780106612167,
+      "p": 0.7936507936507936
+     },
+     {
+      "level": "smooth muscle cell of the pulmonary artery",
+      "first": 0.00042187611503565766,
+      "second": 0.00028173780737547816,
+      "difference": -0.0001401383076601795,
+      "p": 0.626984126984127
+     },
+     {
+      "level": "pulmonary alveolar type 1 cell",
+      "first": 0.0001047943411055803,
+      "second": 0.0,
+      "difference": -0.0001047943411055803,
+      "p": 1.0
+     },
+     {
+      "level": "neuroepithelial stem cell",
+      "first": 0.00011043622308117064,
+      "second": 0.0002095055668622052,
+      "difference": 9.906934378103456e-05,
+      "p": 0.7222222222222222
+     },
+     {
+      "level": "plasmacytoid dendritic cell",
+      "first": 0.0,
+      "second": 9.497277447131822e-05,
+      "difference": 9.497277447131822e-05,
+      "p": 0.4444444444444444
+     },
+     {
+      "level": "lymphocyte",
+      "first": 0.0,
+      "second": 6.87757909215956e-05,
+      "difference": 6.87757909215956e-05,
+      "p": 0.4444444444444444
+     },
+     {
+      "level": "pulmonary neuroendocrine cell",
+      "first": 0.0,
+      "second": 6.431726215539853e-05,
+      "difference": 6.431726215539853e-05,
+      "p": 0.16666666666666666
+     },
+     {
+      "level": "ependymal cell",
+      "first": 0.0001665840916368514,
+      "second": 0.00011971746677840296,
+      "difference": -4.686662485844844e-05,
+      "p": 0.8809523809523809
+     },
+     {
+      "level": "mesangial cell",
+      "first": 0.0006507616940750995,
+      "second": 0.0006196279362293015,
+      "difference": -3.113375784579797e-05,
+      "p": 0.9206349206349206
+     },
+     {
+      "level": "respiratory basal cell",
+      "first": 2.82845424975251e-05,
+      "second": 0.0,
+      "difference": -2.82845424975251e-05,
+      "p": 1.0
+     },
+     {
+      "level": "proerythroblast",
+      "first": 0.0013116394069285536,
+      "second": 0.0013388354829770139,
+      "difference": 2.719607604846023e-05,
+      "p": 0.9761904761904762
+     },
+     {
+      "level": "granulocyte monocyte progenitor cell",
+      "first": 0.0014236057411324786,
+      "second": 0.0014497226931418801,
+      "difference": 2.6116952009401506e-05,
+      "p": 0.9603174603174603
+     }
+    ],
+    "absent": {
+     "dendritic cell": "young",
+     "kidney interstitial fibroblast": "young",
+     "lung macrophage": "young",
+     "lymphocyte": "young",
+     "plasma cell": "young",
+     "plasmacytoid dendritic cell": "young",
+     "pulmonary neuroendocrine cell": "young",
+     "regulatory T cell": "young",
+     "intermediate monocyte": "old",
+     "pulmonary alveolar type 1 cell": "old",
+     "respiratory basal cell": "old"
+    }
+   },
+   "tissue": {
+    "column": "tissue",
+    "groups": [
+     "young",
+     "old"
+    ],
+    "design": "nested",
+    "replicates": {
+     "young": 5,
+     "old": 4
+    },
+    "tvd": 0.20269188866159277,
+    "tvd_p": 0.9206349206349206,
+    "method": "exact",
+    "n_relabelings": 126,
+    "differs": false,
+    "levels": [
+     {
+      "level": "heart",
+      "first": 0.26241924063516225,
+      "second": 0.10133860750346507,
+      "difference": -0.16108063313169718,
+      "p": 0.9682539682539683
+     },
+     {
+      "level": "bone marrow",
+      "first": 0.0961445728420855,
+      "second": 0.1483423952692517,
+      "difference": 0.052197822427166196,
+      "p": 0.40476190476190477
+     },
+     {
+      "level": "lung",
+      "first": 0.021723292034658663,
+      "second": 0.059849933732808315,
+      "difference": 0.03812664169814965,
+      "p": 0.007936507936507936
+     },
+     {
+      "level": "limb muscle",
+      "first": 0.018096328857706696,
+      "second": 0.03918504243140272,
+      "difference": 0.021088713573696027,
+      "p": 0.047619047619047616
+     },
+     {
+      "level": "skin of body",
+      "first": 0.0546808365044672,
+      "second": 0.0355932080109724,
+      "difference": -0.019087628493494803,
+      "p": 0.30952380952380953
+     },
+     {
+      "level": "brain",
+      "first": 0.14692945021890763,
+      "second": 0.1626855074105194,
+      "difference": 0.015756057191611772,
+      "p": 0.8095238095238095
+     },
+     {
+      "level": "thymus",
+      "first": 0.024356383051631635,
+      "second": 0.03967935327339624,
+      "difference": 0.015322970221764601,
+      "p": 0.30158730158730157
+     },
+     {
+      "level": "tongue",
+      "first": 0.028569816912117275,
+      "second": 0.04316356033132159,
+      "difference": 0.014593743419204318,
+      "p": 0.4365079365079365
+     },
+     {
+      "level": "bladder lumen",
+      "first": 0.02752785030064797,
+      "second": 0.013749682425644377,
+      "difference": -0.013778167875003595,
+      "p": 0.35714285714285715
+     },
+     {
+      "level": "brown adipose tissue",
+      "first": 0.016028648155853788,
+      "second": 0.026996535037085427,
+      "difference": 0.01096788688123164,
+      "p": 0.23809523809523808
+     },
+     {
+      "level": "trachea",
+      "first": 0.021641399634739523,
+      "second": 0.03157847766330431,
+      "difference": 0.009937078028564784,
+      "p": 0.42857142857142855
+     },
+     {
+      "level": "kidney",
+      "first": 0.012124869803859134,
+      "second": 0.021202551026146422,
+      "difference": 0.009077681222287288,
+      "p": 0.2777777777777778
+     },
+     {
+      "level": "pancreas",
+      "first": 0.02390971171085482,
+      "second": 0.030774815726494827,
+      "difference": 0.006865104015640007,
+      "p": 0.7619047619047619
+     },
+     {
+      "level": "gonadal fat pad",
+      "first": 0.029647589706822713,
+      "second": 0.03399256738662716,
+      "difference": 0.004344977679804449,
+      "p": 0.8253968253968254
+     },
+     {
+      "level": "liver",
+      "first": 0.026287633549980084,
+      "second": 0.02974306208371016,
+      "difference": 0.0034554285337300775,
+      "p": 0.9206349206349206
+     },
+     {
+      "level": "spleen",
+      "first": 0.038224017067905305,
+      "second": 0.03492737657096583,
+      "difference": -0.003296640496939472,
+      "p": 0.8095238095238095
+     },
+     {
+      "level": "large intestine",
+      "first": 0.06446362496756142,
+      "second": 0.06236981256671545,
+      "difference": -0.002093812400845968,
+      "p": 0.9682539682539683
+     },
+     {
+      "level": "aorta",
+      "first": 0.009092689587822753,
+      "second": 0.007155080866445584,
+      "difference": -0.0019376087213771693,
+      "p": 0.5952380952380952
+     },
+     {
+      "level": "diaphragm",
+      "first": 0.020828446716113662,
+      "second": 0.0217862304848556,
+      "difference": 0.0009577837687419384,
+      "p": 0.9682539682539683
+     },
+     {
+      "level": "mesenteric fat pad",
+      "first": 0.024769846841477698,
+      "second": 0.02389371498174355,
+      "difference": -0.0008761318597341472,
+      "p": 0.9761904761904762
+     },
+     {
+      "level": "subcutaneous adipose tissue",
+      "first": 0.03253375089962428,
+      "second": 0.03199248521712385,
+      "difference": -0.0005412656825004303,
+      "p": 0.9523809523809523
+     }
+    ],
+    "absent": {}
+   }
+  },
+  "domain": {
+   "column": "cell_type",
+   "rule": {
+    "threshold": 0.1,
+    "kind": "pair",
+    "genes": [
+     "Smad3",
+     "Col1a1"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "design": "nested",
+   "strata": [
+    {
+     "stratum": "all",
+     "key": "",
+     "types": [
+      {
+       "type": "B cell",
+       "cells": {
+        "young": 1241,
+        "old": 1770
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.09961601778991575,
+         "Col1a1": 0.053791839422870316
+        },
+        "old": {
+         "Smad3": 0.04679124595315435,
+         "Col1a1": 0.02081042181798492
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "Bergmann glial cell",
+       "cells": {
+        "young": 29,
+        "old": 9
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "CD4-positive, alpha-beta T cell",
+       "cells": {
+        "young": 232,
+        "old": 420
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.1936295657175726,
+         "Col1a1": 0.08541846419327005
+        },
+        "old": {
+         "Smad3": 0.13617540936519798,
+         "Col1a1": 0.012437960665209823
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "CD8-positive, alpha-beta T cell",
+       "cells": {
+        "young": 136,
+        "old": 396
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.23876555126555127,
+         "Col1a1": 0.025605963105963105
+        },
+        "old": {
+         "Smad3": 0.16112607880990235,
+         "Col1a1": 0.009697933227344992
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "DN4 thymocyte",
+       "cells": {
+        "young": 253,
+        "old": 565
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.1699485144658528,
+         "Col1a1": 0.040583908437704125
+        },
+        "old": {
+         "Smad3": 0.1829970771333131,
+         "Col1a1": 0.001953125
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "Kupffer cell",
+       "cells": {
+        "young": 47,
+        "old": 108
+       },
+       "replicates": {
+        "young": [
+         "3_11_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.09090909090909091,
+         "Col1a1": 0.030303030303030304
+        },
+        "old": {
+         "Smad3": 0.125,
+         "Col1a1": 0.006944444444444444
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "T cell",
+       "cells": {
+        "young": 245,
+        "old": 514
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2527422427636255,
+         "Col1a1": 0.09356633073668
+        },
+        "old": {
+         "Smad3": 0.2054592521726124,
+         "Col1a1": 0.021477618431443593
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "adventitial cell",
+       "cells": {
+        "young": 133,
+        "old": 51
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3833741138088964,
+         "Col1a1": 0.9780193236714976
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "aortic endothelial cell",
+       "cells": {
+        "young": 129,
+        "old": 160
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M"
+        ],
+        "old": [
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.1512820512820513,
+         "Col1a1": 0.06623931623931624
+        },
+        "old": {
+         "Smad3": 0.03125,
+         "Col1a1": 0.0546875
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "astrocyte",
+       "cells": {
+        "young": 352,
+        "old": 31
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.16789529914529913,
+         "Col1a1": 0.08383760683760684
+        },
+        "old": {
+         "Smad3": 0.03225806451612903,
+         "Col1a1": 0.0967741935483871
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "basal cell of epidermis",
+       "cells": {
+        "young": 1204,
+        "old": 1242
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.34672240037884006,
+         "Col1a1": 0.0824308025488702
+        },
+        "old": {
+         "Smad3": 0.21085598380470216,
+         "Col1a1": 0.03207880010689187
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "basal epithelial cell of tracheobronchial tree",
+       "cells": {
+        "young": 39,
+        "old": 134
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2727272727272727,
+         "Col1a1": 0.13636363636363635
+        },
+        "old": {
+         "Smad3": 0.06926406926406926,
+         "Col1a1": 0.03896103896103896
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "basophil",
+       "cells": {
+        "young": 14,
+        "old": 28
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "bladder cell",
+       "cells": {
+        "young": 521,
+        "old": 85
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.8184035819458826,
+         "Col1a1": 1.0
+        },
+        "old": {
+         "Smad3": 0.6388888888888888,
+         "Col1a1": 1.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "bladder urothelial cell",
+       "cells": {
+        "young": 457,
+        "old": 349
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.7712393341448331,
+         "Col1a1": 0.03439931928650965
+        },
+        "old": {
+         "Smad3": 0.4241395958341954,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "brain pericyte",
+       "cells": {
+        "young": 146,
+        "old": 40
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2753322259136213,
+         "Col1a1": 0.0473421926910299
+        },
+        "old": {
+         "Smad3": 0.075,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "bronchial smooth muscle cell",
+       "cells": {
+        "young": 154,
+        "old": 753
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.01694915254237288,
+         "Col1a1": 0.08893793639556352
+        },
+        "old": {
+         "Smad3": 0.002617801047120419,
+         "Col1a1": 0.006756227073414849
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "cardiac valve cell",
+       "cells": {
+        "young": 124,
+        "old": 116
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.0864315302772478,
+         "Col1a1": 0.507158940511181
+        },
+        "old": {
+         "Smad3": 0.008928571428571428,
+         "Col1a1": 0.28202121736604496
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "chondrocyte",
+       "cells": {
+        "young": 109,
+        "old": 11
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5473684210526316,
+         "Col1a1": 0.6105263157894737
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "classical monocyte",
+       "cells": {
+        "young": 41,
+        "old": 54
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": [
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3181818181818182,
+         "Col1a1": 0.13636363636363635
+        },
+        "old": {
+         "Smad3": 0.08333333333333333,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "club cell",
+       "cells": {
+        "young": 3,
+        "old": 11
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "dendritic cell",
+       "cells": {
+        "young": 0,
+        "old": 43
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0,
+         "Col1a1": 0.125
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "early pro-B cell",
+       "cells": {
+        "young": 19,
+        "old": 27
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "endocardial cell",
+       "cells": {
+        "young": 49,
+        "old": 164
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.15533280922431866,
+         "Col1a1": 0.07547169811320754
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "endothelial cell",
+       "cells": {
+        "young": 1224,
+        "old": 891
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.12979988577281373,
+         "Col1a1": 0.09024187432802189
+        },
+        "old": {
+         "Smad3": 0.04061088568617244,
+         "Col1a1": 0.028502473833768215
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "endothelial cell of coronary artery",
+       "cells": {
+        "young": 534,
+        "old": 1057
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.040771813191908396,
+         "Col1a1": 0.07137046621065662
+        },
+        "old": {
+         "Smad3": 0.01746542012816351,
+         "Col1a1": 0.026805908058490348
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "endothelial cell of hepatic sinusoid",
+       "cells": {
+        "young": 189,
+        "old": 98
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.1474752241623407,
+         "Col1a1": 0.046838131193959416
+        },
+        "old": {
+         "Smad3": 0.13793103448275862,
+         "Col1a1": 0.022988505747126436
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "endothelial cell of lymphatic vessel",
+       "cells": {
+        "young": 48,
+        "old": 35
+       },
+       "replicates": {
+        "young": [
+         "3_8_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2727272727272727,
+         "Col1a1": 0.0
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "enterocyte of epithelium of large intestine",
+       "cells": {
+        "young": 621,
+        "old": 552
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3610643676959244,
+         "Col1a1": 0.11911049451087652
+        },
+        "old": {
+         "Smad3": 0.16422971858376278,
+         "Col1a1": 0.00967741935483871
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "enteroendocrine cell",
+       "cells": {
+        "young": 31,
+        "old": 57
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "ependymal cell",
+       "cells": {
+        "young": 6,
+        "old": 4
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "epidermal cell",
+       "cells": {
+        "young": 171,
+        "old": 129
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.16419939350267218,
+         "Col1a1": 0.059527562601333094
+        },
+        "old": {
+         "Smad3": 0.09792429792429792,
+         "Col1a1": 0.012820512820512822
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "epithelial cell",
+       "cells": {
+        "young": 38,
+        "old": 272
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0655330750466351,
+         "Col1a1": 0.07567800258286699
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "epithelial cell of large intestine",
+       "cells": {
+        "young": 517,
+        "old": 282
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.11453574880818303,
+         "Col1a1": 0.12324299531719077
+        },
+        "old": {
+         "Smad3": 0.09543636089152394,
+         "Col1a1": 0.02536525974025974
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "epithelial cell of proximal tubule",
+       "cells": {
+        "young": 43,
+        "old": 221
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.042911255411255414,
+         "Col1a1": 0.01544187519797276
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "epithelial cell of thymus",
+       "cells": {
+        "young": 5,
+        "old": 70
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0,
+         "Col1a1": 0.022727272727272728
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "fenestrated endothelial cell",
+       "cells": {
+        "young": 56,
+        "old": 105
+       },
+       "replicates": {
+        "young": [
+         "3_11_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.17391304347826086,
+         "Col1a1": 0.0
+        },
+        "old": {
+         "Smad3": 0.12185802703044082,
+         "Col1a1": 0.017241379310344827
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "fibroblast",
+       "cells": {
+        "young": 333,
+        "old": 421
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5227676353445271,
+         "Col1a1": 0.994910941475827
+        },
+        "old": {
+         "Smad3": 0.33969459743796027,
+         "Col1a1": 0.7261052477427974
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "fibroblast of cardiac tissue",
+       "cells": {
+        "young": 830,
+        "old": 831
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.4351357329993012,
+         "Col1a1": 0.9702732508204772
+        },
+        "old": {
+         "Smad3": 0.2582787936877769,
+         "Col1a1": 0.7156784086176904
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "fibroblast of lung",
+       "cells": {
+        "young": 43,
+        "old": 185
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.23070126813708328,
+         "Col1a1": 0.665171208231221
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "fibrocyte",
+       "cells": {
+        "young": 25,
+        "old": 15
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "granulocyte",
+       "cells": {
+        "young": 548,
+        "old": 981
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.22663527088235333,
+         "Col1a1": 0.10546092780613908
+        },
+        "old": {
+         "Smad3": 0.09720857684748935,
+         "Col1a1": 0.027159402006470827
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "granulocyte monocyte progenitor cell",
+       "cells": {
+        "young": 51,
+        "old": 44
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5483870967741935,
+         "Col1a1": 0.06451612903225806
+        },
+        "old": {
+         "Smad3": 0.3333333333333333,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "granulocytopoietic cell",
+       "cells": {
+        "young": 166,
+        "old": 117
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.19252767376166077,
+         "Col1a1": 0.10855382012876101
+        },
+        "old": {
+         "Smad3": 0.13039926115373687,
+         "Col1a1": 0.10446859903381643
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "hematopoietic stem cell",
+       "cells": {
+        "young": 956,
+        "old": 1174
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5525539866174936,
+         "Col1a1": 0.0697375290956634
+        },
+        "old": {
+         "Smad3": 0.25540671057867403,
+         "Col1a1": 0.004563796191988771
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "hepatocyte",
+       "cells": {
+        "young": 240,
+        "old": 378
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2742361927144536,
+         "Col1a1": 0.04670975323149236
+        },
+        "old": {
+         "Smad3": 0.24583333333333332,
+         "Col1a1": 0.022771317829457363
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "immature B cell",
+       "cells": {
+        "young": 239,
+        "old": 44
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.08359704641350212,
+         "Col1a1": 0.08880537974683544
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "intermediate monocyte",
+       "cells": {
+        "young": 9,
+        "old": 0
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "old",
+       "in_domain": false
+      },
+      {
+       "type": "interneuron",
+       "cells": {
+        "young": 54,
+        "old": 59
+       },
+       "replicates": {
+        "young": [
+         "3_9_M"
+        ],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.06451612903225806,
+         "Col1a1": 0.12903225806451613
+        },
+        "old": {
+         "Smad3": 0.03636363636363636,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "intestinal crypt stem cell",
+       "cells": {
+        "young": 412,
+        "old": 371
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.500304771856496,
+         "Col1a1": 0.09231172174329502
+        },
+        "old": {
+         "Smad3": 0.2367267577037692,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "keratinocyte",
+       "cells": {
+        "young": 263,
+        "old": 546
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.28879190576864994,
+         "Col1a1": 0.11014799154334039
+        },
+        "old": {
+         "Smad3": 0.17822080696428277,
+         "Col1a1": 0.04264705882352941
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "keratinocyte stem cell",
+       "cells": {
+        "young": 1019,
+        "old": 545
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.11071039251805939,
+         "Col1a1": 0.07404028677987701
+        },
+        "old": {
+         "Smad3": 0.0648976589160738,
+         "Col1a1": 0.031648781378333046
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "kidney collecting duct epithelial cell",
+       "cells": {
+        "young": 84,
+        "old": 70
+       },
+       "replicates": {
+        "young": [
+         "3_11_M"
+        ],
+        "old": [
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.05555555555555555,
+         "Col1a1": 0.027777777777777776
+        },
+        "old": {
+         "Smad3": 0.03125,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "kidney collecting duct principal cell",
+       "cells": {
+        "young": 26,
+        "old": 60
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.17857142857142858,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "kidney interstitial fibroblast",
+       "cells": {
+        "young": 0,
+        "old": 16
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "kidney loop of Henle ascending limb epithelial cell",
+       "cells": {
+        "young": 49,
+        "old": 39
+       },
+       "replicates": {
+        "young": [
+         "3_11_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.037037037037037035,
+         "Col1a1": 0.037037037037037035
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "large intestine goblet cell",
+       "cells": {
+        "young": 183,
+        "old": 504
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3147474932001786,
+         "Col1a1": 0.08340412251857265
+        },
+        "old": {
+         "Smad3": 0.23164945871655596,
+         "Col1a1": 0.02586206896551724
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "late pro-B cell",
+       "cells": {
+        "young": 213,
+        "old": 50
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.17629196554421264,
+         "Col1a1": 0.10036214396512733
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "leukocyte",
+       "cells": {
+        "young": 39,
+        "old": 59
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.20833333333333334,
+         "Col1a1": 0.08333333333333333
+        },
+        "old": {
+         "Smad3": 0.1794871794871795,
+         "Col1a1": 0.07692307692307693
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "lung macrophage",
+       "cells": {
+        "young": 0,
+        "old": 8
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "lymphocyte",
+       "cells": {
+        "young": 0,
+        "old": 2
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "macrophage",
+       "cells": {
+        "young": 352,
+        "old": 891
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.17385069612103654,
+         "Col1a1": 0.07472114920328343
+        },
+        "old": {
+         "Smad3": 0.10424583741245905,
+         "Col1a1": 0.017287746185208303
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "mature NK T cell",
+       "cells": {
+        "young": 32,
+        "old": 76
+       },
+       "replicates": {
+        "young": [
+         "3_11_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.4642857142857143,
+         "Col1a1": 0.07142857142857142
+        },
+        "old": {
+         "Smad3": 0.20663265306122447,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "mature alpha-beta T cell",
+       "cells": {
+        "young": 73,
+        "old": 82
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3058755760368664,
+         "Col1a1": 0.10195852534562211
+        },
+        "old": {
+         "Smad3": 0.07109557109557109,
+         "Col1a1": 0.07109557109557109
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "medium spiny neuron",
+       "cells": {
+        "young": 78,
+        "old": 3
+       },
+       "replicates": {
+        "young": [
+         "3_8_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.36363636363636365,
+         "Col1a1": 0.07272727272727272
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "megakaryocyte-erythroid progenitor cell",
+       "cells": {
+        "young": 4,
+        "old": 50
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "mesangial cell",
+       "cells": {
+        "young": 18,
+        "old": 19
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "mesenchymal stem cell",
+       "cells": {
+        "young": 245,
+        "old": 529
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3538774733637748,
+         "Col1a1": 0.9869444444444445
+        },
+        "old": {
+         "Smad3": 0.1948789757560101,
+         "Col1a1": 0.531330662549705
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "mesenchymal stem cell of adipose tissue",
+       "cells": {
+        "young": 1225,
+        "old": 1253
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5181423082371557,
+         "Col1a1": 0.9964686992243784
+        },
+        "old": {
+         "Smad3": 0.34201659286322617,
+         "Col1a1": 0.913817776392775
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "microglial cell",
+       "cells": {
+        "young": 2253,
+        "old": 4269
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.4290563946833692,
+         "Col1a1": 0.06340695268857266
+        },
+        "old": {
+         "Smad3": 0.19262251859110857,
+         "Col1a1": 0.008802388100955728
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "monocyte",
+       "cells": {
+        "young": 315,
+        "old": 447
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.22490569986774595,
+         "Col1a1": 0.09141801772718608
+        },
+        "old": {
+         "Smad3": 0.11678784551017952,
+         "Col1a1": 0.07156694747238007
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "mucus secreting cell",
+       "cells": {
+        "young": 25,
+        "old": 16
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "multiciliated columnar cell of tracheobronchial tree",
+       "cells": {
+        "young": 10,
+        "old": 23
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "myeloid cell",
+       "cells": {
+        "young": 558,
+        "old": 867
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2228721240912608,
+         "Col1a1": 0.09370018527828461
+        },
+        "old": {
+         "Smad3": 0.13901471557726072,
+         "Col1a1": 0.05795810325923552
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "myeloid dendritic cell",
+       "cells": {
+        "young": 2,
+        "old": 213
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.06748394736199614,
+         "Col1a1": 0.053555537244561635
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "myeloid leukocyte",
+       "cells": {
+        "young": 17,
+        "old": 116
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.19874274661508703,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "naive B cell",
+       "cells": {
+        "young": 401,
+        "old": 1166
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.07282063325142703,
+         "Col1a1": 0.08946349931591256
+        },
+        "old": {
+         "Smad3": 0.044093366856747446,
+         "Col1a1": 0.024360879755582075
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "natural killer cell",
+       "cells": {
+        "young": 192,
+        "old": 246
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.49250631997110866,
+         "Col1a1": 0.08517247836496662
+        },
+        "old": {
+         "Smad3": 0.17308522401386006,
+         "Col1a1": 0.03017106297932225
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "neural stem cell",
+       "cells": {
+        "young": 72,
+        "old": 1
+       },
+       "replicates": {
+        "young": [
+         "3_10_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.2619047619047619,
+         "Col1a1": 0.023809523809523808
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "neuroepithelial stem cell",
+       "cells": {
+        "young": 4,
+        "old": 7
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "neuron",
+       "cells": {
+        "young": 134,
+        "old": 207
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.22153209109730848,
+         "Col1a1": 0.015873015873015872
+        },
+        "old": {
+         "Smad3": 0.10402609086819614,
+         "Col1a1": 0.011111111111111112
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "neutrophil",
+       "cells": {
+        "young": 15,
+        "old": 45
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.045454545454545456,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "non-classical monocyte",
+       "cells": {
+        "young": 46,
+        "old": 57
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.10818181818181818,
+         "Col1a1": 0.045454545454545456
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "oligodendrocyte",
+       "cells": {
+        "young": 1234,
+        "old": 134
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.07525272485231715,
+         "Col1a1": 0.034767997545552876
+        },
+        "old": {
+         "Smad3": 0.022388059701492536,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "oligodendrocyte precursor cell",
+       "cells": {
+        "young": 155,
+        "old": 12
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3588431677018633,
+         "Col1a1": 0.019285714285714285
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pancreatic A cell",
+       "cells": {
+        "young": 183,
+        "old": 92
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.08889180672268908,
+         "Col1a1": 0.046218487394957986
+        },
+        "old": {
+         "Smad3": 0.041122399612965654,
+         "Col1a1": 0.009433962264150943
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pancreatic D cell",
+       "cells": {
+        "young": 82,
+        "old": 33
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.11732522796352583,
+         "Col1a1": 0.056838905775075985
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pancreatic PP cell",
+       "cells": {
+        "young": 26,
+        "old": 8
+       },
+       "replicates": {
+        "young": [
+         "3_8_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.043478260869565216,
+         "Col1a1": 0.0
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pancreatic acinar cell",
+       "cells": {
+        "young": 91,
+        "old": 214
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.21495098039215685,
+         "Col1a1": 0.1267156862745098
+        },
+        "old": {
+         "Smad3": 0.09833916083916083,
+         "Col1a1": 0.01818181818181818
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "pancreatic ductal cell",
+       "cells": {
+        "young": 106,
+        "old": 72
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.5125718390804598,
+         "Col1a1": 0.09518678160919541
+        },
+        "old": {
+         "Smad3": 0.1509433962264151,
+         "Col1a1": 0.05660377358490566
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pancreatic stellate cell",
+       "cells": {
+        "young": 23,
+        "old": 8
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pericyte",
+       "cells": {
+        "young": 10,
+        "old": 4
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "plasma cell",
+       "cells": {
+        "young": 0,
+        "old": 9
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "plasmacytoid dendritic cell",
+       "cells": {
+        "young": 0,
+        "old": 3
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "precursor B cell",
+       "cells": {
+        "young": 346,
+        "old": 167
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.1510802581902326,
+         "Col1a1": 0.10813542808427719
+        },
+        "old": {
+         "Smad3": 0.04859659310878823,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "proerythroblast",
+       "cells": {
+        "young": 38,
+        "old": 42
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.07692307692307693,
+         "Col1a1": 0.038461538461538464
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "professional antigen presenting cell",
+       "cells": {
+        "young": 39,
+        "old": 17
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "promonocyte",
+       "cells": {
+        "young": 172,
+        "old": 415
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.24409722222222222,
+         "Col1a1": 0.07569444444444444
+        },
+        "old": {
+         "Smad3": 0.10093291283601304,
+         "Col1a1": 0.01673199767711963
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pulmonary alveolar type 1 cell",
+       "cells": {
+        "young": 2,
+        "old": 0
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "old",
+       "in_domain": false
+      },
+      {
+       "type": "pulmonary alveolar type 2 cell",
+       "cells": {
+        "young": 45,
+        "old": 33
+       },
+       "replicates": {
+        "young": [
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.36,
+         "Col1a1": 0.04
+        },
+        "old": {
+         "Smad3": 0.2,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pulmonary interstitial fibroblast",
+       "cells": {
+        "young": 34,
+        "old": 7
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "pulmonary neuroendocrine cell",
+       "cells": {
+        "young": 0,
+        "old": 2
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "regular atrial cardiac myocyte",
+       "cells": {
+        "young": 76,
+        "old": 144
+       },
+       "replicates": {
+        "young": [
+         "3_10_M/3_11_M"
+        ],
+        "old": [
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.21052631578947367,
+         "Col1a1": 0.15789473684210525
+        },
+        "old": {
+         "Smad3": 0.07012048192771084,
+         "Col1a1": 0.12409638554216867
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "regular ventricular cardiac myocyte",
+       "cells": {
+        "young": 16,
+        "old": 101
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.46586486849168013,
+         "Col1a1": 0.1679247181964573
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "regulatory T cell",
+       "cells": {
+        "young": 0,
+        "old": 26
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "young",
+       "in_domain": false
+      },
+      {
+       "type": "respiratory basal cell",
+       "cells": {
+        "young": 1,
+        "old": 0
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": "old",
+       "in_domain": false
+      },
+      {
+       "type": "secretory cell",
+       "cells": {
+        "young": 214,
+        "old": 135
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.44541427623619406,
+         "Col1a1": 0.0970231822971549
+        },
+        "old": {
+         "Smad3": 0.28728294177732383,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "skeletal muscle satellite cell",
+       "cells": {
+        "young": 492,
+        "old": 975
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.3454944578413551,
+         "Col1a1": 0.12127994708749779
+        },
+        "old": {
+         "Smad3": 0.10752149932391933,
+         "Col1a1": 0.010697602885641196
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "smooth muscle cell",
+       "cells": {
+        "young": 29,
+        "old": 30
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "smooth muscle cell of the pulmonary artery",
+       "cells": {
+        "young": 14,
+        "old": 9
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "smooth muscle cell of trachea",
+       "cells": {
+        "young": 60,
+        "old": 8
+       },
+       "replicates": {
+        "young": [
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.32887700534759357,
+         "Col1a1": 0.24064171122994654
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": true
+      },
+      {
+       "type": "thymocyte",
+       "cells": {
+        "young": 422,
+        "old": 335
+       },
+       "replicates": {
+        "young": [
+         "3_11_M",
+         "3_8_M",
+         "3_9_M"
+        ],
+        "old": [
+         "24_58_M",
+         "24_59_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.17249801359359895,
+         "Col1a1": 0.06582723072173609
+        },
+        "old": {
+         "Smad3": 0.20215695575407802,
+         "Col1a1": 0.0023980815347721825
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "tuft cell of large intestine",
+       "cells": {
+        "young": 30,
+        "old": 54
+       },
+       "replicates": {
+        "young": [],
+        "old": [
+         "24_59_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": 0.0,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "type B pancreatic cell",
+       "cells": {
+        "young": 241,
+        "old": 453
+       },
+       "replicates": {
+        "young": [
+         "3_10_M",
+         "3_8_M"
+        ],
+        "old": [
+         "24_60_M",
+         "24_61_M"
+        ]
+       },
+       "detection": {
+        "young": {
+         "Smad3": 0.0797604967474867,
+         "Col1a1": 0.08715257244234181
+        },
+        "old": {
+         "Smad3": 0.02976284584980237,
+         "Col1a1": 0.0
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      },
+      {
+       "type": "vein endothelial cell",
+       "cells": {
+        "young": 9,
+        "old": 53
+       },
+       "replicates": {
+        "young": [],
+        "old": []
+       },
+       "detection": {
+        "young": {
+         "Smad3": null,
+         "Col1a1": null
+        },
+        "old": {
+         "Smad3": null,
+         "Col1a1": null
+        }
+       },
+       "qualifies": false,
+       "absent_from": null,
+       "in_domain": false
+      }
+     ]
+    }
+   ],
+   "domain": {
+    "": [
+     "enterocyte of epithelium of large intestine",
+     "epithelial cell of large intestine",
+     "fibroblast",
+     "fibroblast of cardiac tissue",
+     "granulocyte",
+     "granulocytopoietic cell",
+     "keratinocyte",
+     "mesenchymal stem cell",
+     "mesenchymal stem cell of adipose tissue",
+     "precursor B cell",
+     "skeletal muscle satellite cell"
+    ]
+   },
+   "outside": {
+    "": [
+     "B cell",
+     "CD4-positive, alpha-beta T cell",
+     "CD8-positive, alpha-beta T cell",
+     "DN4 thymocyte",
+     "T cell",
+     "basal cell of epidermis",
+     "bladder urothelial cell",
+     "bronchial smooth muscle cell",
+     "cardiac valve cell",
+     "endothelial cell",
+     "endothelial cell of coronary artery",
+     "epidermal cell",
+     "hematopoietic stem cell",
+     "intestinal crypt stem cell",
+     "keratinocyte stem cell",
+     "large intestine goblet cell",
+     "macrophage",
+     "microglial cell",
+     "monocyte",
+     "myeloid cell",
+     "naive B cell",
+     "natural killer cell",
+     "promonocyte",
+     "thymocyte"
+    ]
+   },
+   "n_domain_types": 11,
+   "unlabelled_cells": 0
+  }
+ },
+ "reference": {
+  "measure": "norm_pearson (the engine's)",
+  "genes": [
+   "Smad3",
+   "Col1a1"
+  ],
+  "groups": [
+   "young",
+   "old"
+  ],
+  "data": "uncorrected",
+  "over": "the domain's types, equally weighted",
+  "rows": [
+   {
+    "stratum": "all",
+    "metric": {
+     "difference": -0.007877799100173668,
+     "p": 0.2,
+     "tier": "permutation",
+     "n": {
+      "young": 4,
+      "old": 4
+     }
+    },
+    "reference": {
+     "difference": -0.015235808196046948,
+     "p": 0.8285714285714286,
+     "tier": "permutation",
+     "n": {
+      "young": 4,
+      "old": 4
+     }
+    }
+   }
+  ]
+ },
+ "specificity": {
+  "applicable": true,
+  "statistic": "the donor-level t of the claim's estimate within the domain's types",
+  "data": "uncorrected",
+  "side": "in the claimed direction (decrease from young to old)",
+  "t_claim": 1.6295995119654862,
+  "t_claim_signed": 1.6295995119654862,
+  "k_requested": 1000,
+  "n_controls": 1000,
+  "in_direction": {
+   "k": 234,
+   "n": 1000,
+   "share": 0.234,
+   "share_ci": [
+    0.20807408037535424,
+    0.261501923816013
+   ],
+   "p": 0.23476523476523475,
+   "outcome": "not specific"
+  },
+  "absolute": {
+   "k": 247,
+   "n": 1000,
+   "share": 0.247,
+   "share_ci": [
+    0.22054727947897845,
+    0.2749510409371396
+   ],
+   "p": 0.24775224775224775,
+   "outcome": "not specific"
+  },
+  "nearest": [
+   {
+    "genes": [
+     "Siva1",
+     "Gfpt2"
+    ],
+    "t": 1.6299677190058683,
+    "t_signed": 1.6299677190058683,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Plekha2",
+     "Entpd2"
+    ],
+    "t": 1.6233809894906963,
+    "t_signed": 1.6233809894906963,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Mgat4b",
+     "Fbn1"
+    ],
+    "t": 1.6367777693011718,
+    "t_signed": 1.6367777693011718,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Nsun2",
+     "Ddr2"
+    ],
+    "t": 1.6438531078792469,
+    "t_signed": 1.6438531078792469,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Tbc1d15",
+     "Crispld2"
+    ],
+    "t": 1.6153453363083015,
+    "t_signed": 1.6153453363083015,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ubac2",
+     "Nbl1"
+    ],
+    "t": 1.612866843790705,
+    "t_signed": 1.612866843790705,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Olfml3"
+    ],
+    "t": 1.6497945632602795,
+    "t_signed": 1.6497945632602795,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Fbln1"
+    ],
+    "t": 1.6070646143466687,
+    "t_signed": 1.6070646143466687,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Dnajc15",
+     "Tubb2a"
+    ],
+    "t": 1.606507823561732,
+    "t_signed": 1.606507823561732,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Fbn1"
+    ],
+    "t": 1.601155055151143,
+    "t_signed": 1.601155055151143,
+    "at_least_as_far": false
+   }
+  ],
+  "at_least_as_far": [
+   {
+    "genes": [
+     "Pgs1",
+     "Col6a2"
+    ],
+    "t_signed": 8.008187834452238
+   },
+   {
+    "genes": [
+     "Med21",
+     "Hspa1a"
+    ],
+    "t_signed": 6.815737006074074
+   },
+   {
+    "genes": [
+     "Nme3",
+     "C1ra"
+    ],
+    "t_signed": 6.277585588121171
+   },
+   {
+    "genes": [
+     "Rxylt1",
+     "Col4a1"
+    ],
+    "t_signed": 6.20690862014076
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Lamc1"
+    ],
+    "t_signed": 6.030478682078263
+   },
+   {
+    "genes": [
+     "Pgs1",
+     "Axl"
+    ],
+    "t_signed": 5.935479705798611
+   },
+   {
+    "genes": [
+     "Lipa",
+     "Lgals3bp"
+    ],
+    "t_signed": 5.62959963122857
+   },
+   {
+    "genes": [
+     "Erg28",
+     "Col6a2"
+    ],
+    "t_signed": 5.528213199266625
+   },
+   {
+    "genes": [
+     "Ppp6c",
+     "Itgb5"
+    ],
+    "t_signed": 5.463167545559789
+   },
+   {
+    "genes": [
+     "Rgmb",
+     "Egfr"
+    ],
+    "t_signed": 4.951048139221986
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Hspb1"
+    ],
+    "t_signed": 4.812941151114062
+   },
+   {
+    "genes": [
+     "Wbp1l",
+     "Itgb5"
+    ],
+    "t_signed": 4.790516963337999
+   },
+   {
+    "genes": [
+     "Tmem39a",
+     "Col6a2"
+    ],
+    "t_signed": 4.564818039700638
+   },
+   {
+    "genes": [
+     "Pum3",
+     "Gfpt2"
+    ],
+    "t_signed": 4.465884765410844
+   },
+   {
+    "genes": [
+     "Dym",
+     "Col1a2"
+    ],
+    "t_signed": 4.412121393393646
+   },
+   {
+    "genes": [
+     "Lgals8",
+     "Itgb5"
+    ],
+    "t_signed": 4.388888245581814
+   },
+   {
+    "genes": [
+     "Stat1",
+     "Col6a2"
+    ],
+    "t_signed": 4.384141896703786
+   },
+   {
+    "genes": [
+     "Pum3",
+     "Nid1"
+    ],
+    "t_signed": 4.344076260639788
+   },
+   {
+    "genes": [
+     "Erg28",
+     "Axl"
+    ],
+    "t_signed": 4.201593302152769
+   },
+   {
+    "genes": [
+     "Plekha2",
+     "Gas7"
+    ],
+    "t_signed": 4.165498701470322
+   },
+   {
+    "genes": [
+     "Ppp6c",
+     "Gfpt2"
+    ],
+    "t_signed": 4.164915953083184
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Sdc2"
+    ],
+    "t_signed": 4.164097748226745
+   },
+   {
+    "genes": [
+     "Mob3a",
+     "Itgb5"
+    ],
+    "t_signed": 4.124204170588516
+   },
+   {
+    "genes": [
+     "Slc44a2",
+     "Aebp1"
+    ],
+    "t_signed": 4.120805635649584
+   },
+   {
+    "genes": [
+     "Crebrf",
+     "Axl"
+    ],
+    "t_signed": 4.022598647151994
+   },
+   {
+    "genes": [
+     "Ppp6c",
+     "Abi3bp"
+    ],
+    "t_signed": 4.014348052559526
+   },
+   {
+    "genes": [
+     "Sh3bp5",
+     "Col6a1"
+    ],
+    "t_signed": 4.00004258297708
+   },
+   {
+    "genes": [
+     "Dnttip1",
+     "Ogn"
+    ],
+    "t_signed": 3.994795030997937
+   },
+   {
+    "genes": [
+     "Scd1",
+     "Tnfrsf12a"
+    ],
+    "t_signed": 3.8985835683393573
+   },
+   {
+    "genes": [
+     "Dnttip1",
+     "Nid1"
+    ],
+    "t_signed": 3.8179771214515705
+   },
+   {
+    "genes": [
+     "Il6ra",
+     "Hspa1a"
+    ],
+    "t_signed": 3.762931340304248
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Socs3"
+    ],
+    "t_signed": 3.7367388855011043
+   },
+   {
+    "genes": [
+     "Malsu1",
+     "C1ra"
+    ],
+    "t_signed": 3.5881127788811122
+   },
+   {
+    "genes": [
+     "Dym",
+     "Col6a2"
+    ],
+    "t_signed": 3.5879630795496813
+   },
+   {
+    "genes": [
+     "Acsl4",
+     "Entpd2"
+    ],
+    "t_signed": 3.543145747626664
+   },
+   {
+    "genes": [
+     "Slc25a12",
+     "Sparcl1"
+    ],
+    "t_signed": 3.5411390598347516
+   },
+   {
+    "genes": [
+     "Jmjd6",
+     "Socs3"
+    ],
+    "t_signed": 3.53352060821595
+   },
+   {
+    "genes": [
+     "Rnf216",
+     "Slc29a1"
+    ],
+    "t_signed": 3.504864951960081
+   },
+   {
+    "genes": [
+     "Dgcr6",
+     "Axl"
+    ],
+    "t_signed": 3.480247829740194
+   },
+   {
+    "genes": [
+     "Stat1",
+     "Aebp1"
+    ],
+    "t_signed": 3.4800233644673115
+   },
+   {
+    "genes": [
+     "Ano10",
+     "Col6a2"
+    ],
+    "t_signed": 3.4576230866314694
+   },
+   {
+    "genes": [
+     "Mpv17l2",
+     "Ddr2"
+    ],
+    "t_signed": 3.426881288167794
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Col6a2"
+    ],
+    "t_signed": 3.361070946924274
+   },
+   {
+    "genes": [
+     "Katna1",
+     "Lpar1"
+    ],
+    "t_signed": 3.3457323839665034
+   },
+   {
+    "genes": [
+     "Dtymk",
+     "C1ra"
+    ],
+    "t_signed": 3.3452346365599084
+   },
+   {
+    "genes": [
+     "Fech",
+     "Nupr1"
+    ],
+    "t_signed": 3.3369435372281493
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Lamc1"
+    ],
+    "t_signed": 3.324199105676617
+   },
+   {
+    "genes": [
+     "Dym",
+     "Ltbp1"
+    ],
+    "t_signed": 3.317971818876648
+   },
+   {
+    "genes": [
+     "Nfkb2",
+     "Il11ra1"
+    ],
+    "t_signed": 3.3172189988413683
+   },
+   {
+    "genes": [
+     "Bcl2l1",
+     "Col6a2"
+    ],
+    "t_signed": 3.297978106496985
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Arhgdib"
+    ],
+    "t_signed": 3.2527692738767895
+   },
+   {
+    "genes": [
+     "Rnf216",
+     "Lpl"
+    ],
+    "t_signed": 3.18144571561503
+   },
+   {
+    "genes": [
+     "Fech",
+     "Fbn1"
+    ],
+    "t_signed": 3.1712469905918286
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Itih5"
+    ],
+    "t_signed": 3.1416905693706214
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Fbln2"
+    ],
+    "t_signed": 3.0903390521256022
+   },
+   {
+    "genes": [
+     "Chpt1",
+     "Gas1"
+    ],
+    "t_signed": 3.078603129434257
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Aebp1"
+    ],
+    "t_signed": 3.064273860497573
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Elovl1"
+    ],
+    "t_signed": 3.0617290122787564
+   },
+   {
+    "genes": [
+     "Srek1",
+     "Cfh"
+    ],
+    "t_signed": 3.060324910710261
+   },
+   {
+    "genes": [
+     "Nsun2",
+     "Aebp1"
+    ],
+    "t_signed": 3.0568072889514846
+   },
+   {
+    "genes": [
+     "Mpv17l2",
+     "Socs3"
+    ],
+    "t_signed": 3.055821126528363
+   },
+   {
+    "genes": [
+     "Fech",
+     "Gfpt2"
+    ],
+    "t_signed": 3.051547249238515
+   },
+   {
+    "genes": [
+     "Tmem39a",
+     "Col1a2"
+    ],
+    "t_signed": 3.0380551694147675
+   },
+   {
+    "genes": [
+     "Ppp6c",
+     "Tubb6"
+    ],
+    "t_signed": 3.029732483210413
+   },
+   {
+    "genes": [
+     "Tars1",
+     "Cald1"
+    ],
+    "t_signed": 3.02183537262561
+   },
+   {
+    "genes": [
+     "Dnttip1",
+     "Hsd11b1"
+    ],
+    "t_signed": 3.011731775217274
+   },
+   {
+    "genes": [
+     "Bcl2l1",
+     "Tnxb"
+    ],
+    "t_signed": 3.0065716992034637
+   },
+   {
+    "genes": [
+     "Zmat5",
+     "Nid1"
+    ],
+    "t_signed": 2.9804689795117905
+   },
+   {
+    "genes": [
+     "Ncbp2",
+     "Itgb5"
+    ],
+    "t_signed": 2.969809162215313
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Tnfrsf12a"
+    ],
+    "t_signed": 2.960009679312847
+   },
+   {
+    "genes": [
+     "Nmi",
+     "Hspa1a"
+    ],
+    "t_signed": 2.9379780903063315
+   },
+   {
+    "genes": [
+     "Lgals8",
+     "Maged1"
+    ],
+    "t_signed": 2.928499609647308
+   },
+   {
+    "genes": [
+     "Wbp1l",
+     "Hsd11b1"
+    ],
+    "t_signed": 2.9217251081065134
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Nid1"
+    ],
+    "t_signed": 2.9079721368013804
+   },
+   {
+    "genes": [
+     "Med21",
+     "Crispld2"
+    ],
+    "t_signed": 2.901704859586565
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Mmp14"
+    ],
+    "t_signed": 2.8975040009095836
+   },
+   {
+    "genes": [
+     "Nosip",
+     "Abi3bp"
+    ],
+    "t_signed": 2.8846411396327074
+   },
+   {
+    "genes": [
+     "Pdzd11",
+     "Col6a1"
+    ],
+    "t_signed": 2.87717631246979
+   },
+   {
+    "genes": [
+     "Pigx",
+     "Ltbp1"
+    ],
+    "t_signed": 2.8753402447501606
+   },
+   {
+    "genes": [
+     "Rrp7a",
+     "Ly6c1"
+    ],
+    "t_signed": 2.871282841775383
+   },
+   {
+    "genes": [
+     "Josd2",
+     "Gas1"
+    ],
+    "t_signed": 2.864091431082406
+   },
+   {
+    "genes": [
+     "Sorbs3",
+     "Nupr1"
+    ],
+    "t_signed": 2.8602127453450614
+   },
+   {
+    "genes": [
+     "Lipa",
+     "Lpl"
+    ],
+    "t_signed": 2.829681960795343
+   },
+   {
+    "genes": [
+     "Dcaf11",
+     "Mfap5"
+    ],
+    "t_signed": 2.8259578602070983
+   },
+   {
+    "genes": [
+     "Peak1",
+     "Itgb5"
+    ],
+    "t_signed": 2.823205255458833
+   },
+   {
+    "genes": [
+     "Plekha2",
+     "Igfbp6"
+    ],
+    "t_signed": 2.812306650416764
+   },
+   {
+    "genes": [
+     "Rars1",
+     "C1s1"
+    ],
+    "t_signed": 2.8003621838230286
+   },
+   {
+    "genes": [
+     "Ubac2",
+     "Ltbp1"
+    ],
+    "t_signed": 2.7951111762454195
+   },
+   {
+    "genes": [
+     "Dnajc15",
+     "Socs3"
+    ],
+    "t_signed": 2.790270542590757
+   },
+   {
+    "genes": [
+     "Tmem184b",
+     "Gfpt2"
+    ],
+    "t_signed": 2.747638041186983
+   },
+   {
+    "genes": [
+     "Nmi",
+     "Gadd45g"
+    ],
+    "t_signed": 2.6904070851175366
+   },
+   {
+    "genes": [
+     "Mpv17l2",
+     "Gas1"
+    ],
+    "t_signed": 2.6863350902314687
+   },
+   {
+    "genes": [
+     "Fech",
+     "Nbl1"
+    ],
+    "t_signed": 2.6835135894936313
+   },
+   {
+    "genes": [
+     "Nfkb2",
+     "Gas1"
+    ],
+    "t_signed": 2.679455951657025
+   },
+   {
+    "genes": [
+     "Txlna",
+     "C1ra"
+    ],
+    "t_signed": 2.679126865962146
+   },
+   {
+    "genes": [
+     "Pmm2",
+     "Tnfaip6"
+    ],
+    "t_signed": 2.664259280842514
+   },
+   {
+    "genes": [
+     "Zbtb21",
+     "Crtap"
+    ],
+    "t_signed": 2.622082393789406
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Gstt1"
+    ],
+    "t_signed": 2.61131303705406
+   },
+   {
+    "genes": [
+     "Nsun2",
+     "Fbn1"
+    ],
+    "t_signed": 2.5493813972175987
+   },
+   {
+    "genes": [
+     "Dnajc15",
+     "Ogn"
+    ],
+    "t_signed": 2.5453143879276854
+   },
+   {
+    "genes": [
+     "Nosip",
+     "Col6a1"
+    ],
+    "t_signed": 2.534832063275674
+   },
+   {
+    "genes": [
+     "Slc25a12",
+     "C1ra"
+    ],
+    "t_signed": 2.5293762287886854
+   },
+   {
+    "genes": [
+     "Mlx",
+     "C1s1"
+    ],
+    "t_signed": 2.514980504952688
+   },
+   {
+    "genes": [
+     "Josd2",
+     "Pcolce"
+    ],
+    "t_signed": 2.512457336812544
+   },
+   {
+    "genes": [
+     "Dnttip1",
+     "C1s1"
+    ],
+    "t_signed": 2.4850902604938865
+   },
+   {
+    "genes": [
+     "Sh3bp5",
+     "Axl"
+    ],
+    "t_signed": 2.472025899469975
+   },
+   {
+    "genes": [
+     "Dtymk",
+     "Ddr2"
+    ],
+    "t_signed": 2.4683089946530163
+   },
+   {
+    "genes": [
+     "Tbc1d15",
+     "Fbln2"
+    ],
+    "t_signed": 2.4677816856842867
+   },
+   {
+    "genes": [
+     "Mrpl40",
+     "Nid1"
+    ],
+    "t_signed": 2.461449548799922
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Crtap"
+    ],
+    "t_signed": 2.459321405749445
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Col6a1"
+    ],
+    "t_signed": 2.4400663031494507
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Ltbp1"
+    ],
+    "t_signed": 2.4351164716675835
+   },
+   {
+    "genes": [
+     "Apbb1ip",
+     "Nid1"
+    ],
+    "t_signed": 2.4345284335595387
+   },
+   {
+    "genes": [
+     "Sirt7",
+     "Gem"
+    ],
+    "t_signed": 2.43108755633173
+   },
+   {
+    "genes": [
+     "Sorbs3",
+     "Entpd2"
+    ],
+    "t_signed": 2.410732905053109
+   },
+   {
+    "genes": [
+     "Srek1",
+     "Adamts1"
+    ],
+    "t_signed": 2.404162985103684
+   },
+   {
+    "genes": [
+     "Apbb1ip",
+     "C1ra"
+    ],
+    "t_signed": 2.3864975131485675
+   },
+   {
+    "genes": [
+     "Txlna",
+     "Gas1"
+    ],
+    "t_signed": 2.3735742090203344
+   },
+   {
+    "genes": [
+     "Dtymk",
+     "Abi3bp"
+    ],
+    "t_signed": 2.370677436720889
+   },
+   {
+    "genes": [
+     "Tmem184b",
+     "Ogn"
+    ],
+    "t_signed": 2.359548383095432
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Rcn3"
+    ],
+    "t_signed": 2.355889608737233
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Tnxb"
+    ],
+    "t_signed": 2.3459487052109456
+   },
+   {
+    "genes": [
+     "Ergic2",
+     "Fbln2"
+    ],
+    "t_signed": 2.337530540253168
+   },
+   {
+    "genes": [
+     "Fech",
+     "Mmp14"
+    ],
+    "t_signed": 2.325800571605883
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Cp"
+    ],
+    "t_signed": 2.301647404668199
+   },
+   {
+    "genes": [
+     "Stat1",
+     "Gas7"
+    ],
+    "t_signed": 2.2999177992801507
+   },
+   {
+    "genes": [
+     "Tbc1d15",
+     "Igfbp6"
+    ],
+    "t_signed": 2.297924556061577
+   },
+   {
+    "genes": [
+     "Tmem184b",
+     "Crtap"
+    ],
+    "t_signed": 2.291646294077067
+   },
+   {
+    "genes": [
+     "Tmem39a",
+     "Tubb2a"
+    ],
+    "t_signed": 2.2865136754935427
+   },
+   {
+    "genes": [
+     "Eif2a",
+     "Lpl"
+    ],
+    "t_signed": 2.281660551373874
+   },
+   {
+    "genes": [
+     "Slc44a2",
+     "Col1a2"
+    ],
+    "t_signed": 2.280159480958964
+   },
+   {
+    "genes": [
+     "Plekha2",
+     "Nid1"
+    ],
+    "t_signed": 2.2743646349851114
+   },
+   {
+    "genes": [
+     "Ano10",
+     "Itgb5"
+    ],
+    "t_signed": 2.2457519621779674
+   },
+   {
+    "genes": [
+     "Mob3a",
+     "Adamts1"
+    ],
+    "t_signed": 2.2442738453777413
+   },
+   {
+    "genes": [
+     "Dcaf11",
+     "Col4a1"
+    ],
+    "t_signed": 2.243387841236067
+   },
+   {
+    "genes": [
+     "Lgals8",
+     "Abi3bp"
+    ],
+    "t_signed": 2.242305565274905
+   },
+   {
+    "genes": [
+     "Plekha2",
+     "Egfr"
+    ],
+    "t_signed": 2.241428013006416
+   },
+   {
+    "genes": [
+     "Rab9",
+     "Islr"
+    ],
+    "t_signed": 2.2329277437499777
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Col1a2"
+    ],
+    "t_signed": 2.2241040447975626
+   },
+   {
+    "genes": [
+     "Sirt7",
+     "Lpar1"
+    ],
+    "t_signed": 2.222364987742305
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Ddah2"
+    ],
+    "t_signed": 2.2221472544039385
+   },
+   {
+    "genes": [
+     "Dnttip1",
+     "Cald1"
+    ],
+    "t_signed": 2.218548905961253
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Mmp14"
+    ],
+    "t_signed": 2.2125237814586582
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Gfpt2"
+    ],
+    "t_signed": 2.1855155447998103
+   },
+   {
+    "genes": [
+     "Pmm2",
+     "Lamc1"
+    ],
+    "t_signed": 2.1628707942712184
+   },
+   {
+    "genes": [
+     "Eif2a",
+     "Hsd11b1"
+    ],
+    "t_signed": 2.139577794621224
+   },
+   {
+    "genes": [
+     "Afap1",
+     "Abi3bp"
+    ],
+    "t_signed": 2.1383131082373468
+   },
+   {
+    "genes": [
+     "Lgals8",
+     "Pcolce"
+    ],
+    "t_signed": 2.1288897559454574
+   },
+   {
+    "genes": [
+     "Katna1",
+     "Col6a2"
+    ],
+    "t_signed": 2.128563406011158
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Pcolce"
+    ],
+    "t_signed": 2.124680220856425
+   },
+   {
+    "genes": [
+     "Slc44a2",
+     "Ccn1"
+    ],
+    "t_signed": 2.1196185419725473
+   },
+   {
+    "genes": [
+     "Nmi",
+     "Islr"
+    ],
+    "t_signed": 2.1165426410994805
+   },
+   {
+    "genes": [
+     "Gpatch8",
+     "Col6a1"
+    ],
+    "t_signed": 2.115109017995842
+   },
+   {
+    "genes": [
+     "Nme3",
+     "Zbtb20"
+    ],
+    "t_signed": 2.1131500929888203
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Cfh"
+    ],
+    "t_signed": 2.1067970107285436
+   },
+   {
+    "genes": [
+     "Rnf19b",
+     "Cd82"
+    ],
+    "t_signed": 2.1059563095813996
+   },
+   {
+    "genes": [
+     "Mlx",
+     "Gfpt2"
+    ],
+    "t_signed": 2.101422377322318
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Gas1"
+    ],
+    "t_signed": 2.095766501843211
+   },
+   {
+    "genes": [
+     "Rrp7a",
+     "C1s1"
+    ],
+    "t_signed": 2.0875322261585985
+   },
+   {
+    "genes": [
+     "Pdzd11",
+     "Odc1"
+    ],
+    "t_signed": 2.0855872724830853
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Elovl1"
+    ],
+    "t_signed": 2.065919585671085
+   },
+   {
+    "genes": [
+     "Slc35f5",
+     "Tubb6"
+    ],
+    "t_signed": 2.053035745628892
+   },
+   {
+    "genes": [
+     "Kctd10",
+     "Col1a2"
+    ],
+    "t_signed": 2.05178120414826
+   },
+   {
+    "genes": [
+     "Fam107b",
+     "Itih5"
+    ],
+    "t_signed": 2.0448013858685448
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Elovl1"
+    ],
+    "t_signed": 2.041278330698288
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Tex261"
+    ],
+    "t_signed": 2.034735630786945
+   },
+   {
+    "genes": [
+     "Chpt1",
+     "Npdc1"
+    ],
+    "t_signed": 2.030139143607954
+   },
+   {
+    "genes": [
+     "Ano10",
+     "Ogn"
+    ],
+    "t_signed": 2.0241539946011295
+   },
+   {
+    "genes": [
+     "Tmem184b",
+     "Islr"
+    ],
+    "t_signed": 2.0118100134955017
+   },
+   {
+    "genes": [
+     "Fam107b",
+     "C1ra"
+    ],
+    "t_signed": 2.008941502800121
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Socs3"
+    ],
+    "t_signed": 2.0012581915607996
+   },
+   {
+    "genes": [
+     "Mrpl40",
+     "Gas1"
+    ],
+    "t_signed": 1.988038259224728
+   },
+   {
+    "genes": [
+     "Pgs1",
+     "Sdc2"
+    ],
+    "t_signed": 1.9672024712470493
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Pcolce"
+    ],
+    "t_signed": 1.9631309338119924
+   },
+   {
+    "genes": [
+     "Mrps34",
+     "C1s1"
+    ],
+    "t_signed": 1.9585487279633602
+   },
+   {
+    "genes": [
+     "Chpt1",
+     "Adamts1"
+    ],
+    "t_signed": 1.9543657337810312
+   },
+   {
+    "genes": [
+     "Slc25a12",
+     "Pcolce"
+    ],
+    "t_signed": 1.9513766278573732
+   },
+   {
+    "genes": [
+     "Mgat4b",
+     "Col4a1"
+    ],
+    "t_signed": 1.9421727617847662
+   },
+   {
+    "genes": [
+     "Tbc1d9b",
+     "Islr"
+    ],
+    "t_signed": 1.940015634152413
+   },
+   {
+    "genes": [
+     "Malsu1",
+     "Cygb"
+    ],
+    "t_signed": 1.9388499357616023
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Ogn"
+    ],
+    "t_signed": 1.9385563958002905
+   },
+   {
+    "genes": [
+     "Sh3bp5",
+     "Col4a1"
+    ],
+    "t_signed": 1.9330738766596656
+   },
+   {
+    "genes": [
+     "Exosc8",
+     "Ddr2"
+    ],
+    "t_signed": 1.9221845796494015
+   },
+   {
+    "genes": [
+     "Rxylt1",
+     "Gem"
+    ],
+    "t_signed": 1.919638737939684
+   },
+   {
+    "genes": [
+     "Katna1",
+     "Egfr"
+    ],
+    "t_signed": 1.914860738481035
+   },
+   {
+    "genes": [
+     "Mpv17l2",
+     "Cavin3"
+    ],
+    "t_signed": 1.8973269642205501
+   },
+   {
+    "genes": [
+     "Afap1",
+     "Crispld2"
+    ],
+    "t_signed": 1.889099979450362
+   },
+   {
+    "genes": [
+     "Sirpa",
+     "Cfh"
+    ],
+    "t_signed": 1.884313374554044
+   },
+   {
+    "genes": [
+     "Pgs1",
+     "Fhl1"
+    ],
+    "t_signed": 1.8815173997623174
+   },
+   {
+    "genes": [
+     "Tbc1d9b",
+     "Col1a2"
+    ],
+    "t_signed": 1.8640428165401437
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Pdlim1"
+    ],
+    "t_signed": 1.8587319838100542
+   },
+   {
+    "genes": [
+     "Exosc8",
+     "Gfpt2"
+    ],
+    "t_signed": 1.85091862879443
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Crispld2"
+    ],
+    "t_signed": 1.8435308271780744
+   },
+   {
+    "genes": [
+     "Nmi",
+     "Cavin3"
+    ],
+    "t_signed": 1.8418530625155496
+   },
+   {
+    "genes": [
+     "Rnf19b",
+     "Cald1"
+    ],
+    "t_signed": 1.8373785944374412
+   },
+   {
+    "genes": [
+     "Tbc1d15",
+     "Tnfaip6"
+    ],
+    "t_signed": 1.82507109679183
+   },
+   {
+    "genes": [
+     "Crebrf",
+     "Tubb2a"
+    ],
+    "t_signed": 1.8138298378056352
+   },
+   {
+    "genes": [
+     "Fech",
+     "Pcolce"
+    ],
+    "t_signed": 1.8136113234617135
+   },
+   {
+    "genes": [
+     "Crebrf",
+     "Col6a2"
+    ],
+    "t_signed": 1.808758100918346
+   },
+   {
+    "genes": [
+     "Tars1",
+     "Gas1"
+    ],
+    "t_signed": 1.7935477274943934
+   },
+   {
+    "genes": [
+     "Erg28",
+     "Tnfaip6"
+    ],
+    "t_signed": 1.7928097495510342
+   },
+   {
+    "genes": [
+     "Rgmb",
+     "Gas7"
+    ],
+    "t_signed": 1.776342071817316
+   },
+   {
+    "genes": [
+     "Tbc1d9b",
+     "Lpar1"
+    ],
+    "t_signed": 1.7731463805990852
+   },
+   {
+    "genes": [
+     "Rxylt1",
+     "Socs3"
+    ],
+    "t_signed": 1.7730258314302016
+   },
+   {
+    "genes": [
+     "Rnf216",
+     "C1s1"
+    ],
+    "t_signed": 1.7721417160393576
+   },
+   {
+    "genes": [
+     "Jmjd6",
+     "Col6a1"
+    ],
+    "t_signed": 1.7686359824628106
+   },
+   {
+    "genes": [
+     "Med21",
+     "C1s1"
+    ],
+    "t_signed": 1.7684659475600686
+   },
+   {
+    "genes": [
+     "Acsl4",
+     "Col6a2"
+    ],
+    "t_signed": 1.7669892129753462
+   },
+   {
+    "genes": [
+     "Nosip",
+     "Egfr"
+    ],
+    "t_signed": 1.7578464972393184
+   },
+   {
+    "genes": [
+     "Tsnax",
+     "Igfbp6"
+    ],
+    "t_signed": 1.7569584942714154
+   },
+   {
+    "genes": [
+     "Tsnax",
+     "Zbtb20"
+    ],
+    "t_signed": 1.7516896318206174
+   },
+   {
+    "genes": [
+     "Rnf19b",
+     "Socs3"
+    ],
+    "t_signed": 1.7357724909483263
+   },
+   {
+    "genes": [
+     "Il6ra",
+     "Fbln2"
+    ],
+    "t_signed": 1.7289227816724348
+   },
+   {
+    "genes": [
+     "Mgat4b",
+     "Hspb1"
+    ],
+    "t_signed": 1.7246973650682416
+   },
+   {
+    "genes": [
+     "Sh3bp5",
+     "Abi3bp"
+    ],
+    "t_signed": 1.721621067780145
+   },
+   {
+    "genes": [
+     "Dgcr6",
+     "Myc"
+    ],
+    "t_signed": 1.7060273109574333
+   },
+   {
+    "genes": [
+     "Pi4k2a",
+     "Sqor"
+    ],
+    "t_signed": 1.7048214206237142
+   },
+   {
+    "genes": [
+     "Nme3",
+     "Socs3"
+    ],
+    "t_signed": 1.7028048144968275
+   },
+   {
+    "genes": [
+     "Kctd10",
+     "C1ra"
+    ],
+    "t_signed": 1.7007644193111453
+   },
+   {
+    "genes": [
+     "Slc31a1",
+     "Pdlim1"
+    ],
+    "t_signed": 1.6982058686706227
+   },
+   {
+    "genes": [
+     "Jmjd6",
+     "Ogn"
+    ],
+    "t_signed": 1.6948506548299542
+   },
+   {
+    "genes": [
+     "Crebrf",
+     "Timp3"
+    ],
+    "t_signed": 1.6912031846261835
+   },
+   {
+    "genes": [
+     "Fam107b",
+     "Fbn1"
+    ],
+    "t_signed": 1.6893292291838398
+   },
+   {
+    "genes": [
+     "Mob3a",
+     "Col6a2"
+    ],
+    "t_signed": 1.6841498696812756
+   },
+   {
+    "genes": [
+     "Tars1",
+     "Cavin3"
+    ],
+    "t_signed": 1.6820671377473042
+   },
+   {
+    "genes": [
+     "Ergic2",
+     "Igfbp6"
+    ],
+    "t_signed": 1.679866529083876
+   },
+   {
+    "genes": [
+     "Fam107b",
+     "C1s1"
+    ],
+    "t_signed": 1.6707446293813688
+   },
+   {
+    "genes": [
+     "Lipa",
+     "Gas1"
+    ],
+    "t_signed": 1.670180958356739
+   },
+   {
+    "genes": [
+     "Dtymk",
+     "Sod3"
+    ],
+    "t_signed": 1.6645865852852113
+   },
+   {
+    "genes": [
+     "Fam174a",
+     "Fbln2"
+    ],
+    "t_signed": 1.661755935202867
+   },
+   {
+    "genes": [
+     "Itga5",
+     "Olfml3"
+    ],
+    "t_signed": 1.6497945632602795
+   },
+   {
+    "genes": [
+     "Nsun2",
+     "Ddr2"
+    ],
+    "t_signed": 1.6438531078792469
+   },
+   {
+    "genes": [
+     "Mgat4b",
+     "Fbn1"
+    ],
+    "t_signed": 1.6367777693011718
+   },
+   {
+    "genes": [
+     "Siva1",
+     "Gfpt2"
+    ],
+    "t_signed": 1.6299677190058683
+   }
+  ],
+  "shift": {
+   "median_t": 0.7118806313551366,
+   "ci": [
+    -0.6969450000841998,
+    2.120706262794473
+   ],
+   "ci_level": 0.95,
+   "p_one_sided": 0.17142857142857143,
+   "method": "exact",
+   "n_relabelings": 70,
+   "significant": false,
+   "warning": null
+  },
+  "pool": {
+   "genes": 21025,
+   "same_as_data": false
+  },
+  "tie": null,
+  "candidates": 20929,
+  "matched": {
+   "Smad3": {
+    "mean": 45.595755142178156,
+    "detection": 0.26632795214291566,
+    "mean_range": [
+     36.41956895845284,
+     55.919446037859544
+    ],
+    "detection_range": [
+     0.25600262230599036,
+     0.2773088584774236
+    ]
+   },
+   "Col1a1": {
+    "mean": 608.9198557731705,
+    "detection": 0.4361222650167991,
+    "mean_range": [
+     175.6354994673441,
+     1529.1211997049907
+    ],
+    "detection_range": [
+     0.3881832336310743,
+     0.490862902564943
+    ]
+   }
+  },
+  "eligible": 10000,
+  "known_pairs_excluded": 0
+ }
+}

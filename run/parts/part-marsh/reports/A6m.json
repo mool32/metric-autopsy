@@ -1,0 +1,1979 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "mi_3bin",
+ "verdict": "INCONCLUSIVE \u2014 effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within \u00b10.009206 [parametric only \u2014 too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside]",
+ "cause": "effect_inconclusive",
+ "fields": {
+  "metric_validity": {
+   "status": "UNTESTED",
+   "reason": "no nuisance bias, but no demonstrated response to signal (GATE 4: response to coupling(Fos, Jun, strength=0.762285) not established: coupling(Fos, Jun, strength=0.762285) injected into ENZ-NONE (3.978 probed counts per cell against 0.4534 in DNC-NONE), its values move by +0.009206 against the sham (95% CI [-0.003546, +0.02196] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference DNC-NONE - ENZ-NONE moves by -0.009206; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.009206; the interval includes 0 \u2014 untested, not invalid).",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": null,
+    "gate4": "WARN",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; nested replicates {'DNC-NONE': 3, 'ENZ-NONE': 3}; attenuation (GATE 0) extra_dropout \u221248%, depth_downsample \u221221%, library_scale \u22129%; MDE 0.1413 vs the SESOI in the metric's units 0.009206 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [-0.003546, +0.02196] over the replicates); the design's floor 0.1903: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+   "flags": [
+    "PARAMETRIC_ONLY",
+    "UNDERPOWERED",
+    "SESOI_BELOW_FLOOR",
+    "ATTENUATION"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "parametric",
+    "replication": {
+     "kind": "nested",
+     "counts": {
+      "DNC-NONE": 3,
+      "ENZ-NONE": 3
+     },
+     "n_eff": 3
+    },
+    "power": {
+     "mde": 0.14133880489478243,
+     "power": 0.8,
+     "sesoi": 0.009205559839548232,
+     "lambda_": 1.0,
+     "effective_sesoi": 0.009205559839548232,
+     "attenuation": {
+      "model": "observed scale (pre-registered sesoi_scale): no attenuation applied"
+     },
+     "floor": 0.1903362022762509,
+     "floor_power": 0.95,
+     "sesoi_source": "declared",
+     "sesoi_label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [-0.003546, +0.02196] over the replicates"
+    },
+    "attenuation": {
+     "extra_dropout": 0.4767092593315456,
+     "depth_downsample": 0.21477807258090562,
+     "library_scale": 0.08807945851892145
+    },
+    "equalization": {
+     "strata": [
+      {
+       "stratum": {
+        "cell_type": "CD45+/CD11b+ sorted cells"
+       },
+       "thinned_group": "ENZ-NONE",
+       "n_thinned": 6415,
+       "mean_before": 951.4300857365549,
+       "mean_after": 814.3267923560345,
+       "mean_other": 814.3267923560344,
+       "depth_ratio": 0.855897668745275,
+       "ks_after": 0.0625323347679239
+      }
+     ],
+     "depth_ratio": 0.855897668745275,
+     "capture_check": {
+      "raw": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 950.6487454932103,
+        "genes": 448.60112023638175,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.14374766032593378,
+        "genes": -0.09226316362093323
+       }
+      },
+      "equalized": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 813.7198461069175,
+        "genes": 401.4491379343681,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.0003384044658332197,
+        "genes": 0.014354555037187744
+       }
+      }
+     }
+    },
+    "notes": [
+     "permutation p = 0.1 reported only: alpha=0.05 is unattainable by construction (min attainable p = 0.1)"
+    ],
+    "composite_units": null,
+    "sesoi": {
+     "value": 0.009205559839548232,
+     "source": "s_m",
+     "ci": [
+      -0.0035459019014638903,
+      0.021957021580560353
+     ],
+     "construct": 0.1,
+     "label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [-0.003546, +0.02196] over the replicates"
+    }
+   }
+  },
+  "effect": {
+   "status": "INCONCLUSIVE",
+   "reason": "effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within \u00b10.009206",
+   "flags": [
+    "PARAMETRIC_ONLY"
+   ],
+   "detail": {
+    "cell_level_raw": -0.10413420633748867,
+    "cell_level_corrected": -0.10384016463642869,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.009205559839548232,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": -0.08364094246255978,
+      "ci": [
+       -0.19118423126227235,
+       0.023902346337152797
+      ],
+      "ci_level": 0.95,
+      "se": 0.025000453263658254,
+      "df": 2.0004848500916768,
+      "p": 0.07888581820211016,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": false,
+      "n_replicates": {
+       "DNC-NONE": 3,
+       "ENZ-NONE": 3
+      }
+     },
+     "raw": {
+      "effect": -0.08645919218610278,
+      "ci": [
+       -0.2014746082886948,
+       0.028556223916489237
+      ],
+      "ci_level": 0.95,
+      "se": 0.026736709109876806,
+      "df": 2.000423916901036,
+      "p": 0.08376296033828168,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": false,
+      "n_replicates": {
+       "DNC-NONE": 3,
+       "ENZ-NONE": 3
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "GSM4605687",
+       "raw": 0.001837182535843539,
+       "corrected": 0.001837182535843539
+      },
+      {
+       "replicate": "GSM4605688",
+       "raw": 0.06737565552814288,
+       "corrected": 0.06440039166038192
+      },
+      {
+       "replicate": "GSM4605691",
+       "raw": 0.0008939647049134465,
+       "corrected": 0.0008939647049134465
+      },
+      {
+       "replicate": "GSM4605692",
+       "raw": 0.05533726317439621,
+       "corrected": 0.055934574076384656
+      },
+      {
+       "replicate": "GSM4605695",
+       "raw": 0.001486062746944098,
+       "corrected": 0.001486062746944098
+      },
+      {
+       "replicate": "GSM4605696",
+       "raw": 0.14088186784347037,
+       "corrected": 0.13480507163861385
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "ENZ-NONE",
+        "n_thinned": 6415,
+        "mean_before": 951.4300857365549,
+        "mean_after": 814.3267923560345,
+        "mean_other": 814.3267923560344,
+        "depth_ratio": 0.855897668745275,
+        "ks_after": 0.0625323347679239
+       }
+      ],
+      "depth_ratio": 0.855897668745275,
+      "capture_check": {
+       "raw": {
+        "DNC-NONE": {
+         "depth": 813.9952125367772,
+         "genes": 407.2117616794785,
+         "unit": "replicates"
+        },
+        "ENZ-NONE": {
+         "depth": 950.6487454932103,
+         "genes": 448.60112023638175,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.14374766032593378,
+         "genes": -0.09226316362093323
+        }
+       },
+       "equalized": {
+        "DNC-NONE": {
+         "depth": 813.9952125367772,
+         "genes": 407.2117616794785,
+         "unit": "replicates"
+        },
+        "ENZ-NONE": {
+         "depth": 813.6740510054343,
+         "genes": 401.4972518845773,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.0003947053871831141,
+         "genes": 0.01423299852758153
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "units": 6,
+       "detection": {
+        "DNC-NONE": {
+         "Fos": 0.012288768833137785,
+         "Jun": 0.2828057096411489
+        },
+        "ENZ-NONE": {
+         "Fos": 0.23031836832669086,
+         "Jun": 0.6119483232718741
+        }
+       },
+       "corrected": {
+        "effect": -0.08321818927664554,
+        "ci": [
+         -0.19660205214450988,
+         0.030165673591218814
+        ],
+        "ci_level": 0.95,
+        "se": 0.026357590104915073,
+        "df": 2.000436200910092,
+        "p": 0.08734579658606578,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "DNC-NONE": 3,
+         "ENZ-NONE": 3
+        }
+       },
+       "raw": {
+        "effect": -0.08645919218610278,
+        "ci": [
+         -0.2014746082886948,
+         0.028556223916489237
+        ],
+        "ci_level": 0.95,
+        "se": 0.026736709109876806,
+        "df": 2.000423916901036,
+        "p": 0.08376296033828168,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "DNC-NONE": 3,
+         "ENZ-NONE": 3
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 950.6487454932103,
+        "genes": 448.60112023638175,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.14374766032593378,
+        "genes": -0.09226316362093323
+       }
+      },
+      "equalized": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 813.7198461069175,
+        "genes": 401.4491379343681,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.0003384044658332197,
+        "genes": 0.014354555037187744
+       }
+      }
+     },
+     "n_units": 6,
+     "n_cells": 14212,
+     "units": [
+      {
+       "replicate": "GSM4605687",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.001837182535843539,
+       "corrected": 0.001837182535843539
+      },
+      {
+       "replicate": "GSM4605691",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.0008939647049134465,
+       "corrected": 0.0008939647049134465
+      },
+      {
+       "replicate": "GSM4605695",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.001486062746944098,
+       "corrected": 0.001486062746944098
+      },
+      {
+       "replicate": "GSM4605688",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.06737565552814288,
+       "corrected": 0.06331970898633091
+      },
+      {
+       "replicate": "GSM4605692",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.05533726317439621,
+       "corrected": 0.05352033816645234
+      },
+      {
+       "replicate": "GSM4605696",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.14088186784347037,
+       "corrected": 0.13703173066485447
+      }
+     ],
+     "types": [
+      "CD45+/CD11b+ sorted cells"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "Fos",
+       "Jun"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": -0.08321818927664554,
+    "raw_effect": -0.08645919218610278,
+    "se": 0.026357590104915073,
+    "df": 2.000436200910092,
+    "t_method": "domain: cluster-robust over replicates",
+    "ci": [
+     -0.19660205214450988,
+     0.030165673591218814
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.1601705286850321,
+     -0.0062658498682589825
+    ],
+    "p_t": 0.08734579658606578,
+    "p_perm": 0.1,
+    "perm_method": "exact",
+    "perm_n": 20,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.1,
+    "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "DNC-NONE": 3,
+     "ENZ-NONE": 3
+    },
+    "design_kind": "nested",
+    "raw_detected": false,
+    "p_raw": 0.08376296033828168,
+    "replicate_values": [
+     {
+      "replicate": "GSM4605687",
+      "raw": 0.001837182535843539,
+      "corrected": 0.001837182535843539,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605688",
+      "raw": 0.06737565552814288,
+      "corrected": 0.06440039166038192,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     },
+     {
+      "replicate": "GSM4605691",
+      "raw": 0.0008939647049134465,
+      "corrected": 0.0008939647049134465,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605692",
+      "raw": 0.05533726317439621,
+      "corrected": 0.055934574076384656,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     },
+     {
+      "replicate": "GSM4605695",
+      "raw": 0.001486062746944098,
+      "corrected": 0.001486062746944098,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605696",
+      "raw": 0.14088186784347037,
+      "corrected": 0.13480507163861385,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.9625140736628558,
+    "effective_sesoi": 0.009205559839548232,
+    "sesoi_source": "declared",
+    "floor": 0.1903362022762509,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.009205559839548232,
+    "ci_2alpha_raw": [
+     -0.1645187158211447,
+     -0.008399668551060863
+    ]
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias; attenuation extra_dropout \u221248%, depth_downsample \u221221%, library_scale \u22129% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+   "detail": {
+    "baseline": 0.09341705652910295,
+    "baseline_sd": 0.0033434154637299227,
+    "null_center": 0.004519481851223342,
+    "null_sd": 0.0008052499567025114,
+    "signal": 0.0888975746778796,
+    "has_signal": true,
+    "immaterial_signal": false,
+    "scale": 0.0888975746778796,
+    "scale_source": "signal above null",
+    "effect_scale": 0.10413420633748867,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.04900017232641624,
+      "shift": -0.04441688420268671,
+      "z": 82.88145340186782,
+      "shift_std": -0.49964112478468964,
+      "rel_change": 0.49964112478468964,
+      "null_perturbed": 0.0024808946295993934,
+      "null_shift": -0.002038587221623949,
+      "null_shift_std": -0.022931865453143917,
+      "null_shift_z": 5.266783577405199,
+      "signal": 0.0888975746778796,
+      "signal_perturbed": 0.04651927769681685,
+      "null_construction": "depth-matched",
+      "signal_change": -0.4767092593315456,
+      "signal_loss": 0.4767092593315456,
+      "classification": "attenuation",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.07292494694427584,
+      "shift": -0.020492109584827112,
+      "z": 28.63510669781674,
+      "shift_std": -0.23051370815323452,
+      "rel_change": 0.23051370815323452,
+      "null_perturbed": 0.003120622012828335,
+      "null_shift": -0.0013988598383950072,
+      "null_shift_std": -0.0157356355723289,
+      "null_shift_z": 3.083092421961919,
+      "signal": 0.0888975746778796,
+      "signal_perturbed": 0.0698043249314475,
+      "null_construction": "depth-matched",
+      "signal_change": -0.21477807258090562,
+      "signal_loss": 0.21477807258090562,
+      "classification": "attenuation",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.08518967747593183,
+      "shift": -0.008227379053171127,
+      "z": 17.29564460487253,
+      "shift_std": -0.09254897091380769,
+      "rel_change": 0.09254897091380769,
+      "null_perturbed": 0.002542351449935829,
+      "null_shift": -0.0002447408810080341,
+      "null_shift_std": -0.0027530658951591515,
+      "null_shift_z": 0.6896375362067024,
+      "signal": 0.0906299641981591,
+      "signal_perturbed": 0.082647326025996,
+      "null_construction": "depth bins",
+      "signal_change": -0.08807945851892145,
+      "signal_loss": 0.08807945851892145,
+      "classification": "attenuation",
+      "confounded": false
+     }
+    },
+    "attenuation": {
+     "extra_dropout": 0.4767092593315456,
+     "depth_downsample": 0.21477807258090562,
+     "library_scale": 0.08807945851892145
+    },
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.009205559839548232,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.004602779919774116,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.13x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 7797,
+      "n_b": 6415,
+      "median_n_genes_a": 411.0,
+      "median_n_genes_b": 465.0,
+      "n_genes_ratio": 1.1313868613138687,
+      "overlap": 1.0,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       -0.13396869907522255,
+       -0.11291968310702084
+      ],
+      "ratio_ci": [
+       0.8746174405096007,
+       0.8932223980828451
+      ],
+      "overlap_upper": 1.0
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.1313868613138687,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw -0.08646 -> corrected -0.08322",
+   "detail": {
+    "cell_level_raw": -0.10413420633748867,
+    "cell_level_corrected": -0.10384016463642869,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.009205559839548232,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": -0.08364094246255978,
+      "ci": [
+       -0.19118423126227235,
+       0.023902346337152797
+      ],
+      "ci_level": 0.95,
+      "se": 0.025000453263658254,
+      "df": 2.0004848500916768,
+      "p": 0.07888581820211016,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": false,
+      "n_replicates": {
+       "DNC-NONE": 3,
+       "ENZ-NONE": 3
+      }
+     },
+     "raw": {
+      "effect": -0.08645919218610278,
+      "ci": [
+       -0.2014746082886948,
+       0.028556223916489237
+      ],
+      "ci_level": 0.95,
+      "se": 0.026736709109876806,
+      "df": 2.000423916901036,
+      "p": 0.08376296033828168,
+      "test": "t interval on replicate values (welch; parametric only)",
+      "tier": "parametric",
+      "detected": false,
+      "n_replicates": {
+       "DNC-NONE": 3,
+       "ENZ-NONE": 3
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "GSM4605687",
+       "raw": 0.001837182535843539,
+       "corrected": 0.001837182535843539
+      },
+      {
+       "replicate": "GSM4605688",
+       "raw": 0.06737565552814288,
+       "corrected": 0.06440039166038192
+      },
+      {
+       "replicate": "GSM4605691",
+       "raw": 0.0008939647049134465,
+       "corrected": 0.0008939647049134465
+      },
+      {
+       "replicate": "GSM4605692",
+       "raw": 0.05533726317439621,
+       "corrected": 0.055934574076384656
+      },
+      {
+       "replicate": "GSM4605695",
+       "raw": 0.001486062746944098,
+       "corrected": 0.001486062746944098
+      },
+      {
+       "replicate": "GSM4605696",
+       "raw": 0.14088186784347037,
+       "corrected": 0.13480507163861385
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "ENZ-NONE",
+        "n_thinned": 6415,
+        "mean_before": 951.4300857365549,
+        "mean_after": 814.3267923560345,
+        "mean_other": 814.3267923560344,
+        "depth_ratio": 0.855897668745275,
+        "ks_after": 0.0625323347679239
+       }
+      ],
+      "depth_ratio": 0.855897668745275,
+      "capture_check": {
+       "raw": {
+        "DNC-NONE": {
+         "depth": 813.9952125367772,
+         "genes": 407.2117616794785,
+         "unit": "replicates"
+        },
+        "ENZ-NONE": {
+         "depth": 950.6487454932103,
+         "genes": 448.60112023638175,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.14374766032593378,
+         "genes": -0.09226316362093323
+        }
+       },
+       "equalized": {
+        "DNC-NONE": {
+         "depth": 813.9952125367772,
+         "genes": 407.2117616794785,
+         "unit": "replicates"
+        },
+        "ENZ-NONE": {
+         "depth": 813.6740510054343,
+         "genes": 401.4972518845773,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.0003947053871831141,
+         "genes": 0.01423299852758153
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "units": 6,
+       "detection": {
+        "DNC-NONE": {
+         "Fos": 0.012288768833137785,
+         "Jun": 0.2828057096411489
+        },
+        "ENZ-NONE": {
+         "Fos": 0.23031836832669086,
+         "Jun": 0.6119483232718741
+        }
+       },
+       "corrected": {
+        "effect": -0.08321818927664554,
+        "ci": [
+         -0.19660205214450988,
+         0.030165673591218814
+        ],
+        "ci_level": 0.95,
+        "se": 0.026357590104915073,
+        "df": 2.000436200910092,
+        "p": 0.08734579658606578,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "DNC-NONE": 3,
+         "ENZ-NONE": 3
+        }
+       },
+       "raw": {
+        "effect": -0.08645919218610278,
+        "ci": [
+         -0.2014746082886948,
+         0.028556223916489237
+        ],
+        "ci_level": 0.95,
+        "se": 0.026736709109876806,
+        "df": 2.000423916901036,
+        "p": 0.08376296033828168,
+        "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+        "tier": "parametric",
+        "detected": false,
+        "n_replicates": {
+         "DNC-NONE": 3,
+         "ENZ-NONE": 3
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 950.6487454932103,
+        "genes": 448.60112023638175,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.14374766032593378,
+        "genes": -0.09226316362093323
+       }
+      },
+      "equalized": {
+       "DNC-NONE": {
+        "depth": 813.9952125367772,
+        "genes": 407.2117616794785,
+        "unit": "replicates"
+       },
+       "ENZ-NONE": {
+        "depth": 813.7198461069175,
+        "genes": 401.4491379343681,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.0003384044658332197,
+        "genes": 0.014354555037187744
+       }
+      }
+     },
+     "n_units": 6,
+     "n_cells": 14212,
+     "units": [
+      {
+       "replicate": "GSM4605687",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.001837182535843539,
+       "corrected": 0.001837182535843539
+      },
+      {
+       "replicate": "GSM4605691",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.0008939647049134465,
+       "corrected": 0.0008939647049134465
+      },
+      {
+       "replicate": "GSM4605695",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.001486062746944098,
+       "corrected": 0.001486062746944098
+      },
+      {
+       "replicate": "GSM4605688",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.06737565552814288,
+       "corrected": 0.06331970898633091
+      },
+      {
+       "replicate": "GSM4605692",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.05533726317439621,
+       "corrected": 0.05352033816645234
+      },
+      {
+       "replicate": "GSM4605696",
+       "type": "CD45+/CD11b+ sorted cells",
+       "in_domain": true,
+       "raw": 0.14088186784347037,
+       "corrected": 0.13703173066485447
+      }
+     ],
+     "types": [
+      "CD45+/CD11b+ sorted cells"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "Fos",
+       "Jun"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": -0.08321818927664554,
+    "raw_effect": -0.08645919218610278,
+    "se": 0.026357590104915073,
+    "df": 2.000436200910092,
+    "t_method": "domain: cluster-robust over replicates",
+    "ci": [
+     -0.19660205214450988,
+     0.030165673591218814
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.1601705286850321,
+     -0.0062658498682589825
+    ],
+    "p_t": 0.08734579658606578,
+    "p_perm": 0.1,
+    "perm_method": "exact",
+    "perm_n": 20,
+    "perm_mc_se": 0.0,
+    "min_attainable_p": 0.1,
+    "test": "t interval on replicate values (domain: cluster-robust over replicates; parametric only)",
+    "tier": "parametric",
+    "n_replicates": {
+     "DNC-NONE": 3,
+     "ENZ-NONE": 3
+    },
+    "design_kind": "nested",
+    "raw_detected": false,
+    "p_raw": 0.08376296033828168,
+    "replicate_values": [
+     {
+      "replicate": "GSM4605687",
+      "raw": 0.001837182535843539,
+      "corrected": 0.001837182535843539,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605688",
+      "raw": 0.06737565552814288,
+      "corrected": 0.06440039166038192,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     },
+     {
+      "replicate": "GSM4605691",
+      "raw": 0.0008939647049134465,
+      "corrected": 0.0008939647049134465,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605692",
+      "raw": 0.05533726317439621,
+      "corrected": 0.055934574076384656,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     },
+     {
+      "replicate": "GSM4605695",
+      "raw": 0.001486062746944098,
+      "corrected": 0.001486062746944098,
+      "stratum": null,
+      "group": "DNC-NONE"
+     },
+     {
+      "replicate": "GSM4605696",
+      "raw": 0.14088186784347037,
+      "corrected": 0.13480507163861385,
+      "stratum": null,
+      "group": "ENZ-NONE"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.9625140736628558,
+    "effective_sesoi": 0.009205559839548232,
+    "sesoi_source": "declared",
+    "floor": 0.1903362022762509,
+    "tost_equivalent": false,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": false,
+    "effective_sesoi_raw": 0.009205559839548232,
+    "ci_2alpha_raw": [
+     -0.1645187158211447,
+     -0.008399668551060863
+    ]
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "shape change between groups is likely dropout-driven (zero-frac 0.99 vs 0.80) \u2014 inspect the scatter",
+   "detail": {
+    "group_a": {
+     "n": 7797,
+     "zero_frac": 0.9924329870462999
+    },
+    "group_b": {
+     "n": 6415,
+     "zero_frac": 0.798908807482463
+    },
+    "dropout_gap": 0.19352417956383694,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "WARN",
+   "message": "response to coupling(Fos, Jun, strength=0.762285) not established: coupling(Fos, Jun, strength=0.762285) injected into ENZ-NONE (3.978 probed counts per cell against 0.4534 in DNC-NONE), its values move by +0.009206 against the sham (95% CI [-0.003546, +0.02196] over 3 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference DNC-NONE - ENZ-NONE moves by -0.009206; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.009206; the interval includes 0 \u2014 untested, not invalid",
+   "detail": {
+    "injection": "coupling(Fos, Jun, strength=0.762285)",
+    "declared_injection": "coupling(Fos, Jun, strength=1)",
+    "direction": "increase",
+    "base": 0.0934511572046918,
+    "reference": "sham",
+    "alpha": 0.05,
+    "all_cells": {
+     "mean_response": 0.005037751980910932,
+     "sd_response": 0.003933344386435667,
+     "n_rep": 200,
+     "ci": [
+      0.004489292794123595,
+      0.00558621116769827
+     ],
+     "ci_level": 0.95,
+     "signed_lower": 0.004489292794123595,
+     "signed_upper": 0.00558621116769827,
+     "z": 18.11297581733552
+    },
+    "construct_change": 0.1,
+    "delta_min": null,
+    "delta_min_declared": null,
+    "mode": "claim statistic",
+    "injected_group": "ENZ-NONE",
+    "probed_counts_per_cell": {
+     "DNC-NONE": 0.45343646822807343,
+     "ENZ-NONE": 3.978348062726795
+    },
+    "tie": false,
+    "replicate_responses": {
+     "GSM4605688 | CD45+/CD11b+ sorted cells": 0.0059698800009305875,
+     "GSM4605692 | CD45+/CD11b+ sorted cells": 0.006522579691379367,
+     "GSM4605696 | CD45+/CD11b+ sorted cells": 0.015124219826334741
+    },
+    "statistic_change": -0.009205559839548232,
+    "statistic_ci": [
+     -0.021957021580560353,
+     0.0035459019014638903
+    ],
+    "depth_loss": null,
+    "n_rep_replicate": 50,
+    "runs": null,
+    "dose": {
+     "kind": "coupling",
+     "construct_change": 0.1,
+     "scale": "correlation of the pair's log expected expression",
+     "strength": 0.7622854600119968,
+     "added_variance": 0.1535700882659229,
+     "var_a": 1.9738048426853236,
+     "var_b": 0.9550155055042339,
+     "floored": []
+    },
+    "dose_response": [
+     {
+      "construct_change": 0.05,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.05,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.530373259664543,
+       "added_variance": 0.0725020018368169,
+       "var_a": 1.9738048426853236,
+       "var_b": 0.9550155055042339,
+       "floored": []
+      },
+      "response": 0.00387095098249074,
+      "ci": [
+       -0.0019248020128901492,
+       0.00966670397787163
+      ],
+      "n_rep": 20
+     },
+     {
+      "construct_change": 0.1,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.1,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.7622854600119968,
+       "added_variance": 0.1535700882659229,
+       "var_a": 1.9738048426853236,
+       "var_b": 0.9550155055042339,
+       "floored": []
+      },
+      "response": 0.009205559839548232,
+      "ci": [
+       -0.0035459019014638903,
+       0.021957021580560353
+      ],
+      "n_rep": 50
+     },
+     {
+      "construct_change": 0.2,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.2,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 1.1241196497959725,
+       "added_variance": 0.34783644995927954,
+       "var_a": 1.9738048426853236,
+       "var_b": 0.9550155055042339,
+       "floored": []
+      },
+      "response": 0.017554058863522258,
+      "ci": [
+       -0.015015701358007318,
+       0.050123819085051834
+      ],
+      "n_rep": 20
+     }
+    ],
+    "units": {
+     "n": 6,
+     "types": [
+      "CD45+/CD11b+ sorted cells"
+     ],
+     "domain": true
+    },
+    "mean_response": 0.009205559839548232,
+    "se": 0.002963627915598623,
+    "df": 2.0,
+    "n_rep": 3,
+    "ci": [
+     -0.0035459019014638903,
+     0.021957021580560353
+    ],
+    "ci_level": 0.95,
+    "signed_lower": -0.0035459019014638903,
+    "signed_upper": 0.021957021580560353,
+    "z": 3.1061793523728505,
+    "sesoi_metric": 0.009205559839548232,
+    "sesoi_metric_ci": [
+     -0.0035459019014638903,
+     0.021957021580560353
+    ],
+    "outcome": "UNTESTED"
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "increase",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "mi_3bin",
+  "group_col": "arm",
+  "groups": [
+   "DNC-NONE",
+   "ENZ-NONE"
+  ],
+  "within": [],
+  "gene_pair": [
+   "Fos",
+   "Jun"
+  ],
+  "pair_metric": "mi_3bin",
+  "gene_metric": null,
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "mouse",
+  "signal_test": "coupling(Fos, Jun, strength=1)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000,
+  "composition": [
+   "cell_type"
+  ],
+  "specificity": true,
+  "specificity_pool": [
+   14212,
+   30982
+  ],
+  "claim": {
+   "metric": "mi_3bin",
+   "genes": [
+    "Fos",
+    "Jun"
+   ],
+   "groups": [
+    "DNC-NONE",
+    "ENZ-NONE"
+   ],
+   "direction": "increase"
+  }
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-18T11:08:34+00:00",
+  "environment": {
+   "metric_autopsy": "0.4.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "7ae78eab398d54b546ff64f41d013d892ce739c7b755ca4ddf89624283d880f4",
+  "data_shape": [
+   14212,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "58136e82ae7272352e99ea36b5ae18dd54e820cb13a28c032d85ea0868826df7",
+  "claim_id": "646ec8c1ce7135689ea022bb00b7cd63d3cc2af6dfd1c581efe3262fd9289cf8",
+  "log": null
+ },
+ "composition": {
+  "columns": {
+   "cell_type": {
+    "column": "cell_type",
+    "groups": [
+     "DNC-NONE",
+     "ENZ-NONE"
+    ],
+    "design": "nested",
+    "replicates": {
+     "DNC-NONE": 3,
+     "ENZ-NONE": 3
+    },
+    "tvd": 0.0,
+    "tvd_p": 1.0,
+    "method": "exact",
+    "n_relabelings": 20,
+    "differs": false,
+    "levels": [
+     {
+      "level": "CD45+/CD11b+ sorted cells",
+      "first": 1.0,
+      "second": 1.0,
+      "difference": 0.0,
+      "p": 1.0
+     }
+    ],
+    "absent": {}
+   }
+  },
+  "domain": {
+   "column": "cell_type",
+   "rule": {
+    "threshold": 0.1,
+    "kind": "pair",
+    "genes": [
+     "Fos",
+     "Jun"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "design": "nested",
+   "strata": [
+    {
+     "stratum": "all",
+     "key": "",
+     "types": [
+      {
+       "type": "CD45+/CD11b+ sorted cells",
+       "cells": {
+        "DNC-NONE": 7797,
+        "ENZ-NONE": 6415
+       },
+       "replicates": {
+        "DNC-NONE": [
+         "GSM4605687",
+         "GSM4605691",
+         "GSM4605695"
+        ],
+        "ENZ-NONE": [
+         "GSM4605688",
+         "GSM4605692",
+         "GSM4605696"
+        ]
+       },
+       "detection": {
+        "DNC-NONE": {
+         "Fos": 0.012288768833137785,
+         "Jun": 0.2828057096411489
+        },
+        "ENZ-NONE": {
+         "Fos": 0.23031836832669086,
+         "Jun": 0.6119483232718741
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      }
+     ]
+    }
+   ],
+   "domain": {
+    "": [
+     "CD45+/CD11b+ sorted cells"
+    ]
+   },
+   "outside": {
+    "": []
+   },
+   "n_domain_types": 1,
+   "unlabelled_cells": 0
+  }
+ },
+ "reference": {
+  "measure": "norm_pearson (the engine's)",
+  "genes": [
+   "Fos",
+   "Jun"
+  ],
+  "groups": [
+   "DNC-NONE",
+   "ENZ-NONE"
+  ],
+  "data": "uncorrected",
+  "over": "the domain's types, equally weighted",
+  "rows": [
+   {
+    "stratum": "all",
+    "metric": {
+     "difference": 0.08645919218610278,
+     "p": 0.08376296033828168,
+     "tier": "parametric",
+     "n": {
+      "DNC-NONE": 3,
+      "ENZ-NONE": 3
+     }
+    },
+    "reference": {
+     "difference": -0.053559566646226076,
+     "p": 0.8749468964824727,
+     "tier": "parametric",
+     "n": {
+      "DNC-NONE": 3,
+      "ENZ-NONE": 3
+     }
+    }
+   }
+  ]
+ },
+ "specificity": {
+  "applicable": true,
+  "statistic": "the donor-level t of the claim's estimate within the domain's types",
+  "data": "uncorrected",
+  "side": "in the claimed direction (increase from DNC-NONE to ENZ-NONE)",
+  "t_claim": -3.2337260292877223,
+  "t_claim_signed": 3.2337260292877223,
+  "k_requested": 1000,
+  "n_controls": 1000,
+  "in_direction": {
+   "k": 60,
+   "n": 1000,
+   "share": 0.06,
+   "share_ci": [
+    0.04609503542224047,
+    0.07656049040406288
+   ],
+   "p": 0.060939060939060936,
+   "outcome": "undecided"
+  },
+  "absolute": {
+   "k": 62,
+   "n": 1000,
+   "share": 0.062,
+   "share_ci": [
+    0.0478618481133708,
+    0.07877994966065671
+   ],
+   "p": 0.06293706293706294,
+   "outcome": "undecided"
+  },
+  "nearest": [
+   {
+    "genes": [
+     "Atp5d",
+     "Gdi2"
+    ],
+    "t": -3.224476046413076,
+    "t_signed": 3.224476046413076,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Kif5b",
+     "Selenok"
+    ],
+    "t": -3.2110049247225425,
+    "t_signed": 3.2110049247225425,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ndufa12",
+     "Rps18"
+    ],
+    "t": -3.257344410488307,
+    "t_signed": 3.257344410488307,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Eif4h",
+     "Ywhae"
+    ],
+    "t": -3.206595076709642,
+    "t_signed": 3.206595076709642,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Fam46a",
+     "Rpl4"
+    ],
+    "t": -3.2910387201373923,
+    "t_signed": 3.2910387201373923,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Cstb",
+     "Arhgap5"
+    ],
+    "t": -3.3044079516544507,
+    "t_signed": 3.3044079516544507,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "Denr",
+     "Ptma"
+    ],
+    "t": -3.151384308554198,
+    "t_signed": 3.151384308554198,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Prdx2",
+     "Scoc"
+    ],
+    "t": -3.148317548383421,
+    "t_signed": 3.148317548383421,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ms4a6c",
+     "Gdi2"
+    ],
+    "t": -3.145559929570386,
+    "t_signed": 3.145559929570386,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "Ndufv3",
+     "Rab3il1"
+    ],
+    "t": -3.1437416017707736,
+    "t_signed": 3.1437416017707736,
+    "at_least_as_far": false
+   }
+  ],
+  "at_least_as_far": [
+   {
+    "genes": [
+     "Psmb10",
+     "Camk1"
+    ],
+    "t_signed": 13.511262398513196
+   },
+   {
+    "genes": [
+     "Cebpa",
+     "Lamp2"
+    ],
+    "t_signed": 8.618374731071789
+   },
+   {
+    "genes": [
+     "Tmem208",
+     "Ypel3"
+    ],
+    "t_signed": 6.802144738615902
+   },
+   {
+    "genes": [
+     "Ilk",
+     "Rpl27a"
+    ],
+    "t_signed": 6.539296832706223
+   },
+   {
+    "genes": [
+     "Ifi27",
+     "Hnrnpf"
+    ],
+    "t_signed": 6.207548423373383
+   },
+   {
+    "genes": [
+     "Eif1b",
+     "Rps27a"
+    ],
+    "t_signed": 6.204476494556114
+   },
+   {
+    "genes": [
+     "Mgat4a",
+     "Cebpb"
+    ],
+    "t_signed": 6.005431541099543
+   },
+   {
+    "genes": [
+     "Cadm1",
+     "Rpl6"
+    ],
+    "t_signed": 5.862722032186355
+   },
+   {
+    "genes": [
+     "Lrba",
+     "Tmem50a"
+    ],
+    "t_signed": 5.718245395153758
+   },
+   {
+    "genes": [
+     "Lamtor2",
+     "Ccr5"
+    ],
+    "t_signed": 5.691762908421639
+   },
+   {
+    "genes": [
+     "Sirt2",
+     "Zfp706"
+    ],
+    "t_signed": 5.566949729886143
+   },
+   {
+    "genes": [
+     "Tnfrsf13b",
+     "Alox5ap"
+    ],
+    "t_signed": 5.296437982055455
+   },
+   {
+    "genes": [
+     "Dusp1",
+     "Fam49b"
+    ],
+    "t_signed": 5.17606150630883
+   },
+   {
+    "genes": [
+     "Lrba",
+     "Susd3"
+    ],
+    "t_signed": 5.162869251792395
+   },
+   {
+    "genes": [
+     "Kcnk13",
+     "Ldhb"
+    ],
+    "t_signed": 5.0976944074528365
+   },
+   {
+    "genes": [
+     "Rpl30",
+     "Basp1"
+    ],
+    "t_signed": 5.084068613784242
+   },
+   {
+    "genes": [
+     "Prdx2",
+     "Tmed10"
+    ],
+    "t_signed": 4.997993089741165
+   },
+   {
+    "genes": [
+     "Snx29",
+     "Zfp706"
+    ],
+    "t_signed": 4.784832076016844
+   },
+   {
+    "genes": [
+     "1810037I17Rik",
+     "St3gal6"
+    ],
+    "t_signed": 4.721869678627508
+   },
+   {
+    "genes": [
+     "Ncl",
+     "Bmp2k"
+    ],
+    "t_signed": 4.637043283522586
+   },
+   {
+    "genes": [
+     "Rnh1",
+     "Spi1"
+    ],
+    "t_signed": 4.549348819125299
+   },
+   {
+    "genes": [
+     "Lsm6",
+     "Slc2a5"
+    ],
+    "t_signed": 4.513277720514512
+   },
+   {
+    "genes": [
+     "Map7d1",
+     "Basp1"
+    ],
+    "t_signed": 4.432087536928781
+   },
+   {
+    "genes": [
+     "Ndufv3",
+     "Rpl35a"
+    ],
+    "t_signed": 4.4144517488148525
+   },
+   {
+    "genes": [
+     "Map7d1",
+     "Smap2"
+    ],
+    "t_signed": 4.3453596259431455
+   },
+   {
+    "genes": [
+     "1810037I17Rik",
+     "Anxa3"
+    ],
+    "t_signed": 4.231689574987562
+   },
+   {
+    "genes": [
+     "Mknk1",
+     "Hmgb1"
+    ],
+    "t_signed": 4.176638014773032
+   },
+   {
+    "genes": [
+     "Eif1b",
+     "Spi1"
+    ],
+    "t_signed": 4.170261502288373
+   },
+   {
+    "genes": [
+     "Cebpa",
+     "Ywhae"
+    ],
+    "t_signed": 4.1700004863103075
+   },
+   {
+    "genes": [
+     "Cyc1",
+     "Ptma"
+    ],
+    "t_signed": 4.1148957610544
+   },
+   {
+    "genes": [
+     "Ndufv3",
+     "Btg1"
+    ],
+    "t_signed": 3.9630738294530916
+   },
+   {
+    "genes": [
+     "Reep3",
+     "Bin1"
+    ],
+    "t_signed": 3.9101487246430295
+   },
+   {
+    "genes": [
+     "Tnfrsf13b",
+     "Eef1a1"
+    ],
+    "t_signed": 3.9017298487964576
+   },
+   {
+    "genes": [
+     "Nop53",
+     "Eef1a1"
+    ],
+    "t_signed": 3.8735475950911873
+   },
+   {
+    "genes": [
+     "Srp14",
+     "Scamp2"
+    ],
+    "t_signed": 3.8212696772348056
+   },
+   {
+    "genes": [
+     "Papss1",
+     "Rplp1"
+    ],
+    "t_signed": 3.7973877691844917
+   },
+   {
+    "genes": [
+     "Ssu72",
+     "Bhlhe41"
+    ],
+    "t_signed": 3.685373500120172
+   },
+   {
+    "genes": [
+     "Srgn",
+     "Snx5"
+    ],
+    "t_signed": 3.601962007827153
+   },
+   {
+    "genes": [
+     "Hist1h1c",
+     "Hsp90ab1"
+    ],
+    "t_signed": 3.5701422743308946
+   },
+   {
+    "genes": [
+     "Psmd4",
+     "Rab3il1"
+    ],
+    "t_signed": 3.5586815224012174
+   },
+   {
+    "genes": [
+     "Cyc1",
+     "Tmem176b"
+    ],
+    "t_signed": 3.509243863416198
+   },
+   {
+    "genes": [
+     "Ndufv3",
+     "Srsf2"
+    ],
+    "t_signed": 3.4843576300767536
+   },
+   {
+    "genes": [
+     "Cyc1",
+     "Basp1"
+    ],
+    "t_signed": 3.472191078204781
+   },
+   {
+    "genes": [
+     "Mrps21",
+     "Dusp6"
+    ],
+    "t_signed": 3.4552079379923364
+   },
+   {
+    "genes": [
+     "Rpl22",
+     "Tmed10"
+    ],
+    "t_signed": 3.4456244323144793
+   },
+   {
+    "genes": [
+     "Tspo",
+     "Lcp1"
+    ],
+    "t_signed": 3.4391481148515535
+   },
+   {
+    "genes": [
+     "Cebpa",
+     "Creg1"
+    ],
+    "t_signed": 3.437598012892002
+   },
+   {
+    "genes": [
+     "Kcnk13",
+     "Rpl35a"
+    ],
+    "t_signed": 3.4065448830886456
+   },
+   {
+    "genes": [
+     "Psmd4",
+     "Arpc4"
+    ],
+    "t_signed": 3.4001518721488835
+   },
+   {
+    "genes": [
+     "Cadm1",
+     "Tpm3"
+    ],
+    "t_signed": 3.3861481401010023
+   },
+   {
+    "genes": [
+     "Rbm8a",
+     "Spi1"
+    ],
+    "t_signed": 3.3807719388316193
+   },
+   {
+    "genes": [
+     "Cetn3",
+     "Rpl10"
+    ],
+    "t_signed": 3.3708844424611586
+   },
+   {
+    "genes": [
+     "Ifi27",
+     "Rps6"
+    ],
+    "t_signed": 3.366101264385062
+   },
+   {
+    "genes": [
+     "Rpl30",
+     "Tmed10"
+    ],
+    "t_signed": 3.357634432737368
+   },
+   {
+    "genes": [
+     "Nop53",
+     "Lcp1"
+    ],
+    "t_signed": 3.3568199909043024
+   },
+   {
+    "genes": [
+     "Tspo",
+     "Son"
+    ],
+    "t_signed": 3.354205116480992
+   },
+   {
+    "genes": [
+     "Golga7",
+     "Ccr5"
+    ],
+    "t_signed": 3.3291373765046535
+   },
+   {
+    "genes": [
+     "Cstb",
+     "Arhgap5"
+    ],
+    "t_signed": 3.3044079516544507
+   },
+   {
+    "genes": [
+     "Fam46a",
+     "Rpl4"
+    ],
+    "t_signed": 3.2910387201373923
+   },
+   {
+    "genes": [
+     "Ndufa12",
+     "Rps18"
+    ],
+    "t_signed": 3.257344410488307
+   }
+  ],
+  "shift": {
+   "median_t": 1.0258019211555385,
+   "ci": [
+    0.22234846277487275,
+    1.829255379536205
+   ],
+   "ci_level": 0.95,
+   "p_one_sided": 0.05,
+   "method": "exact",
+   "n_relabelings": 20,
+   "significant": true,
+   "warning": "the controls shift together in the claim's direction: the claim's change may be part of a change shared by many genes"
+  },
+  "pool": {
+   "genes": 30982,
+   "same_as_data": false
+  },
+  "tie": null,
+  "candidates": 16016,
+  "matched": {
+   "Fos": {
+    "mean": 0.4978891077962285,
+    "detection": 0.10983675766957501,
+    "mean_range": [
+     0.12967914438502673,
+     0.46819589079651
+    ],
+    "detection_range": [
+     0.0648747537292429,
+     0.15015479876160992
+    ]
+   },
+   "Jun": {
+    "mean": 1.5341964537010977,
+    "detection": 0.42914438502673796,
+    "mean_range": [
+     0.5106248240923164,
+     1.549183788347875
+    ],
+    "detection_range": [
+     0.3804531381930763,
+     0.48536448072051785
+    ]
+   }
+  },
+  "eligible": 10000,
+  "known_pairs_excluded": 0
+ }
+}

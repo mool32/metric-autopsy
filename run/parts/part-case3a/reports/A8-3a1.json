@@ -1,0 +1,3990 @@
+{
+ "schema": "metric-autopsy/report/v1",
+ "metric": "norm_pearson",
+ "verdict": "NO DETECTABLE EFFECT \u2014 effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside]",
+ "cause": "no_detectable_effect",
+ "fields": {
+  "metric_validity": {
+   "status": "PASS",
+   "reason": "no nuisance bias; responds to coupling(HS6ST3, DGKB, strength=0.424421): coupling(HS6ST3, DGKB, strength=0.424421) injected into A (109.7 probed counts per cell against 106.7 in B), its values move by +0.05636 against the sham (95% CI [+0.04977, +0.06295] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05636; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05636.",
+   "flags": [],
+   "detail": {
+    "gate0": "PASS",
+    "level_shifts": {},
+    "gate5": null,
+    "gate4": "PASS",
+    "bias_handling": {},
+    "unsized_bias": [],
+    "failed_gate": null
+   }
+  },
+  "design_adequacy": {
+   "status": "ADEQUATE",
+   "reason": "QC parity PASS; correction depth_thinning; paired replicates {'pairs': 16}; attenuation (GATE 0) depth_downsample \u22127%; MDE 0.05372 vs the SESOI in the metric's units 0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates); the design's floor 0.06961: the SESOI lies below it, so this design cannot show the absence of a change that matters",
+   "flags": [
+    "SESOI_BELOW_FLOOR",
+    "ATTENUATION"
+   ],
+   "detail": {
+    "qc": "PASS",
+    "correction": "depth_thinning",
+    "tier": "permutation",
+    "replication": {
+     "kind": "paired",
+     "counts": {
+      "pairs": 16
+     },
+     "n_eff": 16
+    },
+    "power": {
+     "mde": 0.05371597457955321,
+     "power": 0.8,
+     "sesoi": 0.05635913724723109,
+     "lambda_": 1.0,
+     "effective_sesoi": 0.05635913724723109,
+     "attenuation": {
+      "model": "observed scale (pre-registered sesoi_scale): no attenuation applied"
+     },
+     "floor": 0.0696067249829804,
+     "floor_power": 0.95,
+     "sesoi_source": "declared",
+     "sesoi_label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates"
+    },
+    "attenuation": {
+     "depth_downsample": 0.06875366931841764
+    },
+    "equalization": {
+     "strata": [
+      {
+       "stratum": {
+        "cell_type": "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+       },
+       "thinned_group": "A",
+       "n_thinned": 8000,
+       "mean_before": 28231.011625,
+       "mean_after": 26181.449617429647,
+       "mean_other": 26181.449617429647,
+       "depth_ratio": 0.9274003342566952,
+       "ks_after": 0.05007298015821554
+      }
+     ],
+     "depth_ratio": 0.9274003342566952,
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.60325,
+        "genes": 1810.312,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01650196196192366,
+        "genes": 0.0017724203005482497
+       }
+      }
+     }
+    },
+    "notes": [],
+    "composite_units": null,
+    "sesoi": {
+     "value": 0.05635913724723109,
+     "source": "s_m",
+     "ci": [
+      0.04976909094055813,
+      0.06294918355390405
+     ],
+     "construct": 0.1,
+     "label": "s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates"
+    }
+   }
+  },
+  "effect": {
+   "status": "NO_DETECTABLE_EFFECT",
+   "reason": "effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within \u00b10.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST)",
+   "flags": [],
+   "detail": {
+    "cell_level_raw": 0.006071004674367497,
+    "cell_level_corrected": 0.0011939181352760952,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.05635913724723109,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": 0.003490335567678228,
+      "ci": [
+       -0.0349661880068483,
+       0.04194685914220476
+      ],
+      "ci_level": 0.95,
+      "se": 0.01804242734933086,
+      "df": 15.0,
+      "p": 0.8521478521478522,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.008674025082993954,
+      "ci": [
+       -0.028688167489810762,
+       0.04603621765579867
+      ],
+      "ci_level": 0.95,
+      "se": 0.017529006328410368,
+      "df": 15.0,
+      "p": 0.6273726273726273,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "H21.33.006",
+       "raw": -0.002470021473951367,
+       "corrected": -0.007376607457617946
+      },
+      {
+       "replicate": "H20.33.013",
+       "raw": -0.005189564022606841,
+       "corrected": -0.011670120656779059
+      },
+      {
+       "replicate": "H20.33.014",
+       "raw": -0.13832520216656152,
+       "corrected": -0.14714424580607327
+      },
+      {
+       "replicate": "H20.33.012",
+       "raw": -0.008541402967898737,
+       "corrected": -0.01727568547907843
+      },
+      {
+       "replicate": "H20.33.019",
+       "raw": -0.010111721705711396,
+       "corrected": -0.017328849840384075
+      },
+      {
+       "replicate": "H20.33.027",
+       "raw": 0.06333763874579923,
+       "corrected": 0.06131774785533337
+      },
+      {
+       "replicate": "H20.33.044",
+       "raw": -0.0053083383380650995,
+       "corrected": -0.01611248144375337
+      },
+      {
+       "replicate": "H20.33.008",
+       "raw": 0.08934387103160424,
+       "corrected": 0.08839086399690081
+      },
+      {
+       "replicate": "H21.33.019",
+       "raw": 0.08655734759920086,
+       "corrected": 0.0816999586830531
+      },
+      {
+       "replicate": "H20.33.043",
+       "raw": 0.042160824802574215,
+       "corrected": 0.039222105586884416
+      },
+      {
+       "replicate": "H21.33.003",
+       "raw": 0.007352368653277042,
+       "corrected": 0.006744382265035487
+      },
+      {
+       "replicate": "H20.33.039",
+       "raw": -0.14384571877746632,
+       "corrected": -0.15409460869560548
+      },
+      {
+       "replicate": "H20.33.002",
+       "raw": 0.024869310760673002,
+       "corrected": 0.02235469571247468
+      },
+      {
+       "replicate": "H20.33.001",
+       "raw": -0.01671574844851742,
+       "corrected": -0.01897182496423162
+      },
+      {
+       "replicate": "H20.33.025",
+       "raw": 0.061200075118458375,
+       "corrected": 0.05701344879425925
+      },
+      {
+       "replicate": "H20.33.005",
+       "raw": 0.094470682517095,
+       "corrected": 0.08907659053243377
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "A",
+        "n_thinned": 8000,
+        "mean_before": 28231.011625,
+        "mean_after": 26181.449617429647,
+        "mean_other": 26181.449617429647,
+        "depth_ratio": 0.9274003342566952,
+        "ks_after": 0.05007298015821554
+       }
+      ],
+      "depth_ratio": 0.9274003342566952,
+      "capture_check": {
+       "raw": {
+        "A": {
+         "depth": 28231.011625,
+         "genes": 1824.0016249999999,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.06048297653496926,
+         "genes": 0.009347848607523579
+        }
+       },
+       "equalized": {
+        "A": {
+         "depth": 26182.054375,
+         "genes": 1810.330375,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.016485015690598237,
+         "genes": 0.0017825884749973486
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "HS6ST3": 0.926875,
+         "DGKB": 0.946625
+        },
+        "B": {
+         "HS6ST3": 0.911247037914692,
+         "DGKB": 0.9399129146919432
+        }
+       },
+       "corrected": {
+        "effect": 0.0051074274660861604,
+        "ci": [
+         -0.03308622064934978,
+         0.0433010755815221
+        ],
+        "ci_level": 0.95,
+        "se": 0.017919095572776163,
+        "df": 15.0,
+        "p": 0.7932067932067932,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.008674025082993954,
+        "ci": [
+         -0.028688167489810762,
+         0.04603621765579867
+        ],
+        "ci_level": 0.95,
+        "se": 0.017529006328410368,
+        "df": 15.0,
+        "p": 0.6213786213786214,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.60325,
+        "genes": 1810.312,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01650196196192366,
+        "genes": 0.0017724203005482497
+       }
+      }
+     },
+     "n_units": 16,
+     "n_cells": 15711,
+     "units": [
+      {
+       "replicate": "H20.33.001",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.01671574844851742,
+       "corrected": -0.016902155256972917
+      },
+      {
+       "replicate": "H20.33.002",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.024869310760673002,
+       "corrected": 0.02266655481990374
+      },
+      {
+       "replicate": "H20.33.005",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.094470682517095,
+       "corrected": 0.09012951582723065
+      },
+      {
+       "replicate": "H20.33.008",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08934387103160424,
+       "corrected": 0.08750821178924043
+      },
+      {
+       "replicate": "H20.33.012",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.008541402967898737,
+       "corrected": -0.012397966624727762
+      },
+      {
+       "replicate": "H20.33.013",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.005189564022606841,
+       "corrected": -0.0070592090837418905
+      },
+      {
+       "replicate": "H20.33.014",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.13832520216656152,
+       "corrected": -0.14198369104342407
+      },
+      {
+       "replicate": "H20.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.010111721705711396,
+       "corrected": -0.013540402189047018
+      },
+      {
+       "replicate": "H20.33.025",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.061200075118458375,
+       "corrected": 0.057460982957093495
+      },
+      {
+       "replicate": "H20.33.027",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.06333763874579923,
+       "corrected": 0.058157367222854896
+      },
+      {
+       "replicate": "H20.33.039",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.14384571877746632,
+       "corrected": -0.15656032319312035
+      },
+      {
+       "replicate": "H20.33.043",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.042160824802574215,
+       "corrected": 0.042996304433440116
+      },
+      {
+       "replicate": "H20.33.044",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.0053083383380650995,
+       "corrected": -0.014211671233359379
+      },
+      {
+       "replicate": "H21.33.003",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.007352368653277042,
+       "corrected": 0.004035268086595445
+      },
+      {
+       "replicate": "H21.33.006",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.002470021473951367,
+       "corrected": -0.0027438339259561184
+      },
+      {
+       "replicate": "H21.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08655734759920086,
+       "corrected": 0.08416388687136933
+      }
+     ],
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "HS6ST3",
+       "DGKB"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.0051074274660861604,
+    "raw_effect": 0.008674025082993954,
+    "se": 0.017919095572776163,
+    "df": 15.0,
+    "t_method": "domain: cluster-robust over replicates (paired)",
+    "ci": [
+     -0.03308622064934978,
+     0.0433010755815221
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.026305649401458284,
+     0.036520504333630605
+    ],
+    "p_t": 0.7795211138383427,
+    "p_perm": 0.7872127872127872,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.012942519648872943,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": false,
+    "p_raw": 0.6133866133866134,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": -0.002470021473951367,
+      "corrected": -0.007376607457617946,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": -0.005189564022606841,
+      "corrected": -0.011670120656779059,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": -0.13832520216656152,
+      "corrected": -0.14714424580607327,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": -0.008541402967898737,
+      "corrected": -0.01727568547907843,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": -0.010111721705711396,
+      "corrected": -0.017328849840384075,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": 0.06333763874579923,
+      "corrected": 0.06131774785533337,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": -0.0053083383380650995,
+      "corrected": -0.01611248144375337,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.08934387103160424,
+      "corrected": 0.08839086399690081,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.08655734759920086,
+      "corrected": 0.0816999586830531,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": 0.042160824802574215,
+      "corrected": 0.039222105586884416,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.007352368653277042,
+      "corrected": 0.006744382265035487,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": -0.14384571877746632,
+      "corrected": -0.15409460869560548,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": 0.024869310760673002,
+      "corrected": 0.02235469571247468,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": -0.01671574844851742,
+      "corrected": -0.01897182496423162,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.061200075118458375,
+      "corrected": 0.05701344879425925,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": 0.094470682517095,
+      "corrected": 0.08907659053243377,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.5888186184865475,
+    "effective_sesoi": 0.05635913724723109,
+    "sesoi_source": "declared",
+    "floor": 0.0696067249829804,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": true,
+    "effective_sesoi_raw": 0.05635913724723109,
+    "ci_2alpha_raw": [
+     -0.022055205695963188,
+     0.03940325586195109
+    ]
+   }
+  },
+  "replication": {
+   "status": "NOT_RUN",
+   "reason": "no independent dataset supplied",
+   "flags": [],
+   "detail": {}
+  }
+ },
+ "gates": [
+  {
+   "gate": 0,
+   "name": "Mathematical independence",
+   "status": "PASS",
+   "message": "no bias; attenuation depth_downsample \u22127% of the signal (passed to design adequacy as a power check) \u2014 reported, not failed",
+   "detail": {
+    "baseline": 0.737542376641082,
+    "baseline_sd": 0.003977166413540063,
+    "null_center": 0.04529140125095513,
+    "null_sd": 0.0077984938113531115,
+    "signal": 0.6922509753901269,
+    "has_signal": true,
+    "immaterial_signal": false,
+    "scale": 0.6922509753901269,
+    "scale_source": "signal above null",
+    "effect_scale": 0.05635913724723109,
+    "responses": {
+     "extra_dropout": {
+      "mean_perturbed": 0.7334661043781636,
+      "shift": -0.004076272262918401,
+      "z": 3.800391154095135,
+      "shift_std": -0.005888431230625808,
+      "rel_change": 0.005888431230625808,
+      "classification": "none",
+      "confounded": false
+     },
+     "depth_downsample": {
+      "mean_perturbed": 0.6872953715511618,
+      "shift": -0.050247005089920194,
+      "z": 64.24271828723398,
+      "shift_std": -0.07258495383354693,
+      "rel_change": 0.07258495383354693,
+      "null_perturbed": 0.04263919080835972,
+      "null_shift": -0.002652210442595407,
+      "null_shift_std": -0.0038312845151293857,
+      "null_shift_z": 0.7043854811175551,
+      "signal": 0.6922509753901269,
+      "signal_perturbed": 0.6446561807428021,
+      "null_construction": "depth-matched",
+      "signal_change": -0.06875366931841764,
+      "signal_loss": 0.06875366931841764,
+      "classification": "attenuation",
+      "confounded": false
+     },
+     "library_scale": {
+      "mean_perturbed": 0.7377533091701022,
+      "shift": 0.00021093252902015802,
+      "z": 0.4108141762875497,
+      "shift_std": 0.00030470528250434647,
+      "rel_change": 0.00030470528250434647,
+      "classification": "none",
+      "confounded": false
+     }
+    },
+    "attenuation": {
+     "depth_downsample": 0.06875366931841764
+    },
+    "level_shifts": {},
+    "tol": 0.25,
+    "z_thresh": 4.0,
+    "null_construction": "depth-matched",
+    "sesoi": 0.05635913724723109,
+    "bias_tolerance": 0.5,
+    "bias_tolerance_abs": 0.028179568623615547,
+    "corrected": [
+     "depth_downsample"
+    ],
+    "bias_handling": {}
+   }
+  },
+  {
+   "gate": 1,
+   "name": "QC parity",
+   "status": "PASS",
+   "message": "no confident QC imbalance in 1 assessable strata (worst point ratio 1.00x; alpha 0.05 Bonferroni)",
+   "detail": {
+    "table": [
+     {
+      "stratum": "pooled",
+      "n_a": 8000,
+      "n_b": 7711,
+      "median_n_genes_a": 1878.0,
+      "median_n_genes_b": 1869.0,
+      "n_genes_ratio": 1.0048154093097914,
+      "overlap": 0.9940298507462687,
+      "assessable": true,
+      "ratio_breach": false,
+      "overlap_breach": false,
+      "flagged": false,
+      "log_ratio_ci": [
+       0.002408610930654087,
+       0.007199093694636394
+      ],
+      "ratio_ci": [
+       1.0024115139642533,
+       1.0072250694662395
+      ],
+      "overlap_upper": 0.9971739130434784
+     }
+    ],
+    "n_compared": 1,
+    "n_assessable": 1,
+    "worst_ratio": 1.0048154093097914,
+    "flagged": [],
+    "thresh": 1.5,
+    "overlap_min": 0.2,
+    "alpha": 0.05,
+    "alpha_per_stratum": 0.05,
+    "min_cells": 10
+   }
+  },
+  {
+   "gate": 2,
+   "name": "Estimand-dependent correction",
+   "status": "PASS",
+   "message": "depth_thinning: raw +0.008674 -> corrected +0.005107",
+   "detail": {
+    "cell_level_raw": 0.006071004674367497,
+    "cell_level_corrected": 0.0011939181352760952,
+    "correction": "depth_thinning",
+    "estimand": "composition",
+    "sesoi": 0.05635913724723109,
+    "alpha": 0.05,
+    "mixture": {
+     "corrected": {
+      "effect": 0.003490335567678228,
+      "ci": [
+       -0.0349661880068483,
+       0.04194685914220476
+      ],
+      "ci_level": 0.95,
+      "se": 0.01804242734933086,
+      "df": 15.0,
+      "p": 0.8521478521478522,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "raw": {
+      "effect": 0.008674025082993954,
+      "ci": [
+       -0.028688167489810762,
+       0.04603621765579867
+      ],
+      "ci_level": 0.95,
+      "se": 0.017529006328410368,
+      "df": 15.0,
+      "p": 0.6273726273726273,
+      "test": "monte-carlo permutation over replicates (n=1000)",
+      "tier": "permutation",
+      "detected": false,
+      "n_replicates": {
+       "pairs": 16
+      }
+     },
+     "replicate_values": [
+      {
+       "replicate": "H21.33.006",
+       "raw": -0.002470021473951367,
+       "corrected": -0.007376607457617946
+      },
+      {
+       "replicate": "H20.33.013",
+       "raw": -0.005189564022606841,
+       "corrected": -0.011670120656779059
+      },
+      {
+       "replicate": "H20.33.014",
+       "raw": -0.13832520216656152,
+       "corrected": -0.14714424580607327
+      },
+      {
+       "replicate": "H20.33.012",
+       "raw": -0.008541402967898737,
+       "corrected": -0.01727568547907843
+      },
+      {
+       "replicate": "H20.33.019",
+       "raw": -0.010111721705711396,
+       "corrected": -0.017328849840384075
+      },
+      {
+       "replicate": "H20.33.027",
+       "raw": 0.06333763874579923,
+       "corrected": 0.06131774785533337
+      },
+      {
+       "replicate": "H20.33.044",
+       "raw": -0.0053083383380650995,
+       "corrected": -0.01611248144375337
+      },
+      {
+       "replicate": "H20.33.008",
+       "raw": 0.08934387103160424,
+       "corrected": 0.08839086399690081
+      },
+      {
+       "replicate": "H21.33.019",
+       "raw": 0.08655734759920086,
+       "corrected": 0.0816999586830531
+      },
+      {
+       "replicate": "H20.33.043",
+       "raw": 0.042160824802574215,
+       "corrected": 0.039222105586884416
+      },
+      {
+       "replicate": "H21.33.003",
+       "raw": 0.007352368653277042,
+       "corrected": 0.006744382265035487
+      },
+      {
+       "replicate": "H20.33.039",
+       "raw": -0.14384571877746632,
+       "corrected": -0.15409460869560548
+      },
+      {
+       "replicate": "H20.33.002",
+       "raw": 0.024869310760673002,
+       "corrected": 0.02235469571247468
+      },
+      {
+       "replicate": "H20.33.001",
+       "raw": -0.01671574844851742,
+       "corrected": -0.01897182496423162
+      },
+      {
+       "replicate": "H20.33.025",
+       "raw": 0.061200075118458375,
+       "corrected": 0.05701344879425925
+      },
+      {
+       "replicate": "H20.33.005",
+       "raw": 0.094470682517095,
+       "corrected": 0.08907659053243377
+      }
+     ],
+     "equalization": {
+      "strata": [
+       {
+        "stratum": "pooled",
+        "thinned_group": "A",
+        "n_thinned": 8000,
+        "mean_before": 28231.011625,
+        "mean_after": 26181.449617429647,
+        "mean_other": 26181.449617429647,
+        "depth_ratio": 0.9274003342566952,
+        "ks_after": 0.05007298015821554
+       }
+      ],
+      "depth_ratio": 0.9274003342566952,
+      "capture_check": {
+       "raw": {
+        "A": {
+         "depth": 28231.011625,
+         "genes": 1824.0016249999999,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": 0.06048297653496926,
+         "genes": 0.009347848607523579
+        }
+       },
+       "equalized": {
+        "A": {
+         "depth": 26182.054375,
+         "genes": 1810.330375,
+         "unit": "replicates"
+        },
+        "B": {
+         "depth": 26620.90033471564,
+         "genes": 1807.1090432464455,
+         "unit": "replicates"
+        },
+        "relative_difference": {
+         "depth": -0.016485015690598237,
+         "genes": 0.0017825884749973486
+        }
+       }
+      }
+     }
+    },
+    "domain": {
+     "empty": false,
+     "outside": null,
+     "per_type": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "units": 16,
+       "detection": {
+        "A": {
+         "HS6ST3": 0.926875,
+         "DGKB": 0.946625
+        },
+        "B": {
+         "HS6ST3": 0.911247037914692,
+         "DGKB": 0.9399129146919432
+        }
+       },
+       "corrected": {
+        "effect": 0.0051074274660861604,
+        "ci": [
+         -0.03308622064934978,
+         0.0433010755815221
+        ],
+        "ci_level": 0.95,
+        "se": 0.017919095572776163,
+        "df": 15.0,
+        "p": 0.7932067932067932,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       },
+       "raw": {
+        "effect": 0.008674025082993954,
+        "ci": [
+         -0.028688167489810762,
+         0.04603621765579867
+        ],
+        "ci_level": 0.95,
+        "se": 0.017529006328410368,
+        "df": 15.0,
+        "p": 0.6213786213786214,
+        "test": "monte-carlo permutation over replicates (n=1000)",
+        "tier": "permutation",
+        "detected": false,
+        "n_replicates": {
+         "pairs": 16
+        }
+       }
+      }
+     ],
+     "capture_check": {
+      "raw": {
+       "A": {
+        "depth": 28231.011625,
+        "genes": 1824.0016249999999,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": 0.06048297653496926,
+        "genes": 0.009347848607523579
+       }
+      },
+      "equalized": {
+       "A": {
+        "depth": 26181.60325,
+        "genes": 1810.312,
+        "unit": "replicates"
+       },
+       "B": {
+        "depth": 26620.90033471564,
+        "genes": 1807.1090432464455,
+        "unit": "replicates"
+       },
+       "relative_difference": {
+        "depth": -0.01650196196192366,
+        "genes": 0.0017724203005482497
+       }
+      }
+     },
+     "n_units": 16,
+     "n_cells": 15711,
+     "units": [
+      {
+       "replicate": "H20.33.001",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.01671574844851742,
+       "corrected": -0.016902155256972917
+      },
+      {
+       "replicate": "H20.33.002",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.024869310760673002,
+       "corrected": 0.02266655481990374
+      },
+      {
+       "replicate": "H20.33.005",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.094470682517095,
+       "corrected": 0.09012951582723065
+      },
+      {
+       "replicate": "H20.33.008",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08934387103160424,
+       "corrected": 0.08750821178924043
+      },
+      {
+       "replicate": "H20.33.012",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.008541402967898737,
+       "corrected": -0.012397966624727762
+      },
+      {
+       "replicate": "H20.33.013",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.005189564022606841,
+       "corrected": -0.0070592090837418905
+      },
+      {
+       "replicate": "H20.33.014",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.13832520216656152,
+       "corrected": -0.14198369104342407
+      },
+      {
+       "replicate": "H20.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.010111721705711396,
+       "corrected": -0.013540402189047018
+      },
+      {
+       "replicate": "H20.33.025",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.061200075118458375,
+       "corrected": 0.057460982957093495
+      },
+      {
+       "replicate": "H20.33.027",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.06333763874579923,
+       "corrected": 0.058157367222854896
+      },
+      {
+       "replicate": "H20.33.039",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.14384571877746632,
+       "corrected": -0.15656032319312035
+      },
+      {
+       "replicate": "H20.33.043",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.042160824802574215,
+       "corrected": 0.042996304433440116
+      },
+      {
+       "replicate": "H20.33.044",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.0053083383380650995,
+       "corrected": -0.014211671233359379
+      },
+      {
+       "replicate": "H21.33.003",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.007352368653277042,
+       "corrected": 0.004035268086595445
+      },
+      {
+       "replicate": "H21.33.006",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": -0.002470021473951367,
+       "corrected": -0.0027438339259561184
+      },
+      {
+       "replicate": "H21.33.019",
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "in_domain": true,
+       "raw": 0.08655734759920086,
+       "corrected": 0.08416388687136933
+      }
+     ],
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "rule": {
+      "threshold": 0.1,
+      "kind": "pair",
+      "genes": [
+       "HS6ST3",
+       "DGKB"
+      ],
+      "min_cells": 20,
+      "min_replicates": 3,
+      "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+     }
+    },
+    "effect": 0.0051074274660861604,
+    "raw_effect": 0.008674025082993954,
+    "se": 0.017919095572776163,
+    "df": 15.0,
+    "t_method": "domain: cluster-robust over replicates (paired)",
+    "ci": [
+     -0.03308622064934978,
+     0.0433010755815221
+    ],
+    "ci_level": 0.95,
+    "ci_2alpha": [
+     -0.026305649401458284,
+     0.036520504333630605
+    ],
+    "p_t": 0.7795211138383427,
+    "p_perm": 0.7872127872127872,
+    "perm_method": "monte-carlo",
+    "perm_n": 1000,
+    "perm_mc_se": 0.012942519648872943,
+    "min_attainable_p": 0.000999000999000999,
+    "test": "monte-carlo permutation over replicates (n=1000)",
+    "tier": "permutation",
+    "n_replicates": {
+     "pairs": 16
+    },
+    "design_kind": "paired",
+    "raw_detected": false,
+    "p_raw": 0.6133866133866134,
+    "replicate_values": [
+     {
+      "replicate": "H21.33.006",
+      "raw": -0.002470021473951367,
+      "corrected": -0.007376607457617946,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.013",
+      "raw": -0.005189564022606841,
+      "corrected": -0.011670120656779059,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.014",
+      "raw": -0.13832520216656152,
+      "corrected": -0.14714424580607327,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.012",
+      "raw": -0.008541402967898737,
+      "corrected": -0.01727568547907843,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.019",
+      "raw": -0.010111721705711396,
+      "corrected": -0.017328849840384075,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.027",
+      "raw": 0.06333763874579923,
+      "corrected": 0.06131774785533337,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.044",
+      "raw": -0.0053083383380650995,
+      "corrected": -0.01611248144375337,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.008",
+      "raw": 0.08934387103160424,
+      "corrected": 0.08839086399690081,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.019",
+      "raw": 0.08655734759920086,
+      "corrected": 0.0816999586830531,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.043",
+      "raw": 0.042160824802574215,
+      "corrected": 0.039222105586884416,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H21.33.003",
+      "raw": 0.007352368653277042,
+      "corrected": 0.006744382265035487,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.039",
+      "raw": -0.14384571877746632,
+      "corrected": -0.15409460869560548,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.002",
+      "raw": 0.024869310760673002,
+      "corrected": 0.02235469571247468,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.001",
+      "raw": -0.01671574844851742,
+      "corrected": -0.01897182496423162,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.025",
+      "raw": 0.061200075118458375,
+      "corrected": 0.05701344879425925,
+      "stratum": null,
+      "group": "paired"
+     },
+     {
+      "replicate": "H20.33.005",
+      "raw": 0.094470682517095,
+      "corrected": 0.08907659053243377,
+      "stratum": null,
+      "group": "paired"
+     }
+    ],
+    "estimate_over": "the domain's cell types, equally weighted",
+    "retained": 0.5888186184865475,
+    "effective_sesoi": 0.05635913724723109,
+    "sesoi_source": "declared",
+    "floor": 0.0696067249829804,
+    "tost_equivalent": true,
+    "explained_by_depth": false,
+    "reversed_by_correction": false,
+    "detected_only_after_correction": false,
+    "tost_equivalent_raw": true,
+    "effective_sesoi_raw": 0.05635913724723109,
+    "ci_2alpha_raw": [
+     -0.022055205695963188,
+     0.03940325586195109
+    ]
+   }
+  },
+  {
+   "gate": 3,
+   "name": "Raw visibility",
+   "status": "JUDGMENT",
+   "message": "zero-fractions comparable (0.11 vs 0.13) \u2014 inspect the scatter for real coupling",
+   "detail": {
+    "group_a": {
+     "n": 8000,
+     "zero_frac": 0.11225
+    },
+    "group_b": {
+     "n": 7711,
+     "zero_frac": 0.13098171443392556
+    },
+    "dropout_gap": 0.01873171443392556,
+    "scatter": "omitted"
+   }
+  },
+  {
+   "gate": 4,
+   "name": "Construct response (injected signal)",
+   "status": "PASS",
+   "message": "responds to coupling(HS6ST3, DGKB, strength=0.424421): coupling(HS6ST3, DGKB, strength=0.424421) injected into A (109.7 probed counts per cell against 106.7 in B), its values move by +0.05636 against the sham (95% CI [+0.04977, +0.06295] over 16 replicates, on the domain's 1 type(s), 50 injections per unit, expected increase); the replicate-level difference A - B moves by +0.05636; the probe is a change of 0.1 on the construct's scale (correlation of the pair's log expected expression), so the SESOI in the metric's units is s_m = +0.05636",
+   "detail": {
+    "injection": "coupling(HS6ST3, DGKB, strength=0.424421)",
+    "declared_injection": "coupling(HS6ST3, DGKB, strength=1)",
+    "direction": "increase",
+    "base": 0.7377533091701021,
+    "reference": "sham",
+    "alpha": 0.05,
+    "all_cells": {
+     "mean_response": 0.054333588645832,
+     "sd_response": 0.004808021641374934,
+     "n_rep": 200,
+     "ci": [
+      0.053663165875688035,
+      0.05500401141597597
+     ],
+     "ci_level": 0.95,
+     "signed_lower": 0.053663165875688035,
+     "signed_upper": 0.05500401141597597,
+     "z": 159.81479220913604
+    },
+    "construct_change": 0.1,
+    "delta_min": null,
+    "delta_min_declared": null,
+    "mode": "claim statistic",
+    "injected_group": "A",
+    "probed_counts_per_cell": {
+     "A": 109.70425,
+     "B": 106.66726777251185
+    },
+    "tie": false,
+    "replicate_responses": {
+     "H20.33.001 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.04662720655566271,
+     "H20.33.002 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.058764431569921394,
+     "H20.33.005 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0502239693274385,
+     "H20.33.008 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.034435617049690885,
+     "H20.33.012 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.043931790864341916,
+     "H20.33.013 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.05628679328961153,
+     "H20.33.014 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.05693705870976147,
+     "H20.33.019 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.05503661622873114,
+     "H20.33.025 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0673412815622158,
+     "H20.33.027 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.06377768125761672,
+     "H20.33.039 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0638798595294335,
+     "H20.33.043 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.04626332761949626,
+     "H20.33.044 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.0888451630569855,
+     "H21.33.003 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.047905351992585075,
+     "H21.33.006 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.06386931532546315,
+     "H21.33.019 | L2/3-6 intratelencephalic projecting glutamatergic neuron": 0.05762073201674196
+    },
+    "statistic_change": 0.05635913724723109,
+    "statistic_ci": [
+     0.04976909094055813,
+     0.06294918355390405
+    ],
+    "depth_loss": null,
+    "n_rep_replicate": 50,
+    "runs": null,
+    "dose": {
+     "kind": "coupling",
+     "construct_change": 0.1,
+     "scale": "correlation of the pair's log expected expression",
+     "strength": 0.4244214938483154,
+     "added_variance": 0.04596563170647132,
+     "var_a": 0.4649136259900932,
+     "var_b": 0.36760357595744164,
+     "floored": []
+    },
+    "dose_response": [
+     {
+      "construct_change": 0.05,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.05,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.29355130133286866,
+       "added_variance": 0.021765681748755386,
+       "var_a": 0.4649136259900932,
+       "var_b": 0.36760357595744164,
+       "floored": []
+      },
+      "response": 0.024980915071229855,
+      "ci": [
+       0.02147892274504436,
+       0.02848290739741535
+      ],
+      "n_rep": 20
+     },
+     {
+      "construct_change": 0.1,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.1,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.4244214938483154,
+       "added_variance": 0.04596563170647132,
+       "var_a": 0.4649136259900932,
+       "var_b": 0.36760357595744164,
+       "floored": []
+      },
+      "response": 0.05635913724723109,
+      "ci": [
+       0.04976909094055813,
+       0.06294918355390405
+      ],
+      "n_rep": 50
+     },
+     {
+      "construct_change": 0.2,
+      "dose": {
+       "kind": "coupling",
+       "construct_change": 0.2,
+       "scale": "correlation of the pair's log expected expression",
+       "strength": 0.6303743669037045,
+       "added_variance": 0.10349406138998982,
+       "var_a": 0.4649136259900932,
+       "var_b": 0.36760357595744164,
+       "floored": []
+      },
+      "response": 0.12098233267937221,
+      "ci": [
+       0.10984943712969061,
+       0.1321152282290538
+      ],
+      "n_rep": 20
+     }
+    ],
+    "units": {
+     "n": 16,
+     "types": [
+      "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+     ],
+     "domain": true
+    },
+    "mean_response": 0.05635913724723109,
+    "se": 0.0030918143572299475,
+    "df": 15.0,
+    "n_rep": 16,
+    "ci": [
+     0.04976909094055813,
+     0.06294918355390405
+    ],
+    "ci_level": 0.95,
+    "signed_lower": 0.04976909094055813,
+    "signed_upper": 0.06294918355390405,
+    "z": 18.228499753046297,
+    "sesoi_metric": 0.05635913724723109,
+    "sesoi_metric_ci": [
+     0.04976909094055813,
+     0.06294918355390405
+    ],
+    "outcome": "PASS"
+   }
+  }
+ ],
+ "prereg": {
+  "judgment_pending": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "min_replicates": 3,
+  "signal_direction": "increase",
+  "spikein_prefix": "ERCC-",
+  "positive_control_dose": 2.0,
+  "bias_tolerance": 0.5,
+  "estimand": "composition",
+  "direction": "two-sided",
+  "sesoi": 0.1
+ },
+ "params": {
+  "metric": "norm_pearson",
+  "group_col": "group",
+  "groups": [
+   "A",
+   "B"
+  ],
+  "within": [],
+  "gene_pair": [
+   "HS6ST3",
+   "DGKB"
+  ],
+  "pair_metric": "norm_pearson",
+  "gene_metric": null,
+  "pos_pair": null,
+  "neg_pair": null,
+  "replicate_col": "donor",
+  "signal_test": "coupling(HS6ST3, DGKB, strength=1)",
+  "data2": false,
+  "include_matrix_perturbations": null,
+  "stop_on_first_fail": true,
+  "seed": 0,
+  "n_perm": 1000,
+  "composition": [
+   "cell_type"
+  ],
+  "specificity": true,
+  "specificity_pool": [
+   15711,
+   35465
+  ],
+  "claim": {
+   "metric": "norm_pearson",
+   "genes": [
+    "HS6ST3",
+    "DGKB"
+   ],
+   "groups": [
+    "A",
+    "B"
+   ],
+   "direction": "two-sided"
+  }
+ },
+ "provenance": {
+  "schema": "metric-autopsy/report/v1",
+  "timestamp_utc": "2026-10-18T11:05:37+00:00",
+  "environment": {
+   "metric_autopsy": "0.4.0.dev0",
+   "python": "3.13.16",
+   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+   "numpy": "2.5.3",
+   "pandas": "2.3.3",
+   "scipy": "1.18.1",
+   "anndata": "0.13.4"
+  },
+  "data_sha256": "0eb9f2604b2b83d26dcf58bc242ebb124108a0568e82b86a44e971ebe43a8445",
+  "data_shape": [
+   15711,
+   2000
+  ],
+  "data2_sha256": null,
+  "prereg_sha256": "29762e7a01a6461c5da7d02ead54841af659f91db868787bdc9f8e9cbcbae6bf",
+  "claim_id": "87b34db30f32cfdaa0b491f2261c3e65ee71d940dbcd61627cce398b5b97d2e0",
+  "log": null
+ },
+ "composition": {
+  "columns": {
+   "cell_type": {
+    "column": "cell_type",
+    "groups": [
+     "A",
+     "B"
+    ],
+    "design": "paired",
+    "replicates": {
+     "pairs": 16
+    },
+    "tvd": 0.0,
+    "tvd_p": 1.0,
+    "method": "monte-carlo",
+    "n_relabelings": 1000,
+    "differs": false,
+    "levels": [
+     {
+      "level": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+      "first": 1.0,
+      "second": 1.0,
+      "difference": 0.0,
+      "p": 1.0
+     }
+    ],
+    "absent": {}
+   }
+  },
+  "domain": {
+   "column": "cell_type",
+   "rule": {
+    "threshold": 0.1,
+    "kind": "pair",
+    "genes": [
+     "HS6ST3",
+     "DGKB"
+    ],
+    "min_cells": 20,
+    "min_replicates": 3,
+    "text": "types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group"
+   },
+   "design": "paired",
+   "strata": [
+    {
+     "stratum": "all",
+     "key": "",
+     "types": [
+      {
+       "type": "L2/3-6 intratelencephalic projecting glutamatergic neuron",
+       "cells": {
+        "A": 8000,
+        "B": 7711
+       },
+       "replicates": {
+        "pairs": [
+         "H20.33.001",
+         "H20.33.002",
+         "H20.33.005",
+         "H20.33.008",
+         "H20.33.012",
+         "H20.33.013",
+         "H20.33.014",
+         "H20.33.019",
+         "H20.33.025",
+         "H20.33.027",
+         "H20.33.039",
+         "H20.33.043",
+         "H20.33.044",
+         "H21.33.003",
+         "H21.33.006",
+         "H21.33.019"
+        ]
+       },
+       "detection": {
+        "A": {
+         "HS6ST3": 0.926875,
+         "DGKB": 0.946625
+        },
+        "B": {
+         "HS6ST3": 0.911247037914692,
+         "DGKB": 0.9399129146919432
+        }
+       },
+       "qualifies": true,
+       "absent_from": null,
+       "in_domain": true
+      }
+     ]
+    }
+   ],
+   "domain": {
+    "": [
+     "L2/3-6 intratelencephalic projecting glutamatergic neuron"
+    ]
+   },
+   "outside": {
+    "": []
+   },
+   "n_domain_types": 1,
+   "unlabelled_cells": 0
+  }
+ },
+ "reference": {
+  "measure": "norm_pearson (the engine's)",
+  "genes": [
+   "HS6ST3",
+   "DGKB"
+  ],
+  "groups": [
+   "A",
+   "B"
+  ],
+  "data": "uncorrected",
+  "over": "the domain's types, equally weighted",
+  "rows": [
+   {
+    "stratum": "all",
+    "metric": {
+     "difference": -0.008674025082993954,
+     "p": 0.6413586413586414,
+     "tier": "permutation",
+     "n": {
+      "pairs": 16
+     }
+    },
+    "reference": {
+     "difference": -0.008674025082993954,
+     "p": 0.6183816183816184,
+     "tier": "permutation",
+     "n": {
+      "pairs": 16
+     }
+    }
+   }
+  ]
+ },
+ "specificity": {
+  "applicable": true,
+  "statistic": "the donor-level t of the claim's estimate within the domain's types",
+  "data": "uncorrected",
+  "side": "in the claim's observed direction (a two-sided claim)",
+  "t_claim": 0.5136844319340615,
+  "t_claim_signed": 0.5136844319340615,
+  "k_requested": 1000,
+  "n_controls": 1000,
+  "in_direction": {
+   "k": 296,
+   "n": 1000,
+   "share": 0.296,
+   "share_ci": [
+    0.26784219752016725,
+    0.32536435340489334
+   ],
+   "p": 0.2967032967032967,
+   "outcome": "not specific"
+  },
+  "absolute": {
+   "k": 649,
+   "n": 1000,
+   "share": 0.649,
+   "share_ci": [
+    0.6185133989069982,
+    0.678606206880886
+   ],
+   "p": 0.6493506493506493,
+   "outcome": "not specific"
+  },
+  "nearest": [
+   {
+    "genes": [
+     "SLC8A1",
+     "FTX"
+    ],
+    "t": 0.5176161557783722,
+    "t_signed": 0.5176161557783722,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "SMYD3"
+    ],
+    "t": 0.5178313097850665,
+    "t_signed": 0.5178313097850665,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "DOCK3",
+     "RIMS2"
+    ],
+    "t": 0.519758094393634,
+    "t_signed": 0.519758094393634,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "TMEM132D",
+     "ASIC2"
+    ],
+    "t": 0.5235756050641944,
+    "t_signed": 0.5235756050641944,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "PPP3CA"
+    ],
+    "t": 0.5024357330191196,
+    "t_signed": 0.5024357330191196,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "RORA",
+     "GRM7"
+    ],
+    "t": 0.5012176917805581,
+    "t_signed": 0.5012176917805581,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "KALRN",
+     "THRB"
+    ],
+    "t": 0.4955397355008965,
+    "t_signed": 0.4955397355008965,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "GPM6A",
+     "SYN3"
+    ],
+    "t": 0.495031393960128,
+    "t_signed": 0.495031393960128,
+    "at_least_as_far": false
+   },
+   {
+    "genes": [
+     "GRIK2",
+     "ROBO2"
+    ],
+    "t": 0.5362279086793229,
+    "t_signed": 0.5362279086793229,
+    "at_least_as_far": true
+   },
+   {
+    "genes": [
+     "DMD",
+     "SNTG1"
+    ],
+    "t": 0.5377973619615801,
+    "t_signed": 0.5377973619615801,
+    "at_least_as_far": true
+   }
+  ],
+  "at_least_as_far": [
+   {
+    "genes": [
+     "PLCG2",
+     "RGS7"
+    ],
+    "t_signed": 4.76929532500949
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "MDGA2"
+    ],
+    "t_signed": 4.158266791065022
+   },
+   {
+    "genes": [
+     "PLCG2",
+     "CTNND2"
+    ],
+    "t_signed": 3.823736349040413
+   },
+   {
+    "genes": [
+     "KIRREL3",
+     "CTNND2"
+    ],
+    "t_signed": 3.6798320338883843
+   },
+   {
+    "genes": [
+     "SLC8A1",
+     "ANK3"
+    ],
+    "t_signed": 3.5288371509847005
+   },
+   {
+    "genes": [
+     "DCLK1",
+     "DLGAP2"
+    ],
+    "t_signed": 3.501155650271636
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "CTNND2"
+    ],
+    "t_signed": 3.4999221124038717
+   },
+   {
+    "genes": [
+     "PLCG2",
+     "IL1RAPL1"
+    ],
+    "t_signed": 3.4400039050159408
+   },
+   {
+    "genes": [
+     "CNTN1",
+     "LRRC4C"
+    ],
+    "t_signed": 3.363877894708151
+   },
+   {
+    "genes": [
+     "DCLK1",
+     "CNTN4"
+    ],
+    "t_signed": 3.340341250888161
+   },
+   {
+    "genes": [
+     "RGS6",
+     "RGS7"
+    ],
+    "t_signed": 3.3268211722056384
+   },
+   {
+    "genes": [
+     "GUSBP5",
+     "AUTS2"
+    ],
+    "t_signed": 3.0551163069831264
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "MEF2C"
+    ],
+    "t_signed": 3.0300707518847134
+   },
+   {
+    "genes": [
+     "CNTNAP5",
+     "GRIK2"
+    ],
+    "t_signed": 2.980267566733289
+   },
+   {
+    "genes": [
+     "GRIA2",
+     "MDGA2"
+    ],
+    "t_signed": 2.908279961586834
+   },
+   {
+    "genes": [
+     "KALRN",
+     "PLEKHA5"
+    ],
+    "t_signed": 2.903166965287685
+   },
+   {
+    "genes": [
+     "CTNND2",
+     "ROBO2"
+    ],
+    "t_signed": 2.8370177645576793
+   },
+   {
+    "genes": [
+     "MDGA2",
+     "KCNH1"
+    ],
+    "t_signed": 2.8139847478184112
+   },
+   {
+    "genes": [
+     "LDB2",
+     "KIRREL3"
+    ],
+    "t_signed": 2.7470447518556655
+   },
+   {
+    "genes": [
+     "PLCG2",
+     "DSCAM"
+    ],
+    "t_signed": 2.7394152026552665
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "STXBP5L"
+    ],
+    "t_signed": 2.648117840153835
+   },
+   {
+    "genes": [
+     "MAPK10",
+     "DSCAM"
+    ],
+    "t_signed": 2.639473339979548
+   },
+   {
+    "genes": [
+     "NTM",
+     "ERC2"
+    ],
+    "t_signed": 2.61663604316347
+   },
+   {
+    "genes": [
+     "RGS6",
+     "LDB2"
+    ],
+    "t_signed": 2.5229925164721982
+   },
+   {
+    "genes": [
+     "DCLK1",
+     "NTM"
+    ],
+    "t_signed": 2.5065450333439863
+   },
+   {
+    "genes": [
+     "CACNA1C",
+     "ERC2"
+    ],
+    "t_signed": 2.4830022228220234
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "FGF12"
+    ],
+    "t_signed": 2.4610822479572683
+   },
+   {
+    "genes": [
+     "SORCS1",
+     "ST6GALNAC5"
+    ],
+    "t_signed": 2.437278759728454
+   },
+   {
+    "genes": [
+     "ST6GALNAC5",
+     "KCNH1"
+    ],
+    "t_signed": 2.397763715064
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "CNTNAP5"
+    ],
+    "t_signed": 2.3833333743088168
+   },
+   {
+    "genes": [
+     "RGS6",
+     "FGF12"
+    ],
+    "t_signed": 2.33611463764725
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "PLCG2"
+    ],
+    "t_signed": 2.289157914959582
+   },
+   {
+    "genes": [
+     "CADPS2",
+     "DCLK1"
+    ],
+    "t_signed": 2.2482462592968737
+   },
+   {
+    "genes": [
+     "SORCS1",
+     "CDH18"
+    ],
+    "t_signed": 2.243057833017326
+   },
+   {
+    "genes": [
+     "CACNA1C",
+     "ROBO2"
+    ],
+    "t_signed": 2.2347412032919496
+   },
+   {
+    "genes": [
+     "FTX",
+     "DSCAM"
+    ],
+    "t_signed": 2.1971245042146763
+   },
+   {
+    "genes": [
+     "PLCG2",
+     "SLC4A10"
+    ],
+    "t_signed": 2.1867731068875313
+   },
+   {
+    "genes": [
+     "NBEA",
+     "TAFA1"
+    ],
+    "t_signed": 2.180151742181978
+   },
+   {
+    "genes": [
+     "PLCB1",
+     "NTM"
+    ],
+    "t_signed": 2.1518392509853035
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "KCNH1"
+    ],
+    "t_signed": 2.1484118859204115
+   },
+   {
+    "genes": [
+     "DMD",
+     "NTM"
+    ],
+    "t_signed": 2.1319743306038776
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "PLCG2"
+    ],
+    "t_signed": 2.1257917473014185
+   },
+   {
+    "genes": [
+     "SYN3",
+     "SMYD3"
+    ],
+    "t_signed": 2.1083114226127684
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "CTNND2"
+    ],
+    "t_signed": 2.1010163341120713
+   },
+   {
+    "genes": [
+     "CADPS2",
+     "KCNQ3"
+    ],
+    "t_signed": 2.0919074967556686
+   },
+   {
+    "genes": [
+     "GRIA2",
+     "ADGRL2"
+    ],
+    "t_signed": 2.0893346077340884
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "LRFN5"
+    ],
+    "t_signed": 2.0692927304548228
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "LINGO2"
+    ],
+    "t_signed": 2.064825817980896
+   },
+   {
+    "genes": [
+     "ENSG00000228566",
+     "KIRREL3"
+    ],
+    "t_signed": 2.043873227203252
+   },
+   {
+    "genes": [
+     "ST6GALNAC5",
+     "ADGRL2"
+    ],
+    "t_signed": 1.919532819380084
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "LINC03051"
+    ],
+    "t_signed": 1.9001093940510174
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "NBEA"
+    ],
+    "t_signed": 1.8990209162235052
+   },
+   {
+    "genes": [
+     "ANK3",
+     "CNTN1"
+    ],
+    "t_signed": 1.893966270738969
+   },
+   {
+    "genes": [
+     "KCTD16",
+     "ADGRL2"
+    ],
+    "t_signed": 1.8893929848703928
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "ST6GALNAC5"
+    ],
+    "t_signed": 1.8776417906204332
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "OXR1"
+    ],
+    "t_signed": 1.868584806287706
+   },
+   {
+    "genes": [
+     "SIPA1L1",
+     "CDH12"
+    ],
+    "t_signed": 1.845971646175066
+   },
+   {
+    "genes": [
+     "MAPK10",
+     "FTX"
+    ],
+    "t_signed": 1.8357649821538649
+   },
+   {
+    "genes": [
+     "RORA",
+     "PLCG2"
+    ],
+    "t_signed": 1.8213336802227347
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "ASIC2"
+    ],
+    "t_signed": 1.8160853057596418
+   },
+   {
+    "genes": [
+     "PHACTR1",
+     "TAFA1"
+    ],
+    "t_signed": 1.815197808061017
+   },
+   {
+    "genes": [
+     "NBEA",
+     "NCAM2"
+    ],
+    "t_signed": 1.8103564249526656
+   },
+   {
+    "genes": [
+     "KALRN",
+     "MEF2C"
+    ],
+    "t_signed": 1.8010318930065794
+   },
+   {
+    "genes": [
+     "RGS6",
+     "CACNA1C"
+    ],
+    "t_signed": 1.7832986220160663
+   },
+   {
+    "genes": [
+     "GRIA2",
+     "ANK2"
+    ],
+    "t_signed": 1.7797701785416407
+   },
+   {
+    "genes": [
+     "ERC2",
+     "PLEKHA5"
+    ],
+    "t_signed": 1.771221798165839
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "ROBO2"
+    ],
+    "t_signed": 1.7470329676621736
+   },
+   {
+    "genes": [
+     "DMD",
+     "ADGRL2"
+    ],
+    "t_signed": 1.7403169340783735
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "CACNA1C"
+    ],
+    "t_signed": 1.7132877814983745
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "MAPK10"
+    ],
+    "t_signed": 1.710407709955302
+   },
+   {
+    "genes": [
+     "SIPA1L1",
+     "CTNND2"
+    ],
+    "t_signed": 1.7099283642536205
+   },
+   {
+    "genes": [
+     "PPP3CA",
+     "ST6GALNAC5"
+    ],
+    "t_signed": 1.7053204164451161
+   },
+   {
+    "genes": [
+     "GRIA2",
+     "AGBL4"
+    ],
+    "t_signed": 1.68514339525778
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "EFNA5"
+    ],
+    "t_signed": 1.6767970452943444
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "NTM"
+    ],
+    "t_signed": 1.6671663935724055
+   },
+   {
+    "genes": [
+     "OXR1",
+     "KIRREL3"
+    ],
+    "t_signed": 1.6471639835010525
+   },
+   {
+    "genes": [
+     "NBEA",
+     "SLC4A10"
+    ],
+    "t_signed": 1.6271107875478932
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "ERC2"
+    ],
+    "t_signed": 1.6086494691123343
+   },
+   {
+    "genes": [
+     "LRRC4C",
+     "PPP2R2B"
+    ],
+    "t_signed": 1.5953255871164962
+   },
+   {
+    "genes": [
+     "TMEM132D",
+     "DSCAM"
+    ],
+    "t_signed": 1.588770903621793
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "PLCB1"
+    ],
+    "t_signed": 1.5856772782220308
+   },
+   {
+    "genes": [
+     "DPP6",
+     "CTNND2"
+    ],
+    "t_signed": 1.5824950576870527
+   },
+   {
+    "genes": [
+     "NELL2",
+     "MEF2C"
+    ],
+    "t_signed": 1.5785737933103594
+   },
+   {
+    "genes": [
+     "ANK3",
+     "ROBO2"
+    ],
+    "t_signed": 1.5565028082346937
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "PDZD2"
+    ],
+    "t_signed": 1.5443744175931775
+   },
+   {
+    "genes": [
+     "PLCB1",
+     "ADGRL2"
+    ],
+    "t_signed": 1.5426960198266797
+   },
+   {
+    "genes": [
+     "CACNA1C",
+     "SYN3"
+    ],
+    "t_signed": 1.5418759698212947
+   },
+   {
+    "genes": [
+     "NKAIN2",
+     "MAPK10"
+    ],
+    "t_signed": 1.533349127672009
+   },
+   {
+    "genes": [
+     "GRIA4",
+     "EFNA5"
+    ],
+    "t_signed": 1.532931559745527
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "CNTN5"
+    ],
+    "t_signed": 1.4998131172310452
+   },
+   {
+    "genes": [
+     "IL1RAPL1",
+     "ERC2"
+    ],
+    "t_signed": 1.4992259255387987
+   },
+   {
+    "genes": [
+     "DCLK1",
+     "AGBL4"
+    ],
+    "t_signed": 1.4976261767347663
+   },
+   {
+    "genes": [
+     "KAZN",
+     "NRCAM"
+    ],
+    "t_signed": 1.49540072712479
+   },
+   {
+    "genes": [
+     "RGS6",
+     "CACNA2D3"
+    ],
+    "t_signed": 1.4707901353072146
+   },
+   {
+    "genes": [
+     "KIRREL3",
+     "SYN3"
+    ],
+    "t_signed": 1.466697658720027
+   },
+   {
+    "genes": [
+     "FTX",
+     "AGBL4"
+    ],
+    "t_signed": 1.452488456758886
+   },
+   {
+    "genes": [
+     "KAZN",
+     "PTPRK"
+    ],
+    "t_signed": 1.4396905724015925
+   },
+   {
+    "genes": [
+     "CSMD3",
+     "RGS7"
+    ],
+    "t_signed": 1.4282355460186318
+   },
+   {
+    "genes": [
+     "CHRM3",
+     "GRIA4"
+    ],
+    "t_signed": 1.4190506928109001
+   },
+   {
+    "genes": [
+     "LDB2",
+     "LINGO2"
+    ],
+    "t_signed": 1.4107792289623562
+   },
+   {
+    "genes": [
+     "RYR2",
+     "KCNH1"
+    ],
+    "t_signed": 1.4076265469223543
+   },
+   {
+    "genes": [
+     "RYR2",
+     "NLGN1"
+    ],
+    "t_signed": 1.4000246895357293
+   },
+   {
+    "genes": [
+     "KHDRBS2",
+     "GRIK2"
+    ],
+    "t_signed": 1.4000232968781516
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "NLGN1"
+    ],
+    "t_signed": 1.378348606807362
+   },
+   {
+    "genes": [
+     "IL1RAPL1",
+     "NTM"
+    ],
+    "t_signed": 1.3748028738396438
+   },
+   {
+    "genes": [
+     "DOCK3",
+     "GRIK2"
+    ],
+    "t_signed": 1.374225793418515
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "NCAM2"
+    ],
+    "t_signed": 1.369855152367566
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "PPP2R2B"
+    ],
+    "t_signed": 1.3613598858922566
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "EFNA5"
+    ],
+    "t_signed": 1.3549796329383477
+   },
+   {
+    "genes": [
+     "SORCS1",
+     "DPP6"
+    ],
+    "t_signed": 1.346108420560071
+   },
+   {
+    "genes": [
+     "DMD",
+     "THRB"
+    ],
+    "t_signed": 1.3396502950258473
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "CTNND2"
+    ],
+    "t_signed": 1.3369031277411032
+   },
+   {
+    "genes": [
+     "AUTS2",
+     "KCTD16"
+    ],
+    "t_signed": 1.3153897015803522
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "ADGRL2"
+    ],
+    "t_signed": 1.315088363402784
+   },
+   {
+    "genes": [
+     "RYR2",
+     "THRB"
+    ],
+    "t_signed": 1.311037758419952
+   },
+   {
+    "genes": [
+     "KAZN",
+     "NCAM2"
+    ],
+    "t_signed": 1.3058536695242127
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "SNTG1"
+    ],
+    "t_signed": 1.2991270439646
+   },
+   {
+    "genes": [
+     "NLGN1",
+     "MEF2C"
+    ],
+    "t_signed": 1.2974062197044205
+   },
+   {
+    "genes": [
+     "MACROD2",
+     "KCNH1"
+    ],
+    "t_signed": 1.2964073510087608
+   },
+   {
+    "genes": [
+     "ENSG00000228566",
+     "LDB2"
+    ],
+    "t_signed": 1.288417405988508
+   },
+   {
+    "genes": [
+     "DAB1",
+     "TAFA2"
+    ],
+    "t_signed": 1.28318567470741
+   },
+   {
+    "genes": [
+     "PPP3CA",
+     "KCNH1"
+    ],
+    "t_signed": 1.276484194759182
+   },
+   {
+    "genes": [
+     "UNC5D",
+     "ASIC2"
+    ],
+    "t_signed": 1.2726839997445067
+   },
+   {
+    "genes": [
+     "DPP6",
+     "SYN3"
+    ],
+    "t_signed": 1.2685805018948384
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "PPP3CA"
+    ],
+    "t_signed": 1.263236718098487
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "PTPRK"
+    ],
+    "t_signed": 1.2390016494124765
+   },
+   {
+    "genes": [
+     "SLC8A1",
+     "SYN3"
+    ],
+    "t_signed": 1.2363164875292099
+   },
+   {
+    "genes": [
+     "PPP3CA",
+     "ROBO2"
+    ],
+    "t_signed": 1.2250031094309997
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "CACNA2D3"
+    ],
+    "t_signed": 1.2228778859922333
+   },
+   {
+    "genes": [
+     "KIRREL3",
+     "NLGN1"
+    ],
+    "t_signed": 1.2209520555204771
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "KCTD16"
+    ],
+    "t_signed": 1.2103142631538188
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "GRM5"
+    ],
+    "t_signed": 1.2102248428378886
+   },
+   {
+    "genes": [
+     "GUSBP5",
+     "RORA"
+    ],
+    "t_signed": 1.2052921286877059
+   },
+   {
+    "genes": [
+     "DPP6",
+     "DLGAP2"
+    ],
+    "t_signed": 1.195191084052917
+   },
+   {
+    "genes": [
+     "GRIA4",
+     "ROBO2"
+    ],
+    "t_signed": 1.1915258842256566
+   },
+   {
+    "genes": [
+     "ST6GALNAC5",
+     "CNTN5"
+    ],
+    "t_signed": 1.188239693066879
+   },
+   {
+    "genes": [
+     "THRB",
+     "RGS7"
+    ],
+    "t_signed": 1.177113800726601
+   },
+   {
+    "genes": [
+     "CHRM3",
+     "CNTN4"
+    ],
+    "t_signed": 1.176905054571631
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "CSMD3"
+    ],
+    "t_signed": 1.172741499972508
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "ROBO2"
+    ],
+    "t_signed": 1.166715882556511
+   },
+   {
+    "genes": [
+     "TENM2",
+     "CNTN4"
+    ],
+    "t_signed": 1.1616962985944081
+   },
+   {
+    "genes": [
+     "PPFIA2",
+     "TAFA1"
+    ],
+    "t_signed": 1.1598279996498013
+   },
+   {
+    "genes": [
+     "RGS6",
+     "GPM6A"
+    ],
+    "t_signed": 1.1578468987814037
+   },
+   {
+    "genes": [
+     "MARCHF1",
+     "UNC5D"
+    ],
+    "t_signed": 1.1568670492174196
+   },
+   {
+    "genes": [
+     "ST6GALNAC5",
+     "LRFN5"
+    ],
+    "t_signed": 1.155684260439532
+   },
+   {
+    "genes": [
+     "LDB2",
+     "TAFA2"
+    ],
+    "t_signed": 1.1454489697974088
+   },
+   {
+    "genes": [
+     "RGS6",
+     "FRMPD4"
+    ],
+    "t_signed": 1.1364721010100607
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "THRB"
+    ],
+    "t_signed": 1.1319598045696424
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "NRCAM"
+    ],
+    "t_signed": 1.1307454956506953
+   },
+   {
+    "genes": [
+     "FTX",
+     "MEF2C"
+    ],
+    "t_signed": 1.1245870667370033
+   },
+   {
+    "genes": [
+     "KCNQ3",
+     "ASIC2"
+    ],
+    "t_signed": 1.115241904950855
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "FTX"
+    ],
+    "t_signed": 1.105668456280442
+   },
+   {
+    "genes": [
+     "MARCHF1",
+     "DLGAP2"
+    ],
+    "t_signed": 1.1039846970006615
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "ROBO2"
+    ],
+    "t_signed": 1.0964511188887263
+   },
+   {
+    "genes": [
+     "RGS6",
+     "LRRC4C"
+    ],
+    "t_signed": 1.0962498845403061
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "ROBO2"
+    ],
+    "t_signed": 1.0953021056820125
+   },
+   {
+    "genes": [
+     "NBEA",
+     "STXBP5L"
+    ],
+    "t_signed": 1.0921249013292749
+   },
+   {
+    "genes": [
+     "KALRN",
+     "ADGRL2"
+    ],
+    "t_signed": 1.0897404093382375
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "NELL2"
+    ],
+    "t_signed": 1.0866342114873169
+   },
+   {
+    "genes": [
+     "KAZN",
+     "AGBL4"
+    ],
+    "t_signed": 1.082920323995033
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "KCNMA1"
+    ],
+    "t_signed": 1.0791849435677427
+   },
+   {
+    "genes": [
+     "DOCK3",
+     "AGBL4"
+    ],
+    "t_signed": 1.066452649949652
+   },
+   {
+    "genes": [
+     "PDE1A",
+     "LRRC4C"
+    ],
+    "t_signed": 1.0637130848236709
+   },
+   {
+    "genes": [
+     "RIMS2",
+     "NELL2"
+    ],
+    "t_signed": 1.0624757114959122
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "RGS7"
+    ],
+    "t_signed": 1.0605202443601822
+   },
+   {
+    "genes": [
+     "SLC8A1",
+     "PDZD2"
+    ],
+    "t_signed": 1.0522737331000527
+   },
+   {
+    "genes": [
+     "TAFA1",
+     "SYN3"
+    ],
+    "t_signed": 1.0515216745133864
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "SYN3"
+    ],
+    "t_signed": 1.040913221711238
+   },
+   {
+    "genes": [
+     "ST6GALNAC5",
+     "TENM2"
+    ],
+    "t_signed": 1.0362977841429122
+   },
+   {
+    "genes": [
+     "PPFIA2",
+     "LINC03051"
+    ],
+    "t_signed": 1.034840302542418
+   },
+   {
+    "genes": [
+     "PPP2R2B",
+     "KCNH1"
+    ],
+    "t_signed": 1.0335836679564645
+   },
+   {
+    "genes": [
+     "KAZN",
+     "RGS7"
+    ],
+    "t_signed": 1.0321216472910093
+   },
+   {
+    "genes": [
+     "KIRREL3",
+     "DAB1"
+    ],
+    "t_signed": 1.0278499589253307
+   },
+   {
+    "genes": [
+     "GRIK2",
+     "TAFA2"
+    ],
+    "t_signed": 1.02761883714792
+   },
+   {
+    "genes": [
+     "FGF12",
+     "DLGAP2"
+    ],
+    "t_signed": 1.027185467069521
+   },
+   {
+    "genes": [
+     "RGS7",
+     "SYN3"
+    ],
+    "t_signed": 1.025077194200565
+   },
+   {
+    "genes": [
+     "DMD",
+     "NRCAM"
+    ],
+    "t_signed": 1.0207329290438498
+   },
+   {
+    "genes": [
+     "GPM6A",
+     "OXR1"
+    ],
+    "t_signed": 1.0184708943703218
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "KCTD16"
+    ],
+    "t_signed": 1.0118406879316093
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "SLC4A10"
+    ],
+    "t_signed": 1.0107544171882077
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "ST6GALNAC5"
+    ],
+    "t_signed": 1.010115809734633
+   },
+   {
+    "genes": [
+     "AUTS2",
+     "CADPS"
+    ],
+    "t_signed": 0.9982203788939787
+   },
+   {
+    "genes": [
+     "PLCB1",
+     "ST6GALNAC5"
+    ],
+    "t_signed": 0.9761333937762787
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "SNTG1"
+    ],
+    "t_signed": 0.9668537234670094
+   },
+   {
+    "genes": [
+     "LRRC4C",
+     "DLGAP2"
+    ],
+    "t_signed": 0.958793382733824
+   },
+   {
+    "genes": [
+     "OXR1",
+     "NRCAM"
+    ],
+    "t_signed": 0.9561674788079317
+   },
+   {
+    "genes": [
+     "CTNND2",
+     "KCNH1"
+    ],
+    "t_signed": 0.9515170658518477
+   },
+   {
+    "genes": [
+     "NBEA",
+     "UNC5D"
+    ],
+    "t_signed": 0.9497259155819116
+   },
+   {
+    "genes": [
+     "LRRC4C",
+     "MACROD2"
+    ],
+    "t_signed": 0.94533305059437
+   },
+   {
+    "genes": [
+     "FGF12",
+     "MAPK10"
+    ],
+    "t_signed": 0.9432691512993474
+   },
+   {
+    "genes": [
+     "CACNA1C",
+     "GRM5"
+    ],
+    "t_signed": 0.940806022474009
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "PTPRK"
+    ],
+    "t_signed": 0.9385075823731425
+   },
+   {
+    "genes": [
+     "GUSBP5",
+     "GRM5"
+    ],
+    "t_signed": 0.9379526607624871
+   },
+   {
+    "genes": [
+     "GPM6A",
+     "LRRC7"
+    ],
+    "t_signed": 0.9297373122773737
+   },
+   {
+    "genes": [
+     "AUTS2",
+     "CNTNAP5"
+    ],
+    "t_signed": 0.9227073702664554
+   },
+   {
+    "genes": [
+     "LDB2",
+     "DMD"
+    ],
+    "t_signed": 0.9103879227460385
+   },
+   {
+    "genes": [
+     "LRRC7",
+     "DOCK3"
+    ],
+    "t_signed": 0.9092673167519744
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "GRM7"
+    ],
+    "t_signed": 0.9055302382814989
+   },
+   {
+    "genes": [
+     "RIMS2",
+     "KCTD16"
+    ],
+    "t_signed": 0.8979911437674404
+   },
+   {
+    "genes": [
+     "FTX",
+     "TAFA1"
+    ],
+    "t_signed": 0.8956188309074086
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "NELL2"
+    ],
+    "t_signed": 0.8891969265696655
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "NRCAM"
+    ],
+    "t_signed": 0.8842630717948556
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "MDGA2"
+    ],
+    "t_signed": 0.8818862006566817
+   },
+   {
+    "genes": [
+     "KCNQ3",
+     "KCND2"
+    ],
+    "t_signed": 0.8811133062006911
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "THRB"
+    ],
+    "t_signed": 0.8760827870555917
+   },
+   {
+    "genes": [
+     "KHDRBS3",
+     "LRRC4C"
+    ],
+    "t_signed": 0.874052292486648
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "NTM"
+    ],
+    "t_signed": 0.8734240546586827
+   },
+   {
+    "genes": [
+     "PTPRT",
+     "CNTN4"
+    ],
+    "t_signed": 0.869230903669936
+   },
+   {
+    "genes": [
+     "MDGA2",
+     "RGS7"
+    ],
+    "t_signed": 0.8667332505703407
+   },
+   {
+    "genes": [
+     "LRRC7",
+     "NLGN1"
+    ],
+    "t_signed": 0.8619161634009797
+   },
+   {
+    "genes": [
+     "FTX",
+     "OXR1"
+    ],
+    "t_signed": 0.8590634844533799
+   },
+   {
+    "genes": [
+     "GPM6A",
+     "ASIC2"
+    ],
+    "t_signed": 0.854761812363212
+   },
+   {
+    "genes": [
+     "PLCB1",
+     "TAFA1"
+    ],
+    "t_signed": 0.8535456057168532
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "RORA"
+    ],
+    "t_signed": 0.8451871962228268
+   },
+   {
+    "genes": [
+     "LINGO2",
+     "GRIN2A"
+    ],
+    "t_signed": 0.8404241361914669
+   },
+   {
+    "genes": [
+     "GRIA2",
+     "LINC03051"
+    ],
+    "t_signed": 0.8335736118432879
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "LRRC4C"
+    ],
+    "t_signed": 0.8302372958814425
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "TAFA2"
+    ],
+    "t_signed": 0.8284021639116765
+   },
+   {
+    "genes": [
+     "CADPS2",
+     "DMD"
+    ],
+    "t_signed": 0.8271594436008518
+   },
+   {
+    "genes": [
+     "MACROD2",
+     "CNTN4"
+    ],
+    "t_signed": 0.8268605071364892
+   },
+   {
+    "genes": [
+     "KHDRBS2",
+     "CDH12"
+    ],
+    "t_signed": 0.824737222291948
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "PPP2R2B"
+    ],
+    "t_signed": 0.8217253552657383
+   },
+   {
+    "genes": [
+     "NBEA",
+     "LRRC7"
+    ],
+    "t_signed": 0.8213720773679771
+   },
+   {
+    "genes": [
+     "CNTN1",
+     "GRIA4"
+    ],
+    "t_signed": 0.8177919715511109
+   },
+   {
+    "genes": [
+     "NCAM2",
+     "NELL2"
+    ],
+    "t_signed": 0.8148859554611775
+   },
+   {
+    "genes": [
+     "OXR1",
+     "NCAM2"
+    ],
+    "t_signed": 0.8132410188414055
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "SMYD3"
+    ],
+    "t_signed": 0.8130854964332799
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "CACNA1C"
+    ],
+    "t_signed": 0.8102691925422904
+   },
+   {
+    "genes": [
+     "ENSG00000228566",
+     "DAB1"
+    ],
+    "t_signed": 0.8038114973274836
+   },
+   {
+    "genes": [
+     "STXBP5L",
+     "KCNH1"
+    ],
+    "t_signed": 0.7992623917579391
+   },
+   {
+    "genes": [
+     "CNTNAP5",
+     "NRCAM"
+    ],
+    "t_signed": 0.7984615780385191
+   },
+   {
+    "genes": [
+     "CNTN5",
+     "GRM7"
+    ],
+    "t_signed": 0.7977958631895301
+   },
+   {
+    "genes": [
+     "ENSG00000228566",
+     "CCSER1"
+    ],
+    "t_signed": 0.7916692472805412
+   },
+   {
+    "genes": [
+     "KCTD16",
+     "ROBO2"
+    ],
+    "t_signed": 0.7860976105226618
+   },
+   {
+    "genes": [
+     "DMD",
+     "OXR1"
+    ],
+    "t_signed": 0.7776554062012304
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "THRB"
+    ],
+    "t_signed": 0.7752122533632705
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "KHDRBS3"
+    ],
+    "t_signed": 0.7703935412864588
+   },
+   {
+    "genes": [
+     "CACNA2D3",
+     "SIPA1L1"
+    ],
+    "t_signed": 0.7698161997436987
+   },
+   {
+    "genes": [
+     "PTPRK",
+     "CADPS2"
+    ],
+    "t_signed": 0.7692746449567547
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "KCNMA1"
+    ],
+    "t_signed": 0.7603838990008949
+   },
+   {
+    "genes": [
+     "SIPA1L1",
+     "PCDH7"
+    ],
+    "t_signed": 0.7568590367675077
+   },
+   {
+    "genes": [
+     "R3HDM1",
+     "MARCHF1"
+    ],
+    "t_signed": 0.7550504578746617
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "CNTN4"
+    ],
+    "t_signed": 0.7529197003086706
+   },
+   {
+    "genes": [
+     "KCNQ3",
+     "ANK2"
+    ],
+    "t_signed": 0.7355971462639577
+   },
+   {
+    "genes": [
+     "ADGRL3",
+     "NTM"
+    ],
+    "t_signed": 0.7341717152958803
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "ASIC2"
+    ],
+    "t_signed": 0.7314985732699715
+   },
+   {
+    "genes": [
+     "MAPK10",
+     "SNTG1"
+    ],
+    "t_signed": 0.7190003918528507
+   },
+   {
+    "genes": [
+     "CNTNAP5",
+     "FRMPD4"
+    ],
+    "t_signed": 0.7155743422103039
+   },
+   {
+    "genes": [
+     "OXR1",
+     "ASIC2"
+    ],
+    "t_signed": 0.7134709017926472
+   },
+   {
+    "genes": [
+     "FTX",
+     "RIMS2"
+    ],
+    "t_signed": 0.7033887914031969
+   },
+   {
+    "genes": [
+     "PHACTR1",
+     "DPP6"
+    ],
+    "t_signed": 0.702141607446049
+   },
+   {
+    "genes": [
+     "CNTN1",
+     "NTM"
+    ],
+    "t_signed": 0.7020266209651883
+   },
+   {
+    "genes": [
+     "TENM2",
+     "CTNND2"
+    ],
+    "t_signed": 0.6964089928982305
+   },
+   {
+    "genes": [
+     "PLCG2",
+     "NCAM2"
+    ],
+    "t_signed": 0.6939406434570968
+   },
+   {
+    "genes": [
+     "KCNQ3",
+     "KCNH1"
+    ],
+    "t_signed": 0.6935261140932455
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "GRIN2A"
+    ],
+    "t_signed": 0.6834074159114876
+   },
+   {
+    "genes": [
+     "CTNND2",
+     "ERC2"
+    ],
+    "t_signed": 0.6832015768584822
+   },
+   {
+    "genes": [
+     "CACNA1C",
+     "DAB1"
+    ],
+    "t_signed": 0.681424466761569
+   },
+   {
+    "genes": [
+     "MARCHF1",
+     "ANK2"
+    ],
+    "t_signed": 0.6788734231589476
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "NELL2"
+    ],
+    "t_signed": 0.6749766033098823
+   },
+   {
+    "genes": [
+     "RORA",
+     "KIRREL3"
+    ],
+    "t_signed": 0.6708971772280954
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "PLCB1"
+    ],
+    "t_signed": 0.6582941742724765
+   },
+   {
+    "genes": [
+     "MCTP1",
+     "PHACTR1"
+    ],
+    "t_signed": 0.6557884209392162
+   },
+   {
+    "genes": [
+     "CHRM3",
+     "PPFIA2"
+    ],
+    "t_signed": 0.6556238858743836
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "ADGRL2"
+    ],
+    "t_signed": 0.6555559283089599
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "DAB1"
+    ],
+    "t_signed": 0.6519491852215772
+   },
+   {
+    "genes": [
+     "CCSER1",
+     "MEF2C"
+    ],
+    "t_signed": 0.6440186827010211
+   },
+   {
+    "genes": [
+     "GRIA4",
+     "CNTN4"
+    ],
+    "t_signed": 0.6350153308615653
+   },
+   {
+    "genes": [
+     "DPP6",
+     "TAFA1"
+    ],
+    "t_signed": 0.6340434734949463
+   },
+   {
+    "genes": [
+     "UNC5D",
+     "DLGAP2"
+    ],
+    "t_signed": 0.633775282147364
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "GRIN2A"
+    ],
+    "t_signed": 0.6324779719476014
+   },
+   {
+    "genes": [
+     "MAPK10",
+     "AGBL4"
+    ],
+    "t_signed": 0.6267063456468319
+   },
+   {
+    "genes": [
+     "ENSG00000229618",
+     "EFNA5"
+    ],
+    "t_signed": 0.622201621103248
+   },
+   {
+    "genes": [
+     "GPM6A",
+     "CTNND2"
+    ],
+    "t_signed": 0.6201620683571215
+   },
+   {
+    "genes": [
+     "DMD",
+     "UNC5D"
+    ],
+    "t_signed": 0.6118317892364383
+   },
+   {
+    "genes": [
+     "NELL2",
+     "KCNH1"
+    ],
+    "t_signed": 0.6049884843648338
+   },
+   {
+    "genes": [
+     "KCNQ3",
+     "THRB"
+    ],
+    "t_signed": 0.6029980478366664
+   },
+   {
+    "genes": [
+     "RGS6",
+     "PLEKHA5"
+    ],
+    "t_signed": 0.6026334413552055
+   },
+   {
+    "genes": [
+     "GRIK2",
+     "LRFN5"
+    ],
+    "t_signed": 0.5969254448374345
+   },
+   {
+    "genes": [
+     "GUSBP5",
+     "NTM"
+    ],
+    "t_signed": 0.596618342407538
+   },
+   {
+    "genes": [
+     "ANK2",
+     "KCTD16"
+    ],
+    "t_signed": 0.5952404732346694
+   },
+   {
+    "genes": [
+     "PEX5L",
+     "NRCAM"
+    ],
+    "t_signed": 0.5918326862647859
+   },
+   {
+    "genes": [
+     "KCNMA1",
+     "GRIA4"
+    ],
+    "t_signed": 0.5878078632388335
+   },
+   {
+    "genes": [
+     "LRRC4C",
+     "ASIC2"
+    ],
+    "t_signed": 0.5877565554016639
+   },
+   {
+    "genes": [
+     "CTNND2",
+     "SMYD3"
+    ],
+    "t_signed": 0.5871972567354437
+   },
+   {
+    "genes": [
+     "PHACTR1",
+     "FTX"
+    ],
+    "t_signed": 0.5867874856005755
+   },
+   {
+    "genes": [
+     "RGS6",
+     "GRIA2"
+    ],
+    "t_signed": 0.5668432873338584
+   },
+   {
+    "genes": [
+     "RGS7",
+     "TAFA1"
+    ],
+    "t_signed": 0.5599844257244287
+   },
+   {
+    "genes": [
+     "CNTN5",
+     "CSMD3"
+    ],
+    "t_signed": 0.5595506740729825
+   },
+   {
+    "genes": [
+     "RYR2",
+     "NTM"
+    ],
+    "t_signed": 0.5581757592749111
+   },
+   {
+    "genes": [
+     "DMD",
+     "SNTG1"
+    ],
+    "t_signed": 0.5377973619615801
+   },
+   {
+    "genes": [
+     "GRIK2",
+     "ROBO2"
+    ],
+    "t_signed": 0.5362279086793229
+   },
+   {
+    "genes": [
+     "TMEM132D",
+     "ASIC2"
+    ],
+    "t_signed": 0.5235756050641944
+   },
+   {
+    "genes": [
+     "DOCK3",
+     "RIMS2"
+    ],
+    "t_signed": 0.519758094393634
+   },
+   {
+    "genes": [
+     "PDZD2",
+     "SMYD3"
+    ],
+    "t_signed": 0.5178313097850665
+   },
+   {
+    "genes": [
+     "SLC8A1",
+     "FTX"
+    ],
+    "t_signed": 0.5176161557783722
+   }
+  ],
+  "shift": {
+   "median_t": -0.08298197491126881,
+   "ci": [
+    -0.3876816658711396,
+    0.23055075556719168
+   ],
+   "ci_level": 0.95,
+   "p_one_sided": 0.6963036963036963,
+   "method": "monte-carlo",
+   "n_relabelings": 1000,
+   "significant": false,
+   "warning": null
+  },
+  "pool": {
+   "genes": 35465,
+   "same_as_data": false
+  },
+  "tie": null,
+  "candidates": 33342,
+  "matched": {
+   "HS6ST3": {
+    "mean": 57.09012793584113,
+    "detection": 0.9192285659728853,
+    "mean_range": [
+     22.606517726433708,
+     83.70676596015531
+    ],
+    "detection_range": [
+     0.8585067786900897,
+     0.9999363503277958
+    ]
+   },
+   "DGKB": {
+    "mean": 50.592451148876584,
+    "detection": 0.9430971930494558,
+    "mean_range": [
+     25.816370695690917,
+     74.88282095347209
+    ],
+    "detection_range": [
+     0.8844121952771943,
+     0.9999363503277958
+    ]
+   }
+  },
+  "eligible": 5905,
+  "known_pairs_excluded": 0
+ }
+}
