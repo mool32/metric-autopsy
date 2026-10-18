@@ -1,0 +1,98 @@
+# The metadata of Marsh et al. 2022 (Nat Neurosci 25:306-316, doi:10.1038/s41593-022-01022-8), the
+# development positive control for a change of coupling that the owner accepted on 2026-10-18 on one
+# condition among others: before its registration, the sample table, the raw matrices and the mouse ids
+# are checked from the metadata alone, and the set of genes is taken from the paper before any count is
+# read. This job reads no count: GEO's SOFT and MINiML records and series matrices, the lists and sizes
+# of the supplementary files (never the files), and Europe PMC's record of the paper (with its full text
+# where its licence is CC BY). This environment's network reaches only GitHub, hence the job.
+#
+# Started once by the label "marsh-metadata" on the pull request; commits what it fetched, as it is, to
+# the new branch results/marsh-metadata (a second start finds the branch and stops).
+name: Marsh et al. 2022, metadata only
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_BRANCH: results/marsh-metadata
+  DOI: 10.1038/s41593-022-01022-8
+  # the SuperSeries and the series that the paper's data statement and its code's README name
+  SERIES: GSE152184 GSE152183 GSE152182 GSE188441
+
+jobs:
+  fetch:
+    if: github.event.label.name == 'marsh-metadata'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: One attempt, and the branch must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "the metadata are fetched once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: the metadata have been fetched"; exit 1
+          fi
+      - name: GEO (records, series matrices, the lists of the supplementary files) and Europe PMC
+        run: |
+          set -u
+          mkdir -p meta/geo meta/paper
+          cd meta
+          get() { # url, file: one try and two retries; the outcome is logged, a failure does not stop the job
+            for i in 1 2 3; do
+              if curl -fsSL --retry 2 -m 300 -o "$2" "$1"; then echo "ok   $(stat -c %s "$2") bytes  $1" >> fetch.log; return 0; fi
+              sleep $((i * 5))
+            done
+            rm -f "$2"; echo "FAIL $1" >> fetch.log; return 1
+          }
+          for gse in $SERIES; do
+            stub="${gse:0:${#gse}-3}nnn"
+            base="https://ftp.ncbi.nlm.nih.gov/geo/series/$stub/$gse"
+            get "$base/soft/${gse}_family.soft.gz" "geo/${gse}_family.soft.gz" || true
+            get "$base/miniml/${gse}_family.xml.tgz" "geo/${gse}_family.xml.tgz" || true
+            get "$base/suppl/" "geo/${gse}_suppl_index.html" || true
+            get "$base/suppl/filelist.txt" "geo/${gse}_suppl_filelist.txt" || true
+            get "$base/matrix/" "geo/${gse}_matrix_index.html" || true
+            if [ -f "geo/${gse}_matrix_index.html" ]; then
+              for f in $(grep -o 'href="[^"]*series_matrix[^"]*\.txt\.gz"' "geo/${gse}_matrix_index.html" | sed 's/^href="//; s/"$//' | sort -u); do
+                get "$base/matrix/$f" "geo/$f" || true
+              done
+            fi
+          done
+          q="https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:%22$DOI%22&resultType=core&format=json"
+          get "$q" paper/europepmc_search.json || true
+          pmcid=$(python3 -I -c "import json,sys; r=json.load(open('paper/europepmc_search.json'))['resultList']['result']; print(r[0].get('pmcid','') if r else '')" 2>/dev/null || true)
+          license=$(python3 -I -c "import json,sys; r=json.load(open('paper/europepmc_search.json'))['resultList']['result']; print(r[0].get('license','') if r else '')" 2>/dev/null || true)
+          echo "pmcid=$pmcid license=$license" | tee -a fetch.log
+          case "$license" in
+            cc\ by|cc-by|"cc by "*) [ -n "$pmcid" ] && get "https://www.ebi.ac.uk/europepmc/webservices/rest/$pmcid/fullTextXML" paper/fulltext.xml || true ;;
+            *) echo "the licence is not CC BY ('$license'): the full text is not copied" | tee -a fetch.log ;;
+          esac
+          cat fetch.log
+      - name: Commit everything, as it is, to results/marsh-metadata
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: nothing is pushed"; exit 1
+          fi
+          cd meta
+          {
+            echo "# Marsh et al. 2022: the metadata, fetched before the control's registration"
+            echo
+            echo "- Workflow run ${{ github.run_id }} (attempt $GITHUB_RUN_ATTEMPT) of \`.github/workflows/marsh-metadata.yml\`, at the pull request's head ${{ github.event.pull_request.head.sha }}."
+            echo "- geo/: GEO's SOFT and MINiML records, series matrices and the index and file list of the supplementary files of $SERIES (NCBI GEO; public records). No supplementary file itself was fetched: no count."
+            echo "- paper/: Europe PMC's record of doi:$DOI, and its full text only where the record names a CC BY licence (Marsh SE et al., Nat Neurosci 2022;25:306-316)."
+            echo "- fetch.log: every URL and its outcome."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          git init -q -b "$RESULTS_BRANCH"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Marsh et al. 2022: the metadata only (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/$RESULTS_BRANCH" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/$RESULTS_BRANCH" | cut -f1)" = "$(git rev-parse HEAD)"
