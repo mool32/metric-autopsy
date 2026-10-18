@@ -1,0 +1,296 @@
+# The third diagnostics and v0.4's acceptance tests on the development data, decided by the owner on
+# 2026-10-18 and planned in validation/exploratory/real_pilot_diagnostics_3_plan.md before the run.
+# Exploratory, on development data only: (b) §4's technical counts and the metadata of case 1; (a) the
+# rule of the domain on §4 in males and on Marsh et al. 2022; the positive control of Marsh et al. 2022
+# (GSE152183); the acceptance tests A1-A8 with the engine of v0.4 (this pull request's src/).
+#
+# On every push to the pull request: the dry run. The diagnostics' tests; the whole path on a
+# fabricated Census and fabricated GEO files; and the real inputs checked without any computation on
+# them: the earlier runs' files against their SHA256SUMS, GEO's SOFT records, the Census opened at the
+# release to count each case's measured genes and to locate the source h5ad (metadata only; the Marsh
+# matrices are not downloaded).
+#
+# The real run, once, started by the label "pilot-run-5" on the pull request:
+# - check: the run's first attempt, and the branch results/real-pilot-5 must not exist;
+# - prepare: the inputs (real_pilot_5_inputs.sh, GEO's GSE152183_RAW.tar included), to the artifact
+#   pilot5-inputs;
+# - extract: the full set of genes for the cases' cells, case 1's metadata and the Marsh matrices, in
+#   v1's selection environment (requirements-select.txt), to the artifact pilot5-full;
+# - run: nine parallel parts, in v1's analysis environment (requirements-panel.txt, v1's numerical
+#   settings) with the engine of this pull request's head (src/, its git tree recorded);
+# - collect: once the extraction has succeeded, whatever the parts produced is merged and committed to
+#   the new branch results/real-pilot-5, failures included.
+# A second start finds the branch and stops. If the preparation or the extraction fails, no analysis
+# starts and nothing is committed: a fix and a second start are then recorded in the report.
+name: Real-data pilot, third diagnostics and v0.4's acceptance tests (exploratory)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_BRANCH: results/real-pilot-5
+  # the numerical environment of v1's jobs (validation.yml)
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_CORETYPE: Haswell
+  NPY_DISABLE_CPU_FEATURES: "X86_V4 AVX512_ICL AVX512_SPR"
+  PYTHONHASHSEED: "0"
+
+jobs:
+  dry:
+    if: github.event.action != 'labeled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The two environments, the selection's and the analyses' (the engine of this head's src/)
+        run: |
+          lscpu | grep -E "Model name|^Flags" | cut -c1-400
+          echo "src/ git tree $(git rev-parse HEAD:src)"
+          python -m venv "$RUNNER_TEMP/venv-select"
+          python -m venv "$RUNNER_TEMP/venv-panel"
+          "$RUNNER_TEMP/venv-select/bin/python" -m pip install -q pip==26.2.1
+          "$RUNNER_TEMP/venv-select/bin/pip" install -q --no-deps -r validation/prereg/requirements-select.txt
+          "$RUNNER_TEMP/venv-select/bin/pip" check
+          "$RUNNER_TEMP/venv-panel/bin/python" -m pip install -q pip==26.2.1
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps -r validation/prereg/requirements-panel.txt
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps pytest==9.1.1 pluggy==1.6.0 iniconfig==2.3.1 pygments==2.21.0
+          "$RUNNER_TEMP/venv-panel/bin/pip" check
+          "$RUNNER_TEMP/venv-panel/bin/pip" install -q --no-deps -e .
+          "$RUNNER_TEMP/venv-panel/bin/python" -c "import metric_autopsy as m, pathlib, sys; p = pathlib.Path(m.__file__).resolve(); print(m.__version__, p); sys.exit(0 if str(p).startswith(str(pathlib.Path('src').resolve())) else 1)"
+      - name: The diagnostics' tests
+        run: |
+          cd validation/exploratory
+          "$RUNNER_TEMP/venv-panel/bin/python" -m pytest -q -p no:cacheprovider -c /dev/null test_real_pilot_5.py
+      - name: The whole path on a fabricated Census and fabricated GEO files (SYNTHETIC)
+        run: |
+          sel="$RUNNER_TEMP/venv-select/bin/python"
+          py="$RUNNER_TEMP/venv-panel/bin/python"
+          "$sel" validation/exploratory/real_pilot_select.py --synthetic --second --out-dir dry/run2
+          "$sel" validation/exploratory/real_pilot_select.py --synthetic --out-dir dry/run1
+          mkdir -p dry/inputs/data dry/inputs/geo
+          cp dry/run2/case1.npz dry/run2/case2.npz dry/run2/select.json dry/inputs/data/
+          cp dry/run1/case3.npz dry/inputs/data/ && cp dry/run1/select.json dry/inputs/data/select1.json
+          "$sel" validation/exploratory/real_pilot_5_extract.py --data dry/inputs/data --geo dry/inputs/geo --out dry/full --synthetic --fabricate-geo --chunk 1000
+          for part in b a case2 case1m case1 marsh case3a case3b case3c; do
+            "$py" validation/exploratory/real_pilot_5.py --inputs dry/inputs --full dry/full --part "$part" --out "dry/parts/part-$part" --synthetic
+          done
+          "$py" validation/exploratory/real_pilot_5.py --merge dry/parts --out dry/merged --synthetic
+          "$py" validation/exploratory/real_pilot_5_summary.py dry/merged/real_pilot_5.json > dry/merged/real_pilot_5_summary.log
+          if grep -n "EXCEPTION" dry/full/extract.log dry/parts/*/*.log dry/merged/real_pilot_5_summary.log; then exit 1; fi
+          grep -n "the owner's prediction\|A8 |" dry/merged/real_pilot_5.log
+      - name: The real inputs, checked (the earlier runs' files by their hashes; GEO's records; the Census's metadata), nothing computed on the data
+        run: |
+          bash validation/exploratory/real_pilot_5_inputs.sh "$RUNNER_TEMP/inputs" --no-geo-data
+          "$RUNNER_TEMP/venv-select/bin/python" validation/exploratory/real_pilot_5_extract.py --data "$RUNNER_TEMP/inputs/data" --geo "$RUNNER_TEMP/inputs/geo" --out "$RUNNER_TEMP/census-check" --check-census
+
+  check:
+    if: github.event.action == 'labeled' && github.event.label.name == 'pilot-run-5'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: One run, one attempt
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "the diagnostics run once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: the diagnostics have run"; exit 1
+          fi
+
+  prepare:
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: The inputs (the earlier runs' files by their hashes; GEO's records and GSE152183's matrices)
+        run: |
+          set -o pipefail
+          mkdir -p inputs
+          bash validation/exploratory/real_pilot_5_inputs.sh inputs | tee inputs/inputs.log
+          echo "PR head ${{ github.event.pull_request.head.sha }}; src/ git tree $(git rev-parse HEAD:src); workflow run ${{ github.run_id }}" >> inputs/inputs.log
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pilot5-inputs
+          path: inputs
+          if-no-files-found: error
+
+  extract:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's selection environment
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-select.txt && pip check
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot5-inputs
+          path: inputs
+      - name: The full set of genes for the cases' cells, case 1's metadata, the Marsh matrices (the Census, release 2025-11-08; GEO)
+        timeout-minutes: 230
+        run: python validation/exploratory/real_pilot_5_extract.py --data inputs/data --geo inputs/geo --out full
+      - name: The selection's environment, as installed
+        if: always()
+        run: |
+          mkdir -p full
+          pip freeze > full/select-freeze.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pilot5-full
+          path: full
+          if-no-files-found: warn
+
+  run:
+    needs: extract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [b, a, case2, case1m, case1, marsh, case3a, case3b, case3c]
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment and the engine of this head's src/
+        run: |
+          lscpu | grep -E "Model name|^Flags" | cut -c1-400
+          echo "src/ git tree $(git rev-parse HEAD:src)"
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps -e .
+          python -c "import metric_autopsy as m, pathlib, sys; p = pathlib.Path(m.__file__).resolve(); print(m.__version__, p); sys.exit(0 if str(p).startswith(str(pathlib.Path('src').resolve())) else 1)"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot5-inputs
+          path: inputs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot5-full
+          path: full
+      - name: The part ${{ matrix.part }}
+        timeout-minutes: 335
+        run: python validation/exploratory/real_pilot_5.py --inputs inputs --full full --part "${{ matrix.part }}" --out "out/part-${{ matrix.part }}"
+      - name: The analysis environment, as installed
+        if: always()
+        run: |
+          mkdir -p "out/part-${{ matrix.part }}"
+          pip freeze > "out/part-${{ matrix.part }}/panel-freeze.txt"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pilot5-part-${{ matrix.part }}
+          path: out
+          if-no-files-found: warn
+
+  collect:
+    needs: [prepare, extract, run]
+    if: always() && needs.extract.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: One attempt
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment and the engine (the merge imports the analysis script)
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps -e .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot5-inputs
+          path: inputs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pilot5-full
+          path: full
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: pilot5-part-*
+          path: parts
+          merge-multiple: true
+      - name: Merge the parts (a part that is missing is recorded as missing)
+        run: |
+          mkdir -p parts merged
+          python validation/exploratory/real_pilot_5.py --merge parts --out merged
+          python validation/exploratory/real_pilot_5_summary.py merged/real_pilot_5.json > merged/real_pilot_5_summary.log || true
+      - name: Commit everything, as it is, to results/real-pilot-5 (a second start finds the branch and stops)
+        if: always()
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" "refs/heads/$RESULTS_BRANCH" > /dev/null; then
+            echo "$RESULTS_BRANCH exists: nothing is pushed"; exit 1
+          fi
+          pub="$RUNNER_TEMP/pub"
+          mkdir -p "$pub/inputs" "$pub/extract" "$pub/run/parts"
+          cp inputs/inputs.log inputs/run1-SHA256SUMS inputs/run2-SHA256SUMS "$pub/inputs/" || echo "missing: the inputs' log"
+          for f in extract.log extract.json select-freeze.txt census_obs_case1.csv.gz source_obs_case1.csv.gz dataset_case1.json; do
+            cp "full/$f" "$pub/extract/" || echo "missing: full/$f"
+          done
+          [ -d merged ] && cp -r merged/. "$pub/run/"
+          for d in parts/*; do if [ -d "$d" ]; then cp -r "$d" "$pub/run/parts/"; fi; done
+          workflow_blob=$(git rev-parse "HEAD:.github/workflows/real-pilot-5.yml")
+          {
+            echo "# The third diagnostics and v0.4's acceptance tests on the development data (exploratory)"
+            echo
+            echo "- Workflow run ${{ github.run_id }} (attempt $GITHUB_RUN_ATTEMPT) of \`.github/workflows/real-pilot-5.yml\` (blob $workflow_blob), at the pull request's head ${{ github.event.pull_request.head.sha }}; the plan: \`validation/exploratory/real_pilot_diagnostics_3_plan.md\` there."
+            echo "- The engine: v0.4.0.dev0, this head's src/ (git tree $(git rev-parse HEAD:src)), installed in v1's analysis environment."
+            echo "- The jobs: prepare ${{ needs.prepare.result }}; extract ${{ needs.extract.result }}; run (the nine parts) ${{ needs.run.result }}."
+            echo "- The data: the second run's files on results/real-pilot-2 at bad785a3c56e9de1ee24737953c1b4b63112aa7c and the first run's case 3 on results/real-pilot at 6133dfdf4c05f083f012aaec4136e376715af05a (inputs/), not copied here; the full set of genes for their cells and case 1's metadata from the CELLxGENE Census, release 2025-11-08 (CC BY 4.0), the counts not copied here; Marsh et al. 2022's matrices from GEO (GSE152183), not copied here. extract/: the extraction's log and JSON, case 1's Census obs and its dataset's source obs."
+            echo "- run/: real_pilot_5.log and real_pilot_5.json (every criterion and prediction scored as the plan fixes it), real_pilot_5_summary.log (the tallies), and each part's log, JSON and the engine's reports (parts/)."
+          } > "$pub/README.md"
+          cd "$pub"
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b "$RESULTS_BRANCH"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "The third diagnostics and v0.4's acceptance tests (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/$RESULTS_BRANCH" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/$RESULTS_BRANCH" | cut -f1)" = "$(git rev-parse HEAD)"
+          echo "----- real_pilot_5.log (head) -----"
+          head -60 run/real_pilot_5.log || true
