@@ -22,3 +22,83 @@ verdict's (groups[0] - groups[1], young - old: a decrease is positive):
 The acceptance passes where (i)-(v) pass for both metrics. If it fails: the report, and stop (no further
 design).
 
+new: 401 runs, engine /home/user/metric-autopsy/src/metric_autopsy/__init__.py, 1206 s
+base: 281 runs, engine /tmp/claude-0/-home-user-metric-autopsy/db456a51-1a6c-55a4-a0ce-5b88600b19d7/scratchpad/wt_1337ead/src/metric_autopsy/__init__.py, 1954 s
+
+## The runs
+
+| scenario | metric | the new engine: SUPPORTED | verdicts | mean effect | mean s_m | mean effect at equal depth alone | detection after (A young/old) |
+|---|---|---|---|---|---|---|---|
+| i: equal coupling, gap as on §4 | mi_3bin | 2 of 20 | INCONCLUSIVE [detected_only_after_correction] 1; INCONCLUSIVE [effect_inconclusive] 16; NOT SUPPORTED [metric_invalid_gate0] 1; SUPPORTED [provisional] 2 | +0.0006963 | 0.007903 | +0.0223 | 0.723/0.721 |
+| i: equal coupling, gap as on §4 | norm_pearson | 0 of 20 | INCONCLUSIVE [effect_inconclusive] 20 | +0.0135 | 0.04072 | +0.1024 | 0.830/0.831 |
+| eq0: equal detection, equal coupling | mi_3bin | 1 of 20 | INCONCLUSIVE [effect_inconclusive] 16; NO DETECTABLE EFFECT [no_detectable_effect] 3; SUPPORTED [provisional] 1 | +0.002722 | 0.01639 | +0.002754 | 0.939/0.939 |
+| eq0: equal detection, equal coupling | norm_pearson | 0 of 20 | INCONCLUSIVE [effect_inconclusive] 12; NO DETECTABLE EFFECT [no_detectable_effect] 7; NOT SUPPORTED [opposite_direction] 1 | -0.004138 | 0.06411 | -0.003871 | 0.973/0.973 |
+| eq3: equal detection, decrease of 3 x SESOI | mi_3bin | 19 of 20 | NOT SUPPORTED [metric_invalid_gate0] 1; SUPPORTED [provisional] 19 | +0.05251 | 0.01514 | +0.0535 | 0.937/0.937 |
+| eq3: equal detection, decrease of 3 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.2437 | 0.06147 | +0.2448 | 0.974/0.974 |
+| eq5: equal detection, decrease of 5 x SESOI | mi_3bin | 18 of 20 | NOT SUPPORTED [metric_invalid_gate0] 2; SUPPORTED [provisional] 18 | +0.09038 | 0.01513 | +0.09014 | 0.938/0.938 |
+| eq5: equal detection, decrease of 5 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.4009 | 0.06313 | +0.4044 | 0.972/0.973 |
+| eq7: equal detection, decrease of 7 x SESOI | mi_3bin | 15 of 20 | NOT SUPPORTED [metric_invalid_gate0] 5; SUPPORTED [provisional] 15 | +0.1318 | 0.01709 | +0.1326 | 0.939/0.939 |
+| eq7: equal detection, decrease of 7 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.5671 | 0.06287 | +0.5704 | 0.972/0.972 |
+| gap3: gap as on §4, decrease of 3 x SESOI | mi_3bin | 18 of 20 | NOT SUPPORTED [metric_invalid_gate0] 2; SUPPORTED [provisional] 18 | +0.033 | 0.007761 | +0.06278 | 0.722/0.723 |
+| gap3: gap as on §4, decrease of 3 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.1851 | 0.03959 | +0.3059 | 0.827/0.829 |
+| gap5: gap as on §4, decrease of 5 x SESOI | mi_3bin | 15 of 20 | NOT SUPPORTED [metric_invalid_gate0] 5; SUPPORTED [provisional] 15 | +0.0586 | 0.007338 | +0.0962 | 0.726/0.722 |
+| gap5: gap as on §4, decrease of 5 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.3208 | 0.04208 | +0.453 | 0.832/0.832 |
+| gap7: gap as on §4, decrease of 7 x SESOI | mi_3bin | 16 of 20 | NOT SUPPORTED [metric_invalid_gate0] 4; SUPPORTED [provisional] 16 | +0.08095 | 0.007074 | +0.1358 | 0.717/0.718 |
+| gap7: gap as on §4, decrease of 7 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.4403 | 0.04112 | +0.5891 | 0.828/0.830 |
+| vi-a: equal coupling, the young group's capture varying more | mi_3bin | 0 of 20 | NOT SUPPORTED [metric_invalid_gate0] 20 | +0.09307 | 0.01884 | +0.08436 | 0.861/0.861 |
+| vi-a: equal coupling, the young group's capture varying more | norm_pearson | 0 of 20 | INCONCLUSIVE [detected_only_after_correction] 6; INCONCLUSIVE [effect_inconclusive] 10; NO DETECTABLE EFFECT [no_detectable_effect] 2; NOT SUPPORTED [explained_by_depth] 2 | +0.03854 | 0.05844 | -0.01128 | 0.920/0.920 |
+| vi-b: equal coupling, the old group's capture varying more | mi_3bin | 0 of 20 | NOT SUPPORTED [metric_invalid_gate0] 20 | -0.09233 | 0.01807 | -0.08324 | 0.859/0.859 |
+| vi-b: equal coupling, the old group's capture varying more | norm_pearson | 0 of 20 | INCONCLUSIVE [detected_only_after_correction] 5; INCONCLUSIVE [effect_inconclusive] 12; NO DETECTABLE EFFECT [no_detectable_effect] 3 | -0.03604 | 0.06079 | +0.01215 | 0.917/0.917 |
+| v | norm_pearson | 1 of 1 | SUPPORTED [provisional] 1 | +0.6104 | nan | +0.6534 | 0.780/0.776 |
+
+| scenario | metric | 1337ead's: SUPPORTED | verdicts | mean effect | mean s_m | mean effect at equal depth alone | detection after (A young/old) |
+|---|---|---|---|---|---|---|---|
+| i: equal coupling, gap as on §4 | mi_3bin | 6 of 20 | INCONCLUSIVE [detected_only_after_correction] 10; INCONCLUSIVE [effect_inconclusive] 4; SUPPORTED [provisional] 6 | +0.0223 | 0.01607 | +nan | — |
+| i: equal coupling, gap as on §4 | norm_pearson | 15 of 20 | INCONCLUSIVE [detected_only_after_correction] 3; INCONCLUSIVE [effect_inconclusive] 2; SUPPORTED [provisional] 15 | +0.1024 | 0.06425 | +nan | — |
+| eq0: equal detection, equal coupling | mi_3bin | 1 of 20 | INCONCLUSIVE [effect_inconclusive] 18; NO DETECTABLE EFFECT [no_detectable_effect] 1; SUPPORTED [provisional] 1 | +0.002754 | 0.01628 | +nan | — |
+| eq0: equal detection, equal coupling | norm_pearson | 0 of 20 | INCONCLUSIVE [effect_inconclusive] 12; NO DETECTABLE EFFECT [no_detectable_effect] 7; NOT SUPPORTED [opposite_direction] 1 | -0.003871 | 0.0643 | +nan | — |
+| eq3: equal detection, decrease of 3 x SESOI | mi_3bin | 20 of 20 | SUPPORTED [provisional] 20 | +0.0535 | 0.01536 | +nan | — |
+| eq3: equal detection, decrease of 3 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.2448 | 0.06286 | +nan | — |
+| eq5: equal detection, decrease of 5 x SESOI | mi_3bin | 18 of 20 | NOT SUPPORTED [metric_invalid_gate0] 2; SUPPORTED [provisional] 18 | +0.09014 | 0.01775 | +nan | — |
+| eq5: equal detection, decrease of 5 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.4044 | 0.06284 | +nan | — |
+| eq7: equal detection, decrease of 7 x SESOI | mi_3bin | 13 of 20 | NOT SUPPORTED [metric_invalid_gate0] 7; SUPPORTED [provisional] 13 | +0.1326 | 0.01827 | +nan | — |
+| eq7: equal detection, decrease of 7 x SESOI | norm_pearson | 20 of 20 | SUPPORTED [provisional] 20 | +0.5704 | 0.06439 | +nan | — |
+| vi-a: equal coupling, the young group's capture varying more | mi_3bin | 0 of 20 | NOT SUPPORTED [metric_invalid_gate0] 20 | +0.08436 | 0.01754 | +nan | — |
+| vi-a: equal coupling, the young group's capture varying more | norm_pearson | 0 of 20 | INCONCLUSIVE [effect_inconclusive] 8; NO DETECTABLE EFFECT [no_detectable_effect] 9; NOT SUPPORTED [opposite_direction] 3 | -0.01128 | 0.06258 | +nan | — |
+| vi-b: equal coupling, the old group's capture varying more | mi_3bin | 0 of 20 | NOT SUPPORTED [metric_invalid_gate0] 20 | -0.08324 | 0.01745 | +nan | — |
+| vi-b: equal coupling, the old group's capture varying more | norm_pearson | 0 of 20 | INCONCLUSIVE [effect_inconclusive] 7; NO DETECTABLE EFFECT [no_detectable_effect] 13 | +0.01215 | 0.06262 | +nan | — |
+| v | norm_pearson | 1 of 1 | SUPPORTED [provisional] 1 | +0.6534 | nan | +nan | — |
+
+The new engine's effect at equal depth alone equals 1337ead's effect in 281 of 280 runs on the same data (the thinning to equal depth draws as before).
+
+## The criteria
+
+### mi_3bin
+- (i) PASS: 2 of 20 SUPPORTED (at most 2); mean effect +0.0006963, mean s_m 0.007903, |mean effect| / mean s_m = 0.088 (at most 0.5)
+- (ii) FAIL: 65 of 80 verdicts (class and cause) as the engine of 1337ead's; differ: eq0 seed 5: ('INCONCLUSIVE', 'effect_inconclusive') -> ('NO DETECTABLE EFFECT', 'no_detectable_effect'); eq0 seed 7: ('INCONCLUSIVE', 'effect_inconclusive') -> ('NO DETECTABLE EFFECT', 'no_detectable_effect'); eq3 seed 9: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0'); eq5 seed 0: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq5 seed 12: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq5 seed 13: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0'); eq5 seed 17: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0'); eq7 seed 0: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0'); eq7 seed 4: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq7 seed 5: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq7 seed 8: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0'); eq7 seed 10: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq7 seed 12: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq7 seed 16: ('NOT SUPPORTED', 'metric_invalid_gate0') -> ('SUPPORTED', 'provisional'); eq7 seed 17: ('SUPPORTED', 'provisional') -> ('NOT SUPPORTED', 'metric_invalid_gate0')
+- (iii) PASS: SUPPORTED 19 of 20 (the new engine) against 20 of 20 (1337ead's), at least 19
+- (iv) 3 x SESOI PASS: mean effect / s_m 4.489 with the gap (20 seeds with s_m > 0) against 3.868 at an equal detection (20), ratio 1.161 (at least 0.7); SUPPORTED 18 of 20 with the gap, 19 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 3.775 (20), SUPPORTED 20 of 20
+- (iv) 5 x SESOI PASS: mean effect / s_m 9.796 with the gap (20 seeds with s_m > 0) against 7.757 at an equal detection (20), ratio 1.263 (at least 0.7); SUPPORTED 15 of 20 with the gap, 18 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 6.454 (20), SUPPORTED 18 of 20
+- (iv) 7 x SESOI PASS: mean effect / s_m 20.214 with the gap (20 seeds with s_m > 0) against 13.411 at an equal detection (20), ratio 1.507 (at least 0.7); SUPPORTED 16 of 20 with the gap, 15 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 12.521 (20), SUPPORTED 13 of 20
+- (vi-a) the new engine (reported only): SUPPORTED 0 of 20; mean effect +0.09307, mean effect / s_m 4.957
+- (vi-a) 1337ead's (reported only): SUPPORTED 0 of 20; mean effect +0.08436, mean effect / s_m 4.819
+- (vi-b) the new engine (reported only): SUPPORTED 0 of 20; mean effect -0.09233, mean effect / s_m -5.137
+- (vi-b) 1337ead's (reported only): SUPPORTED 0 of 20; mean effect -0.08324, mean effect / s_m -4.825
+
+### norm_pearson
+- (i) PASS: 0 of 20 SUPPORTED (at most 2); mean effect +0.0135, mean s_m 0.04072, |mean effect| / mean s_m = 0.332 (at most 0.5)
+- (ii) FAIL: 78 of 80 verdicts (class and cause) as the engine of 1337ead's; differ: eq0 seed 6: ('NO DETECTABLE EFFECT', 'no_detectable_effect') -> ('INCONCLUSIVE', 'effect_inconclusive'); eq0 seed 8: ('INCONCLUSIVE', 'effect_inconclusive') -> ('NO DETECTABLE EFFECT', 'no_detectable_effect')
+- (iii) PASS: SUPPORTED 20 of 20 (the new engine) against 20 of 20 (1337ead's), at least 19
+- (iv) 3 x SESOI PASS: mean effect / s_m 4.754 with the gap (20 seeds with s_m > 0) against 3.980 at an equal detection (20), ratio 1.194 (at least 0.7); SUPPORTED 20 of 20 with the gap, 20 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 3.918 (20), SUPPORTED 20 of 20
+- (iv) 5 x SESOI PASS: mean effect / s_m 7.958 with the gap (20 seeds with s_m > 0) against 6.430 at an equal detection (20), ratio 1.238 (at least 0.7); SUPPORTED 20 of 20 with the gap, 20 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 6.484 (20), SUPPORTED 20 of 20
+- (iv) 7 x SESOI PASS: mean effect / s_m 11.720 with the gap (20 seeds with s_m > 0) against 9.153 at an equal detection (20), ratio 1.280 (at least 0.7); SUPPORTED 20 of 20 with the gap, 20 of 20 at an equal detection; 1337ead's at an equal detection: mean effect / s_m 8.960 (20), SUPPORTED 20 of 20
+- (vi-a) the new engine (reported only): SUPPORTED 0 of 20; mean effect +0.03854, mean effect / s_m 0.653
+- (vi-a) 1337ead's (reported only): SUPPORTED 0 of 20; mean effect -0.01128, mean effect / s_m -0.179
+- (vi-b) the new engine (reported only): SUPPORTED 0 of 20; mean effect -0.03604, mean effect / s_m -0.599
+- (vi-b) 1337ead's (reported only): SUPPORTED 0 of 20; mean effect +0.01215, mean effect / s_m 0.193
+
+- (v) PASS: the clean data of tests/test_v03_verdict.py: the new engine SUPPORTED (provisional until replicated) [provisional]; 1337ead's SUPPORTED (provisional until replicated)
+
+The acceptance FAILS: mi_3bin (i) pass, mi_3bin (ii) FAIL, mi_3bin (iii) pass, mi_3bin (iv) pass, norm_pearson (i) pass, norm_pearson (ii) FAIL, norm_pearson (iii) pass, norm_pearson (iv) pass, norm_pearson (v) pass
+
+1954 s

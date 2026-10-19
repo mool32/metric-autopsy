@@ -30,7 +30,8 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   so the verdict, is at equal depth and detection, by the effect's usual rule (no new cause); the change
   12 test of the technical difference and GATE 6 equalize the same way. The dossier gives each gene's
   detection per group uncorrected, at equal depth and after, and the effect at equal depth alone
-  (`effect.detail["detection"]`, `["equal_depth_effect"]`).
+  (`effect.detail["detection"]`, `["equal_depth_effect"]`). **Its acceptance on synthetic data failed, on
+  criterion (ii)** (Known issues).
 - **GATE 4 measures s_m on the data the effect is judged on (the owner's second decisions of
   2026-10-19).** For every claim GATE 4 now runs on one draw of the effect's correction — equal depth (or
   spike-in capture) within each stratum and, with a domain, each cell type, and for a pair the pair's
@@ -226,10 +227,18 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   (`validation/exploratory/differential_sensitivity.log`): the groups' responses to the same injected
   coupling differ by their biology, not only by their detection, so the difference it subtracted was in
   part the effect.
+- **Change 17' failed its acceptance on synthetic data, on criterion (ii)**
+  (`validation/exploratory/detection_equalization.log`, 2026-10-19): at an equal detection the verdicts
+  are those of v0.4 without change 17 (1337ead) in 65 of 80 seeds for `mi_3bin` and 78 of 80 for
+  `norm_pearson`; criteria (i), (iii), (iv) and (v) pass. Of `mi_3bin`'s 15 differences 13 are GATE 0's
+  decision, which moves with s_m now measured on a draw of the corrected data (by 113% on average over
+  the 15 seeds, 17% over the 65 that agree), the rest an equivalence test at its boundary
+  (`detection_equalization_flips.log`). By the owner's rule nothing further is designed; v0.4 is not
+  proposed for the tag.
 - **Change 17' does not reach a difference in detection that is correlated within cells**: where one
   group's cells vary more in capture, the pair's detection shares can be equalized while the cells'
-  shared capture still couples the genes (the acceptance's case (vi), reported, not a criterion:
-  `validation/exploratory/detection_equalization.log`).
+  shared capture still couples the genes (the acceptance's case (vi), reported, not a criterion: no
+  SUPPORTED, and `norm_pearson`'s effect moved by about 0.05 toward the group whose capture varies more).
 - **GATE 0's tolerance is bias_tolerance × s_m with s_m now measured at equal depth and detection**, while
   GATE 0 perturbs the uncorrected data; the line of specificity (change 13) stays on the uncorrected data.
 - **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
