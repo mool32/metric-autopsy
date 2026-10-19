@@ -75,8 +75,11 @@ def test_pubmed_xml_is_parsed():
     <Abstract><AbstractText Label="AIM">To test.</AbstractText><AbstractText>More.</AbstractText></Abstract>
     <Language>eng</Language><PublicationTypeList><PublicationType>Journal Article</PublicationType></PublicationTypeList>
     </Article></MedlineCitation><PubmedData><ArticleIdList><ArticleId IdType="pmc">PMC9</ArticleId></ArticleIdList>
-    </PubmedData></PubmedArticle></PubmedArticleSet>"""
+    <ReferenceList><Reference><Citation>A cited paper.</Citation><ArticleIdList><ArticleId IdType="doi">10.9/ref</ArticleId>
+    <ArticleId IdType="pubmed">456</ArticleId><ArticleId IdType="pmc">PMC1</ArticleId></ArticleIdList></Reference>
+    </ReferenceList></PubmedData></PubmedArticle></PubmedArticleSet>"""
     (r,) = S.parse_pubmed_xml(xml)
+    # the record's own ids, not its references' (PubmedData/ReferenceList holds ArticleIds too)
     assert r["pmid"] == "123" and r["year"] == 2019 and r["doi"] == "10.1/xy" and r["pmcid"] == "PMC9"
     assert r["title"] == "Measures of association" and r["abstract"] == "AIM: To test.\nMore."
     assert r["journal"] == "Nat Methods" and r["pub_types"] == ["Journal Article"]
@@ -147,6 +150,10 @@ def test_the_dry_run_of_the_search(dry):
     assert len(twins) == N_PREPRINT_TWIN
     missing = next(r for r in recs if MISSING_PMID in r["pmids"])
     assert missing["found_by"] == ["europepmc"]  # efetch returned nothing, Europe PMC had it
+    # every PubMed record keeps its own DOI and PMCID, whatever its references' ids (fabricated.py)
+    own = {str(31000000 + 7 * i): f"10.5555/fab.{i}" for i in range(5600)}
+    assert all(len(r["pmids"]) == 1 and r["doi"] == own[r["pmids"][0]] for r in recs if r["pmids"] and r["pmids"][0] in own)
+    assert not any(r["pmcid"].startswith("PMC5") for r in recs)
     # the sample
     sample = (d / "sample.txt").read_text().split()
     assert len(sample) == 5000 == summary["sample"] and summary["sample_seed"] == 20261019
@@ -180,3 +187,29 @@ def test_the_dry_run_of_the_full_texts(dry, tmp_path):
     one = next((tmp_path / "text").glob("*.txt")).read_text()
     assert "### Results" in one and "[Figure 1] The pair by age." in one and "A reference" not in one
     assert "## Abstract" in one and "Eight mice per group" in one
+
+
+def test_a_search_is_rebuilt_from_its_own_responses(dry, tmp_path):
+    out, _ = dry
+    d = out / "search"
+    papers = out / "lookup" / "method_papers.verified.json"
+    args = ["remerge", "--search", str(d), "--out", str(tmp_path / "re"), "--papers", str(papers), "--window-limit", "300"]
+    assert S.main(args) == 0
+    with gzip.open(d / "records.jsonl.gz", "rt") as f, gzip.open(tmp_path / "re" / "records.jsonl.gz", "rt") as g:
+        assert f.read() == g.read()
+    assert (tmp_path / "re" / "sample.txt").read_text() == (d / "sample.txt").read_text()
+    res = json.loads((tmp_path / "re" / "remerge.json").read_text())
+    rows = (d / "requests.tsv").read_text().count("\n") - 1
+    assert res["ok"] and res["replayed"] == rows and not (tmp_path / "re" / "raw").exists()
+    # a request the run did not make, or a response that is not the recorded one, stops the replay
+    with pytest.raises(RuntimeError, match="is not the run's"):
+        S.main(args[:-2] + ["--window-limit", "9999"])
+    bad = tmp_path / "bad"
+    (bad / "raw").mkdir(parents=True)
+    tsv = (d / "requests.tsv").read_text().splitlines()
+    cols = tsv[0].split("\t")
+    first = dict(zip(cols, tsv[1].split("\t")))
+    tsv[1] = "\t".join(first[c] if c != "sha256" else "0" * 64 for c in cols)
+    (bad / "requests.tsv").write_text("\n".join(tsv) + "\n")
+    with pytest.raises(RuntimeError, match="no raw response"):
+        S.main(["remerge", "--search", str(bad), "--out", str(tmp_path / "re2"), "--papers", str(papers)])

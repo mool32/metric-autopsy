@@ -56,6 +56,12 @@ jobs:
           python -I validation/level_b/search.py lookup --out dry/lookup --fabricated
           python -I validation/level_b/search.py search --out dry/search --fabricated --papers dry/lookup/method_papers.verified.json
           grep -v "^  window" dry/search/search.log
+      - name: The search rebuilt from its own recorded responses (remerge, nothing fetched)
+        run: |
+          python -I validation/level_b/search.py remerge --search dry/search --out dry/remerge --papers dry/lookup/method_papers.verified.json > /dev/null
+          cmp <(zcat dry/search/records.jsonl.gz) <(zcat dry/remerge/records.jsonl.gz)
+          cmp dry/search/sample.txt dry/remerge/sample.txt
+          tail -3 dry/remerge/remerge.log
       - name: The full texts on fabricated responses (FABRICATED, nothing fetched)
         run: |
           python -I -c "import gzip, json; rs = [json.loads(x) for x in gzip.open('dry/search/records.jsonl.gz', 'rt')]; open('dry/rids.txt', 'w').write('\n'.join(r['rid'] for r in rs[:60]) + '\n')"

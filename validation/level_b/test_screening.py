@@ -185,3 +185,47 @@ def test_the_fulltext_merge_keeps_what_both_passes_keep_and_sends_the_rest_to_th
     owner = (tmp_path / "out" / "ft_to_owner.txt").read_text()
     assert "R00003" in owner and "pass 2: not read (titles and abstracts: EXCLUDE)" in owner
     assert "R00004" in owner and "not read (no full text)" in owner
+
+
+def _search_of(tmp: Path, name: str, texts: list) -> Path:
+    """A search's list of records with these (title, abstract), numbered in this order."""
+    d = tmp / name
+    d.mkdir()
+    with gzip.open(d / "records.jsonl.gz", "wt") as f:
+        for i, (t, a) in enumerate(texts, 1):
+            f.write(json.dumps(dict(rid=f"R{i:05d}", title=t, abstract=a, journal="J", year=2020, pub_types=[],
+                                    pmid=str(1000 + i), doi="", preprint=False)) + "\n")
+    (d / "sample.txt").write_text("\n".join(f"R{i:05d}" for i in range(1, len(texts) + 1)) + "\n")
+    (d / "SHA256SUMS").write_text("".join(f"{hashlib.sha256((d / n).read_bytes()).hexdigest()}  {n}\n"
+                                          for n in ("records.jsonl.gz", "sample.txt")))
+    return d
+
+
+def test_the_carry_keeps_the_decisions_of_unchanged_texts_and_screens_the_rest(tmp_path):
+    first = [(f"Title {i}", f"Abstract {i}") for i in range(1, 451)]
+    hidden = [(f"Hidden {i}", f"A paper a false merge hid {i}") for i in range(1, 11)]
+    corrected = hidden[:5] + first[:100] + hidden[5:] + first[100:]  # the numbers shift
+    S.make_batches(_search_of(tmp_path, "s1", first), tmp_path / "b1")
+    S.make_batches(_search_of(tmp_path, "s2", corrected), tmp_path / "b2")
+
+    def one(r):
+        return [r, "EXCLUDE", "X1", "-", "Corrigendum to R00004" if r == "R00005" else "a review"]
+    _write_pass(tmp_path / "b1", tmp_path / "p1", one)
+    _write_pass(tmp_path / "b1", tmp_path / "p2", lambda r: [r, "KEEP", "-", "pair", "a claim"] if r == "R00450" else one(r))
+    res = S.carry(tmp_path / "b1", tmp_path / "p1", tmp_path / "p2", tmp_path / "b2", tmp_path / "c")
+    assert res["carried"] == 450 and res["to_screen"] == 10 and res["first_list_not_carried"] == []
+    assert res["note_numbers_translated"] == 2 and res["note_numbers_untranslated"] == []
+    carried = dict(line.split("\t") for line in (tmp_path / "c" / "carried.tsv").read_text().splitlines()[1:])
+    assert carried["R00001"] == "-" and carried["R00006"] == "R00001" and carried["R00460"] == "R00450"
+    p1 = (tmp_path / "c" / "carried_pass1.tsv").read_text()
+    assert "R00010\tEXCLUDE\tX1\t-\tCorrigendum to R00009\n" in p1  # R00005 is now R00010, R00004 R00009
+    rescreen = [json.loads(line)["title"] for line in (tmp_path / "c" / "rescreen" / "batch_01.jsonl").read_text().splitlines()]
+    assert rescreen == [t for t, _ in hidden]
+    _write_pass(tmp_path / "c" / "rescreen", tmp_path / "q1", lambda r: [r, "EXCLUDE", "X4", "-", "no claim"])
+    _write_pass(tmp_path / "c" / "rescreen", tmp_path / "q2", lambda r: [r, "UNCLEAR", "-", "-", "no abstract"])
+    out = S.combine(tmp_path / "b2", tmp_path / "c", tmp_path / "q1", tmp_path / "q2", tmp_path / "all")
+    assert out["pass 1"] == dict(carried=450, screened_again=10, decisions=460)
+    d2, problems = S.read_pass(tmp_path / "b2", tmp_path / "all" / "pass2")
+    assert not problems and d2["R00460"]["decision"] == "KEEP" and d2["R00001"]["decision"] == "UNCLEAR"
+    m = S.merge(tmp_path / "b2", tmp_path / "all" / "pass1", tmp_path / "all" / "pass2", tmp_path / "m")
+    assert m["n_screened"] == 460 and m["to_owner"] == 11 and m["fulltext"] == 11

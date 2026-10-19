@@ -24,6 +24,11 @@ Two runs, each once and by its own label in GitHub Actions (this environment rea
   from its core record in Europe PMC (by PMID, else by its Europe PMC ids; a preprint's own id is tried
   too). A record without an accessible full text is listed so (the protocol: it goes to the owner).
 
+- ``remerge``: a finished search's records rebuilt from its own raw responses, nothing fetched: the search's
+  code runs again with each request answered by the response the run recorded for it (``requests.tsv`` and
+  ``raw/``, matched by URL, parameters and SHA256), so a fix of the parsing or the merging takes effect on
+  the same data. Written to a new directory; the run's own files are left as they are.
+
 ``--fabricated`` replaces the network with fabricated responses (the dry run): every path of the code runs
 and its outputs are checked; nothing is fetched. NCBI's ``tool`` parameter names this script; no e-mail is
 sent.
@@ -31,6 +36,7 @@ sent.
     python -I search.py lookup --out OUT [--fabricated]
     python -I search.py search --out OUT [--papers method_papers.json] [--fabricated]
     python -I search.py fulltext --out OUT [--list fulltext_list.tsv] [--fabricated]
+    python -I search.py remerge --search RESULTS --out OUT [--papers method_papers.json]
 """
 from __future__ import annotations
 
@@ -96,6 +102,12 @@ EUROPEPMC_QUERY = (f'{_epmc_block(SINGLE_CELL)} AND {_epmc_block(COORDINATION)} 
 # --------------------------------------------------------------------------- #
 # the network, recorded
 # --------------------------------------------------------------------------- #
+def shown_params(params: dict) -> str:
+    """A request's parameters as `requests.tsv` records them (a long value cut, with its length)."""
+    shown = {k: (v if len(str(v)) <= 120 else f"{str(v)[:60]}… ({len(str(v))} characters)") for k, v in params.items()}
+    return json.dumps(shown, ensure_ascii=False)
+
+
 class Net:
     """GET and POST with retries on network errors and on 429 and 5xx; every request recorded."""
 
@@ -130,18 +142,51 @@ class Net:
         raise RuntimeError(f"the request failed six times ({last_error}): {url}")
 
     def _record(self, url, params, post, status, body, attempt):
-        shown = {k: (v if len(str(v)) <= 120 else f"{str(v)[:60]}… ({len(str(v))} characters)") for k, v in params.items()}
         self.rows.append(dict(time=datetime.now(timezone.utc).isoformat(timespec="seconds"), method="POST" if post else "GET",
-                              url=url, params=json.dumps(shown, ensure_ascii=False), status=status, bytes=len(body),
+                              url=url, params=shown_params(params), status=status, bytes=len(body),
                               sha256=hashlib.sha256(body).hexdigest(), attempt=attempt + 1))
+
+
+class Replay:
+    """The responses a finished run recorded, in its order: each request must be the next one of its
+    requests.tsv (method, URL and parameters as recorded), and gets the raw response whose SHA256 the run
+    recorded for it. Nothing is fetched."""
+
+    def __init__(self, log, root: Path):
+        self.log, self.rows, self.last = log, [], {}
+        self.bodies = {}
+        for p in sorted((root / "raw").rglob("*.gz")):
+            with gzip.open(p) as g:
+                body = g.read()
+            self.bodies[hashlib.sha256(body).hexdigest()] = body
+        lines = (root / "requests.tsv").read_text().splitlines()
+        cols = lines[0].split("\t")
+        self.recorded = [dict(zip(cols, line.split("\t"))) for line in lines[1:] if line.strip()]
+        self.i = 0
+
+    def get(self, url: str, params: dict, post: bool = False) -> bytes:
+        if self.i >= len(self.recorded):
+            raise RuntimeError(f"the run recorded no more requests; asked for {url}")
+        rec = self.recorded[self.i]
+        self.i += 1
+        shown = shown_params(params)
+        if (rec["method"], rec["url"], rec["params"]) != ("POST" if post else "GET", url, shown):
+            raise RuntimeError(f"request {self.i} is not the run's: {url} {shown}, recorded {rec['url']} {rec['params']}")
+        if rec["status"] != "200":
+            raise urllib.error.HTTPError(url, int(rec["status"]), "as recorded", None, None)
+        body = self.bodies.get(rec["sha256"])
+        if body is None:
+            raise RuntimeError(f"request {self.i}: no raw response with the recorded SHA256 {rec['sha256']}")
+        self.rows.append(dict(rec))
+        return body
 
 
 # --------------------------------------------------------------------------- #
 # outputs
 # --------------------------------------------------------------------------- #
 class Out:
-    def __init__(self, root: Path):
-        self.root = root
+    def __init__(self, root: Path, write_raw: bool = True):
+        self.root, self.write_raw = root, write_raw
         root.mkdir(parents=True, exist_ok=True)
         self.lines = []
 
@@ -151,6 +196,8 @@ class Out:
 
     def raw(self, rel: str, body: bytes) -> str:
         p = self.root / "raw" / f"{rel}.gz"
+        if not self.write_raw:  # a replay: the run's raw responses are where they were
+            return str(p.relative_to(self.root))
         p.parent.mkdir(parents=True, exist_ok=True)
         with gzip.GzipFile(filename="", mode="wb", fileobj=p.open("wb"), mtime=0) as g:
             g.write(body)
@@ -191,7 +238,8 @@ def parse_pubmed_xml(body: bytes) -> list:
         a = mc.find("Article") if mc is not None else None
         if mc is None or a is None:
             continue
-        ids = {i.get("IdType"): (i.text or "").strip() for i in (pd.iter("ArticleId") if pd is not None else [])}
+        # the article's own ids only: PubmedData/ReferenceList holds the references' ArticleIds too
+        ids = {i.get("IdType"): (i.text or "").strip() for i in (pd.findall("ArticleIdList/ArticleId") if pd is not None else [])}
         doi = ids.get("doi") or next((e.text for e in a.iter("ELocationID") if e.get("EIdType") == "doi"), "")
         parts = []
         for t in a.iter("AbstractText"):
@@ -319,6 +367,7 @@ def pubmed(net, out: Out, window_limit: int = WINDOW_LIMIT) -> tuple[list, dict]
         r = json.loads(body).get("esearchresult", {})
         n = int(r.get("count", 0))
         if n > window_limit:
+            out.raw(f"pubmed/esearch-{a:%Y%m%d}-{b:%Y%m%d}-split.json", body)
             if a == b:
                 raise RuntimeError(f"one day, {a}, holds {n} records, more than {window_limit}")
             mid = a + (b - a) // 2
@@ -509,9 +558,9 @@ def search(net, out: Out, papers: dict, window_limit: int = WINDOW_LIMIT) -> dic
     sample = draw_sample(len(merged))
     for i in sample:
         merged[i]["in_sample"] = True
-    with gzip.open(out.root / "records.jsonl.gz", "wt", encoding="utf-8") as f:
-        for r in merged:
-            f.write(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n")
+    content = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in merged).encode()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=(out.root / "records.jsonl.gz").open("wb"), mtime=0) as g:
+        g.write(content)  # no name or time in the header: the same records give the same file
     (out.root / "sample.txt").write_text("".join(f"{merged[i]['rid']}\n" for i in sample))
     found = {}
     for r in merged:
@@ -527,7 +576,7 @@ def search(net, out: Out, papers: dict, window_limit: int = WINDOW_LIMIT) -> dic
                "replace=False))" if len(merged) > SAMPLE_SIZE else " (all the records: no more than 5,000)"))
     return dict(pubmed=pm_s, europepmc=ep_s, citations=ci_s, merged=len(merged), found_by=found,
                 sample=len(sample), sample_seed=SAMPLE_SEED if len(merged) > SAMPLE_SIZE else None,
-                numpy=np.__version__)
+                numpy=np.__version__, records_content_sha256=hashlib.sha256(content).hexdigest())
 
 
 # --------------------------------------------------------------------------- #
@@ -609,13 +658,35 @@ def fulltext(net, out: Out, items: list) -> dict:
 # --------------------------------------------------------------------------- #
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("mode", choices=("lookup", "search", "fulltext"))
+    ap.add_argument("mode", choices=("lookup", "search", "fulltext", "remerge"))
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--papers", type=Path, default=PAPERS)
     ap.add_argument("--fabricated", action="store_true", help="fabricated responses: the dry run, nothing fetched")
     ap.add_argument("--window-limit", type=int, default=WINDOW_LIMIT, help=argparse.SUPPRESS)
     ap.add_argument("--list", type=Path, default=FULLTEXT_LIST, help="fulltext: the records whose full texts are fetched")
+    ap.add_argument("--search", type=Path, help="remerge: the finished search's directory (raw/, requests.tsv)")
     a = ap.parse_args(argv)
+    if a.mode == "remerge":
+        if a.search is None:
+            ap.error("remerge needs --search")
+        out = Out(a.out, write_raw=False)
+        _header(out, a.mode, False)
+        out.log(f"The search's raw responses: {a.search} (each request answered by the response it recorded)")
+        out.log()
+        own = a.search / "method_papers.json"  # the results branch keeps the papers the run used
+        papers = json.loads((own if own.exists() else a.papers).read_text())
+        net = Replay(out.log, a.search)
+        res = search(net, out, papers, a.window_limit)
+        if net.i != len(net.recorded):
+            raise RuntimeError(f"{len(net.recorded) - net.i} recorded requests were not replayed")
+        out.log(f"\nAll {net.i} recorded requests replayed, each answered by its recorded response.")
+        out.log(f"records.jsonl.gz holds {res['merged']} records; SHA256 of its content (unzipped) "
+                f"{res['records_content_sha256']}")
+        out.finish("remerge", net, dict(res, ok=True, replayed=net.i, papers=papers["papers"]))
+        names = ["records.jsonl.gz", "sample.txt", "requests.tsv", "remerge.log", "remerge.json"]
+        (out.root / "SHA256SUMS").write_text("".join(f"{hashlib.sha256((out.root / n).read_bytes()).hexdigest()}  {n}\n"
+                                                     for n in names))
+        return 0
     out = Out(a.out)
     _header(out, a.mode, a.fabricated)
     papers = json.loads(a.papers.read_text())

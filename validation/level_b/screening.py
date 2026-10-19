@@ -5,6 +5,8 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py batches --search <results/level-b-search> --out <dir>
     python -I validation/level_b/screening.py check --batches <dir> --decisions <pass dir>
     python -I validation/level_b/screening.py merge --batches <dir> --pass1 <dir> --pass2 <dir> --out <dir>
+    python -I validation/level_b/screening.py carry --old-batches <dir> --pass1 <dir> --pass2 <dir> --batches <dir> --out <dir>
+    python -I validation/level_b/screening.py combine --batches <dir> --carried <dir> --pass1 <dir> --pass2 <dir> --out <dir>
     python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
@@ -17,6 +19,11 @@ the order of their numbers, `BATCH` to a batch, with the fields the screeners re
 nothing of how a record was found: `batch_NN.jsonl` for the tools, `batch_NN.txt` for the screener (the
 same records as text in short lines). `check` checks a pass's decision files against `screening.md`'s
 format; `check-one` one batch's file (the screener runs it before finishing).
+`carry` takes a first list's decisions to a corrected list of the same search: a record of the corrected list
+whose text, as the screener reads it (`as_text` without its number), a record of the first list had gets that
+record's decisions from each pass, the records' numbers named in its notes translated; the rest are written
+as batches that both passes screen as any batch (`rescreen/`). `combine` writes each pass's decisions on the
+corrected list, the carried ones and the rescreen's, per batch of the corrected list, for `check` and `merge`.
 `merge` compares the passes: Cohen's kappa over the three decisions, the counts of every step (a
 PRISMA-style table) per pass, the records for the owner (decided differently by the two passes, or unclear
 in either), the counts of claims about sets and global measures (section 1), and the records whose full text
@@ -36,6 +43,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import sys
 import textwrap
 import xml.etree.ElementTree as ET
@@ -80,6 +88,26 @@ def as_text(r: dict) -> str:
     return "\n".join(parts) + "\n"
 
 
+def screened_text(r: dict) -> str:
+    """What the screener read of a record, without its number."""
+    return as_text({k: r.get(k) for k in FIELDS}).split("\n", 1)[1]
+
+
+def _write_batch(out: Path, name: str, records: list) -> dict:
+    with open(out / name, "w") as f, open(out / name.replace(".jsonl", ".txt"), "w") as t:
+        for r in records:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            t.write(as_text(r) + "\n")
+    return dict(name=name, records=len(records), first=records[0]["rid"], last=records[-1]["rid"], sha256=sha256(out / name),
+                text_sha256=sha256(out / name.replace(".jsonl", ".txt")))
+
+
+def _batch_records(batches: Path) -> list:
+    manifest = json.loads((batches / "manifest.json").read_text())
+    return [json.loads(line) for b in manifest["batches"] for line in (batches / b["name"]).read_text().splitlines()
+            if line.strip()]
+
+
 def make_batches(search: Path, out: Path, size: int = BATCH) -> dict:
     sums = {}
     for line in (search / "SHA256SUMS").read_text().splitlines():
@@ -97,16 +125,9 @@ def make_batches(search: Path, out: Path, size: int = BATCH) -> dict:
         raise SystemExit(f"{len(missing)} records of the sample are not in the list: {missing[:5]}")
     rids = sorted(sample)
     out.mkdir(parents=True, exist_ok=True)
-    files = []
-    for k in range(0, len(rids), size):
-        name = f"batch_{k // size + 1:02d}.jsonl"
-        with open(out / name, "w") as f, open(out / name.replace(".jsonl", ".txt"), "w") as t:
-            for rid in rids[k:k + size]:
-                r = {key: recs[rid].get(key) for key in FIELDS}
-                f.write(json.dumps(r, ensure_ascii=False) + "\n")
-                t.write(as_text(r) + "\n")
-        files.append(dict(name=name, records=len(rids[k:k + size]), first=rids[k], last=rids[min(k + size, len(rids)) - 1],
-                          sha256=sha256(out / name), text_sha256=sha256(out / name.replace(".jsonl", ".txt"))))
+    files = [_write_batch(out, f"batch_{k // size + 1:02d}.jsonl", [{key: recs[rid].get(key) for key in FIELDS}
+                                                                    for rid in rids[k:k + size]])
+             for k in range(0, len(rids), size)]
     manifest = dict(records_sha256=sums["records.jsonl.gz"], sample_sha256=sums["sample.txt"], n_list=len(recs),
                     n_screened=len(rids), batch_size=size, batches=files)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
@@ -218,6 +239,91 @@ def merge(batches: Path, pass1: Path, pass2: Path, out: Path) -> dict:
     (out / "all.tsv").write_text(head + "\n" + "\n".join(row(r) for r in rids) + "\n")
     (out / "to_owner.tsv").write_text(head + "\n" + "\n".join(row(r) for r in owner) + "\n")
     (out / "fulltext.txt").write_text("\n".join(fulltext) + "\n")
+    return res
+
+
+def carry(old_batches: Path, pass1: Path, pass2: Path, batches: Path, out: Path, size: int = BATCH) -> dict:
+    """The first list's decisions on the corrected list where a record's screened text is unchanged; the
+    others as batches to screen (`rescreen/`)."""
+    old = _batch_records(old_batches)
+    new = _batch_records(batches)
+    by_text = {}
+    for r in old:
+        by_text.setdefault(screened_text(r), []).append(r["rid"])
+    if any(len(v) > 1 for v in by_text.values()):
+        raise SystemExit("records of the first list share a text: the carry would be ambiguous")
+    old_of = {r["rid"]: (by_text.get(screened_text(r)) or [None])[0] for r in new}
+    new_of = {o: n for n, o in old_of.items() if o}
+    if len(new_of) != sum(1 for o in old_of.values() if o):
+        raise SystemExit("one record of the first list matches several of the corrected list")
+    decided = {}
+    for k, d in ((1, pass1), (2, pass2)):
+        dec, problems = read_pass(old_batches, d)
+        if problems:
+            raise SystemExit(f"pass {k}'s files do not check:\n" + "\n".join(problems))
+        decided[k] = dec
+    out.mkdir(parents=True, exist_ok=True)
+    untranslated, translated = set(), 0
+
+    def translate(note):
+        def one(m):
+            nonlocal translated
+            if m.group(0) in new_of:
+                translated += 1
+                return new_of[m.group(0)]
+            untranslated.add(m.group(0))
+            return m.group(0)
+        return re.sub(r"\bR\d{5}\b", one, note)
+    carried = [r["rid"] for r in new if old_of[r["rid"]]]
+    for k in (1, 2):
+        rows = ["\t".join(HEADER)]
+        for rid in carried:
+            x = decided[k][old_of[rid]]
+            rows.append("\t".join([rid, x["decision"], x["code"], ",".join(x["kinds"]) or "-", translate(x["note"])]))
+        (out / f"carried_pass{k}.tsv").write_text("\n".join(rows) + "\n")
+    (out / "carried.tsv").write_text("rid\tfirst_list_rid\n" + "".join(f"{r['rid']}\t{old_of[r['rid']] or '-'}\n" for r in new))
+    left = [r for r in new if not old_of[r["rid"]]]
+    re_dir = out / "rescreen"
+    re_dir.mkdir(exist_ok=True)
+    files = [_write_batch(re_dir, f"batch_{k // size + 1:02d}.jsonl", left[k:k + size]) for k in range(0, len(left), size)]
+    man_new = json.loads((batches / "manifest.json").read_text())
+    (re_dir / "manifest.json").write_text(json.dumps(dict(
+        records_sha256=man_new["records_sha256"], sample_sha256=man_new["sample_sha256"], n_list=man_new["n_list"],
+        n_screened=len(left), batch_size=size, batches=files), indent=1) + "\n")
+    res = dict(first_list=len(old), corrected_list=len(new), carried=len(carried), to_screen=len(left),
+               first_list_not_carried=sorted(set(r["rid"] for r in old) - set(new_of)),
+               note_numbers_translated=translated, note_numbers_untranslated=sorted(untranslated),
+               rescreen_batches=len(files))
+    (out / "carry.json").write_text(json.dumps(res, indent=1) + "\n")
+    return res
+
+
+def combine(batches: Path, carried: Path, pass1: Path, pass2: Path, out: Path) -> dict:
+    """Each pass's decisions on the corrected list (the carried and the rescreen's), per batch of the list."""
+    manifest = json.loads((batches / "manifest.json").read_text())
+    rows = [line.split("\t") for line in (carried / "carried.tsv").read_text().splitlines()[1:] if line.strip()]
+    kept = [rid for rid, o in rows if o != "-"]
+    res = {}
+    for k, d in ((1, pass1), (2, pass2)):
+        dec, problems = read_decisions(carried / f"carried_pass{k}.tsv", kept)
+        more, p2 = read_pass(carried / "rescreen", d)
+        if problems or p2:
+            raise SystemExit(f"pass {k}'s files do not check:\n" + "\n".join(problems + p2))
+        if set(dec) & set(more):
+            raise SystemExit(f"pass {k}: records both carried and screened again")
+        dec.update(more)
+        (out / f"pass{k}").mkdir(parents=True, exist_ok=True)
+        n = 0
+        for b in manifest["batches"]:
+            rids = read_batch(batches / b["name"])
+            missing = [r for r in rids if r not in dec]
+            if missing:
+                raise SystemExit(f"pass {k}: no decision for {len(missing)} records of {b['name']}: {missing[:5]}")
+            lines = ["\t".join(HEADER)] + ["\t".join([r, dec[r]["decision"], dec[r]["code"], ",".join(dec[r]["kinds"]) or "-",
+                                                     dec[r]["note"]]) for r in rids]
+            (out / f"pass{k}" / b["name"].replace(".jsonl", ".tsv")).write_text("\n".join(lines) + "\n")
+            n += len(rids)
+        res[f"pass {k}"] = dict(carried=len(kept), screened_again=len(more), decisions=n)
     return res
 
 
@@ -482,7 +588,25 @@ def main(argv=None) -> int:
     m.add_argument("--pass1", type=Path, required=True)
     m.add_argument("--pass2", type=Path, required=True)
     m.add_argument("--out", type=Path, required=True)
+    cy = sub.add_parser("carry")
+    cy.add_argument("--old-batches", type=Path, required=True)
+    cy.add_argument("--pass1", type=Path, required=True)
+    cy.add_argument("--pass2", type=Path, required=True)
+    cy.add_argument("--batches", type=Path, required=True)
+    cy.add_argument("--out", type=Path, required=True)
+    cb = sub.add_parser("combine")
+    cb.add_argument("--batches", type=Path, required=True)
+    cb.add_argument("--carried", type=Path, required=True)
+    cb.add_argument("--pass1", type=Path, required=True)
+    cb.add_argument("--pass2", type=Path, required=True)
+    cb.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
+    if a.mode == "carry":
+        print(json.dumps(carry(a.old_batches, a.pass1, a.pass2, a.batches, a.out), indent=1))
+        return 0
+    if a.mode == "combine":
+        print(json.dumps(combine(a.batches, a.carried, a.pass1, a.pass2, a.out), indent=1))
+        return 0
     if a.mode == "batches":
         man = make_batches(a.search, a.out, a.size)
         print(f"{man['n_screened']} of {man['n_list']} records in {len(man['batches'])} batches; records.jsonl.gz "

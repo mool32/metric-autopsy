@@ -8,9 +8,13 @@ core record; one PMID whose efetch returns nothing. With every source merged the
 5,000 records, so the sample is drawn. Every request is checked: PubMed's term must be the protocol's
 query, Europe PMC's search the protocol's or a lookup's or a batch of ids. For the full texts: every third
 PubMed record that Europe PMC holds has a PMCID in its core record (but not in PubMed's), and the full text
-of every other such PMCID is open (PubMed gives these PMCIDs too); the even preprints' full texts are open."""
+of every other such PMCID is open (PubMed gives these PMCIDs too); the even preprints' full texts are open.
+Every fifth PubMed record lists its references with their ids, as PubMed does: the next record's DOI and PMID
+and a PMCID of their own (a parser that took them for the record's own would merge the two). Each response
+is recorded as `search.Net` records it, with its SHA256, so that a dry run can be replayed (`remerge`)."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import urllib.error
@@ -18,7 +22,7 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import date, timedelta
 
-from search import EUROPEPMC_QUERY, PAPERS, PUBMED_TERM
+from search import EUROPEPMC_QUERY, PAPERS, PUBMED_TERM, shown_params
 
 N_PUBMED, N_BOTH, N_EPMC_ONLY, N_PREPRINT, N_PREPRINT_TWIN, N_CITING = 5600, 5200, 500, 100, 30, 40
 MISSING_PMID = "31000077"
@@ -95,9 +99,13 @@ class Fabricated:
 
     # ------------------------------------------------------------------ the one entry point
     def get(self, url: str, params: dict, post: bool = False) -> bytes:
-        self.rows.append(dict(time="fabricated", method="POST" if post else "GET", url=url,
-                              params=json.dumps({k: str(v)[:80] for k, v in params.items()}), status=200, bytes=0,
-                              sha256="-", attempt=1))
+        self.rows.append(dict(time="fabricated", method="POST" if post else "GET", url=url, params=shown_params(params),
+                              status=200, bytes=0, sha256=hashlib.sha256(b"").hexdigest(), attempt=1))
+        body = self._respond(url, params, post)
+        self.rows[-1].update(bytes=len(body), sha256=hashlib.sha256(body).hexdigest())
+        return body
+
+    def _respond(self, url, params, post):
         path = urllib.parse.urlsplit(url).path
         if path.endswith("/esearch.fcgi"):
             return self._esearch(params)
@@ -177,6 +185,16 @@ class Fabricated:
             i = (int(pmid) - 31000000) // 7
             if i % 6 == 0 and i < N_BOTH:  # PubMed gives the PMCID of every other record whose core record has one
                 ET.SubElement(idl, "ArticleId", IdType="pmc").text = f"PMC{7000000 + i}"
+            if i % 5 == 1:  # the references, each with its own ids, after the record's
+                refs = ET.SubElement(pdat, "ReferenceList")
+                nxt = self.pm[(i + 1) % N_PUBMED]
+                for k, (rdoi, rpmid) in enumerate([("10.9999/unrelated", "20000001"), (nxt["doi"], nxt["pmid"])]):
+                    ref = ET.SubElement(refs, "Reference")
+                    ET.SubElement(ref, "Citation").text = f"Reference {k + 1}."
+                    ril = ET.SubElement(ref, "ArticleIdList")
+                    ET.SubElement(ril, "ArticleId", IdType="doi").text = rdoi
+                    ET.SubElement(ril, "ArticleId", IdType="pubmed").text = rpmid
+                    ET.SubElement(ril, "ArticleId", IdType="pmc").text = f"PMC{5000000 + 10 * i + k}"
         return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
     def _epmc_search(self, params):
