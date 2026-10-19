@@ -113,22 +113,31 @@ the reference of the other's annotation.
 conditions (fewer cannot answer the first question; see the runs), selected by rules fixed before
 any run and before any look at the engine's output on them.
 
-Selection rules:
-- the claim's metric is of a type v0.4 can check (`v0.4_spec.md`): a pair correlation, a measure of
-  coordination of a gene set if v0.4 has the set coupling probe (change 9), or a marker's mean
-  expression through the module probe;
-- the data are public, with donor (or animal) ids, and at least 3 to 5 donors per group;
-- an independent source of the verdict exists and is recorded before the run: a causal experiment,
-  a published re-analysis (for claims of noise, of the kind v2 leaves to a later version,
-  Ibañez-Solé et al. 2022, eLife, is one), or a replication that does not share the suspected
-  artifact: another technology, or a design in which the artifact cannot arise. A repeat by the
-  same method on data of the same type repeats the artifact too and is not a verdict (the owner,
-  2026-10-12);
+Selection rules (narrowed to coordination by the owner on 2026-10-19, the second decisions; the
+search, the screening and their samples: `level_b_protocol.md`, approved the same day):
+- the claim is about coordination, and its metric is of a type v0.4 can check (`v0.4_spec.md`): a pair
+  correlation. A claim about the coordination of a gene set, or a global measure, needs the set
+  coupling probe (change 9, not coded): such claims are listed and counted at screening, not kept,
+  and the owner decides about change 9 from those counts. Claims on a metric of level (a marker's mean
+  expression) are not searched for;
+- the data are public, with donor (or animal) ids, and enough donors for an exact two-sided
+  permutation test to reach p < 0.05 (4 against 4 or 3 against 5; 6 pairs; not 3 against 3 or 3
+  against 4);
+- for the second question only (rightness), an independent source of the verdict, recorded before the
+  run: a causal experiment, a published re-analysis (for claims of noise, of the kind v2 leaves to a
+  later version, Ibañez-Solé et al. 2022, eLife, is one), or a replication that does not share the
+  suspected artifact: another technology, or a design in which the artifact cannot arise. A repeat by
+  the same method on data of the same type repeats the artifact too and is not a verdict (the owner,
+  2026-10-12). The first question, the frequency, needs no verdict;
 - the search that finds the claims (sources, terms, dates) is written down before it is run, and
   every claim it finds is listed with the reason it is kept or left out.
 
-**The first candidate: Levy et al. 2020** (Nat Metab 2:1305–1315), the loss of gene-to-gene
-coordination with age, by the global coordination level (GCL).
+**Levy et al. 2020 leaves the first queue** (the owner, 2026-10-19, the second decisions): GCL is a
+measure of a set, which v0.4 cannot check without change 9; its forward citations stay a source of the
+search, and the claims about sets they bring are counted. What follows is kept for change 9.
+
+**The first candidate (until 2026-10-19): Levy et al. 2020** (Nat Metab 2:1305–1315), the loss of
+gene-to-gene coordination with age, by the global coordination level (GCL).
 - *What GCL reads.* In the method papers of the same group (Sci Rep 2021,
   doi:10.1038/s41598-021-90353-w; Amit et al. 2022, Sci Rep, doi:10.1038/s41598-022-11507-y) the
   genes, the top 2,000 expressed in Amit et al. 2022, are split at random into two complementary
