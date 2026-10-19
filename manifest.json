@@ -1,0 +1,277 @@
+{
+ "backgrounds": {
+  "B1": {
+   "cells": 5280,
+   "content_sha256": "51d25d6997586e725037c4a4f122ac35091ec9f11b432fa0a620560d9e558098",
+   "donors": 24,
+   "file": "B1.npz",
+   "genes": 2000,
+   "pool": 24,
+   "sha256": "f168ee9b25d40e13cad0d173a5aaa17e664806540b75aa47cddda5cd856ba307"
+  },
+  "B2": {
+   "cells": 2640,
+   "content_sha256": "daf4c2e68e3cc9e2a00b960e4b44b794d91d72ef20f561066e36669e5292cb0b",
+   "donors": 12,
+   "file": "B2.npz",
+   "genes": 2000,
+   "pool": 24,
+   "sha256": "270ffda7750824cc7ec3ff8cfe82e4736c0324733364532fc4e05ed5ef922e15"
+  }
+ },
+ "beacon": {
+  "chain": "quicknet",
+  "chain_hash": "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971",
+  "key": "96c171768e5869559734626226fca1d440b9281fc4dcbf863de411e104c64e15",
+  "public_key": "83cf0f2896adee7eb8b5f01fcad3912212c437e0073e911fb90022d3e760183c8c4b450b6a0a6c3ac6a5776a2d1064510d1fec758c921cc22b0e17e63aaf4bcb5ed66304de9cf809bd274ca73bab4af5a6e9c76a4bc09e76eae8991ef5ece45a",
+  "randomness": "96c171768e5869559734626226fca1d440b9281fc4dcbf863de411e104c64e15",
+  "round": 33215386,
+  "round_time_utc": "2026-10-19T22:38:42+00:00",
+  "signature": "8a236f092357cffa4881d1f712a90a1b8b5ed47ec866d6c5c1e4534f19f94838cfdc192e2adfe2eecf5d5ffd29806bf4"
+ },
+ "datasets": [
+  {
+   "cards": [
+    {
+     "card_sha256": "9e5bee38443ba0db253d8ac44c112afda50dbdd6df9866b1f331ab3b249d295e",
+     "error": false,
+     "id": "D0001",
+     "report_sha256": "81d197afba5a3cd0364cff3b2eb9b75e4804f0bd95a9825bc83e566fc3a513c3"
+    }
+   ],
+   "data_sha256": "7c891f57057755b986fcf0870c9b24a765d8fd594b6e1b6b9407f62684b3b4c6",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d11",
+    "B1d12",
+    "B1d13",
+    "B1d15",
+    "B1d16",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d22",
+    "B1d23",
+    "B1d5",
+    "B1d7",
+    "B1d8"
+   ],
+   "id": "D0001"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "d42efc2c6d18b38d7b7f760a2d2a51c828b0918eec84dd181c5f7f0e66933985",
+     "error": false,
+     "id": "D0002",
+     "report_sha256": "c3038e3b9af3c1284e0cc37787e334d7052a79ef9682fc91b4cee30ba1498492"
+    }
+   ],
+   "data_sha256": "0bb5a86dc6a5bce5ac40818726fe75c437b3bc3d9167ba73f427025763e4d8a8",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d11",
+    "B1d12",
+    "B1d13",
+    "B1d15",
+    "B1d16",
+    "B1d17",
+    "B1d19",
+    "B1d22",
+    "B1d23",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d6",
+    "B1d9"
+   ],
+   "id": "D0002"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "f12803911da7988d30feeaad97d46e65eba0590861c99e7de15e50c8ef622698",
+     "error": false,
+     "id": "D0003",
+     "report_sha256": "e6b8a92452f5ecebdc5e19dab7725a053318b6cbd8d3c02ed541ab431911c17e"
+    }
+   ],
+   "data_sha256": "057ccaac2bc8901878e3c5533cd481341dadcb79af7e04c9612127530e7e56d9",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d10",
+    "B1d12",
+    "B1d14",
+    "B1d16",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d3",
+    "B1d4",
+    "B1d6",
+    "B1d7",
+    "B1d8"
+   ],
+   "id": "D0003"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "a80d2e7555f82cbfab582596f181cca3b2dc048262f2db8a071e6b3ec3ab5d65",
+     "error": false,
+     "id": "D0004",
+     "report_sha256": "4436b2f662412e0f5236e27886697038b7dd4bae6f68c2c3c190fb486e2f1026"
+    }
+   ],
+   "data_sha256": "e918e56eec5fffd948c05f53909a37c00b2c291c2d3e186da99cf06ba8db5a00",
+   "donors": [
+    "B1d0",
+    "B1d10",
+    "B1d13",
+    "B1d15",
+    "B1d16",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d22",
+    "B1d23",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d7",
+    "B1d9"
+   ],
+   "id": "D0004"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "0b45adf313e9b2ea6e64dab5cf7e3c50069e6d09e5af988fb6d6ecf6dc42eee4",
+     "error": false,
+     "id": "D0005",
+     "report_sha256": "19a20c6621b6d45c3cc1c6b0ab0b8e5c42350a5a8f7a959c213af1ef0bfc3770"
+    }
+   ],
+   "data_sha256": "6d4cdb3e23e4633ed5bb0505b281f921f1b1414f5b76d8bc24faf246641eca00",
+   "donors": [
+    "B1d11",
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d16",
+    "B1d17",
+    "B1d18",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d22",
+    "B1d4",
+    "B1d5",
+    "B1d6",
+    "B1d7",
+    "B1d8"
+   ],
+   "id": "D0005"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "b34d53b807ab4f5ba0f5a0fa0d8e3af74e46227f61c761d98e6be1c3551f7fca",
+     "error": false,
+     "id": "D0006",
+     "report_sha256": "f44830999e9949eafa302680fac108f2dd71fffdb2e2059fca318646dfe3de3f"
+    }
+   ],
+   "data_sha256": "1c0acc8f2331ad3a1985d8b1e88ad8bd228c36a29a06dfc011c7b72777bf01ce",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d11",
+    "B1d12",
+    "B1d14",
+    "B1d15",
+    "B1d17",
+    "B1d18",
+    "B1d2",
+    "B1d22",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d7",
+    "B1d8",
+    "B1d9"
+   ],
+   "id": "D0006"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "e16030aec3493c39f4278e09d79e0c8c2633517692d393efb57db6c417db373c",
+     "error": false,
+     "id": "D0007",
+     "report_sha256": "b0b7a01651ff3609caced299b28404145866c918ce503cfc35061389f55560eb"
+    }
+   ],
+   "data_sha256": "112fe804556e67b3734bd84939f9985a842069a2fd32f74bbdc660aa3e4639c7",
+   "donors": [
+    "B1d0",
+    "B1d11",
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d16",
+    "B1d17",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d23",
+    "B1d4",
+    "B1d5",
+    "B1d7"
+   ],
+   "id": "D0007"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "9ff036002e3471c8440eb4c6ba20aef6830c8757b3f749e0ceae48f88d1d4057",
+     "error": false,
+     "id": "D0008",
+     "report_sha256": "291ff9dad00f3be0c00174e481f550862baa966f81fcddcad552c5e4a573f149"
+    }
+   ],
+   "data_sha256": "1aaeb0461593960f57b899427a367979d96fe072ce54d28b098226ccf7b5784e",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d15",
+    "B1d17",
+    "B1d18",
+    "B1d2",
+    "B1d21",
+    "B1d22",
+    "B1d23",
+    "B1d5",
+    "B1d6",
+    "B1d7",
+    "B1d9"
+   ],
+   "id": "D0008"
+  }
+ ],
+ "key": "96c171768e5869559734626226fca1d440b9281fc4dcbf863de411e104c64e15",
+ "pilot_sha256": "5338f61546f40926dfa216a48e8d747d18c444af1a8a806ecb5b2d4f62f752be",
+ "shards": 2
+}

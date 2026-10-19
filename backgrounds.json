@@ -1,0 +1,35 @@
+{
+ "B1": {
+  "counts": "X",
+  "donor": "donor_id",
+  "file": "B1.npz",
+  "sha256": "ca86edfbd96b7cbf03199cdda81547b0278cbed4ffc57ca9bcdbce394d9852af",
+  "source": {
+   "cells": 5280,
+   "donors": 24,
+   "genes": 2500,
+   "simulated": "simulate.dry_backgrounds"
+  }
+ },
+ "B2": {
+  "counts": "X",
+  "donor": "donor_id",
+  "file": "B2.npz",
+  "sha256": "5571cc7e779c6dd0910b78779061d78c8b285feddcd182090d5157e84fcd6b1d",
+  "source": {
+   "cells": 2640,
+   "donors": 12,
+   "genes": 2500,
+   "simulated": "simulate.dry_backgrounds"
+  }
+ },
+ "B3": {
+  "counts": "X",
+  "donor": "batch",
+  "file": "B3.npz",
+  "sha256": "c7f16e68be248cf7cb41840d3dc3be6f833ee9370ac30f09690307f9cfabbb10",
+  "source": {
+   "dry_run": "the rehearsal's E-MTAB-2805 download"
+  }
+ }
+}
