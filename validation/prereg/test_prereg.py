@@ -53,7 +53,8 @@ def _pilot(bgs, sesoi=0.15, dose=3.0, delta=0.3, truth=None):
 # The panel and the oracle copy the rules of the tag's engine (v0.3.0-prereg, version 0.3.0.dev0), with which
 # validation v1 ran. On the branch of v0.4 the engine installed differs from them by the owner's decisions:
 V04_CAUSES = {"detected_only_after_correction", "effect_below_sesoi", "empty_domain",  # changes 6, 14, the domain
-              "unmeasured"}  # replicates the metric gives no value on (the owner's decision of 2026-10-18)
+              "unmeasured",  # replicates the metric gives no value on (the owner's decision of 2026-10-18)
+              "differential_sensitivity"}  # change 17 (the owner's decisions of 2026-10-19)
 TAG_MODULE_DEFAULTS = (2.0, 0.3)  # the tag's injected_signal.module(fold, frac)
 
 

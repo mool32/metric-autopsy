@@ -7,14 +7,36 @@ comparability.
 
 ## [0.4.0.dev0] — in development, not released
 
-The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-18):
-1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15 and 16, and the claim's domain (the
-decisions of 2026-10-18, after the second diagnostics on the pilot's data,
-`validation/exploratory/real_pilot_4.log`, and the second decisions of 2026-10-18, after the third,
-`validation/exploratory/real_pilot_5_summary.log`). Validation v1's scope stays the tag
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-19):
+1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 17, 18 and 19, and the claim's domain
+(the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
+`validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
+`validation/exploratory/real_pilot_5_summary.log`, and the decisions of 2026-10-19, after the fourth run,
+`validation/exploratory/real_pilot_6_summary.md`). Validation v1's scope stays the tag
 `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
+- **The differential sensitivity of a metric of structure (change 17, the owner's decisions of
+  2026-10-19).** GATE 0's premise that an attenuation cannot create an effect holds only where it is the
+  same in both groups; on preprint §4 extra dropout removed 64% of `mi_3bin`'s signal while the young
+  units detected 1,166 more genes per cell. For a coupling probe (`report.STRUCTURE_PROBES`; a metric of
+  level is not checked) GATE 4 now injects the same change of the construct into the other group as
+  well, dosed by its own biological variances, from a random stream of its own (GATE 4's numbers do not
+  change); `gates._differential` gives each group's response k, their ratio k_poor / k_rich, the
+  metric minus GATE 0's null of the claim's genes in the more sensitive group (M, 3 draws per unit), and
+  A = M × (1 − k_poor / k_rich), the difference at an equal coupling (groups[0] − groups[1]), with a
+  delta-method interval over the replicates (`detail["differential"]` of GATE 4). Where the groups differ
+  in detection (`report.detection_gap`: genes per cell, the claim's genes left out, permutation p below
+  alpha on the claim's cells), A lies on the claim's side and its bound there exceeds bias_tolerance ×
+  SESOI, the effect is judged less that bound — the same estimate and test on shifted values
+  (`report._shifted`) — and a verdict that does not pass is NOT SUPPORTED, cause
+  `differential_sensitivity` (`report.differential_sensitivity`, `effect.detail["differential_sensitivity"]`);
+  where A cannot be sized there, a detected effect is INCONCLUSIVE with the same cause. A line of the
+  dossier always. GATE 0's docstring and `references/gates.md` corrected.
+- **One direction for every difference of the dossier (change 18).** The line of `norm_pearson` beside
+  the metric gave groups[1] − groups[0]; it now gives groups[0] − groups[1], as every other line, and the
+  dossier's header says so (`differences` in the JSON report). The specificity line gives its t and its
+  controls' in the same direction and names the claim's side.
 - **The full dossier after the first FAIL (the owner's second decisions of 2026-10-18).** The verdict
   follows the first FAIL as before, but the effect — within the domain, the mixture's, outside the
   domain, per type — GATE 6, the composition, the technical covariates and every other report line
@@ -172,8 +194,31 @@ decisions of 2026-10-18, after the second diagnostics on the pilot's data,
   only (`domain["one_group"]`): counts from elsewhere, or the expression's appearance; a line of the
   dossier, not part of the rule.
 - `tests/test_v04_dossier.py`: the regression tests of the second decisions of 2026-10-18.
+- **The correction's line (change 19).** How equal depth changed the groups' relative gap in genes
+  detected per cell, on the domain's cells and on all cells, with a WARNING where the gap grew
+  (`Autopsy.capture`, `report.capture_summary`); on §4 it grew from 24.4% to 29.1%.
+- `composition.technical_covariates(exclude=)`: genes left out of both counts.
+- `tests/test_v04_differential.py`: the acceptance of the differential sensitivity on synthetic data
+  (an equal coupling with a gap of detection not SUPPORTED; an equal detection unchanged; a real decrease
+  SUPPORTED, with a gap where the effect less the bound passes) and the tests of the dossier's direction
+  and of the correction's line; `validation/exploratory/differential_sensitivity.py` and its log.
 
 ### Known issues
+- **The differential sensitivity over-corrects a metric that is not linear in the coupling.** `mi_3bin`
+  responds more where the coupling is already larger, so with a real difference of coupling its ratio
+  of responses also takes the slope of its curve and A takes a part of the true difference: on the
+  synthetic data a decrease of 3, 5 or 7 × SESOI with a gap of detection as on §4 does not pass
+  (`validation/exploratory/differential_sensitivity.log`, sections 2 and 4). Conservative: power is lost,
+  no false SUPPORTED is added. Measured at a common coupling (GATE 0's null) the confound goes, but
+  `mi_3bin`'s response there is of second order and too noisy.
+- **The differential sensitivity costs power wherever the groups differ in detection**: the effect is
+  judged less the bound of A's interval, whose width grows with the metric's distance from its null. With
+  the gap as on §4 `norm_pearson`'s real decrease of 3 × SESOI does not pass either; 5 × does.
+- **The differential sensitivity is measured on the uncorrected data**, as GATE 4 is, while the effect is
+  judged at equal depth, where the gap in detection can be larger (the correction's line warns).
+- **The differential sensitivity's condition reads a difference in detection by its p, not its size**: at
+  an equal detection it opens at alpha's rate, and the groups' responses then differ by their biology
+  and the metric's curve as well.
 - **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
   test data (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's
   scale), the `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against
@@ -191,6 +236,8 @@ decisions of 2026-10-18, after the second diagnostics on the pilot's data,
   GATE 4's FAIL only at or below zero; the module probe's default share and its direction).
 
 ### Fixed
+- **GATE 5's note of the null's centre** printed "nan..nan" (with an All-NaN warning) where a metric gives
+  no value in a stratum's null; the strata without a centre are left out of the range.
 - **Two expectations of the dev set that encoded v0.3's mechanics** (`validation/probes/JOURNAL.md`,
   D8 and D9; the owner's second decisions of 2026-10-18). p09's null without a SESOI: INCONCLUSIVE was
   v0.3's way of claiming no absence without a margin; it is now NO_DETECTABLE_EFFECT at the design's

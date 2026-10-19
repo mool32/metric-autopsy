@@ -374,7 +374,8 @@ def test_norm_pearson_is_reported_beside_a_coupling_metric_by_stratum():
     assert ref["measure"].startswith("norm_pearson") and [r["stratum"] for r in ref["rows"]] == [
         "female", "male", "over the strata"]
     for r in ref["rows"]:
-        assert r["metric"]["difference"] < 0 and r["reference"]["difference"] < 0  # both fall with age
+        # young − old, the effect test's convention since 2026-10-19: both fall with age, so both are positive
+        assert r["metric"]["difference"] > 0 and r["reference"]["difference"] > 0
     assert "beside the metric (reported, not a gate)" in a.to_markdown()
 
 

@@ -249,6 +249,7 @@ def check(metric_of: Callable, data, *, claim_genes: Sequence[str], kind: str, g
     shift = _shift(est, V[1:][ok], sign, alpha, n_perm, rng, max_exact)
     return dict(applicable=True, statistic="the donor-level t of the claim's estimate"
                 + (" within the domain's types" if domain is not None else ""), data="uncorrected", side=side,
+                groups=[str(groups[0]), str(groups[1])], sign=sign,
                 t_claim=t_claim, t_claim_signed=ts, k_requested=k, n_controls=K,
                 in_direction=outcome(k_dir), absolute=outcome(k_abs),
                 nearest=[dict(genes=names_c[i], t=float(sign * tc[i]), t_signed=float(tc[i]),
@@ -293,16 +294,23 @@ def describe(line: dict) -> list:
     if line.get("error"):
         return [f"not computed: {line['error']}"]
     a, b = line["in_direction"], line["absolute"]
-    out = [f"{line['statistic']} ({line['data']} data), {line['side']}: t = {line['t_claim_signed']:+.3g}",
-           f"{a['k']} of {a['n']} matched controls at least as far (p {a['p']:.3g}, share's interval "
-           f"{a['share_ci'][0]:.3g}–{a['share_ci'][1]:.3g}): {a['outcome']}; by absolute value {b['k']} "
+    # the t values in the dossier's convention, groups[0] - groups[1] (the owner's decision of 2026-10-19);
+    # the counts stay in the claim's direction, which `side` names
+    sign = float(line.get("sign", 1.0))
+    g0, g1 = line.get("groups") or ("groups[0]", "groups[1]")
+    claim_sign = "positive" if sign > 0 else "negative"
+    out = [f"{line['statistic']} ({line['data']} data), {g0} − {g1}: t = {sign * line['t_claim_signed']:+.3g}; "
+           f"{line['side']}, a {claim_sign} t",
+           f"{a['k']} of {a['n']} matched controls at least as far in the claim's direction (p {a['p']:.3g}, share's "
+           f"interval {a['share_ci'][0]:.3g}–{a['share_ci'][1]:.3g}): {a['outcome']}; by absolute value {b['k']} "
            f"(p {b['p']:.3g}): {b['outcome']}",
-           "nearest controls: " + "; ".join(f"{'–'.join(c['genes'])} {c['t_signed']:+.3g}"
+           "nearest controls: " + "; ".join(f"{'–'.join(c['genes'])} {sign * c['t_signed']:+.3g}"
                                            + (" (at least as far)" if c["at_least_as_far"] else "")
                                            for c in line["nearest"])]
     sh = line.get("shift") or {}
     if "ci" in sh:
-        out.append(f"the controls' common shift: median t {sh['median_t']:+.3g} ({sh['ci_level']:.0%} interval over "
-                   f"{sh['n_relabelings']} relabelings [{sh['ci'][0]:+.3g}, {sh['ci'][1]:+.3g}], one-sided p "
+        lo, hi = sorted((sign * sh["ci"][0], sign * sh["ci"][1]))
+        out.append(f"the controls' common shift: median t {sign * sh['median_t']:+.3g} ({sh['ci_level']:.0%} interval over "
+                   f"{sh['n_relabelings']} relabelings [{lo:+.3g}, {hi:+.3g}], one-sided p in the claim's direction "
                    f"{sh['p_one_sided']:.3g})" + (f" — WARNING: {sh['warning']}" if sh.get("warning") else ""))
     return out
