@@ -52,7 +52,7 @@ et al. 2018 and Levy et al. 2020 are not in the pilot: they belong to the confir
 Interferon-β stimulation (Kang et al. 2018), listed here before, is now a positive control of the
 second question (below).
 
-### The source in Tabula Muris Senis FACS: age is confounded with it (decided 2026-10-18)
+### The source in Tabula Muris Senis FACS: age is confounded with it (decided 2026-10-18; established 2026-10-19)
 
 **Decided** (the owner's second decisions of 2026-10-18, item 8): in every plan, a comparison of
 3-month mice with older ones in TMS FACS is taken as confounded with the source — the 3-month data of
@@ -75,18 +75,37 @@ evidence of the third diagnostics agrees (`validation/exploratory/real_pilot_5_s
   neither differs (`nnz` −259, p 0.64; `raw_sum` +75,203, p 0.36). GATE 1's ratio of median genes
   passed the males at 1.32.
 
-**What the TMS authors write** is checked before this is called a finding: their text (Tabula Muris
-Consortium 2020, Nature 583:590–595, PMC8240505, an NIH author manuscript without a Creative Commons
-licence) is not in the repository; the next run's metadata step fetches it and logs the passages on
-the 3-month data's origin, the batches and the sorting, quoted, without archiving the text. Until
-then the confound is a working assumption of the plans, not a result.
+**Established (2026-10-19): no longer a working assumption.** The metadata above and the authors' text
+agree. The fourth run read the paper (Tabula Muris Consortium 2020, Nature 583:590–595, PMC8240505,
+an NIH author manuscript without a Creative Commons licence, by NCBI's BioC) and its bioRxiv preprint,
+and logged the passages quoted, without archiving the texts (`validation/exploratory/real_pilot_6_text.log`;
+the write-up `real_pilot_6_summary.md`, section 7):
+- "The previously published 3m time point, referred to as the Tabula Muris, represents ~20% of the
+  cells in the entire dataset and was used as a basis to perform semi-automated cell type annotation
+  of the additional time points";
+- "We used the Tabula Muris (3m time point) as a reference for the automated pipeline and the
+  annotations were manually curated by tissue experts";
+- the batch correction is bbknn, "to correct for method-associated batch effects" between the
+  technologies (FACS and droplet): it changes the neighbourhood graph, not the counts, and no quoted
+  sentence describes a correction between the 3-month data and the later time points.
+
+So in TMS FACS every comparison of 3-month mice with older ones compares two generations of data,
+Tabula Muris 2018 against Tabula Muris Senis, and age is confounded with the source by the design of
+the atlas.
+
+**The annotation is asymmetric.** The older cells were annotated with the 3-month cells as the
+reference, by a semi-automated pipeline curated by tissue experts, while the 3-month cells keep the
+original Tabula Muris's labels. A comparison within a cell type in TMS therefore compares cells
+labelled by two procedures: the membership of a type, and so a per-type estimate and the claim's
+domain, can differ between the ages for reasons of the annotation, not of biology.
 
 **The check, for every age comparison in TMS** (before registration, by code independent of the
 engine): the source of each cell (its GEO sample and series, its name's format, `FACS.selection` and
 any other column that separates the ages), the technical covariates per unit with a permutation p (the
 engine's own line of the dossier since v0.4, `Autopsy.technical`), and whether the sexes, tissues and
 ages being compared share a source. A comparison whose groups differ in source is reported as
-confounded with it, whatever its verdict.
+confounded with it, whatever its verdict; one within cell types also records which group's labels were
+the reference of the other's annotation.
 
 ## Level B: confirmation
 

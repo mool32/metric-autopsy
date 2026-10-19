@@ -221,8 +221,10 @@ Requirements 13–15.
   with 1,298 more genes and 189,000 fewer counts per cell, exact p 0.016 and 0.008;
   `real_claims.md`, "The source in Tabula Muris Senis FACS"). Age is taken as confounded with the
   source in any comparison of 3-month mice with older ones: such a comparison is not a positive
-  control, a null or a real claim of age in v2 unless the source is shown shared. What the TMS authors
-  write about it is checked before it is called a finding.
+  control, a null or a real claim of age in v2 unless the source is shown shared. The authors' text
+  confirms it (the fourth run, 2026-10-19): the 3-month time point is the previously published Tabula
+  Muris, and it was the reference of the later time points' annotation, so a comparison within a cell
+  type compares labels given by two procedures.
 
 ## 8. Development data, conditions and reporting
 
