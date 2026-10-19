@@ -44,8 +44,8 @@ jobs:
           python -m pip install -q pip==26.2.1
           pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
           pip install -q --no-deps pytest==9.1.1 pluggy==1.6.0 iniconfig==2.3.1 pygments==2.21.0
-      - name: The search's tests
-        run: python -m pytest -q -p no:cacheprovider -c /dev/null validation/level_b/test_search.py
+      - name: The search's and the screening's tests
+        run: python -m pytest -q -p no:cacheprovider -c /dev/null validation/level_b/test_search.py validation/level_b/test_screening.py
       - name: The lookup and the search on fabricated responses (FABRICATED, nothing fetched)
         run: |
           python -I validation/level_b/search.py lookup --out dry/lookup --fabricated
