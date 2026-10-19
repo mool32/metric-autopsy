@@ -38,6 +38,15 @@ test's conclusion on more than half of its selected claims.
   Europe PMC by its own query and checked against its expected journal, year and title **before the
   search** (the lookup, section 11; `validation/level_b/method_papers.json`), and their Europe PMC
   records are written into that file before the search runs.
+- **The lookup** (workflow run 39268500625, `results/level-b-lookup` at bdb6c45, 2026-10-19), each paper
+  one journal article in Europe PMC matching its journal, year and title words or DOI, now its record in
+  `method_papers.json`: Levy et al. 2020, MED:33139959 (doi:10.1038/s42255-020-00304-4, cited by 48);
+  Sci Rep 2021, MED:34040065 ("A top-down measure of gene-to-gene coordination for analyzing cell-to-cell
+  variability", cited by 3); Amit et al. 2022, MED:35534606 ("Global coordination level in single-cell
+  transcriptomic data", cited by 5); CS-CORE, MED:37563115 (Nat Commun 2023, doi:10.1038/s41467-023-40503-7,
+  "Cell-type-specific co-expression inference from single cell RNA-sequencing data", cited by 91);
+  Skinnider et al. 2019, MED:30962620 (Nat Methods, doi:10.1038/s41592-019-0372-4, "Evaluating measures of
+  association for single-cell transcriptomics", cited by 127).
 - **Not used:** Google Scholar (not reproducible), search engines, recommendations, papers known to us
   from earlier work (Kang et al. 2018 is a positive control of the second question; the pilot's data are
   level A and stay outside), and any list compiled after a look at an engine's output.

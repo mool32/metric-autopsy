@@ -163,7 +163,7 @@ def _domain_cells(obs, dom: dict, replicate_col: str) -> np.ndarray:
 
 def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: str, within: Sequence[str] = (), *,
                          domain: dict | None = None, pool=None, alpha: float = 0.05, n_perm: int = 1000, rng=None,
-                         max_exact: int = 20000, exclude: Sequence[str] = ()) -> dict:
+                         max_exact: int = 20000) -> dict:
     """The groups' technical covariates per replicate (a line of the dossier, the owner's decision of
     2026-10-18): per cell its total count and its number of genes with a count, over every gene of
     `pool` (the same cells with every gene) or else of `data`; per replicate (per replicate and group in
@@ -174,10 +174,7 @@ def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: 
     comparison's cells, and on the cells of the domain's types when a domain is given. GATE 1 compares
     the cells' median numbers of genes with a ratio threshold of 1.5; on preprint section 4's setup it
     passed at 1.32 while the young males' units detected 1,298 more genes per cell (exact p 0.016 over
-    126 relabelings, the third diagnostics, ``validation/exploratory/real_pilot_5_summary.log``). `exclude`
-    names genes left out of both counts (the differential sensitivity's test of detection leaves out the
-    claim's own genes, whose detection is part of the claim's biology)."""
-    from .core import as_dense
+    126 relabelings, the third diagnostics, ``validation/exploratory/real_pilot_5_summary.log``)."""
     from .effect import _replicate_design
     from .stats import permutation_test_nested, permutation_test_paired
 
@@ -195,12 +192,6 @@ def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: 
     X = src.X
     per_cell = {TECHNICAL[0]: np.asarray(X.sum(axis=1), dtype=float).ravel(),
                 TECHNICAL[1]: np.asarray((X > 0).sum(axis=1), dtype=float).ravel()}
-    names = [str(v) for v in src.var_names]
-    left_out = [i for i, v in enumerate(names) if v in {str(g) for g in exclude}]
-    if left_out:
-        sub = np.asarray(as_dense(X[:, left_out]), dtype=float)
-        per_cell[TECHNICAL[0]] = per_cell[TECHNICAL[0]] - sub.sum(axis=1)
-        per_cell[TECHNICAL[1]] = per_cell[TECHNICAL[1]] - (sub > 0).sum(axis=1)
     rep = np.asarray(obs[replicate_col]).astype(str)
     cell_sets = {"all cells": keep}
     if domain is not None and not domain.get("error") and domain.get("n_domain_types"):
@@ -256,7 +247,7 @@ def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: 
                                      second=float(D[m, 1].mean()), difference=float(res.observed), p=float(res.p),
                                      method=res.method, n_relabelings=int(res.n), replicates=dict(pairs=int(m.sum()))))
     return dict(groups=[str(g0), str(g1)], design=design["kind"], source="pool" if pool is not None else "data",
-                alpha=alpha, rows=rows, excluded=[names[i] for i in left_out],
+                alpha=alpha, rows=rows,
                 differs=[dict(cells=r["cells"], covariate=r["covariate"], stratum=r["stratum"]) for r in rows
                          if r.get("difference") is not None and r["p"] < alpha])
 

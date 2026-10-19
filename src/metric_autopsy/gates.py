@@ -169,16 +169,10 @@ def gate0_independence(
       other bias blocks only if its size exceeds `bias_tolerance` x `sesoi` and so does the
       lower bound of its 95% interval. Without a SESOI a bias cannot be sized for the claim:
       it is reported as unsized (and ``report.decide`` then withholds SUPPORTED);
-    * **attenuation** — the signal shrinks toward the null while the null stays put. An
-      attenuation equal in both groups pulls toward zero and cannot create an effect. It is
-      reported (``detail["attenuation"]``, fraction of signal lost) and passed to
-      ``design_adequacy`` as a power check against the SESOI. Where the groups differ in
-      detection it is not equal: the same coupling then moves the metric less in the poorer
-      group, and an equal coupling shows as a difference. GATE 0 perturbs the pooled cells
-      and cannot see that; for a metric of structure ``run_autopsy`` sizes it with GATE 4's
-      probe in each group (the differential sensitivity, decided 2026-10-19: on preprint §4
-      extra dropout removed 64% of the signal while the young units detected 1,166 more
-      genes per cell);
+    * **attenuation** — the signal shrinks toward the null while the null stays put. This
+      is reliability, not confounding: uniform attenuation pulls toward zero and cannot
+      create an effect. It is reported (``detail["attenuation"]``, fraction of signal lost)
+      and passed to ``design_adequacy`` as a power check against the SESOI;
     * **level_shift** — no gene-gene structure to reference (e.g. a mean score), so
       attenuation and bias cannot be told apart. A shift larger than `tol` x the effect
       scale is flagged and reported, not failed. A between-group version is removed by the
@@ -961,124 +955,10 @@ def _unit_responses(metric, sd: SimpleData, X: np.ndarray, units, k: int, inject
     return resp, (float(np.mean(depth)) if depth else None), used
 
 
-DIFFERENTIAL_NULL_DRAWS = 3  # GATE 0's null of the claim's genes, draws averaged per unit (as change 12's)
-
-
-def _construct_change_of(inject, var) -> float:
-    """The change of the construct a coupling probe makes at its own strength in a group whose genes have
-    the biological variances `var` (the rise of ``injected_signal.coupling_strength_for``)."""
-    from .injected_signal import BIO_VAR_FLOOR, log_sigmoid_variance
-    v = log_sigmoid_variance(float(getattr(inject, "strength", 1.0)))
-    va, vb = (max(float(x), BIO_VAR_FLOOR) if x is not None and np.isfinite(x) else BIO_VAR_FLOOR for x in var)
-    return float(v / np.sqrt((va + v) * (vb + v)))
-
-
-def _differential(metric, sd: SimpleData, X: np.ndarray, units, genes, groups, by_group: dict, weights,
-                  direction: str, alpha: float, rng, *, construct_change, n_draws: int = DIFFERENTIAL_NULL_DRAWS) -> dict:
-    """The differential sensitivity of a metric of structure (the owner's decision of 2026-10-19).
-
-    GATE 0's premise that an attenuation cannot create an effect holds only where it is the same in both
-    groups. Where the groups differ in detection, the same coupling moves the metric less in the poorer
-    group, and an equal coupling shows as a difference. `by_group` holds each group's response k_g to the same
-    change of the construct, GATE 4's probe injected into the group's units as GATE 4 injects it (the
-    injected group's run is GATE 4's own); the more sensitive group is the one whose response is larger in
-    the probe's direction. With M the metric minus its null in that group (``claim_null``: each claim gene
-    redrawn from cells at least as deep within the unit, `n_draws` draws), the expected difference at an
-    equal coupling is
-
-        A = M x (1 - k_poor / k_rich),
-
-    the more sensitive group minus the other: exact where each group's metric is the coupling's linear
-    response scaled per group. A metric that is not linear in the coupling (``mi_3bin``) responds more
-    where the coupling is already larger, so where the groups' couplings differ A also takes a part of
-    that difference (conservative); measured at a common coupling instead, on the null, the response of
-    ``mi_3bin`` is of second order and too noisy to use (``validation/exploratory/differential_sensitivity.log``,
-    section 2).
-    Its interval is the delta method's: each group's part is the influence of its units, combined as GATE 4
-    combines a response (``combined.one_group_mean``: types equally weighted, cluster-robust over the
-    replicates), so the covariance of M and k_rich on the same units is kept; the degrees of freedom are
-    Satterthwaite's. ``artifact`` and ``artifact_ci`` are in the effect test's convention (groups[0] -
-    groups[1])."""
-    from .combined import one_group_mean
-    from .stats import t_ppf
-
-    sign = 1.0 if direction == "increase" else -1.0
-    k = {g: float(r["interval"]["mean_response"]) for g, r in by_group.items()}
-    if len(k) != 2 or not all(np.isfinite(v) for v in k.values()):
-        return dict(error="a response could not be measured in both groups")
-    rich = max(k, key=lambda g: sign * k[g])
-    poor = 1 - rich
-    if not sign * k[rich] > 0:
-        return dict(error=f"no response to the probe in either group (the larger is {k[rich]:+.4g})")
-    run_r, run_p = by_group[rich], by_group[poor]
-    resp_r, used_r = run_r["_resp"], run_r["_used"]
-    resp_p, used_p = run_p["_resp"], run_p["_used"]
-    # the metric minus its null on each unit of the more sensitive group
-    m = np.full(units.n_units, np.nan)
-    for i in np.where(used_r)[0]:
-        idx = _unit_cells(units, i, rich)
-        sub = SimpleData(np.array(X[idx], copy=True), sd.obs.iloc[idx].copy(), list(sd.var_names))
-        v = _safe_call(lambda: metric(sub))
-        nulls = [x for x in (_safe_call(lambda: metric(claim_null(sub, genes, rng))) for _ in range(n_draws))
-                 if x is not None]
-        if v is not None and nulls:
-            m[i] = v - float(np.mean(nulls))
-    both = used_r & np.isfinite(m) & np.isfinite(resp_r)
-    keep_p = used_p & np.isfinite(resp_p)
-    if both.sum() < 2 or keep_p.sum() < 2:
-        return dict(error="too few units with a value in a group")
-    sub_r, sub_p = units.subset(both), units.subset(keep_p)
-
-    def mean_of(vals, sub, g):
-        mu, se, df, n = one_group_mean(np.asarray(vals, float)[None, :], sub, g, weights)
-        return float(mu[0]), float(se[0]), float(df[0]), int(n)
-
-    M, se_M, df_M, n_r = mean_of(m[both], sub_r, rich)
-    k_r, se_kr, df_kr, _ = mean_of(resp_r[both], sub_r, rich)
-    k_p, se_kp, df_kp, n_p = mean_of(resp_p[keep_p], sub_p, poor)
-    if not sign * k_r > 0:
-        return dict(error=f"no response in the more sensitive group on the units with a value ({k_r:+.4g})")
-    R = k_p / k_r
-    A = M * (1.0 - R)
-
-    def combine(phi_r, psi_p):
-        _, se1, df1, _ = mean_of(phi_r, sub_r, rich)
-        _, se2, df2, _ = mean_of(psi_p, sub_p, poor)
-        var = se1 ** 2 + se2 ** 2
-        terms = [(v, d) for v, d in ((se1 ** 2, df1), (se2 ** 2, df2)) if v > 0]
-        df = (var ** 2 / sum(v ** 2 / d for v, d in terms)) if terms and all(d > 0 for _, d in terms) else float("nan")
-        return float(np.sqrt(var)), float(df)
-
-    # the influence of each group's units on A and on the ratio (the delta method)
-    se_A, df_A = combine((1.0 - R) * m[both] + (M * R / k_r) * resp_r[both], -(M / k_r) * resp_p[keep_p])
-    se_R, df_R = combine(-(R / k_r) * resp_r[both], resp_p[keep_p] / k_r)
-
-    def ci(x, se, df):
-        if not (np.isfinite(se) and np.isfinite(df) and df > 0):
-            return (float("nan"), float("nan"))
-        q = t_ppf(1.0 - alpha / 2.0, df) * se
-        return (x - q, x + q)
-    e = 1.0 if rich == 0 else -1.0  # the effect test's difference is groups[0] - groups[1]
-    a_lo, a_hi = ci(A, se_A, df_A)
-    responses = {str(groups[g]): dict(response=float(r["interval"]["mean_response"]), ci=r["interval"]["ci"],
-                                      n_units=int(r["n_units"]), probe=r["probe"], dose=r["dose"],
-                                      unit_responses=r["replicate_responses"])
-                 for g, r in sorted(by_group.items())}
-    return dict(construct_change=construct_change, at="the data, as GATE 4 injects", rich=str(groups[rich]),
-                poor=str(groups[poor]), responses=responses, k_rich=k_r, k_poor=k_p,
-                k_rich_ci=ci(k_r, se_kr, df_kr), k_poor_ci=ci(k_p, se_kp, df_kp),
-                ratio=R, ratio_ci=ci(R, se_R, df_R), ratio_se=se_R, ratio_df=df_R,
-                signal=M, signal_ci=ci(M, se_M, df_M), null_draws=n_draws,
-                artifact=e * A, artifact_ci=tuple(sorted((e * a_lo, e * a_hi))), artifact_se=se_A, artifact_df=df_A,
-                units=dict(rich=int(both.sum()), poor=int(keep_p.sum()), replicates=dict(rich=n_r, poor=n_p)),
-                alpha=alpha)
-
-
 def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate_col, within,
                     direction: str, alpha: float, n_rep: int, rng, *, domain=None,
                     construct_change: float | None = None, curve=GATE4_CURVE,
-                    n_rep_curve: int = GATE4_N_REP_CURVE, differential: bool = False,
-                    rng_differential=None) -> dict:
+                    n_rep_curve: int = GATE4_N_REP_CURVE) -> dict:
     """GATE 4 on the claim's own statistic (v0.4 changes 1 and 3).
 
     The units are the claim's: with cell types, a replicate's cells of one type of the domain
@@ -1088,12 +968,7 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
     re-dosed to a construct change of that size (``injected_signal.at_construct_change``; a coupling's
     strength from the injected group's biological variances). The response is the change of the
     injected group's combined value, types equally weighted within a stratum and the strata by the
-    effect test's weights, as the effect field combines them; its interval is over the replicates.
-
-    With `differential` (a coupling probe; the owner's decision of 2026-10-19) the other group gets the same
-    change of the construct too, dosed by its own biological variances, after GATE 4's own runs and from
-    `rng_differential` (so their draws do not change), and ``_differential`` sizes the difference the
-    groups' unequal responses would make at an equal coupling (``result["differential"]``)."""
+    effect test's weights, as the effect field combines them; its interval is over the replicates."""
     from .combined import Estimator, one_group_mean
     from .core import unique_col_index
     from .injected_signal import at_construct_change, describe
@@ -1130,35 +1005,29 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
     # on an exact tie both groups, in the order of their labels (a mirrored wording, the same draws)
     targets = [0] if a > b else [1] if b > a else sorted((0, 1), key=lambda k: str(groups[k]))
     weights = Estimator(units).weights if kind == "nested" else np.ones(1)
-    label = (lambda i: str(units.reps[units.unit_rep[i]]) if len(units.types) == 1 and domain is None
-             else f"{units.reps[units.unit_rep[i]]} | {units.types[units.unit_type[i]]}")
-    coupling_probe = getattr(inject, "kind", None) == "coupling"
-
-    def respond(k, probe_k, dose, draws=rng):
-        """Group k's units injected with `probe_k`: the run's record, its unit responses kept aside."""
-        resp, depth, used = _unit_responses(metric, sd, X, units, k, probe_k, n_rep, draws)
-        mean, se, df, n_reps = one_group_mean(resp[used][None, :], units.subset(used), k, weights)
+    runs = []
+    for k in targets:
+        gname = groups[k]
+        probe_k, dose = inject, None
+        if construct_change is not None:
+            var = _bio_variances(X, cols, units, k) if getattr(inject, "kind", None) == "coupling" else [None, None]
+            probe_k, dose = at_construct_change(inject, construct_change, var_a=var[0], var_b=var[1] if len(var) > 1 else None)
+            if probe_k is None:
+                return dict(error=f"no rule translates a SESOI on the construct's scale into {describe(inject)}'s dose")
+        resp, depth, used = _unit_responses(metric, sd, X, units, k, probe_k, n_rep, rng)
+        sub = units.subset(used)
+        mean, se, df, n_reps = one_group_mean(resp[used][None, :], sub, k, weights)
         mean, se, df = float(mean[0]), float(se[0]), float(df[0])
         iv = _interval(mean, se, df, n_reps, direction, alpha)
         sign = 1.0 if k == 0 else -1.0  # the effect test's difference is groups[0] - groups[1]
         lo, hi = iv["ci"]
-        return dict(group=str(groups[k]), group_index=k, interval=iv, statistic_change=sign * mean,
-                    statistic_ci=tuple(sorted((sign * lo, sign * hi))) if np.isfinite(lo) else (lo, hi),
-                    depth_loss=depth, replicate_responses={label(i): float(resp[i]) for i in np.where(used)[0]
-                                                           if np.isfinite(resp[i])},
-                    probe=describe(probe_k), dose=dose, n_units=int(used.sum()), _resp=resp, _used=used)
-
-    runs = []
-    for k in targets:
-        probe_k, dose = inject, None
-        if construct_change is not None:
-            var = _bio_variances(X, cols, units, k) if coupling_probe else [None, None]
-            probe_k, dose = at_construct_change(inject, construct_change, var_a=var[0], var_b=var[1] if len(var) > 1 else None)
-            if probe_k is None:
-                return dict(error=f"no rule translates a SESOI on the construct's scale into {describe(inject)}'s dose")
-        run = respond(k, probe_k, dose)
-        lo, hi = run["interval"]["ci"]
-        mean = run["interval"]["mean_response"]
+        label = (lambda i: str(units.reps[units.unit_rep[i]]) if len(units.types) == 1 and domain is None
+                 else f"{units.reps[units.unit_rep[i]]} | {units.types[units.unit_type[i]]}")
+        run = dict(group=str(gname), group_index=k, interval=iv, statistic_change=sign * mean,
+                   statistic_ci=tuple(sorted((sign * lo, sign * hi))) if np.isfinite(lo) else (lo, hi),
+                   depth_loss=depth, replicate_responses={label(i): float(resp[i]) for i in np.where(used)[0]
+                                                          if np.isfinite(resp[i])},
+                   probe=describe(probe_k), dose=dose, n_units=int(used.sum()))
         if construct_change is not None and curve:
             points = []
             for mult in curve:
@@ -1174,31 +1043,13 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
             points.append(dict(construct_change=construct_change, dose=dose, response=mean, ci=(lo, hi), n_rep=n_rep))
             run["dose_response"] = sorted(points, key=lambda p: p["construct_change"])
         runs.append(run)
-    dif = None
-    if differential and coupling_probe:
-        rng_d = rng if rng_differential is None else rng_differential
-        by_group = {r["group_index"]: r for r in runs}
-        if len(by_group) == 1:
-            # the other group, at the same change of the construct as the injected one (its dose by its own
-            # variances); without a construct-scale SESOI, the change the declared probe makes there
-            k = targets[0]
-            change = (construct_change if construct_change is not None
-                      else _construct_change_of(inject, _bio_variances(X, cols, units, k)))
-            var = _bio_variances(X, cols, units, 1 - k)
-            probe_o, dose_o = at_construct_change(inject, change, var_a=var[0], var_b=var[1])
-            by_group[1 - k] = respond(1 - k, probe_o, dose_o, rng_d)
-        else:
-            change = construct_change
-        dif = _differential(metric, sd, X, units, genes, groups, by_group, weights, direction, alpha, rng_d,
-                            construct_change=change)
     run = min(runs, key=lambda x: (x["interval"]["signed_lower"] if np.isfinite(x["interval"]["signed_lower"])
                                    else -np.inf, x["interval"]["mean_response"] if direction == "increase"
                                    else -x["interval"]["mean_response"]))
-    public = (lambda x: {k2: v2 for k2, v2 in x.items() if not k2.startswith("_")})
-    return dict(public(run), levels=level, tie=len(targets) == 2, design=kind,
+    return dict(run, levels=level, tie=len(targets) == 2, design=kind,
                 units=dict(n=units.n_units, types=list(units.types), domain=domain is not None),
-                runs=[{k2: v2 for k2, v2 in public(x).items() if k2 != "replicate_responses"} for x in runs]
-                if len(runs) > 1 else None, differential=dif)
+                runs=[{k2: v2 for k2, v2 in x.items() if k2 != "replicate_responses"} for x in runs]
+                if len(runs) > 1 else None)
 
 
 def gate4_signal_response(
@@ -1220,7 +1071,6 @@ def gate4_signal_response(
     construct_change: float | None = None,
     curve=GATE4_CURVE,
     n_rep_curve: int = GATE4_N_REP_CURVE,
-    differential: bool = False,
 ) -> GateResult:
     """Inject a known construct change (``injected_signal``) and judge whether the metric responds.
 
@@ -1249,12 +1099,6 @@ def gate4_signal_response(
     GATE 4 decides only whether the metric is blind (decided 2026-10-17). `delta_min`, v0.3's smallest
     response that matters, is accepted and not used: the response itself is the SESOI's size in the
     metric's units.
-
-    With `differential` (``run_autopsy`` sets it for a coupling probe, a metric of structure) the other
-    group gets the same change of the construct as well, from a random stream of its own so that the
-    numbers above do not change, and ``detail["differential"]`` holds the difference the groups' unequal
-    responses would make at an equal coupling (``_differential``; the owner's decision of 2026-10-19). It
-    does not enter GATE 4's status: the effect field and ``report.decide`` use it.
     """
     from .injected_signal import describe
 
@@ -1284,9 +1128,7 @@ def gate4_signal_response(
         try:
             claim = _claim_response(metric, sd, inject, group_col, groups, replicate_col, within,
                                     direction, alpha, n_rep_replicate, rng, domain=domain,
-                                    construct_change=construct_change, curve=curve, n_rep_curve=n_rep_curve,
-                                    differential=differential,
-                                    rng_differential=np.random.default_rng([int(seed), 2026, 10, 19]))
+                                    construct_change=construct_change, curve=curve, n_rep_curve=n_rep_curve)
         except Exception as e:  # reported, never silent
             claim = dict(error=f"{type(e).__name__}: {e}")
     judged = inject
@@ -1310,9 +1152,6 @@ def gate4_signal_response(
                       statistic_change=claim["statistic_change"], statistic_ci=claim["statistic_ci"],
                       depth_loss=claim["depth_loss"], n_rep_replicate=n_rep_replicate, runs=claim["runs"],
                       dose=claim["dose"], dose_response=claim.get("dose_response"), units=claim["units"], **iv)
-        if differential:
-            detail["differential"] = claim.get("differential") or dict(
-                error="a coupling probe on the claim's units is needed")
         lo, hi = iv["ci"]
         others = {g: v for g, v in claim["levels"].items() if g != claim["group"]}
         where = ("on a tie of the probed counts the weaker of the two groups' responses is judged" if claim["tie"]
@@ -1345,8 +1184,6 @@ def gate4_signal_response(
         detail.update(mode="all cells", **iv)
         if claim is not None:
             detail["claim_statistic_error"] = claim["error"]
-            if differential:
-                detail["differential"] = dict(error=f"the claim's statistic could not be used: {claim['error']}")
         lo, hi = iv["ci"]
         resp = (f"{iv['mean_response']:+.4g} against the {reference} over all cells "
                 f"({lvl} CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected {direction})")
@@ -1702,10 +1539,8 @@ def gate5_controls(
                   legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
                   pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
                   pos_dose=pos_dose, delta_min=delta_min, direction=direction, n_rep=n_rep)
-    # the strata whose null has a centre (a metric that gives no value there leaves it NaN: no "nan..nan")
-    centres = [float(r["null_center"]) for r in rows
-               if r.get("null_center") is not None and np.isfinite(r["null_center"])]
-    centre_note = (f"; null centre {min(centres):.3g}..{max(centres):.3g}"
+    centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
+    centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
                    if centres and not legacy else "")
     weak_neg = [r for r in rows if "unattainable" in str(r.get("method", "")).split("/")[0]]
     detail["neg_test_unattainable"] = [r["stratum"] for r in weak_neg]

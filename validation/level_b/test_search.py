@@ -110,8 +110,20 @@ def test_the_lookup_fails_where_a_paper_does_not_match(tmp_path):
 
 
 def test_the_search_refuses_unverified_papers(tmp_path):
-    assert S.main(["search", "--out", str(tmp_path / "out"), "--fabricated"]) == 1  # the repo's file, not yet verified
+    papers = json.loads(S.PAPERS.read_text())
+    papers["papers"][4]["verified"] = None
+    f = tmp_path / "papers.json"
+    f.write_text(json.dumps(papers))
+    assert S.main(["search", "--out", str(tmp_path / "out"), "--fabricated", "--papers", str(f)]) == 1
     assert "not all verified" in (tmp_path / "out" / "search.log").read_text()
+
+
+def test_the_repositorys_method_papers_are_verified_by_the_lookup():
+    papers = json.loads(S.PAPERS.read_text())["papers"]
+    assert [p["key"] for p in papers] == ["levy2020", "gcl2021", "amit2022", "cscore2023", "skinnider2019"]
+    assert all(p["verified"]["source"] == "MED" and p["verified"]["year"] == p["expect"]["year"] for p in papers)
+    assert {p["key"]: p["verified"]["id"] for p in papers} == dict(
+        levy2020="33139959", gcl2021="34040065", amit2022="35534606", cscore2023="37563115", skinnider2019="30962620")
 
 
 def test_the_dry_run_of_the_search(dry):
