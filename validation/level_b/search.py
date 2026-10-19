@@ -18,12 +18,19 @@ Two runs, each once and by its own label in GitHub Actions (this environment rea
   DOI, then title) and, if more than 5,000, a sample of 5,000 is drawn for screening with the protocol's
   seed: ``numpy.random.default_rng(20261019).choice(n, 5000, replace=False)``.
 
+- ``fulltext``: after the screening of titles and abstracts (`screening.md`), the full texts of the records
+  either pass kept or marked unclear (the committed list `fulltext_list.tsv`): Europe PMC's open-access
+  full text (JATS XML, ``/{PMCID}/fullTextXML``), the PMCID taken from the record or, where it has none,
+  from its core record in Europe PMC (by PMID, else by its Europe PMC ids; a preprint's own id is tried
+  too). A record without an accessible full text is listed so (the protocol: it goes to the owner).
+
 ``--fabricated`` replaces the network with fabricated responses (the dry run): every path of the code runs
 and its outputs are checked; nothing is fetched. NCBI's ``tool`` parameter names this script; no e-mail is
 sent.
 
     python -I search.py lookup --out OUT [--fabricated]
     python -I search.py search --out OUT [--papers method_papers.json] [--fabricated]
+    python -I search.py fulltext --out OUT [--list fulltext_list.tsv] [--fabricated]
 """
 from __future__ import annotations
 
@@ -44,6 +51,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PAPERS = HERE / "method_papers.json"
+FULLTEXT_LIST = HERE / "fulltext_list.tsv"
+FULLTEXT_COLUMNS = ["rid", "pmid", "pmcid", "doi", "epmc_ids"]
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
@@ -522,15 +531,90 @@ def search(net, out: Out, papers: dict, window_limit: int = WINDOW_LIMIT) -> dic
 
 
 # --------------------------------------------------------------------------- #
+# the full texts (after the screening of titles and abstracts)
+# --------------------------------------------------------------------------- #
+def read_fulltext_list(path: Path) -> list:
+    lines = [line.split("\t") for line in path.read_text().splitlines() if line.strip()]
+    if not lines or lines[0] != FULLTEXT_COLUMNS:
+        raise SystemExit(f"{path}: the header must be {FULLTEXT_COLUMNS}")
+    items = [dict(zip(FULLTEXT_COLUMNS, row + [""] * (len(FULLTEXT_COLUMNS) - len(row)))) for row in lines[1:]]
+    for it in items:
+        it["epmc_ids"] = [e for e in it["epmc_ids"].split(",") if e]
+    return items
+
+
+def _pmcid_of(core: dict) -> str:
+    ids = [str(i) for i in ((core.get("fullTextIdList") or {}).get("fullTextId") or []) if str(i).startswith("PMC")]
+    return str(core.get("pmcid") or (ids[0] if ids else ""))
+
+
+def fulltext(net, out: Out, items: list) -> dict:
+    """Each listed record's open-access full text from Europe PMC, as it came; one row per record of what was
+    tried and found (`fulltext_index.tsv`)."""
+    out.log(f"## The full texts of {len(items)} records (Europe PMC, open access, JATS XML)")
+    keys = []  # the core records of those without a PMCID: by PMID, else by their Europe PMC ids
+    for it in items:
+        if not it["pmcid"]:
+            keys += [("MED", it["pmid"])] if it["pmid"] else [tuple(e.split(":", 1)) for e in it["epmc_ids"]]
+    keys = list(dict.fromkeys(keys))
+    cores = {}
+    for i in range(0, len(keys), CITING_BATCH):
+        batch = keys[i:i + CITING_BATCH]
+        q = " OR ".join(f"(EXT_ID:{cid} AND SRC:{src})" for src, cid in batch)
+        body = net.get(f"{EPMC}/search", dict(query=q, resultType="core", format="json", pageSize=100))
+        out.raw(f"fulltext/core-{i // CITING_BATCH:04d}.json", body)
+        for r in (json.loads(body).get("resultList") or {}).get("result", []):
+            cores[(str(r.get("source")), str(r.get("id")))] = r
+    out.log(f"Core records asked for {len(keys)} records without a PMCID: {sum(k in cores for k in keys)} found")
+    rows, counts = [], dict(fetched=0, none=0)
+    for it in items:
+        tried, got, note = [], None, ""
+        if it["pmcid"]:
+            tried.append(it["pmcid"])
+        else:
+            mine = [("MED", it["pmid"])] if it["pmid"] else [tuple(e.split(":", 1)) for e in it["epmc_ids"]]
+            for k in mine:
+                c = cores.get(k)
+                if c is not None and _pmcid_of(c):
+                    tried.append(_pmcid_of(c))
+            tried += [e.split(":", 1)[1] for e in it["epmc_ids"] if e.startswith("PPR:")]  # "PPR:PPR123" -> "PPR123"
+            if not any(k in cores for k in mine):
+                note = "no core record"
+        tried = list(dict.fromkeys(tried))
+        for fid in tried:
+            try:
+                body = net.get(f"{EPMC}/{fid}/fullTextXML", {})
+            except urllib.error.HTTPError as e:
+                if e.code in (404, 400):
+                    note = (note + "; " if note else "") + f"{fid}: HTTP {e.code}"
+                    continue
+                raise
+            if body.strip():
+                got = fid
+                path = out.raw(f"fulltext/{it['rid']}.xml", body)
+                break
+        counts["fetched" if got else "none"] += 1
+        rows.append(dict(rid=it["rid"], tried=",".join(tried) or "-", fulltext=got or "-",
+                         file=path if got else "-", note=note or "-"))
+    with (out.root / "fulltext_index.tsv").open("w") as f:
+        f.write("rid\ttried\tfulltext\tfile\tnote\n")
+        for r in rows:
+            f.write("\t".join(r[c] for c in ("rid", "tried", "fulltext", "file", "note")) + "\n")
+    out.log(f"Full texts: {counts['fetched']} of {len(items)} fetched; {counts['none']} without an accessible full text")
+    return dict(n=len(items), **counts, core_asked=len(keys), core_found=sum(k in cores for k in keys))
+
+
+# --------------------------------------------------------------------------- #
 # the command line
 # --------------------------------------------------------------------------- #
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("mode", choices=("lookup", "search"))
+    ap.add_argument("mode", choices=("lookup", "search", "fulltext"))
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--papers", type=Path, default=PAPERS)
     ap.add_argument("--fabricated", action="store_true", help="fabricated responses: the dry run, nothing fetched")
     ap.add_argument("--window-limit", type=int, default=WINDOW_LIMIT, help=argparse.SUPPRESS)
+    ap.add_argument("--list", type=Path, default=FULLTEXT_LIST, help="fulltext: the records whose full texts are fetched")
     a = ap.parse_args(argv)
     out = Out(a.out)
     _header(out, a.mode, a.fabricated)
@@ -540,6 +624,11 @@ def main(argv=None) -> int:
         net = Fabricated(out.log, papers)
     else:
         net = Net(out.log)
+    if a.mode == "fulltext":
+        items = read_fulltext_list(a.list)
+        res = fulltext(net, out, items)
+        out.finish("fulltext", net, dict(res, ok=True, list=str(a.list)))
+        return 0
     if a.mode == "lookup":
         res = lookup(net, out, papers)
         verified = dict(papers, papers=[dict(p, verified=r["verified"]) for p, r in zip(papers["papers"], res["papers"])])

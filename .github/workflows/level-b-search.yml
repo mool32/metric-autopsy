@@ -15,6 +15,11 @@
 # response as it came, the merged list and the sample for screening, with SHA256SUMS, to the new branch
 # results/level-b-search. A second start finds the branch and stops; if the search fails nothing is committed,
 # and a fix and a second start are recorded in the report (the protocol, section 2).
+#
+# The full texts, once, by the label "level-b-fulltext", after the screening of titles and abstracts: Europe
+# PMC's open-access full text of every record in validation/level_b/fulltext_list.tsv (committed from the two
+# passes' decisions before the run), as it came, with an index of what was tried and found, to the new branch
+# results/level-b-fulltext.
 name: Level B's search for claims
 
 on:
@@ -51,6 +56,12 @@ jobs:
           python -I validation/level_b/search.py lookup --out dry/lookup --fabricated
           python -I validation/level_b/search.py search --out dry/search --fabricated --papers dry/lookup/method_papers.verified.json
           grep -v "^  window" dry/search/search.log
+      - name: The full texts on fabricated responses (FABRICATED, nothing fetched)
+        run: |
+          python -I -c "import gzip, json; rs = [json.loads(x) for x in gzip.open('dry/search/records.jsonl.gz', 'rt')]; open('dry/rids.txt', 'w').write('\n'.join(r['rid'] for r in rs[:60]) + '\n')"
+          python -I validation/level_b/screening.py fulltext-list --search dry/search --rids dry/rids.txt --out dry/fulltext_list.tsv
+          python -I validation/level_b/search.py fulltext --out dry/fulltext --fabricated --list dry/fulltext_list.tsv
+          python -I validation/level_b/screening.py fulltext-text --fulltext dry/fulltext --out dry/fulltext-text
 
   lookup:
     if: github.event.action == 'labeled' && github.event.label.name == 'level-b-lookup'
@@ -179,3 +190,71 @@ jobs:
           for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-search && break; sleep $((i * 10)); done
           test "$(git ls-remote "$remote" refs/heads/results/level-b-search | cut -f1)" = "$(git rev-parse HEAD)"
           grep -v "^  window" search.log | head -80
+
+  fulltext:
+    if: github.event.action == 'labeled' && github.event.label.name == 'level-b-fulltext'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: One run, one attempt; the branch results/level-b-fulltext must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "the full texts are fetched once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" refs/heads/results/level-b-fulltext > /dev/null; then
+            echo "results/level-b-fulltext exists: the full texts have been fetched"; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The full texts of validation/level_b/fulltext_list.tsv (Europe PMC, open access)
+        timeout-minutes: 50
+        run: python -I validation/level_b/search.py fulltext --out fulltext
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-fulltext
+          path: fulltext
+          if-no-files-found: error
+
+  publish-fulltext:
+    needs: fulltext
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-fulltext
+          path: pub
+      - name: To results/level-b-fulltext, with SHA256SUMS (a second start finds the branch and stops)
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" refs/heads/results/level-b-fulltext > /dev/null; then
+            echo "results/level-b-fulltext exists: nothing is pushed"; exit 1
+          fi
+          cp repo/validation/level_b/fulltext_list.tsv pub/fulltext_list.tsv
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/search.py)
+          cd pub
+          {
+            echo "# Level B: the full texts of the records kept or unclear after the screening of titles and abstracts"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/search.py (blob $blob) fulltext, on fulltext_list.tsv (the records either pass kept or marked unclear)."
+            echo "- fulltext.log and fulltext.json: the counts; fulltext_index.tsv: per record the ids tried, the one fetched and its file, or why none; requests.tsv: every request."
+            echo "- raw/fulltext/: each full text as it came (JATS XML, gzip), and the core records asked for the records without a PMCID."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b results/level-b-fulltext
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B: the full texts (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-fulltext && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" refs/heads/results/level-b-fulltext | cut -f1)" = "$(git rev-parse HEAD)"
+          cat fulltext.log

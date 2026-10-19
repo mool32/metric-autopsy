@@ -5,6 +5,8 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py batches --search <results/level-b-search> --out <dir>
     python -I validation/level_b/screening.py check --batches <dir> --decisions <pass dir>
     python -I validation/level_b/screening.py merge --batches <dir> --pass1 <dir> --pass2 <dir> --out <dir>
+    python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
+    python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
 
 `batches` reads the search's merged list (`records.jsonl.gz`, checked against the search's SHA256SUMS) and its
 sample (`sample.txt`, every record where the list holds at most 5,000), and writes the screened records in
@@ -15,7 +17,10 @@ format; `check-one` one batch's file (the screener runs it before finishing).
 `merge` compares the passes: Cohen's kappa over the three decisions, the counts of every step (a
 PRISMA-style table) per pass, the records for the owner (decided differently by the two passes, or unclear
 in either), the counts of claims about sets and global measures (section 1), and the records whose full text
-is fetched (kept or unclear in either pass).
+is fetched (kept or unclear in either pass). `fulltext-list` writes those records' ids for `search.py fulltext`
+(`fulltext_list.tsv`); `fulltext-text` turns each fetched full text (JATS XML) into the text a screener reads:
+the title, the abstract, every section with its heading, the figures' and tables' captions and the tables'
+cells, the back matter (data availability, notes); the references are left out.
 """
 from __future__ import annotations
 
@@ -25,6 +30,7 @@ import hashlib
 import json
 import sys
 import textwrap
+import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 
@@ -203,6 +209,96 @@ def merge(batches: Path, pass1: Path, pass2: Path, out: Path) -> dict:
     return res
 
 
+def fulltext_list(search: Path, rids_file: Path, out: Path) -> int:
+    """The ids `search.py fulltext` needs for the records named in `rids_file` (one rid a line)."""
+    with gzip.open(search / "records.jsonl.gz", "rt") as f:
+        recs = {r["rid"]: r for r in map(json.loads, f)}
+    rids = [r for r in rids_file.read_text().split() if r]
+    rows = ["rid\tpmid\tpmcid\tdoi\tepmc_ids"]
+    for rid in rids:
+        r = recs[rid]
+        rows.append("\t".join([rid, (r.get("pmids") or [r.get("pmid") or ""])[0] or "", r.get("pmcid") or "",
+                               r.get("doi") or "", ",".join(r.get("epmc_ids") or [])]))
+    out.write_text("\n".join(rows) + "\n")
+    return len(rids)
+
+
+def _flat(el) -> str:
+    return " ".join("".join(el.itertext()).split())
+
+
+def jats_text(xml: bytes) -> str:
+    """A JATS full text as a screener reads it, in short lines; the references left out."""
+    root = ET.fromstring(xml)
+    for parent in list(root.iter()):
+        for child in list(parent):
+            if child.tag in ("ref-list", "ref"):
+                parent.remove(child)
+    wrap = textwrap.TextWrapper(width=WIDTH, break_long_words=True, break_on_hyphens=False)
+    out = []
+
+    def para(text, prefix=""):
+        text = " ".join(text.split())
+        if text:
+            out.extend(wrap.wrap(prefix + text))
+
+    def walk(el, depth):
+        for c in el:
+            if c.tag == "title":
+                continue
+            if c.tag in ("sec", "app", "ack", "notes", "fn-group", "glossary"):
+                t = c.find("title")
+                out.append("")
+                out.append("#" * min(depth + 2, 5) + " " + (_flat(t) if t is not None else c.get("sec-type") or c.tag))
+                walk(c, depth + 1)
+            elif c.tag in ("fig", "table-wrap", "supplementary-material"):
+                label = c.find("label")
+                cap = c.find("caption")
+                para((_flat(cap) if cap is not None else ""), f"[{_flat(label) if label is not None else c.tag}] ")
+                for row in c.iter("tr"):
+                    para(" | ".join(_flat(cell) for cell in row if cell.tag in ("td", "th")), "  ")
+            elif c.tag in ("p", "list", "disp-quote", "statement", "def-list", "boxed-text"):
+                para(_flat(c))
+            else:
+                walk(c, depth)
+
+    meta = root.find(".//article-meta")
+    title = meta.find(".//article-title") if meta is not None else None
+    out.append("# " + (_flat(title) if title is not None else "(no title)"))
+    for ab in (meta.findall("abstract") if meta is not None else []):
+        out.append("")
+        out.append("## Abstract" + (f" ({ab.get('abstract-type')})" if ab.get("abstract-type") else ""))
+        walk(ab, 1)
+        if not any(c.tag in ("p", "sec") for c in ab):
+            para(_flat(ab))
+    for part in ("body", "back"):
+        el = root.find(part)
+        if el is not None:
+            out.append("")
+            out.append(f"## [{part}]")
+            walk(el, 1)
+    return "\n".join(out) + "\n"
+
+
+def fulltext_text(fulltext: Path, out: Path) -> dict:
+    index = [line.split("\t") for line in (fulltext / "fulltext_index.tsv").read_text().splitlines()[1:] if line.strip()]
+    out.mkdir(parents=True, exist_ok=True)
+    done, failed = 0, []
+    for rid, _tried, fid, file, _note in index:
+        if file == "-":
+            continue
+        with gzip.open(fulltext / file, "rb") as f:
+            xml = f.read()
+        try:
+            text = jats_text(xml)
+        except ET.ParseError as e:
+            failed.append(f"{rid}: {e}")
+            continue
+        (out / f"{rid}.txt").write_text(f"=== {rid} ({fid}) ===\n" + text)
+        done += 1
+    return dict(converted=done, failed=failed, listed=len(index))
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
@@ -216,6 +312,13 @@ def main(argv=None) -> int:
     o = sub.add_parser("check-one")
     o.add_argument("--batch", type=Path, required=True, help="batch_NN.jsonl or batch_NN.txt")
     o.add_argument("--decisions", type=Path, required=True)
+    fl = sub.add_parser("fulltext-list")
+    fl.add_argument("--search", type=Path, required=True)
+    fl.add_argument("--rids", type=Path, required=True)
+    fl.add_argument("--out", type=Path, required=True)
+    ft = sub.add_parser("fulltext-text")
+    ft.add_argument("--fulltext", type=Path, required=True)
+    ft.add_argument("--out", type=Path, required=True)
     m = sub.add_parser("merge")
     m.add_argument("--batches", type=Path, required=True)
     m.add_argument("--pass1", type=Path, required=True)
@@ -227,6 +330,13 @@ def main(argv=None) -> int:
         print(f"{man['n_screened']} of {man['n_list']} records in {len(man['batches'])} batches; records.jsonl.gz "
               f"{man['records_sha256']}")
         return 0
+    if a.mode == "fulltext-list":
+        print(f"{fulltext_list(a.search, a.rids, a.out)} records listed in {a.out}")
+        return 0
+    if a.mode == "fulltext-text":
+        res = fulltext_text(a.fulltext, a.out)
+        print(json.dumps(res, indent=1))
+        return 1 if res["failed"] else 0
     if a.mode == "check-one":
         batch = a.batch.with_suffix(".jsonl")
         d, problems = read_decisions(a.decisions, read_batch(batch))

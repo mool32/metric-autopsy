@@ -6,11 +6,14 @@ records only Europe PMC finds and 100 preprints, 30 of them with the exact title
 preprint of a paper); for each method paper 40 citing records, most of them already found, one without a
 core record; one PMID whose efetch returns nothing. With every source merged the list holds more than
 5,000 records, so the sample is drawn. Every request is checked: PubMed's term must be the protocol's
-query, Europe PMC's search the protocol's or a lookup's or a batch of ids."""
+query, Europe PMC's search the protocol's or a lookup's or a batch of ids. For the full texts: every third
+PubMed record that Europe PMC holds has a PMCID in its core record (but not in PubMed's), and the full text
+of every other such PMCID is open (PubMed gives these PMCIDs too); the even preprints' full texts are open."""
 from __future__ import annotations
 
 import json
 import re
+import urllib.error
 import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import date, timedelta
@@ -33,7 +36,10 @@ class Fabricated:
                         abstract=f"Background: fabricated abstract {i}. Results: the coexpression of GENE{i}A and "
                                  f"GENE{i}B changes between conditions.", journal=["Nat Commun", "Cell Rep", "Elife"][i % 3])
                    for i in range(N_PUBMED)]
-        self.epmc = [self._core(r, "MED") for r in self.pm[:N_BOTH]]
+        self.epmc = [self._core(dict(r, pmcid=f"PMC{7000000 + i}" if i % 3 == 0 else ""), "MED")
+                     for i, r in enumerate(self.pm[:N_BOTH])]
+        self.open_fulltext = {f"PMC{7000000 + i}" for i in range(0, N_BOTH, 6)}
+        self.open_fulltext |= {f"PPR{800000 + j}" for j in range(0, N_PREPRINT, 2)}
         self.epmc += [self._core(dict(pmid=str(39000000 + i), doi=f"10.5555/epmc.{i}", day=_day(i + 11),
                                       title=f"Europe PMC only record {i}: decoupling of transcriptional coordination",
                                       abstract=f"Fabricated abstract of Europe PMC record {i}.", journal="Sci Rep"), "MED")
@@ -79,10 +85,13 @@ class Fabricated:
 
     @staticmethod
     def _core(r, source, cited_by=0):
-        return dict(id=r["pmid"], source=source, pmid=r["pmid"], doi=r["doi"], title=r["title"], abstractText=r["abstract"],
+        core = dict(id=r["pmid"], source=source, pmid=r["pmid"], doi=r["doi"], title=r["title"], abstractText=r["abstract"],
                     pubYear=str(r["day"].year), firstPublicationDate=r["day"].isoformat(),
                     journalInfo=dict(journal=dict(isoabbreviation=r["journal"], title=r["journal"])),
                     pubTypeList=dict(pubType=["research-article", "Journal Article"]), language="eng", citedByCount=cited_by)
+        if r.get("pmcid"):
+            core.update(pmcid=r["pmcid"], fullTextIdList=dict(fullTextId=[r["pmcid"]]))
+        return core
 
     # ------------------------------------------------------------------ the one entry point
     def get(self, url: str, params: dict, post: bool = False) -> bytes:
@@ -100,7 +109,24 @@ class Fabricated:
         m = re.search(r"/(MED|PPR|PMC|AGR)/([^/]+)/citations$", path)
         if m:
             return self._citations(m.group(1), m.group(2), params)
+        m = re.search(r"/((?:PMC|PPR)\d+)/fullTextXML$", path)
+        if m:
+            return self._fulltext(url, m.group(1))
         raise AssertionError(f"no fabricated response for {url}")
+
+    def _fulltext(self, url, fid):
+        if fid not in self.open_fulltext:
+            self.rows[-1]["status"] = 404
+            raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+        return (f'<?xml version="1.0"?><article><front><article-meta><article-id pub-id-type="pmcid">{fid}</article-id>'
+                f'<title-group><article-title>Fabricated full text {fid}</article-title></title-group>'
+                '<abstract><p>An abstract.</p></abstract></article-meta></front><body>'
+                '<sec><title>Results</title><p>The correlation of GENE1A and GENE1B fell with age '
+                '(<xref ref-type="fig" rid="f1">Fig. 1</xref>).</p>'
+                '<fig id="f1"><label>Figure 1</label><caption><p>The pair by age.</p></caption></fig></sec>'
+                '<sec><title>Methods</title><p>Eight mice per group; counts on GEO.</p></sec></body>'
+                '<back><ref-list><ref><mixed-citation>A reference.</mixed-citation></ref></ref-list></back>'
+                '</article>').encode()
 
     def _esearch(self, params):
         assert params["term"] == PUBMED_TERM, "PubMed's term must be the protocol's query"
@@ -148,6 +174,9 @@ class Fabricated:
             idl = ET.SubElement(pdat, "ArticleIdList")
             ET.SubElement(idl, "ArticleId", IdType="pubmed").text = pmid
             ET.SubElement(idl, "ArticleId", IdType="doi").text = r["doi"].upper()
+            i = (int(pmid) - 31000000) // 7
+            if i % 6 == 0 and i < N_BOTH:  # PubMed gives the PMCID of every other record whose core record has one
+                ET.SubElement(idl, "ArticleId", IdType="pmc").text = f"PMC{7000000 + i}"
         return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
     def _epmc_search(self, params):

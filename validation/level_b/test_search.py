@@ -157,3 +157,26 @@ def test_the_dry_run_of_the_search(dry):
     raws = list((d / "raw").rglob("*.gz"))
     assert len(raws) > 50 and (d / "requests.tsv").read_text().count("\n") > 50
     assert summary["numpy"] == np.__version__
+
+
+def test_the_dry_run_of_the_full_texts(dry, tmp_path):
+    import screening
+    out, _ = dry
+    with gzip.open(out / "search" / "records.jsonl.gz", "rt") as f:
+        recs = [json.loads(line) for line in f]
+    pick = recs[:60] + [r for r in recs if r["preprint"]][:10]
+    (tmp_path / "rids.txt").write_text("\n".join(r["rid"] for r in pick) + "\n")
+    assert screening.fulltext_list(out / "search", tmp_path / "rids.txt", tmp_path / "list.tsv") == 70
+    assert S.main(["fulltext", "--out", str(tmp_path / "ft"), "--fabricated", "--list", str(tmp_path / "list.tsv")]) == 0
+    summary = json.loads((tmp_path / "ft" / "fulltext.json").read_text())
+    index = [line.split("\t") for line in (tmp_path / "ft" / "fulltext_index.tsv").read_text().splitlines()[1:]]
+    assert summary["n"] == len(index) == 70 and summary["fetched"] + summary["none"] == 70
+    assert 0 < summary["fetched"] < 70 and summary["core_asked"] > 0
+    with_pmc = [r for r in pick if r.get("pmcid")]
+    assert with_pmc and all(row[1] != "-" for row in index if row[0] in {r["rid"] for r in with_pmc})
+    assert any(row[2].startswith("PPR") for row in index) and any("HTTP 404" in row[4] for row in index)
+    res = screening.fulltext_text(tmp_path / "ft", tmp_path / "text")
+    assert res["converted"] == summary["fetched"] and not res["failed"]
+    one = next((tmp_path / "text").glob("*.txt")).read_text()
+    assert "### Results" in one and "[Figure 1] The pair by age." in one and "A reference" not in one
+    assert "## Abstract" in one and "Eight mice per group" in one
