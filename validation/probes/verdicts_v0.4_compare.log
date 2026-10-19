@@ -1,0 +1,14 @@
+# The dev set's verdicts: verdicts_v0.4_1337ead.log (metric-autopsy 0.4.0.dev0 — v0.3 verdicts on the probe truths — git 1337ead, python 3.13.16, numpy 2.5.3) against verdicts_v0.4_71e145c.log (metric-autopsy 0.4.0.dev0 — v0.3 verdicts on the probe truths — git 71e145c, python 3.13.16, numpy 2.5.3)
+
+=== demo (CLI defaults): mi_3bin and norm_pearson
+  [mi_3bin]
+  - VERDICT: NO DETECTABLE EFFECT — effect -0.01112 [-0.09251, +0.07027]: the 90% interval lies within ±0.148, the design's floor: no SESOI was pre-registered, so absence is confirmed only for effects of at least 0.148
+  + VERDICT: NO DETECTABLE EFFECT — effect -0.01699 [-0.09099, +0.05702]: the 90% interval lies within ±0.1345, the design's floor: no SESOI was pre-registered, so absence is confirmed only for effects of at least 0.1345
+    (a verdict changed)
+=== demo (CLI defaults): mi_3bin and norm_pearson
+  [norm_pearson]
+  - VERDICT: NO DETECTABLE EFFECT — effect -0.08835 [-0.1862, +0.009513]: the 90% interval lies within ±0.1779, the design's floor: no SESOI was pre-registered, so absence is confirmed only for effects of at least 0.1779
+  + VERDICT: NO DETECTABLE EFFECT — effect -0.07635 [-0.1694, +0.01667]: the 90% interval lies within ±0.1691, the design's floor: no SESOI was pre-registered, so absence is confirmed only for effects of at least 0.1691
+    (a verdict changed)
+
+2 lines differ; VERDICT lines: 7 before, 2 of them changed, 0 in their class (the rest in their numbers)

@@ -40,10 +40,16 @@ def main(before: Path, after: Path) -> int:
         changed += max(i2 - i1, j2 - j1)
         if any("VERDICT:" in line for line in a[i1:i2] + b[j1:j2]):
             print("    (a verdict changed)")
+    def cls(line):  # the verdict's class: the text before its reason
+        return line.split("VERDICT:", 1)[1].split(" —")[0].split(" (")[0].strip()
     n_verdicts = sum("VERDICT:" in line for line in a)
+    pairs = [(x, y) for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag == "replace"
+             for x, y in zip(a[i1:i2], b[j1:j2]) if "VERDICT:" in x and "VERDICT:" in y]
     n_changed = sum(1 for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag != "equal"
                     for line in a[i1:i2] if "VERDICT:" in line)
-    print(f"\n{changed} lines differ; VERDICT lines: {n_verdicts} before, {n_changed} of them changed")
+    n_class = sum(cls(x) != cls(y) for x, y in pairs)
+    print(f"\n{changed} lines differ; VERDICT lines: {n_verdicts} before, {n_changed} of them changed, "
+          f"{n_class} in their class (the rest in their numbers)")
     return 0
 
 
