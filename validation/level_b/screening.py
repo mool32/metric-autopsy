@@ -625,8 +625,14 @@ def claims_list(merge_dir: Path, ft_merge: Path, ft1: Path, ft2: Path, out: Path
         L.append(f"| full texts: {key} | {ft['counts']['pass 1'].get(key, 0)} | {ft['counts']['pass 2'].get(key, 0)} |")
     for c in FT_CODES:
         L.append(f"| full texts: {c} ({FT_CODE_NAMES[c]}) | {ft['counts']['pass 1'].get(c, 0)} | {ft['counts']['pass 2'].get(c, 0)} |")
+    st, s1, s2 = ta["sets"], ta["sets"]["pass 1"], ta["sets"]["pass 2"]
     L += ["", "## Sets and global measures (protocol, section 1: counted, not kept)", "",
-          f"Titles and abstracts: {json.dumps(ta['sets'])}. Full texts, F2: {json.dumps(ft['sets_or_global'])}.", "",
+          f"Titles and abstracts: X6 (a set) {s1['code_X6']} and {s2['code_X6']}, both passes "
+          f"{st['both passes']['code_X6']}; X7 (a global measure) {s1['code_X7']} and {s2['code_X7']}, both "
+          f"{st['both passes']['code_X7']}; X6 or X7 in either pass {st['both passes']['either_X6_or_X7']} records. "
+          f"Records whose kinds name a set: {s1['kind_set']} and {s2['kind_set']}; a global measure: {s1['kind_global']} and "
+          f"{s2['kind_global']}. Full texts, F2 (sets or global measures only): {ft['sets_or_global']['pass 1']} and "
+          f"{ft['sets_or_global']['pass 2']}.", "",
           f"## The papers both passes keep: {len(kept)}", ""]
     if len(kept) > PAPERS_MAX:
         L.append(f"More than {PAPERS_MAX}: {PAPERS_MAX} drawn by numpy.random.default_rng({PAPERS_SEED}).choice({len(kept)}, "
@@ -651,7 +657,8 @@ def claims_list(merge_dir: Path, ft_merge: Path, ft1: Path, ft2: Path, out: Path
     L += [f"- {rid}, pass {k}, claim {cl['claim']}: {cl['donors']}" for rid, k, cl in unread] or ["- none"]
     L += ["", "## The verdicts the papers themselves give (section 7; the search of section 7 is not yet run)", ""]
     L += [f"- {rid}, pass {k}, claim {cl['claim']} ({cl['genes']}): {cl['verdict']}" for rid, k, cl in verdicts] or ["- none"]
-    L += ["", "## To the owner", "", "At titles and abstracts: `to_owner.tsv` (both notes). At the full texts:", ""]
+    L += ["", "## To the owner", "", f"At titles and abstracts: `{merge_dir.name}/to_owner.tsv` (both passes' notes). At the full "
+          "texts:", ""]
     L += ["```", (ft_merge / "ft_to_owner.txt").read_text().rstrip(), "```", ""]
     (out / "claims.md").write_text("\n".join(L) + "\n")
     return res

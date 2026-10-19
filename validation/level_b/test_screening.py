@@ -243,7 +243,9 @@ def test_the_claims_list_draws_30_lists_small_designs_and_the_papers_verdicts(tm
     table = {**{d: 0 for d in S.DECISIONS}, **{c: 0 for c in S.CODES}, "KEEP": n}
     (m / "merge.json").write_text(json.dumps(dict(n_screened=n, kappa=1.0, agreement=1.0, both_keep=n, to_owner=0,
                                                   fulltext=n, table={"pass 1": table, "pass 2": table},
-                                                  sets={"both passes": {"code_X6": 0}})))
+                                                  sets={k: dict(code_X6=0, code_X7=0, kind_set=0, kind_global=0)
+                                                        for k in ("pass 1", "pass 2")} |
+                                                       {"both passes": dict(code_X6=0, code_X7=0, either_X6_or_X7=0)})))
     donors = {"R00001": "2 against 8", "R00002": "eight per group", "R00003": "6 paired donors"}
 
     def write(ft):

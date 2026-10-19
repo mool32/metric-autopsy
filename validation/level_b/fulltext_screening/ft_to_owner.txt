@@ -1,0 +1,76 @@
+R00014  Environment Tunes Propagation of Cell-to-Cell Variation in the Human Macrophage Gene Network.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00173  Sequencing of RNA in single cells reveals a distinct transcriptome signature of hematopoiesis in GATA2 deficiency.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00220  Nuclear gene proximity and protein interactions shape transcript covariations in mammalian single cells.
+  pass 1: not read (titles and abstracts: EXCLUDE)
+  pass 2: EXCLUDE F2 — WT vs Drosha KO mESC claims are SET/GLOBAL only: miRNA-target covariation enrichment lost, >6000 covariations lost, covariations per gene 10.1 to 8.4; named pairs (Npm1-Ppia, Nanog-Klf4) within WT only. One cell line, no donors.
+
+R00394  Single-cell transcriptomic profiles reveal changes associated with BCG-induced trained immunity and protective effects in circulating monocytes.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00438  JEBIN: analyzing gene co-expressions across multiple datasets by joint network embedding.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00582  A targetable MYBL2-ATAD2 axis governs cell proliferation in ovarian cancer.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01062  FCRL3 expression is upregulated and closely correlates with TIGIT expression in regulatory T cells of patients with systemic lupus erythematosus.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01338  Associations between cuprotosis-related genes and the spectrum of metabolic dysfunction-associated fatty liver disease: An exploratory study.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01910  Modeling tumor relapse using proliferation tracing and ablation transgenic mouse.
+  pass 1: not read (titles and abstracts: EXCLUDE)
+  pass 2: EXCLUDE F3 — Abstract: Spp1-Vegfa co-expression in myeloid cells higher in relapsed than primary PyMT tumors, but measured as Spp1+Vegfa+ double-positive cells (rule 2 fails); Cxcl2-Cxcr2 is a CellChat ligand-receptor axis.
+
+R02061  Housekeeping gene dysregulation in psoriasis: integrative multi-cohort and single-cell analysis reveals keratinocyte-centric molecular mechanisms and diagnostic biomarkers.
+  pass 1: EXCLUDE F3 — Pair shifts (e.g. STAT3–IL1F5, DCUN1D3–IL36RN, negative to positive in psoriasis) are correlations across bulk RNA-seq samples (GSE54456); single-cell data (GSE173706) used only for differential expression and ligand–receptor analysis; also F4.
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R02068  ENO1 blockade augment ferroptosis susceptibility in TKIs-resistant CML through GPX4 autophagic degradation.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02134  Systematic correlation analysis of human CD molecules reveals upregulated co-expression of CD58, CD63, and CD147 in patients with primary Sjögren's syndrome.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02262  LMNA-PRKDC axis enhances DNA repair and promotes chemoresistance in glioblastoma.
+  pass 1: EXCLUDE F3 — LMNA–PRKDC co-expression rising after TMZ in GBM43 PDX (Drop-seq, GSE227348) is the share of co-high/double-positive cells, not a correlation; GBmap claim likewise double-positive cells across cell types; single PDX line.
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R02780  Gene regulatory programs of cognitive resilience and pathogenesis in Alzheimer's disease.
+  pass 1: EXCLUDE F3 — Pair statements are pySCENIC/GRNBoost2 edges (BCL6->IL1RN control-specific, lost in Resilient and AD; BCL6->TNFRSF11B lost in AD), not a pair correlation; other claims are regulon activity and network rewiring (sets).
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R02787  Uncovering Spatiotemporal and Functional Dynamics of Long Non-coding RNAs During Alzheimer's Progression in the Human Brain at Single-Cell Resolution.
+  pass 1: EXCLUDE F1 — lncRNA-neighbour mRNA pairs (e.g. MEG3-BEGAIN, SLC6A1-AS1-SLC6A1) correlated by Spearman across pseudobulk samples pooled over Braak stages, with co-directional DE; no claim that a pair's coordination changes between conditions (also pseudobulk).
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R02831  Identification of METTL3 and PRMT5 as an oncogenic pair for the prognosis and therapeutic targets of colorectal cancer subtype.
+  pass 1: EXCLUDE F3 — METTL3-PRMT5 co-expression is a correlation across bulk samples, IHC scores or cell lines; in scRNA-seq (GSE178341) the METTL3High/PRMT5High vs Low patients' co-expression is only UMAP plots, no correlation across cells.
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R02858  Single-Nucleus Transcriptomics of the Mouse Medial Preoptic Area Reveals Sex-Dependent Molecular Signatures of Social Dominance.
+  pass 1: EXCLUDE F9 — Oxt-Avp Spearman higher in subordinates, computed per pooled sample: dominant vs subordinate within each sex is 3 vs 3 mice (Souporcell genotypes), C(6,3) = 20, min p = 0.1; no delta rho pooled over sexes reported.
+  pass 2: not read (titles and abstracts: EXCLUDE)
+
+R03285  Single-Cell Immune Profiling Suggests Non-Classical Monocyte Is Associated Immunodepression in Tuberculosis Treatment Non-Responders.
+  pass 1: UNCLEAR - — Rule 3 undecidable: scRNA-seq data promised at NGDC PRJCA044651 'upon completion of submission', on request meanwhile. Otherwise passes: LGALS9-HAVCR2 and LGALS9-TIGIT cell-level correlations stronger in non-responders (abstract, Fig. S7); 4 vs 4 patients.
+  pass 2: UNCLEAR - — Rule 3: scRNA (10x Flex) data 'will be available' at NGDC PRJCA044651 'upon completion of submission', requests meanwhile to authors; release unverifiable. Otherwise holds: LGALS9-HAVCR2, LGALS9-TIGIT correlations higher in non-responders, 4 vs 4 patients.
+
+R03433  Unraveling changes in mitochondrial processes influenced by ancestry in APOEε4 carriers with Alzheimer disease.
+  pass 1: UNCLEAR - — Rule 3 undecidable: no repository or accession in the text (data statement defers to supplementary material). Otherwise passes: APOE-PPARG correlation (rcorr, co-detected cells) in astrocytes c1 significant in EU-LA (10 donors), not AF-LA (7); one sample per donor.
+  pass 2: UNCLEAR - — Rule 3: data statement defers repository/accession to 'the article/Supplementary material'; the text names none. Otherwise holds: APOE-PPARG correlation (Hmisc rcorr, co-detected cells) stronger in EU-LA astrocytes c1 (r2 0.52) than AF-LA (0.25, ns); 10 vs 7 donors.
+

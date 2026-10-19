@@ -25,6 +25,8 @@ def main(argv=None) -> int:
     ap.add_argument("--pass1", required=True)
     ap.add_argument("--pass2", required=True)
     ap.add_argument("--forbid", nargs="*", default=[], help="paths no session may name (the other decisions)")
+    ap.add_argument("--lists", nargs=2, metavar=("DIR1", "DIR2"),
+                    help="full texts: each pass's batch lists; a session may name no text file outside its own list")
     ap.add_argument("--batch-pattern", default=r"batches/batch_(\d+)",
                     help=r"the regular expression of a batch's path, its number the group (full texts: /batch_(\d+)\.list)")
     a = ap.parse_args(argv)
@@ -45,8 +47,14 @@ def main(argv=None) -> int:
         forbidden = {x: s.count(x) for x in a.forbid}
         batches = sorted(set(re.findall(a.batch_pattern, s)))
         ok = other == 0 and not any(forbidden.values()) and batches == [b]
-        bad += not ok
         extra = "".join(f"; {x} named {k} times" for x, k in forbidden.items())
+        if a.lists:
+            own = {line.split("\t")[0] for line in (Path(a.lists[int(p) - 1]) / f"batch_{b}.list").read_text().splitlines()
+                   if line.strip()}
+            named = set(re.findall(r"\b(R\d{5})\.txt", s))
+            ok = ok and named <= own
+            extra += f"; texts named {len(named)}, outside its list {sorted(named - own)}"
+        bad += not ok
         print(f"pass {p} batch {b}: other pass's directory named {other} times; own {s.count(dirs[p])}{extra}; "
               f"batches named {batches}; {'ok' if ok else 'CHECK'}")
     print(f"{n} sessions: " + ("all independent" if bad == 0 else f"{bad} to check"))

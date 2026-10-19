@@ -1,0 +1,2 @@
+rid	decision	code	claim	genes	species	cells	conditions	direction	metric	where	quote	data	donors	rule4	verdict	note
+R03433	UNCLEAR	-	0	-	-	-	-	-	-	-	-	-	-	-	-	Rule 3 undecidable: no repository or accession in the text (data statement defers to supplementary material). Otherwise passes: APOE-PPARG correlation (rcorr, co-detected cells) in astrocytes c1 significant in EU-LA (10 donors), not AF-LA (7); one sample per donor.
