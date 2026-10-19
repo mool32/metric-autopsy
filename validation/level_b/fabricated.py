@@ -8,7 +8,8 @@ core record; one PMID whose efetch returns nothing. With every source merged the
 5,000 records, so the sample is drawn. Every request is checked: PubMed's term must be the protocol's
 query, Europe PMC's search the protocol's or a lookup's or a batch of ids. For the full texts: every third
 PubMed record that Europe PMC holds has a PMCID in its core record (but not in PubMed's), and the full text
-of every other such PMCID is open (PubMed gives these PMCIDs too); the even preprints' full texts are open.
+of every other such PMCID is open (PubMed gives these PMCIDs too), but one answers a server error on every
+attempt; the even preprints' full texts are open.
 Every fifth PubMed record lists its references with their ids, as PubMed does: the next record's DOI and PMID
 and a PMCID of their own (a parser that took them for the record's own would merge the two). Each response
 is recorded as `search.Net` records it, with its SHA256, so that a dry run can be replayed (`remerge`)."""
@@ -22,10 +23,11 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import date, timedelta
 
-from search import EUROPEPMC_QUERY, PAPERS, PUBMED_TERM, shown_params
+from search import EUROPEPMC_QUERY, PAPERS, PUBMED_TERM, Unavailable, shown_params
 
 N_PUBMED, N_BOTH, N_EPMC_ONLY, N_PREPRINT, N_PREPRINT_TWIN, N_CITING = 5600, 5200, 500, 100, 30, 40
 MISSING_PMID = "31000077"
+SERVER_ERROR_FULLTEXT = "PMC7000006"  # open, but its full text answers 500 on every attempt
 
 
 def _day(i: int) -> date:
@@ -123,6 +125,9 @@ class Fabricated:
         raise AssertionError(f"no fabricated response for {url}")
 
     def _fulltext(self, url, fid):
+        if fid == SERVER_ERROR_FULLTEXT:  # as search.Net raises after six attempts answered 500
+            self.rows[-1]["status"] = 500
+            raise Unavailable(f"the request failed six times (HTTP 500): {url}", 500)
         if fid not in self.open_fulltext:
             self.rows[-1]["status"] = 404
             raise urllib.error.HTTPError(url, 404, "Not Found", None, None)

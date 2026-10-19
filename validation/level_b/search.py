@@ -102,6 +102,18 @@ EUROPEPMC_QUERY = (f'{_epmc_block(SINGLE_CELL)} AND {_epmc_block(COORDINATION)} 
 # --------------------------------------------------------------------------- #
 # the network, recorded
 # --------------------------------------------------------------------------- #
+RETRIED = (429, 500, 502, 503, 504)
+
+
+class Unavailable(RuntimeError):
+    """A request that failed on every attempt; `status` is the last attempt's HTTP status (None where the
+    network failed, not the server)."""
+
+    def __init__(self, message: str, status: int | None = None):
+        super().__init__(message)
+        self.status = status
+
+
 def shown_params(params: dict) -> str:
     """A request's parameters as `requests.tsv` records them (a long value cut, with its length)."""
     shown = {k: (v if len(str(v)) <= 120 else f"{str(v)[:60]}… ({len(str(v))} characters)") for k, v in params.items()}
@@ -117,7 +129,7 @@ class Net:
     def get(self, url: str, params: dict, post: bool = False) -> bytes:
         host = urllib.parse.urlsplit(url).hostname or ""
         query = urllib.parse.urlencode(params, doseq=True)
-        last_error = None
+        last_error = last_status = None
         for attempt in range(6):
             wait = PAUSE.get(host, 0.2) - (time.monotonic() - self.last.get(host, 0.0))
             if wait > 0:
@@ -131,15 +143,19 @@ class Net:
                 self._record(url, params, post, status, body, attempt)
                 return body
             except urllib.error.HTTPError as e:
-                last_error = f"HTTP {e.code}"
-                if e.code not in (429, 500, 502, 503, 504):
+                last_error, last_status = f"HTTP {e.code}", e.code
+                if e.code not in RETRIED:
                     self._record(url, params, post, e.code, b"", attempt)
                     raise
             except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
-                last_error = f"{type(e).__name__}: {e}"
+                last_error, last_status = f"{type(e).__name__}: {e}", None
+            if attempt == 5:
+                break
             self.log(f"  retry {attempt + 1} after {last_error}: {url}")
             time.sleep(min(60, 2 ** (attempt + 1)))
-        raise RuntimeError(f"the request failed six times ({last_error}): {url}")
+        if last_status is not None:  # the server's answer to the last attempt, recorded
+            self._record(url, params, post, last_status, b"", 5)
+        raise Unavailable(f"the request failed six times ({last_error}): {url}", last_status)
 
     def _record(self, url, params, post, status, body, attempt):
         self.rows.append(dict(time=datetime.now(timezone.utc).isoformat(timespec="seconds"), method="POST" if post else "GET",
@@ -173,6 +189,9 @@ class Replay:
         if (rec["method"], rec["url"], rec["params"]) != ("POST" if post else "GET", url, shown):
             raise RuntimeError(f"request {self.i} is not the run's: {url} {shown}, recorded {rec['url']} {rec['params']}")
         if rec["status"] != "200":
+            self.rows.append(dict(rec))
+            if int(rec["status"]) in RETRIED:  # what Net raised after its last attempt
+                raise Unavailable(f"as recorded: HTTP {rec['status']} on every attempt: {url}", int(rec["status"]))
             raise urllib.error.HTTPError(url, int(rec["status"]), "as recorded", None, None)
         body = self.bodies.get(rec["sha256"])
         if body is None:
@@ -615,7 +634,7 @@ def fulltext(net, out: Out, items: list) -> dict:
         for r in (json.loads(body).get("resultList") or {}).get("result", []):
             cores[(str(r.get("source")), str(r.get("id")))] = r
     out.log(f"Core records asked for {len(keys)} records without a PMCID: {sum(k in cores for k in keys)} found")
-    rows, counts = [], dict(fetched=0, none=0)
+    rows, counts, server_errors = [], dict(fetched=0, none=0), []
     for it in items:
         tried, got, note = [], None, ""
         if it["pmcid"]:
@@ -638,6 +657,12 @@ def fulltext(net, out: Out, items: list) -> dict:
                     note = (note + "; " if note else "") + f"{fid}: HTTP {e.code}"
                     continue
                 raise
+            except Unavailable as e:  # the server refused this one full text on every attempt: none for it
+                if e.status is None:  # the network failed, not the server: the run fails
+                    raise
+                note = (note + "; " if note else "") + f"{fid}: HTTP {e.status} on all 6 attempts"
+                server_errors.append(it["rid"])
+                continue
             if body.strip():
                 got = fid
                 path = out.raw(f"fulltext/{it['rid']}.xml", body)
@@ -650,7 +675,13 @@ def fulltext(net, out: Out, items: list) -> dict:
         for r in rows:
             f.write("\t".join(r[c] for c in ("rid", "tried", "fulltext", "file", "note")) + "\n")
     out.log(f"Full texts: {counts['fetched']} of {len(items)} fetched; {counts['none']} without an accessible full text")
-    return dict(n=len(items), **counts, core_asked=len(keys), core_found=sum(k in cores for k in keys))
+    server_errors = list(dict.fromkeys(server_errors))
+    if server_errors:
+        out.log(f"  of which {len(server_errors)} answered with a server error on every attempt: {', '.join(server_errors)}")
+    if len(server_errors) > len(items) // 4:  # not one paper's problem but the server's: nothing is published
+        raise RuntimeError(f"{len(server_errors)} of {len(items)} records' full texts failed with server errors")
+    return dict(n=len(items), **counts, core_asked=len(keys), core_found=sum(k in cores for k in keys),
+                server_errors=server_errors)
 
 
 # --------------------------------------------------------------------------- #
@@ -717,4 +748,5 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.path.insert(0, str(HERE))
-    raise SystemExit(main())
+    import importlib  # one module for the script and for fabricated.py, which imports it: the same classes
+    raise SystemExit(importlib.import_module("search").main())

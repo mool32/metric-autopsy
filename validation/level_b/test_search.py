@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import search as S  # noqa: E402
-from fabricated import MISSING_PMID, N_PREPRINT_TWIN  # noqa: E402
+from fabricated import MISSING_PMID, N_PREPRINT_TWIN, SERVER_ERROR_FULLTEXT  # noqa: E402
 
 PROTOCOL = HERE.parent / "plans" / "level_b_protocol.md"
 
@@ -182,6 +182,10 @@ def test_the_dry_run_of_the_full_texts(dry, tmp_path):
     with_pmc = [r for r in pick if r.get("pmcid")]
     assert with_pmc and all(row[1] != "-" for row in index if row[0] in {r["rid"] for r in with_pmc})
     assert any(row[2].startswith("PPR") for row in index) and any("HTTP 404" in row[4] for row in index)
+    # a full text the server refuses on every attempt is recorded and the run goes on (fabricated.py)
+    refused = next(r["rid"] for r in pick if r.get("pmcid") == SERVER_ERROR_FULLTEXT)
+    assert summary["server_errors"] == [refused]
+    assert next(row for row in index if row[0] == refused)[2:] == ["-", "-", f"{SERVER_ERROR_FULLTEXT}: HTTP 500 on all 6 attempts"]
     res = screening.fulltext_text(tmp_path / "ft", tmp_path / "text")
     assert res["converted"] == summary["fetched"] and not res["failed"]
     one = next((tmp_path / "text").glob("*.txt")).read_text()
@@ -213,3 +217,42 @@ def test_a_search_is_rebuilt_from_its_own_responses(dry, tmp_path):
     (bad / "requests.tsv").write_text("\n".join(tsv) + "\n")
     with pytest.raises(RuntimeError, match="no raw response"):
         S.main(["remerge", "--search", str(bad), "--out", str(tmp_path / "re2"), "--papers", str(papers)])
+
+
+def test_a_request_failing_every_attempt_raises_with_the_last_status(monkeypatch):
+    import urllib.error
+    import urllib.request
+
+    def refuse(req, timeout):
+        raise urllib.error.HTTPError(req.full_url, 500, "Internal Server Error", None, None)
+    monkeypatch.setattr(urllib.request, "urlopen", refuse)
+    monkeypatch.setattr(S.time, "sleep", lambda s: None)
+    lines = []
+    net = S.Net(lines.append)
+    with pytest.raises(S.Unavailable) as e:
+        net.get("https://www.ebi.ac.uk/europepmc/webservices/rest/PMC1/fullTextXML", {})
+    assert e.value.status == 500 and len(lines) == 5  # five retries logged, six attempts
+    assert [(r["status"], r["attempt"]) for r in net.rows] == [(500, 6)]  # the last answer, recorded
+
+    def offline(req, timeout):
+        raise urllib.error.URLError("no route to host")
+    monkeypatch.setattr(urllib.request, "urlopen", offline)
+    with pytest.raises(S.Unavailable) as e:
+        S.Net(lines.append).get("https://www.ebi.ac.uk/x", {})
+    assert e.value.status is None
+
+
+def test_the_script_run_as_a_command_records_a_refused_full_text(dry, tmp_path):
+    # run as `python -I search.py`, the script and fabricated.py must share one module (one Unavailable)
+    import subprocess
+    import screening
+    out, _ = dry
+    with gzip.open(out / "search" / "records.jsonl.gz", "rt") as f:
+        recs = [json.loads(line) for line in f][:10]
+    (tmp_path / "rids.txt").write_text("\n".join(r["rid"] for r in recs) + "\n")
+    screening.fulltext_list(out / "search", tmp_path / "rids.txt", tmp_path / "list.tsv")
+    assert any(r.get("pmcid") == SERVER_ERROR_FULLTEXT for r in recs)
+    run = subprocess.run([sys.executable, "-I", str(Path(S.__file__)), "fulltext", "--out", str(tmp_path / "ft"),
+                          "--fabricated", "--list", str(tmp_path / "list.tsv")], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr
+    assert "answered with a server error on every attempt" in (tmp_path / "ft" / "fulltext.log").read_text()
