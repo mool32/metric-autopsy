@@ -1,0 +1,24 @@
+# The acceptance of change 17' on synthetic data — the new engine at git af6f2c7, the engine without change 17 at 1337ead; python 3.13.16, numpy 2.5.3; 4 workers
+
+The criteria (fixed before the run; the owner's second decisions of 2026-10-19, item 3), for each
+of mi_3bin and norm_pearson; s_m is GATE 4's response to the SESOI (detail["sesoi_metric"]), the effect the
+verdict's (groups[0] - groups[1], young - old: a decrease is positive):
+(i)   an equal coupling with a gap of detection as on §4 (scenario i), the new engine: at most 2 of 20
+      SUPPORTED (all false), and |mean of the effects| <= 0.5 x mean of s_m over the 20 seeds.
+(ii)  an equal detection (scenarios eq0, eq3, eq5 and eq7: an equal coupling and decreases of 3, 5 and 7 x
+      SESOI): the verdict (its class and its cause) of the new engine equals that of v0.4 without change 17
+      (the engine of 1337ead) in every seed: 80 of 80.
+(iii) a decrease of 3 x SESOI at an equal detection (eq3): the share of SUPPORTED of the new engine is at
+      least that of the engine of 1337ead less 1/20.
+(iv)  decreases of 3, 5 and 7 x SESOI with a gap as on §4 (gap3, gap5, gap7), the new engine: the mean over
+      the seeds of effect / s_m is at least 0.7 x the same mean at an equal detection with the same
+      coupling (eq3, eq5, eq7, the new engine; 1337ead's mean is reported beside it); the shares of
+      SUPPORTED are reported. Seeds where s_m is not positive (GATE 4 failed) are left out of the means
+      and counted.
+(v)   the clean data of tests/test_v03_verdict.py (test_gates.make_clean with add_mice, norm_pearson of
+      Smad3 and Col1a1 with the coupling probe), the new engine: SUPPORTED.
+(vi)  a gap made by cell-to-cell variation of capture (scenarios vi-a and vi-b, both engines): reported only,
+      as a known limitation.
+The acceptance passes where (i)-(v) pass for both metrics. If it fails: the report, and stop (no further
+design).
+
