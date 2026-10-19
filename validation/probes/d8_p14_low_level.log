@@ -1,0 +1,56 @@
+# JOURNAL D8: p14's low level under the engine installed — git 3f35c47, metric-autopsy 0.4.0.dev0, python 3.13.16, numpy 2.5.3
+# p14's population responses (its log, section 2) classed by v0.4's definition (r -/+ 1.96 SE against 0):
+#   pool 16: +0.0133 (SE 0.0051, 95% [+0.0033, +0.0233]) -> responds
+#   pool 17: +0.0094 (SE 0.0061, 95% [-0.0026, +0.0214]) -> undecided
+#   pool 18: +0.0036 (SE 0.0077, 95% [-0.0115, +0.0187]) -> undecided
+#   pool 19: +0.0033 (SE 0.0079, 95% [-0.0122, +0.0188]) -> undecided
+#   pool 20: -0.0084 (SE 0.0080, 95% [-0.0241, +0.0073]) -> undecided
+#   pool 21: -0.0227 (SE 0.0115, 95% [-0.0452, -0.0002]) -> blind
+#   pool 22: -0.0206 (SE 0.0086, 95% [-0.0375, -0.0037]) -> blind
+#   pool 23: +0.0185 (SE 0.0103, 95% [-0.0017, +0.0387]) -> undecided
+1. GATE 4 (v0.4) on p14's 40 low-level null datasets at dose 2.25, per dataset
+  dataset  0 pool 16: PASS     response +0.0172 [+0.0036, +0.0309]  (responds)
+  dataset  1 pool 17: UNTESTED response +0.0029 [-0.0117, +0.0176]  (undecided)
+  dataset  2 pool 18: PASS     response +0.0227 [+0.0075, +0.0379]  (undecided)
+  dataset  3 pool 19: UNTESTED response +0.0003 [-0.0159, +0.0165]  (undecided)
+  dataset  4 pool 20: PASS     response +0.0217 [+0.0005, +0.0429]  (undecided)
+  dataset  5 pool 21: UNTESTED response -0.0191 [-0.0386, +0.0005]  (blind)
+  dataset  6 pool 22: FAIL     response -0.0324 [-0.0491, -0.0158]  (blind)
+  dataset  7 pool 23: PASS     response +0.0310 [+0.0070, +0.0551]  (undecided)
+  dataset  8 pool 16: PASS     response +0.0133 [+0.0014, +0.0252]  (responds)
+  dataset  9 pool 17: UNTESTED response +0.0059 [-0.0108, +0.0225]  (undecided)
+  dataset 10 pool 18: FAIL     response -0.0177 [-0.0351, -0.0003]  (undecided)
+  dataset 11 pool 19: UNTESTED response -0.0144 [-0.0300, +0.0012]  (undecided)
+  dataset 12 pool 20: FAIL     response -0.0279 [-0.0441, -0.0117]  (undecided)
+  dataset 13 pool 21: UNTESTED response -0.0081 [-0.0272, +0.0110]  (blind)
+  dataset 14 pool 22: FAIL     response -0.0363 [-0.0535, -0.0192]  (blind)
+  dataset 15 pool 23: UNTESTED response +0.0044 [-0.0174, +0.0262]  (undecided)
+  dataset 16 pool 16: UNTESTED response +0.0051 [-0.0072, +0.0175]  (responds)
+  dataset 17 pool 17: PASS     response +0.0246 [+0.0078, +0.0413]  (undecided)
+  dataset 18 pool 18: UNTESTED response -0.0025 [-0.0194, +0.0144]  (undecided)
+  dataset 19 pool 19: UNTESTED response +0.0019 [-0.0120, +0.0158]  (undecided)
+  dataset 20 pool 20: FAIL     response -0.0223 [-0.0396, -0.0050]  (undecided)
+  dataset 21 pool 21: FAIL     response -0.0273 [-0.0456, -0.0091]  (blind)
+  dataset 22 pool 22: UNTESTED response -0.0109 [-0.0274, +0.0056]  (blind)
+  dataset 23 pool 23: FAIL     response -0.0213 [-0.0413, -0.0013]  (undecided)
+  dataset 24 pool 16: UNTESTED response +0.0134 [-0.0001, +0.0269]  (responds)
+  dataset 25 pool 17: UNTESTED response +0.0093 [-0.0042, +0.0227]  (undecided)
+  dataset 26 pool 18: UNTESTED response -0.0066 [-0.0235, +0.0103]  (undecided)
+  dataset 27 pool 19: UNTESTED response -0.0085 [-0.0252, +0.0082]  (undecided)
+  dataset 28 pool 20: UNTESTED response -0.0029 [-0.0212, +0.0155]  (undecided)
+  dataset 29 pool 21: FAIL     response -0.0198 [-0.0394, -0.0003]  (blind)
+  dataset 30 pool 22: UNTESTED response -0.0086 [-0.0243, +0.0070]  (blind)
+  dataset 31 pool 23: UNTESTED response +0.0199 [-0.0012, +0.0410]  (undecided)
+  dataset 32 pool 16: UNTESTED response +0.0001 [-0.0122, +0.0124]  (responds)
+  dataset 33 pool 17: UNTESTED response +0.0023 [-0.0122, +0.0168]  (undecided)
+  dataset 34 pool 18: PASS     response +0.0196 [+0.0046, +0.0346]  (undecided)
+  dataset 35 pool 19: FAIL     response -0.0225 [-0.0377, -0.0073]  (undecided)
+  dataset 36 pool 20: UNTESTED response +0.0078 [-0.0097, +0.0253]  (undecided)
+  dataset 37 pool 21: UNTESTED response -0.0190 [-0.0408, +0.0028]  (blind)
+  dataset 38 pool 22: UNTESTED response -0.0116 [-0.0280, +0.0047]  (blind)
+  dataset 39 pool 23: UNTESTED response +0.0055 [-0.0154, +0.0263]  (undecided)
+2. by the pair's class (v0.4's definition of blind)
+  responds : 5 datasets — PASS 2, FAIL 0, UNTESTED 3
+  undecided: 25 datasets — PASS 5, FAIL 5, UNTESTED 15
+  blind    : 10 datasets — PASS 0, FAIL 4, UNTESTED 6
+3. all 40: PASS 7, FAIL 9, UNTESTED 24; p14's expectation (v0.3's threshold 0.8 x delta_min): FAIL in at least 80%

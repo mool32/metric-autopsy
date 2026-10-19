@@ -5,6 +5,279 @@ All notable changes to `metric-autopsy` are documented here. Format follows
 [SemVer](https://semver.org/). Downstream papers should cite a fixed version for
 comparability.
 
+## [0.4.0.dev0] — in development, not released
+
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-19):
+1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 17', 18 and 19, and the claim's domain
+(the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
+`validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
+`validation/exploratory/real_pilot_5_summary.log`, and the two sets of decisions of 2026-10-19, after the
+fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 17's acceptance,
+`validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day.
+Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
+
+### Changed
+- **The pair's detection, equalized after equal depth (change 17', the owner's second decisions of
+  2026-10-19).** Equal depth leaves the groups' detection unequal where their libraries differ in
+  complexity (on preprint §4 it widened the gap in genes per cell from 24% to 29%), and a metric of
+  structure reads detection. For a claim about a pair (`gene_pair`; a set waits for change 9, a metric of
+  level is not equalized) every draw of the correction now has, after equal depth, the pair's detection
+  equalized in every cell set where the effect is estimated — each stratum, and with a domain each
+  stratum and cell type: the group that detects a gene in the larger share of its cells has that gene's
+  counts thinned binomially, one keep probability per set, to the other group's share
+  (`equalize.equalize_detection`, `equalize.detection_keep_probability`), from a random stream of its own
+  keyed by the effect's seed (the thinning to equal depth draws as before). No threshold. The effect, and
+  so the verdict, is at equal depth and detection, by the effect's usual rule (no new cause); the change
+  12 test of the technical difference and GATE 6 equalize the same way. The dossier gives each gene's
+  detection per group uncorrected, at equal depth and after, and the effect at equal depth alone
+  (`effect.detail["detection"]`, `["equal_depth_effect"]`). **Its acceptance on synthetic data failed, on
+  criterion (ii)** (Known issues).
+- **GATE 4 measures s_m on the data the effect is judged on (the owner's second decisions of
+  2026-10-19).** For every claim GATE 4 now runs on one draw of the effect's correction — equal depth (or
+  spike-in capture) within each stratum and, with a domain, each cell type, and for a pair the pair's
+  detection equalized (`effect.equalized_for_probe`, its own keyed stream); `detail["data"]` says which.
+  So the SESOI in the metric's units, GATE 0's tolerance, the TOST and EFFECT BELOW SESOI change for every
+  claim with a probe and a thinning correction. The line of `norm_pearson` beside a pair's metric is
+  computed inside the effect's estimate on the same draws (`report.coupling_reference(values=)`): its
+  metric over the strata is the effect itself.
+- **Change 17, the differential sensitivity, reverted (the owner's second decisions of 2026-10-19).**
+  Coded at 1e4696c (GATE 4's second injection, the ratio k_poor / k_rich, the bound subtracted from the
+  effect, the cause `differential_sensitivity`, the test of detection that gated it, its line of the
+  dossier) and removed at the next engine commit, `composition.technical_covariates(exclude=)` with it.
+  The reason, from its own acceptance log (`validation/exploratory/differential_sensitivity.log`): a
+  group's response to the injection depends on its own biology — at an equal detection with a real
+  decrease `mi_3bin`'s ratio was 0.625, on the clean data of `tests/test_v03_verdict.py` 0.13 by the
+  genes' variance, and with a gap as on §4 the estimate of A grew with the true effect (what was left of
+  `mi_3bin`'s effect: −0.005, +0.001, −0.007 at 3, 5 and 7 × SESOI). It subtracted biology, not an
+  artifact.
+- **One direction for every difference of the dossier (change 18).** The line of `norm_pearson` beside
+  the metric gave groups[1] − groups[0]; it now gives groups[0] − groups[1], as every other line, and the
+  dossier's header says so (`differences` in the JSON report). The specificity line gives its t and its
+  controls' in the same direction and names the claim's side.
+- **The full dossier after the first FAIL (the owner's second decisions of 2026-10-18).** The verdict
+  follows the first FAIL as before, but the effect — within the domain, the mixture's, outside the
+  domain, per type — GATE 6, the composition, the technical covariates and every other report line
+  are estimated after it too. The effect then carries the flag `DOSSIER_ONLY` (and
+  `detail["dossier_only"]`), its reason opens with "(the dossier: estimated after metric validity's
+  FAIL, which decides the verdict)", and `decide` never reads it before the FAIL. `stop_on_first_fail`
+  (the CLI's `--no-stop`, the MCP tools' argument) is kept for compatibility and recorded; it no
+  longer stops anything.
+- **GATE 0 blocks only a bias it cannot show to be equal between the groups (change 12, decided
+  2026-10-12, coded on the owner's second decisions of 2026-10-18).** Where GATE 0 FAILs on a blocking
+  bias and the data have a replicate unit, `run_autopsy` estimates the groups' technical difference
+  (`report.technical_difference`): the claim's metric on GATE 0's null of the claim's genes (each
+  gene's counts redrawn independently from cells at least as deep within the unit, `gates.claim_null`:
+  no gene-gene biology, each group's own technology), averaged over `TECHNICAL_DRAWS` = 3 draws per
+  unit, estimated between the groups as the effect is (the same units, domain, correction and test).
+  Where its 90% interval lies within ±GATE 0's tolerance (bias_tolerance × the SESOI in the metric's
+  units, the TOST) the bias is reported, handling "equal between groups", GATE 0 WARN; otherwise it
+  still blocks and the test is recorded in GATE 0's message and `detail["between_groups"]`
+  (`gates.gate0_between_groups`). A direct call of `gate0_independence` has no groups and is
+  unchanged. Without a replicate unit nothing changes.
+- **`norm_pearson` gives NaN, not 0.0, where it measures nothing (the owner's second decisions of
+  2026-10-18).** Below `metrics.MIN_CODETECTED` = 20 cells with counts of both genes (never fewer than
+  3), or where one gene takes one value among them (tested by equality: the standard deviation of
+  equal floats can round to 1e-16, and their correlation to 1.0). The minimum, fixed from principle
+  before any run, is the 20 cells a unit needs to count (`composition.MIN_CELLS`), applied to the
+  cells the correlation is computed on (Fisher's z over 20 cells has a standard error of 0.24). v0.3
+  returned 0.0, a value not measured reported as no correlation.
+- **Replicates the metric gives no value on are left out and listed.** A replicate (or a unit
+  (replicate, type) of the domain) whose metric is not finite, uncorrected or at equal depth, leaves
+  both tests and is listed in `detail["unmeasured"]` (and the domain's `unmeasured`) and in the
+  Markdown report's section "Left out: the metric gives no value (not measured)". Where that
+  leaves fewer replicates per group than the pre-registered minimum, which there were before, the
+  effect is NOT_ESTIMABLE and the verdict UNIDENTIFIABLE, cause `unmeasured`.
+- **The SESOI on the construct's scale, brought into the metric's units by GATE 4 (change 3,
+  decided 2026-10-18).** `prereg["sesoi"]` is by default a change of the construct
+  (`sesoi_scale="construct"`): for a coupling probe a change of the correlation of the pair's log
+  expected expression, in (0, 1); for a module probe a change of the module's natural-log
+  expression. GATE 4's probe is dosed to that change (`injected_signal.at_construct_change`): a
+  module lowered exp(SESOI)-fold; a coupling at the strength that raises the correlation by the
+  SESOI given the two genes' biological variances in the probed cells (`biological_log_variance`, a
+  Poisson-lognormal method of moments, floored at `BIO_VAR_FLOOR` = 0.01; `coupling_strength_for`).
+  Its response s_m, with a 95% interval over the replicates (the injection repeated within each,
+  a cluster-robust mean), is the SESOI in the metric's units for GATE 0's tolerance, the TOST and
+  EFFECT BELOW SESOI. A SESOI on the metric's own scale is declared with `sesoi_scale="observed"`
+  and used as declared; a SESOI on the construct's scale that no probe translates is not used
+  (SESOI_NOT_TRANSLATED), and the design's floor stands in.
+- **GATE 4 decides only blindness (change 3).** PASS where the lower 95% bound of s_m lies above
+  zero in the injection's direction, FAIL (blind) where the upper bound lies at or below zero,
+  UNTESTED (WARN) otherwise. `delta_min` is recorded, not used (the CLI's `--delta-min` and the MCP
+  tool's `delta_min` are accepted and ignored). The detail gives the dose–response at 0.5×, 1× and
+  2× the SESOI (`GATE4_CURVE`; `GATE4_N_REP_CURVE` = 20 injections per replicate at the extra
+  doses). The protection that delta_min gave is carried by the checks that explain a difference
+  away (depth, change 6; the domain and composition, change 7).
+- **The design's floor (change 4).** se × (t(1 − α, df) + t(0.975, df)) of the replicate-level
+  estimate (`effect.design_floor`): the smallest SESOI at which this design confirms absence by
+  the TOST with power 0.95 at a true difference of 0 (v1's rule). A SESOI in the metric's units
+  below it is flagged SESOI_BELOW_FLOOR; without a SESOI the floor is the margin of absence, flagged
+  NO_SESOI_FLOOR, with "absence is confirmed only for effects of at least X". EFFECT BELOW SESOI and
+  the TOST that explains a difference by depth need a pre-registered SESOI.
+- **The claim's domain (decided 2026-10-18).** With `composition` (the cell type first), the claim
+  is judged in the cell types where its genes are expressed: for a pair, both genes detected in at
+  least 10% of the type's cells **in each group** (`domain.DOMAIN_DETECTION`, the lower bound of
+  v1's low level; the owner's second decisions of 2026-10-18, by the definition of coupling: a pair's
+  coupling is not defined in a group where a gene is not expressed — the third diagnostics ran with
+  "in at least one group"); for a set, any of its genes in at least one group (a change of expression
+  may be its appearance); for a claim without genes, every type; each type
+  with at least 20 cells in at least 3 replicates of each group, per stratum
+  (`domain.claim_domain`). The verdict follows the combined estimate within the domain: the metric
+  of each (replicate, type) unit, at equal depth within its (stratum, type), the types weighted
+  equally within a stratum and the strata by precision, with a cluster-robust interval over the
+  replicates (Satterthwaite df) and relabelings of the replicates within strata (`combined.py`).
+  The whole mixture's estimate, the estimate outside the domain and each type's are reported beside
+  the difference of composition. An empty domain gives INCONCLUSIVE, cause `empty_domain`.
+- **GATE 4 and GATE 0 run on the domain's cells** (decided 2026-10-18), not on the whole mixture.
+- **GATE 5's negative control is reported, not failed.** An unrelated pair outside its null of
+  unrelated pairs is reported (`negative_control_outside_null`); GATE 5 fails only a positive
+  control that GATE 4's rule shows blind, or one in the legacy band. The 10 pairs with an
+  equivalence or Holm rule of the spec's proposal are not built (change 13, decided 2026-10-17).
+- The verdicts per type of change 7 (`report.per_type_verdicts`) give way to the domain's estimates
+  per type; a type absent from every replicate of one group cannot be estimated and is listed with
+  the group it is absent from (`absent_from`).
+- **GATE 4 on the claim's own statistic (change 1).** With a replicate unit the signal goes into
+  the group whose replicates have more of the probed genes' counts per cell, whatever the claim's
+  wording (on an exact tie into each group, the weaker response judged); the response is the
+  change of the replicate-level difference that the effect test uses, with its interval over the
+  injected group's replicates (`GATE4_N_REP_REPLICATE` = 50 injections within each), judged
+  against the injection's own direction (`inject.direction`). v0.3's all-cell response stays in
+  the detail (`all_cells`) and is the judged response without a replicate unit; a direct call
+  without the claim's groups is v0.3's gate.
+- **Keyed draws (change 1).** Every gate's random stream is seeded by the data's hash, the claim's
+  canonical form (`provenance.canonical_claim`: the metric, the genes, the groups sorted and the
+  direction for that order) and `seed` (`provenance.claim_seed`): a mirrored wording gets the
+  same draws and verdict, two claims on the same data different draws. The tie rules of GATE 1's
+  bootstrap and of the thinning follow the groups' labels, not their order. Numbers that depend on
+  draws differ from v0.3's for the same `seed`.
+- **The data hash** (`provenance.sha256_data`) reads the values whatever their storage (a canonical
+  CSR of float64 values): a SimpleData and an AnnData with a sparse X of the same data have one
+  hash. Hashes differ from v0.3's, so the run log counts attempts afresh.
+- **The module probe lowers the module by thinning its own genes (change 2)**, `fold`-times in a
+  random `frac` of cells (all by default), against the untouched data and without a sham; it
+  names its genes, its direction (a decrease) and the share of counts it removes
+  (`inject.depth_loss`). v0.3 raised the module by thinning every other gene against a sham.
+- **A correction can only remove a conclusion (change 6).** An effect counts as detected only if
+  the raw replicate-level test detects it too, in the same direction; otherwise INCONCLUSIVE, cause
+  `detected_only_after_correction`, and GATE 2 warns. The TOST also runs on the uncorrected data:
+  a NO DETECTABLE EFFECT that only the corrected data show carries ABSENCE_ONLY_AFTER_CORRECTION.
+  The report checks the data against the capture model (`equalization.capture_check`).
+- **EFFECT BELOW SESOI (change 14):** a detected effect in the claimed direction whose (1 − 2α)
+  interval lies within the effective SESOI; cause `effect_below_sesoi`. It comes after the
+  replication check and before the judgment gates.
+
+### Added
+- **Composition (change 7, the decided minimum):** `run_autopsy(composition=[...])`, the CLI's
+  `--composition` and the MCP tool's `composition` name obs columns of an annotation (cell type
+  first): their shares per replicate are compared between the groups (the total variation
+  distance and each level's difference, with permutation p over the replicates;
+  `composition.composition_difference`), the claim is judged within each cell type with at least
+  20 cells in at least 3 replicates of each group, the verdicts not combined
+  (`report.per_type_verdicts`; a type absent from every replicate of one group is UNIDENTIFIABLE),
+  and a difference of composition is noted in the verdict. Composition removes no conclusion:
+  by which rule it would is not decided (on section 4 the drop of MI stayed within types).
+- **The engine's `norm_pearson` beside a pair's metric (change 15)**, by stratum, on the
+  uncorrected data (`Autopsy.reference`, `report.coupling_reference`); reported, not a gate.
+- **Units whose ids name several animals (change 16)** are flagged COMPOSITE_UNITS, with the
+  units they overlap (`effect.composite_units`); a warning, not an exclusion.
+- `stats.nested_relabelings` and `stats.relabeling_p`: the effect test's relabelings for a
+  statistic of any shape.
+- **The check of specificity, a line of the report (change 13, decided 2026-10-18).** For a claim
+  about given genes (a pair or a set), K = 1,000 controls drawn from every gene of
+  `specificity_pool` (the same cells with all their genes; by default the data), matched on the log10
+  mean and the detection, without the pairs of `prereg["known_interactions"]` and the genes of
+  `prereg["known_to_differ"]`; each control's donor-level t within the domain, on the uncorrected
+  data, as the claim's. The line gives how many of the K lie at least as far as the claim in its
+  direction (with the share's Clopper–Pearson interval and an outcome: specific, not specific,
+  undecided where the interval crosses α), the 10 nearest controls and every control at least as far,
+  and the controls' common shift (their median t, with an interval by relabelings of the replicates
+  under a shift model), with a warning where the shift is significant in the claim's direction. It
+  is not a condition of SUPPORTED (`specificity.check`; `run_autopsy(gene_metric=, specificity=,
+  specificity_pool=)`).
+- `combined.py` (the units, the cluster-robust estimator and its relabelings), `domain.py` (the
+  domain's rule), `specificity.py`.
+- **A test of GATE 0's false FAIL rate** over 40 seeds against a target of 5% fixed before measuring
+  (`tests/test_v04_domain.py`), xfail(strict=True) while the known issue below stands; and the same
+  rate with change 12 applied, xfail(strict=True) too.
+- **The groups' technical covariates per replicate, a line of the dossier (the owner's second
+  decisions of 2026-10-18).** Per cell its total count and its number of genes with a count, over
+  every gene of `specificity_pool` (else of the data); per replicate the median over its cells; the
+  difference groups[0] − groups[1] of the replicates' means per stratum and over the strata, with
+  the effect test's relabelings (exact up to 20,000), on all the comparison's cells and on the
+  domain's (`composition.technical_covariates`, `Autopsy.technical`). GATE 1's ratio of median genes
+  passed §4 in males at 1.32 while the young units detected 1,298 more genes per cell (exact p 0.016).
+- **The claim genes' counts per type and group** (`index` of each type of the domain: the mean over
+  replicates of log1p(10^4 × the genes' counts / the cell's total)), in the domain's table, and a
+  line for every type outside a pair's domain where the genes reach the threshold in one group
+  only (`domain["one_group"]`): counts from elsewhere, or the expression's appearance; a line of the
+  dossier, not part of the rule.
+- `tests/test_v04_dossier.py`: the regression tests of the second decisions of 2026-10-18.
+- **The correction's line (change 19).** How equal depth changed the groups' relative gap in genes
+  detected per cell, on the domain's cells and on all cells, with a WARNING where the gap grew
+  (`Autopsy.capture`, `report.capture_summary`); on §4 it grew from 24.4% to 29.1%.
+- `tests/test_v04_detection.py`: the mechanics of change 17' (the keep probability, the equalization per
+  cell set, the verdict's data, GATE 4's data for a pair and for a metric of level, nothing equalized
+  without counts) and the tests of changes 18 and 19; `tests/detection_data.py`, the synthetic generator
+  (mice nested in age, the old group deeper but less complex, as on §4); its acceptance on 20 seeds per
+  scenario, `validation/exploratory/detection_equalization.py` and its log.
+- `validation/exploratory/differential_sensitivity.py` and its log: the acceptance of the reverted change
+  17 (it runs at 1e4696c), the evidence of its rejection.
+
+### Known issues
+- **The owner's construction of change 17, the differential sensitivity, rejected on its own log**
+  (`validation/exploratory/differential_sensitivity.log`): the groups' responses to the same injected
+  coupling differ by their biology, not only by their detection, so the difference it subtracted was in
+  part the effect.
+- **Change 17' failed its acceptance on synthetic data, on criterion (ii)**
+  (`validation/exploratory/detection_equalization.log`, 2026-10-19): at an equal detection the verdicts
+  are those of v0.4 without change 17 (1337ead) in 65 of 80 seeds for `mi_3bin` and 78 of 80 for
+  `norm_pearson`; criteria (i), (iii), (iv) and (v) pass. Of `mi_3bin`'s 15 differences 13 are GATE 0's
+  decision, which moves with s_m now measured on a draw of the corrected data (by 113% on average over
+  the 15 seeds, 17% over the 65 that agree), the rest an equivalence test at its boundary
+  (`detection_equalization_flips.log`). By the owner's rule nothing further is designed; v0.4 is not
+  proposed for the tag.
+- **Change 17' does not reach a difference in detection that is correlated within cells**: where one
+  group's cells vary more in capture, the pair's detection shares can be equalized while the cells'
+  shared capture still couples the genes (the acceptance's case (vi), reported, not a criterion: no
+  SUPPORTED, and `norm_pearson`'s effect moved by about 0.05 toward the group whose capture varies more).
+- **GATE 0's tolerance is bias_tolerance × s_m with s_m now measured at equal depth and detection**, while
+  GATE 0 perturbs the uncorrected data; the line of specificity (change 13) stays on the uncorrected data.
+- **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
+  test data (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's
+  scale), the `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against
+  a tolerance of 0.01 (0.5 × SESOI), and GATE 0 FAILs in seeds 8, 11, 36 and 37. The power test that
+  met it is isolated from GATE 0's dropout (`test_underpowered_design_is_flagged_and_named_in_the_verdict`);
+  the rate's own test records the failure. Change 12 does not lift it: with 4 mice per group the
+  groups' technical difference cannot be shown within ±0.01, its 90% interval spanning about 0.25
+  (seed 8: −0.081 [−0.210, +0.049]); the second rate test records it.
+- **`codetected_spearman` and `pearson` still return 0.0 where they measure nothing** (fewer than 3
+  co-detected cells, or no variance), and `mi_3bin` 0.0 on no cells: the correctness error decided
+  for `norm_pearson`, not changed for them in this round.
+- **v1's panel copies the tag's rules.** `validation/prereg/test_prereg.py` checks the panel's and the
+  oracle's copies against the tag's engine; on this branch it checks that v0.4 differs from them in
+  exactly the decided ways (the causes of changes 6, 14, the domain and the unmeasured replicates;
+  GATE 4's FAIL only at or below zero; the module probe's default share and its direction).
+
+### Fixed
+- **GATE 5's note of the null's centre** printed "nan..nan" (with an All-NaN warning) where a metric gives
+  no value in a stratum's null; the strata without a centre are left out of the range.
+- **Two expectations of the dev set that encoded v0.3's mechanics** (`validation/probes/JOURNAL.md`,
+  D8 and D9; the owner's second decisions of 2026-10-18). p09's null without a SESOI: INCONCLUSIVE was
+  v0.3's way of claiming no absence without a margin; it is now NO_DETECTABLE_EFFECT at the design's
+  floor, the floor named, the verdict INCONCLUSIVE while the metric's response is untested. p14's low
+  level: "FAIL in at least 7 of 8" rested on v0.3's threshold 0.8 × delta_min; by v0.4's definition of
+  blindness two of its pairs are blind and one responds, and GATE 4 PASSes none of the blind (0 of 10
+  datasets) and FAILs none of the one that responds (0 of 5; `validation/probes/d8_p14_low_level.log`).
+  Both tests are updated, their xfails removed.
+- **`norm_pearson`'s 0.0 where it measured nothing** (above, Changed). On the third diagnostics'
+  Marsh primary contrast (`validation/exploratory/real_pilot_5_summary.log`) all three ENZ-INHIB mice
+  took this value against 0.336 to 0.394 in ENZ-NONE, so that contrast's SUPPORTED compared measured
+  correlations with the fallback; by the domain's rule in each group it is outside the domain, not a
+  claim about coupling, and Marsh et al. 2022 is no longer a control for coupling.
+
+### Removed
+- **The internal checklist's "2.4x" in `qc.py`'s docstring (change 8)**, a number without a
+  script; the docstring points to the flagship audit's report instead.
+
 ## [Unreleased]
 
 The record of validation v1; the release is postponed until the check on real data (the owner's

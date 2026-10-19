@@ -32,26 +32,76 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 | Field | Question | Statuses |
 |---|---|---|
 | `metric_validity` | Does the metric respond to its construct and resist nuisance? | PASS · FAIL · UNTESTED · DEGENERATE (flags: LEVEL_SHIFT, DEPTH_BIAS_CORRECTED, BIAS_BELOW_TOLERANCE, BIAS_UNSIZED) |
-| `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED) |
-| `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN |
+| `design_adequacy` | Is the comparison identifiable, and can it detect the SESOI? | ADEQUATE · CORRECTED · INSUFFICIENT_REPLICATION · UNIDENTIFIABLE (flags: PARAMETRIC_ONLY, UNDERPOWERED, ATTENUATION, POWER_NOT_ASSESSED, COMPOSITE_UNITS) |
+| `effect` | Is there a difference at equal depth, across biological replicates? | DETECTED · NO_DETECTABLE_EFFECT · INCONCLUSIVE · NOT_ESTIMABLE · NOT_RUN (flag: ABSENCE_ONLY_AFTER_CORRECTION) |
 | `replication` | Does it hold on independent data? | REPLICATED · NOT_REPLICATED · INCONCLUSIVE · NOT_RUN |
 
 `decide` reads them in this order; the first matching line is the verdict:
 
 1. metric DEGENERATE → **DEGENERATE METRIC**
-2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a failed control, a response to an injected signal shown below `delta_min`) → **NOT SUPPORTED — metric invalid**
+2. metric FAIL (a nuisance bias beyond its SESOI tolerance, a positive control shown blind, a response to an injected signal shown at or below zero — v0.4; v0.3 failed it below `delta_min`) → **NOT SUPPORTED — metric invalid**
 3. design UNIDENTIFIABLE (no estimand, content estimand without spike-ins, partially crossed replicates, groups confounded with a stratifier) → **UNIDENTIFIABLE**
-4. effect not evaluated → **INCONCLUSIVE**; the raw difference is explained by depth/capture → **NOT SUPPORTED**
+4. effect not evaluated → **INCONCLUSIVE**; the claim's domain holds no type (v0.4) → **INCONCLUSIVE** (`empty_domain`); the raw difference is explained by depth/capture → **NOT SUPPORTED**
 5. design INSUFFICIENT_REPLICATION → **INCONCLUSIVE — insufficient replication**
 6. effect NO_DETECTABLE_EFFECT → **NO DETECTABLE EFFECT**, only if the metric is PASS (absence of an effect cannot be claimed with a metric whose response is untested)
-7. effect not DETECTED → **INCONCLUSIVE**
-8. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
-9. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
-10. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
+7. an effect that only the corrected data show (v0.4) → **INCONCLUSIVE** (`detected_only_after_correction`): a correction can only remove a conclusion, never create one
+8. effect not DETECTED → **INCONCLUSIVE**
+9. metric UNTESTED → **INCONCLUSIVE** (an effect seen by a metric whose response to signal was never demonstrated)
+10. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
+11. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
     the pre-registered one → **NOT SUPPORTED**
-11. replication NOT_REPLICATED → **NOT SUPPORTED**
-12. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
-13. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+12. replication NOT_REPLICATED → **NOT SUPPORTED**
+13. the effect, detected in the claimed direction, is shown smaller than the SESOI by the same
+    report's TOST (v0.4) → **EFFECT BELOW SESOI** (`effect_below_sesoi`)
+14. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
+15. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+
+**The claim's domain (v0.4, decided 2026-10-18).** With `composition=` naming a cell-type column
+(first), the effect is judged in the claim's domain: the types where both genes of a pair are
+detected in at least 10% of the type's cells in each group (the coupling of a pair is not defined
+where a gene is not expressed; the owner's second decisions of 2026-10-18), or any gene of a set in at
+least one group, with at least 20 cells in at least 3 replicates of each group, per stratum
+(`domain.claim_domain`; a claim without genes takes every type). A type outside a pair's domain where
+the genes reach the threshold in one group only is listed in the report. The effect field is the combined estimate over the domain's types, each
+weighted equally (strata by precision), on (replicate, type) units at equal depth within each
+(stratum, type), with its interval over the replicates (`combined.py`). GATE 4 and GATE 0 run on the
+domain's cells. The whole mixture's estimate, the estimate outside the domain and each type's are
+reported, not judged.
+
+**The pair's detection (v0.4 change 17', the owner's decision of 2026-10-19).** For a claim about a
+pair, a metric of structure, the correction equalizes the pair's detection after equal depth: in every
+cell set where the effect is estimated (each stratum; with a domain, each stratum and cell type), the
+group that detects a gene of the pair in the larger share of its cells has that gene's counts thinned
+binomially, one keep probability for the set, to the other group's share
+(`equalize.equalize_detection`), from a random stream of its own keyed like every draw. No threshold: at
+an equal detection the probability is near 1. The effect, and so the verdict, is at equal depth and
+detection, by the effect's usual rule (no new cause); GATE 4's response s_m, the SESOI in the metric's
+units, is measured on the same data (one draw of the correction, for every claim:
+`effect.equalized_for_probe`), and so is the line of `norm_pearson`. The dossier gives each gene's
+detection per group uncorrected, at equal depth and after, and the effect at equal depth alone. A
+difference in detection that equalizing the pair's shares does not reach — dropout correlated within a
+cell by a wider spread of capture in one group — is a known limitation (the acceptance's case (vi),
+`validation/exploratory/detection_equalization.log`).
+
+**The dossier** (v0.4) is everything reported beside the verdict; every difference in it is
+`groups[0] − groups[1]`, the effect test's convention, which its header names (the owner's decision of
+2026-10-19: v0.4.0.dev0's `norm_pearson` row gave groups[1] − groups[0]); the specificity line gives its
+t in the same direction and names the claim's side. Its line on the correction (`Autopsy.capture`) says
+how equal depth changed the groups' relative gap in genes detected per cell, on the domain's cells and
+on all cells, with a warning where the gap grew (on preprint §4 it grew from 24% to 29%: equal depth
+made the groups' detection less equal).
+
+Reported beside the verdict, not part of the rule (v0.4): the composition of the comparison in
+the annotations named by `composition=` (cell type, tissue); a difference of composition is noted
+in the verdict itself, since a claim about a mixture stands only with it (change 7). For a pair,
+the engine's own `norm_pearson` beside the metric, by stratum (change 15). Units whose ids name
+several animals are flagged COMPOSITE_UNITS (change 16). For a claim about given genes, **the check
+of specificity** (change 13, decided 2026-10-18 as a line of the report): among K = 1,000 controls
+drawn from all the genes and matched on mean and detection (without the user's known interactions
+and genes known to differ), how many lie at least as far as the claim on the donor-level t, the
+nearest controls and all those as far, and the controls' common shift (the median t with its
+interval), with a warning where the shift is significant in the claim's direction
+(`specificity.check`).
 
 **Claims are directional.** The pre-registration states the claimed change of the metric from
 `groups[0]` to `groups[1]`: `increase`, `decrease`, or `two-sided`. SUPPORTED needs the effect in
@@ -63,9 +113,12 @@ The verdict names the assumption it rests on: *parametric only* (too few replica
 permutation test to reach alpha), *underpowered relative to the SESOI* and *non-directional
 claim*.
 
-**No rescue language.** A FAIL in an earlier field is never softened by a later one. With
-`stop_on_first_fail` (the default) an invalid metric stops the analysis before the effect is
-estimated; design adequacy, which does not depend on the metric, is still reported.
+**No rescue language.** A FAIL in an earlier field is never softened by a later one. The verdict
+follows the first FAIL; since v0.4 (the owner's decision of 2026-10-18) the effect — within the
+domain, the mixture's, the types outside the domain — the composition, the technical covariates and
+the other report lines are estimated after it too and reported as the dossier, the effect flagged
+`DOSSIER_ONLY` (v0.3 stopped before the effect with `stop_on_first_fail`, which is now kept only for
+compatibility).
 
 **Provenance.** Every report carries `data_sha256` (X, var_names and the obs columns used),
 `prereg_sha256`, a `claim_id` (data + pre-registration + comparison), versions and the seed
@@ -145,9 +198,14 @@ classified:
   depth falls — that the earlier rule failed in 4 of 4 datasets although the composition
   correction removes it between groups.
 - **attenuation** — the signal shrinks toward the null while the null stays put. This is
-  reliability, not confounding (Spearman): uniform attenuation pulls an effect toward zero
-  and cannot create one. It is **reported, not failed** — the fraction of signal lost goes to
-  `design_adequacy` as a power check (below).
+  reliability, not confounding (Spearman): an attenuation equal in both groups pulls an effect
+  toward zero and cannot create one. It is **reported, not failed** — the fraction of signal lost
+  goes to `design_adequacy` as a power check (below). Where the groups differ in detection it is not
+  equal: the same coupling then moves the metric less in the poorer group, and an equal coupling
+  shows as a difference. GATE 0 perturbs the pooled cells and cannot see that; for a claim about a
+  pair the effect field equalizes the pair's detection after equal depth (v0.4 change 17', above: on
+  preprint §4 extra dropout removed 64% of the signal while the young units detected 1,166 more genes
+  per cell).
 - **level_shift** — the metric has no material gene-gene structure (e.g. a mean score, or a
   signal above the null smaller than `tol` × the effect scale), so attenuation and bias
   cannot be told apart. A shift larger than `tol` × the effect scale (observed difference or
@@ -248,6 +306,18 @@ noise as an effect; probe p07). Graded rule, by replicates per group (or pairs):
   the *opposite* sign at equal depth → INCONCLUSIVE: the technical difference is larger than
   the effect, so the direction depends on how exactly the correction removed it. (In the dev
   data this turned three false SUPPORTED verdicts on a pure depth artifact into INCONCLUSIVE.)
+- **detected only after the correction** (v0.4 change 6) — the corrected effect is detected but
+  the raw replicate-level test (the same data without the correction) does not detect it in the
+  same direction → INCONCLUSIVE. A correction can only remove a conclusion, never create one: on
+  v1's reports the correction had enlarged undetected raw differences into all 7 false SUPPORTED
+  of N3 at f = 0.4 (`validation/exploratory/v1_correction_rule.log`).
+- **absence only after the correction** (v0.4) — the TOST also runs on the uncorrected data; a
+  NO DETECTABLE EFFECT that only the corrected data show carries ABSENCE_ONLY_AFTER_CORRECTION
+  (reported, not blocking). The report also checks the data against the capture model behind the
+  thinning: per group, depth and genes detected per cell, before and after it
+  (`equalization.capture_check`).
+- **EFFECT BELOW SESOI** (v0.4 change 14) — a detected effect whose (1 − 2α) interval lies inside
+  ±(attenuated) SESOI: detected, but smaller than the smallest effect that matters.
 
 **Power.** By default the SESOI is declared on the construct scale (`sesoi_scale`:
 `construct`). GATE 0's attenuation under depth halving gives a reliability-model estimate λ of
@@ -288,25 +358,64 @@ change is not merely dropout — without needing the metric to surface it.
 by *responding* to signal, not merely by resisting nuisance — a metric that returns random
 numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`
 or `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
-(seqgendiff-style, so the data stay valid counts with real technical noise) 200 times, each
-**relative to a matched sham** — the same thinning without the signal (independent
-keep-probabilities for a coupling; all genes thinned for a module) — and the mean response gets
-its two-sided 95% t interval (decided 2026-10-08):
+(seqgendiff-style, so the data stay valid counts with real technical noise).
 
-- **PASS** — the lower bound in the declared direction is above 0: a response is shown.
-- **FAIL** — the upper bound is below `delta_min`, the smallest response that matters
-  (pre-registered `delta_min`; default 0.5 × SESOI): the metric is shown blind. This holds also
-  when the whole interval lies above 0: a response below `delta_min` is blindness by its definition.
+**On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
+group whose replicates have more of the probed genes' counts per cell (each replicate weighted
+equally; on an exact tie into each group, and the weaker response is judged), whatever the
+claim's wording: "Xist is higher in females" and "Xist is lower in males" are one claim (R1's
+lesson, D1). The response is the change of the replicate-level difference that the effect test
+uses, its 95% interval taken over the injected group's replicates (50 injections within each, a
+cluster-robust mean), so that it is an uncertainty over donors; it is judged against the direction the injection must
+move the metric (`inject.direction`), not against the claim's. The all-cell response (below, the
+v0.3 gate) stays in the detail as a diagnostic, and is the judged response without a replicate
+unit. Every random draw of the engine is keyed by the data and the claim's canonical form (the
+metric, the genes, the groups' labels sorted, the direction for that order), so a mirrored
+wording gets the same draws and the same verdict.
+
+**The probes.** A coupling is injected **relative to a matched sham**: the same thinning with
+independent keep-probabilities. The module probe (v0.4 change 2) *lowers* the module by thinning
+its own genes `fold`-times, against the untouched data and without a sham: the loss of counts is
+then the signal itself, as for a real decrease of expression, and the depth falls only by the
+module's share of the counts, which is reported (v0.3 raised it by thinning every other gene
+against a sham that thinned all, and on shallow data the sham's loss of single counts made half
+the response).
+
+**The dose is the SESOI, on the construct's scale (v0.4 change 3, decided 2026-10-18).** The SESOI is
+declared as a change of the construct: for a coupling, of the correlation of the pair's log
+expected expression (in (0, 1)); for a module, of its natural-log expression. The probe is dosed to
+it (`injected_signal.at_construct_change`): the module lowered exp(SESOI)-fold; the coupling at the
+strength whose shared factor raises that correlation by the SESOI given the genes' biological
+variances in the probed cells (a Poisson-lognormal method of moments, floored at 0.01). The response
+to it, s_m, is the SESOI in the metric's units: GATE 0's tolerance, the TOST of absence and EFFECT
+BELOW SESOI use it, and design adequacy compares it with the design's floor (change 4). With a
+claim's domain the probe goes into the domain's cells only. The detail gives the dose–response at
+0.5×, 1× and 2× the SESOI. A SESOI on the metric's own scale (`sesoi_scale="observed"`) is used as
+declared. The mean response gets its two-sided 95% interval:
+
+- **PASS** — the lower bound in the injection's direction is above 0: a response is shown.
+- **FAIL** — the upper bound is at or below 0: the metric is shown blind.
 - **UNTESTED** (the gate reports WARN) — neither: absence of evidence, not invalidity, as
-  INCONCLUSIVE is to NO DETECTABLE EFFECT. Without a `delta_min` (no SESOI) the gate cannot FAIL.
+  INCONCLUSIVE is to NO DETECTABLE EFFECT.
 
-The former rule (z ≥ 3 over 10 injections) failed a valid metric whose response is real but
-weak (probe p14). Against the untouched data, instead of a sham, the thinning noise is confounded
+v0.3 failed a response below `delta_min` (0.5 × SESOI) even with the whole interval above 0; with
+the SESOI translated into the metric's units by the response itself, that threshold is no longer
+defined, and the protection it gave is carried by the checks that explain a difference away (depth,
+the domain and composition). `delta_min` is recorded, not used. The rule before v0.3 (z ≥ 3 over 10
+injections) failed a valid metric whose response is real but weak (probe p14). Against the untouched data, instead of a sham, the thinning noise is confounded
 with the signal: injecting coupling into an already strongly coupled pair *lowered* a valid
 correlation and failed it. A positive control that beats its null (GATE 5) is the other way to
 demonstrate response, except where GATE 4 ran on the analysed construct and is UNTESTED: a control
 on another pair does not stand in for it. With neither, the metric is **UNTESTED** and no
 positive verdict is reachable.
+
+**GATE 4's data (v0.4, the owner's decision of 2026-10-19).** The probe is injected into one draw of the
+effect's correction — equal depth (or spike-in capture) and, for a pair, the pair's detection equalized —
+so that s_m, the SESOI in the metric's units, is measured on the data the effect is judged on. The
+differential sensitivity (change 17: the same change of the construct injected into each group, the
+ratio of the responses and the difference it would make at an equal coupling) was coded and rejected the
+same day by the owner: a group's response to the probe depends on its own biology, so subtracting it
+removes biology too (`validation/exploratory/differential_sensitivity.log`, `v0.4_spec.md`, section 17).
 
 **Judgment part.** Enumerate every scenario that could move the metric and decide which your
 result is consistent with:
@@ -345,10 +454,13 @@ nulls instead of a fixed band, Bonferroni across strata:
 
 - the **negative control** pair is compared with 200 distinct unrelated pairs (never
   repeated) from the same expression neighbourhoods — the 20 genes closest in mean
-  expression, or 5% of all genes; it must not stand out. The null centre is reported: a centre far
-  from zero means the metric reports association between unrelated genes (e.g. closure from
-  library-size normalization, which made the "robust" `norm_pearson` fail its own negative
-  control on null data in v0.1; probe p06);
+  expression, or 5% of all genes. The null centre is reported: a centre far from zero means the
+  metric reports association between unrelated genes (e.g. closure from library-size
+  normalization, which made the "robust" `norm_pearson` fail its own negative control on null
+  data in v0.1; probe p06). Since v0.4 a pair outside its null is **reported, not a FAIL**
+  (`negative_control_outside_null`): an unrelated pair is exchangeable with the null's pairs, so
+  one pair fails a valid metric in about alpha of the claims by chance alone (the pilot's claim
+  1b, p = 0.0498); the check of specificity in the report judges the claim instead;
 - the **positive control** pair is compared with 200 self-nulls of the *same* pair: gene b is
   replaced, cell by cell, by the count of a random neighbouring cell at least as deep, thinned
   binomially to the cell's own depth. Coupling is destroyed and the dependence on depth is kept
@@ -374,23 +486,22 @@ does not beat its null, the engine asks GATE 4's question of the control's genes
 draw), injects a coupling of known dose (`injected_signal.coupling`; pre-registered
 `positive_control_dose`, default 2.0) 200 times against its sham, and gives the metric's own
 response its two-sided interval at alpha/K. The metric is shown blind when the bound in the
-declared direction is below `delta_min`; otherwise the silence says that the control is not
-coupled here (when the metric responds to the injection), or nothing. The former rule failed a
+declared direction is at or below 0 (v0.4; v0.3: below `delta_min`); otherwise the silence says
+that the control is not coupled here (when the metric responds to the injection), or nothing. The former rule failed a
 silent control wherever a reference detector had power ≥ 0.8 for the dose, and so failed a valid
 metric whose control was coupled, but weakly, in 17 of 20 p15 datasets.
 
 **Read-out.**
-- **FAIL** — the negative control stands out in some stratum (the metric reports association
-  where there is none), **or** the positive control is silent in a stratum where the metric is
-  shown blind to a coupling injected into its genes.
-- **WARN** — the negative control is fine everywhere, and the positive control is silent
-  somewhere without that proof: absence of evidence. If it fires nowhere, the metric's response
-  stays undemonstrated (`metric_validity` UNTESTED, unless an injected signal shows it).
-- **PASS** — positive control beats its null and negative control stays inside its null, in
-  all strata.
+- **FAIL** — the positive control is silent in a stratum where the metric is shown blind to a
+  coupling injected into its genes (with the legacy band, also a negative control outside it).
+- **WARN** — the positive control is silent somewhere without that proof: absence of evidence.
+  If it fires nowhere, the metric's response stays undemonstrated (`metric_validity` UNTESTED,
+  unless an injected signal shows it).
+- **PASS** — the positive control beats its null in all strata. A negative control outside its
+  null is noted in the message, whatever the status.
 
-In the dev data a metric that ignores gene b fails GATE 5 in 20 of 20 p15 datasets (with a
-`delta_min`), and is UNTESTED in a 10-cell stratum where the interval is too wide. A positive control
+In the dev data of v0.3 a metric that ignores gene b failed GATE 5 in 20 of 20 p15 datasets (with
+a `delta_min`), and was UNTESTED in a 10-cell stratum where the interval is too wide. A positive control
 that fires in at least one stratum (Bonferroni across strata) is evidence of response for
 `metric_validity`. Passing `pos_min` / `neg_max` selects the legacy fixed band (not the
 default), where a silent positive control FAILs without an injection. A control that "passes" only after averaging over

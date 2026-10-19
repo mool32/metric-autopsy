@@ -78,7 +78,7 @@ jobs:
       - name: The pilot's tests
         run: |
           cd validation/exploratory
-          "$RUNNER_TEMP/venv-panel/bin/python" -m pytest -q -p no:cacheprovider test_real_pilot.py
+          "$RUNNER_TEMP/venv-panel/bin/python" -m pytest -q -p no:cacheprovider -c /dev/null test_real_pilot.py
       - name: The whole path on a fabricated Census (SYNTHETIC)
         run: |
           "$RUNNER_TEMP/venv-select/bin/python" validation/exploratory/real_pilot_select.py --synthetic --out-dir dry/data

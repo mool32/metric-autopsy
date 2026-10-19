@@ -1,0 +1,33 @@
+# Level B, the search — 2026-10-19T14:28:03+00:00
+python 3.13.16; the protocol validation/plans/level_b_protocol.md (approved 2026-10-19); this script validation/level_b/search.py
+
+## The queries
+PubMed: ("single-cell"[tiab] OR "single cell"[tiab] OR "single-nucleus"[tiab] OR "single nucleus"[tiab] OR scRNA-seq[tiab] OR snRNA-seq[tiab]) AND (coexpression[tiab] OR co-expression[tiab] OR "gene-gene correlation*"[tiab] OR "gene coordination"[tiab] OR "transcriptional coordination"[tiab] OR "coordinated expression"[tiab] OR decoupling[tiab] OR "loss of coordination"[tiab] OR "network rewiring"[tiab] OR "differential coexpression"[tiab] OR "co-regulation"[tiab] OR "transcriptional coherence"[tiab] OR "differential correlation"[tiab]) AND English[lang] AND ("2017/01/01"[dp] : "2026/09/30"[dp])
+Europe PMC: (TITLE:"single-cell" OR ABSTRACT:"single-cell" OR TITLE:"single cell" OR ABSTRACT:"single cell" OR TITLE:"single-nucleus" OR ABSTRACT:"single-nucleus" OR TITLE:"single nucleus" OR ABSTRACT:"single nucleus" OR TITLE:"scRNA-seq" OR ABSTRACT:"scRNA-seq" OR TITLE:"snRNA-seq" OR ABSTRACT:"snRNA-seq") AND (TITLE:"coexpression" OR ABSTRACT:"coexpression" OR TITLE:"co-expression" OR ABSTRACT:"co-expression" OR TITLE:"gene-gene correlation" OR ABSTRACT:"gene-gene correlation" OR TITLE:"gene-gene correlations" OR ABSTRACT:"gene-gene correlations" OR TITLE:"gene coordination" OR ABSTRACT:"gene coordination" OR TITLE:"transcriptional coordination" OR ABSTRACT:"transcriptional coordination" OR TITLE:"coordinated expression" OR ABSTRACT:"coordinated expression" OR TITLE:"decoupling" OR ABSTRACT:"decoupling" OR TITLE:"loss of coordination" OR ABSTRACT:"loss of coordination" OR TITLE:"network rewiring" OR ABSTRACT:"network rewiring" OR TITLE:"differential coexpression" OR ABSTRACT:"differential coexpression" OR TITLE:"co-regulation" OR ABSTRACT:"co-regulation" OR TITLE:"transcriptional coherence" OR ABSTRACT:"transcriptional coherence" OR TITLE:"differential correlation" OR ABSTRACT:"differential correlation") AND LANG:"eng" AND FIRST_PDATE:[2017-01-01 TO 2026-09-30]
+
+## The sources
+PubMed: 3359 records for the query; translation: ("single-cell"[Title/Abstract] OR "single-cell"[Title/Abstract] OR "single-nucleus"[Title/Abstract] OR "single-nucleus"[Title/Abstract] OR "scRNA-seq"[Title/Abstract] OR "snRNA-seq"[Title/Abstract]) AND ("coexpression"[Title/Abstract] OR "co-expression"[Title/Abstract] OR "gene gene correlation*"[Title/Abstract] OR "gene coordination"[Title/Abstract] OR "transcriptional coordination"[Title/Abstract] OR "coordinated expression"[Title/Abstract] OR "decoupling"[Title/Abstract] OR "network rewiring"[Title/Abstract] OR "differential coexpression"[Title/Abstract] OR "co-regulation"[Title/Abstract] OR "transcriptional coherence"[Title/Abstract] OR "differential correlation"[Title/Abstract]) AND "English"[Language] AND 2017/01/01:2026/09/30[Date - Publication]
+  PubMed's warninglist: {"phrasesignored": [], "quotedphrasesnotfound": ["\"loss of coordination\"[tiab]"], "outputmessages": []}
+  window 2017-01-01..2017-12-31: 37 records
+  window 2018-01-01..2018-12-31: 50 records
+  window 2019-01-01..2019-12-31: 59 records
+  window 2020-01-01..2020-12-31: 94 records
+  window 2021-01-01..2021-12-31: 175 records
+  window 2022-01-01..2022-12-31: 252 records
+  window 2023-01-01..2023-12-31: 329 records
+  window 2024-01-01..2024-12-31: 519 records
+  window 2025-01-01..2025-12-31: 939 records
+  window 2026-01-01..2026-09-30: 1108 records
+  3562 ids over 10 windows, 3359 unique (the whole query counted 3359)
+  3359 records fetched
+Europe PMC: 3156 records for the query; 3157 fetched over 5 pages; by source AGR 28, MED 3118, PMC 11
+  the pages hold 3157 records, the count 3156
+Citations of levy2020 (MED:33139959): 46 counted, 46 unique, 46 with a core record, 0 without (cited by 48 at the lookup)
+Citations of gcl2021 (MED:34040065): 3 counted, 3 unique, 3 with a core record, 0 without (cited by 3 at the lookup)
+Citations of amit2022 (MED:35534606): 4 counted, 4 unique, 4 with a core record, 0 without (cited by 5 at the lookup)
+Citations of cscore2023 (MED:37563115): 77 counted, 77 unique, 77 with a core record, 0 without (cited by 91 at the lookup)
+Citations of skinnider2019 (MED:30962620): 116 counted, 116 unique, 116 with a core record, 0 without (cited by 127 at the lookup)
+
+## The merged list
+6762 records from the sources -> 3394 unique records (45 preprints only); found by: cites 179, cites+europepmc+pubmed 33, cites+pubmed 1, europepmc 16, europepmc+pubmed 2976, pubmed 189
+The sample for screening: 3394 of 3394 (all the records: no more than 5,000)

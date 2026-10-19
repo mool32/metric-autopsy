@@ -1,0 +1,62 @@
+{
+ "titles_and_abstracts": {
+  "n": 3506,
+  "kappa": 0.9114049865229094,
+  "agreement": 0.9974329720479178,
+  "both_keep": 44,
+  "to_owner": 12,
+  "fulltext": 56
+ },
+ "full_texts": {
+  "read_by_both": 35,
+  "kappa": 1.0,
+  "kept_by_both": 4,
+  "to_owner": 19
+ },
+ "sets": {
+  "pass 1": {
+   "code_X6": 179,
+   "code_X7": 5,
+   "kind_set": 456,
+   "kind_global": 16
+  },
+  "pass 2": {
+   "code_X6": 161,
+   "code_X7": 5,
+   "kind_set": 390,
+   "kind_global": 16
+  },
+  "both passes": {
+   "code_X6": 135,
+   "code_X7": 5,
+   "either_X6_or_X7": 210
+  }
+ },
+ "sets_at_full_text": {
+  "pass 1": 9,
+  "pass 2": 9
+ },
+ "papers_kept": 4,
+ "papers_listed": 4,
+ "drawn": false,
+ "fewer_than_target": true,
+ "claims": {
+  "pass 1": 15,
+  "pass 2": 15
+ },
+ "small_designs": 0,
+ "donors_unread": 0,
+ "verdicts_found": 0,
+ "kept": [
+  "R00189",
+  "R01225",
+  "R01962",
+  "R02693"
+ ],
+ "listed": [
+  "R00189",
+  "R01225",
+  "R01962",
+  "R02693"
+ ]
+}

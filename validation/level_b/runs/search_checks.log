@@ -1,0 +1,15 @@
+# Checks of the search's raw responses — lb_search, 58 files in SHA256SUMS, 0 not matching
+
+## 1. Europe PMC: the query's 5 pages, records by (source, language)
+  MED eng: 3118
+  AGR eng: 28
+  PMC eng: 11
+  preprints (source PPR): 0
+
+The forward citations' core records (13 files, 246 records): the preprints' language None 73
+So a preprint record carries no language, and LANG:"eng" leaves every preprint out of the query; the search found preprints only through the forward citations.
+
+## 2. PubMed's warnings on the query (search.log)
+  PubMed: ("single-cell"[tiab] OR "single cell"[tiab] OR "single-nucleus"[tiab] OR "single nucleus"[tiab] OR scRNA-seq[tiab] OR snRNA-seq[tiab]) AND (coexpression[tiab] OR co-expression[tiab] OR "gene-gene correlation*"[tiab] OR "gene coordination"[tiab] OR "transcriptional coordination"[tiab] OR "coordinated expression"[tiab] OR decoupling[tiab] OR "loss of coordination"[tiab] OR "network rewiring"
+  PubMed: 3359 records for the query; translation: ("single-cell"[Title/Abstract] OR "single-cell"[Title/Abstract] OR "single-nucleus"[Title/Abstract] OR "single-nucleus"[Title/Abstract] OR "scRNA-seq"[Title/Abstract] OR "snRNA-seq"[Title/Abstract]) AND ("coexpression"[Title/Abstract] OR "co-expression"[Title/Abstract] OR "gene gene correlation*"[Title/Abstract] OR "gene coordination"[Title/Abstract
+  PubMed's warninglist: {"phrasesignored": [], "quotedphrasesnotfound": ["\"loss of coordination\"[tiab]"], "outputmessages": []}

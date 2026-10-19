@@ -1,0 +1,324 @@
+# The third diagnostics and v0.4's acceptance tests (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+## The scores
+
+| test | criterion | verdict | met |
+|---|---|---|---|
+| A1 | SUPPORTED | SUPPORTED | True |
+| A2 | SUPPORTED | SUPPORTED | True |
+| A3 | not SUPPORTED; no effect in the domain; the drop in the mixture from outside | NOT SUPPORTED | False |
+| A4 | not SUPPORTED | NOT SUPPORTED | True |
+| A5 | SUPPORTED | SUPPORTED | True |
+| A7 | not SUPPORTED | INCONCLUSIVE | True |
+| A8 | strict: each EFFECT BELOW SESOI or NO DETECTABLE EFFECT; lenient: none SUPPORTED | 20 claims, SUPPORTED: none | strict False, lenient True |
+A3 in parts: not SUPPORTED True; no effect in the domain False; the drop in the mixture and outside the domain False
+
+(b) the owner's prediction: does not hold
+(b4) the owner's statement on Tabula Muris: undecided: GSE109774's records name none of case 1's units
+(a1) §4 in males: does not hold: the domain is ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']
+(a2) Marsh: holds: M1's type is in its domain
+
+## The claims
+
+- A1: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- A2: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- A3: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) — the nuisance can create a difference with no biology [cause metric_invalid_gate0]
+- A4: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) — the nuisance can create a difference with no biology [cause metric_invalid_gate0]
+- A5: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause provisional]
+- A6: INCONCLUSIVE — effect +0.06794 [-1.22, +1.356] within the domain's types, equally weighted, p=0.842 (t, parametric only); neither detected nor equivalent within ±0.07354 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- A7: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain]
+- A5m: INCONCLUSIVE — effect -0.08764 [-0.2027, +0.02739] within the domain's types, equally weighted, p=0.0818 (t, parametric only); neither detected nor equivalent within ±0.009223 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- A6m: INCONCLUSIVE — effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within ±0.009206 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- A7m: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain]
+- A8-3a1: NO DETECTABLE EFFECT — effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within ±0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a2: NO DETECTABLE EFFECT — effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within ±0.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a3: NO DETECTABLE EFFECT — effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within ±0.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a4: NO DETECTABLE EFFECT — effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within ±0.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a5: NO DETECTABLE EFFECT — effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within ±0.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a6: NO DETECTABLE EFFECT — effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within ±0.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a7: NO DETECTABLE EFFECT — effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within ±0.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3a8: INCONCLUSIVE — effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within ±0.05599 [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive]
+- A8-3b1: NO DETECTABLE EFFECT — effect -0.003164 [-0.0498, +0.04347] within the domain's types, equally weighted: the 90% interval lies within ±0.07089 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0608, +0.08099] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b2: NO DETECTABLE EFFECT — effect -0.003132 [-0.03525, +0.02899] within the domain's types, equally weighted: the 90% interval lies within ±0.06563 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05727, +0.07398] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b3: NO DETECTABLE EFFECT — effect -0.02142 [-0.05901, +0.01616] within the domain's types, equally weighted: the 90% interval lies within ±0.07203 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06601, +0.07805] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b4: NO DETECTABLE EFFECT — effect -0.03253 [-0.09493, +0.02988] within the domain's types, equally weighted: the 90% interval lies within ±0.0874 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07809, +0.09672] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b5: NO DETECTABLE EFFECT — effect -0.008448 [-0.05507, +0.03818] within the domain's types, equally weighted: the 90% interval lies within ±0.05114 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04469, +0.05759] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b6: NO DETECTABLE EFFECT — effect +0.03671 [-0.01475, +0.08817] within the domain's types, equally weighted: the 90% interval lies within ±0.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates; TOST); absence shown only after the depth correction: on the uncorrected data the 90% interval [+0.005673, +0.09052] is not within ±0.08936 [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b7: NO DETECTABLE EFFECT — effect -3.356e-05 [-0.04684, +0.04678] within the domain's types, equally weighted: the 90% interval lies within ±0.05283 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04821, +0.05746] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3b8: NO DETECTABLE EFFECT — effect -0.01056 [-0.04917, +0.02806] within the domain's types, equally weighted: the 90% interval lies within ±0.05655 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0522, +0.0609] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3c1: NO DETECTABLE EFFECT — effect +0.05445 [-0.133, +0.2419] within the domain's types, equally weighted: the 90% interval lies within ±0.4844 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.481, +0.4878] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3c2: NO DETECTABLE EFFECT — effect +0.03067 [-0.01669, +0.07803] within the domain's types, equally weighted: the 90% interval lies within ±0.4897 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4893, +0.49] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+- A8-3c3: EFFECT BELOW SESOI — effect +0.1211 [+0.07505, +0.1671] within the domain's types, equally weighted, p=0.000999 (monte-carlo permutation); its 90% interval [+0.08322, +0.1589] lies within ±0.4913, the effective SESOI: detected, but smaller than the smallest effect that matters [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside; non-directional claim] [cause effect_below_sesoi]
+- A8-3c4: NO DETECTABLE EFFECT — effect +0.04595 [-0.01083, +0.1027] within the domain's types, equally weighted: the 90% interval lies within ±0.4909 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4905, +0.4913] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect]
+
+## (b)
+
+### (b1) detection and level of the list's genes, young minus old, combined over the non-fibroblast types
+| gene | detection Δ | p | level Δ | p | fibroblast-like: detection Δ | level Δ |
+|---|---|---|---|---|---|---|
+| Col1a1 | +0.0652 | 0.0159 | +0.01242 | 0.0635 | +0.2654 | +1.473 |
+| Col1a2 | +0.1094 | 0.0238 | +0.02543 | 0.0476 | +0.1283 | +1.676 |
+| Col3a1 | +0.1348 | 0.0159 | +0.06125 | 0.0238 | +0.2358 | +1.983 |
+| Col5a1 | +0.02404 | 0.0159 | +0.00913 | 0.0238 | +0.4862 | +0.6564 |
+| Dcn | +0.3152 | 0.0238 | -0.01871 | 0.563 | +0.01428 | -0.1824 |
+| Fbln1 | +0.07505 | 0.111 | +0.01047 | 0.341 | +0.1623 | +0.8287 |
+| Fbln2 | +0.02492 | 0.19 | +0.02016 | 0.0556 | +0.1585 | +0.8138 |
+| Lum | +0.05296 | 0.206 | -0.003403 | 0.54 | +0.08674 | +0.6811 |
+| Sparc | +0.237 | 0.0238 | +0.02653 | 0.302 | +0.03023 | +0.7818 |
+(b2) F (the index genes): young minus old +0.07909, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+(b2) F⁺ (with Col1a1): young minus old +0.07987, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+MI within the non-fibroblast types: young minus old +0.01636, exact p 0.01587
+(b3-i) within type and age, scored: r +0.089, p 0.1905 (227 values, 62 cells, 9999 permutations)
+(b3-0) within type, reported: r +0.319, p 0.0007 (227 values, 31 cells, 9999 permutations)
+(b3-ii) across types, reported: r +0.566, p 0.0218 (31 values, 1 cells, 9999 permutations)
+
+| type | fibroblast-like | units young/old | Δ MI | Δ F |
+|---|---|---|---|---|
+| B cell | False | 4/4 | +0.001333 | -0.01558 |
+| CD4-positive, alpha-beta T cell | False | 4/4 | +0.03427 | -0.09338 |
+| CD8-positive, alpha-beta T cell | False | 4/4 | -0.0002567 | -0.04106 |
+| DN4 thymocyte | False | 3/4 | +0.008699 | -0.04111 |
+| T cell | False | 4/4 | +0.0101 | +0.06181 |
+| basal cell of epidermis | False | 4/4 | +0.00348 | +0.06278 |
+| bladder urothelial cell | False | 3/3 | +0.01936 | +0.03037 |
+| bronchial smooth muscle cell | False | 3/4 | +0.001209 | +0.09481 |
+| cardiac valve cell | False | 3/4 | +0.09668 | +0.9055 |
+| endothelial cell | False | 4/4 | +0.004041 | +0.2169 |
+| endothelial cell of coronary artery | False | 4/4 | +0.009685 | +0.2492 |
+| enterocyte of epithelium of large intestine | False | 4/4 | +0.01186 | +0.106 |
+| epidermal cell | False | 4/3 | +0.003867 | +0.05806 |
+| epithelial cell of large intestine | False | 4/4 | +0.008971 | +0.01221 |
+| fibroblast | True | 3/4 | -0.03036 | -0.02875 |
+| fibroblast of cardiac tissue | True | 4/4 | -0.009285 | +0.323 |
+| granulocyte | False | 3/4 | +0.02075 | -0.01898 |
+| granulocytopoietic cell | False | 3/3 | +0.01179 | -0.03732 |
+| hematopoietic stem cell | False | 3/4 | +0.002582 | +0.002345 |
+| intestinal crypt stem cell | False | 4/3 | +0.04041 | +0.03976 |
+| keratinocyte | False | 3/4 | +0.01184 | +0.02898 |
+| keratinocyte stem cell | False | 4/4 | +0.008537 | +0.2007 |
+| large intestine goblet cell | False | 4/4 | +0.0272 | +0.1022 |
+| macrophage | False | 4/4 | +0.01243 | -0.01292 |
+| mesenchymal stem cell | True | 3/4 | +0.007052 | +0.2405 |
+| mesenchymal stem cell of adipose tissue | True | 4/4 | +9.85e-05 | +0.188 |
+| microglial cell | False | 3/4 | +0.005171 | +0.01342 |
+| monocyte | False | 4/4 | +0.02027 | -0.1067 |
+| myeloid cell | False | 4/4 | +0.01479 | -0.113 |
+| naive B cell | False | 3/4 | +0.01551 | -0.03861 |
+| natural killer cell | False | 3/3 | -0.0004627 | -0.03893 |
+| precursor B cell | False | 3/3 | +0.0295 | -0.0454 |
+| promonocyte | False | 3/4 | +0.03096 | -0.01124 |
+| skeletal muscle satellite cell | False | 4/4 | +0.02445 | +0.8291 |
+| thymocyte | False | 3/3 | +0.01814 | +0.05188 |
+
+## The parts' logs
+
+# part b (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+(b) males: 9 units (5 young, 4 old); 35 types with >= 20 cells in >= 3 units of each group: 4 fibroblast-like (fibroblast, fibroblast of cardiac tissue, mesenchymal stem cell, mesenchymal stem cell of adipose tissue), 31 others; the list's genes not measured: ['Loxl1']
+(b4) the Census's obs: 30 column x sex checks; the unit's ids left out: ['_case_unit', 'donor_id']; columns that separate the ages: none
+(b4) the source h5ad's obs: 38 column x sex checks; the unit's ids left out: ['donor_id']; columns that separate the ages: [('FACS.selection', 'female'), ('FACS.selection', 'male')]
+(b4) GEO GSE109774: 46 samples; units named: 3_8_M 0, 3_9_M 0, 3_10_M 0, 3_11_M 0, 3_38_F 0, 3_39_F 0, 3_56_F 0, 3_57_F 0, 24_58_M 0, 24_59_M 0, 24_60_M 0, 24_61_M 0, 21_48_F 0, 21_54_F 0, 21_55_F 0; series lines quoted: 2
+(b4) GEO GSE132042: 996 samples; units named: 3_8_M 0, 3_9_M 0, 3_10_M 0, 3_11_M 0, 3_38_F 0, 3_39_F 0, 3_56_F 0, 3_57_F 0, 24_58_M 0, 24_59_M 0, 24_60_M 0, 24_61_M 0, 21_48_F 0, 21_54_F 0, 21_55_F 0; series lines quoted: 0
+
+### (b1) detection and level of the list's genes, young minus old, combined over the non-fibroblast types
+| gene | detection Δ | p | level Δ | p | fibroblast-like: detection Δ | level Δ |
+|---|---|---|---|---|---|---|
+| Col1a1 | +0.0652 | 0.0159 | +0.01242 | 0.0635 | +0.2654 | +1.473 |
+| Col1a2 | +0.1094 | 0.0238 | +0.02543 | 0.0476 | +0.1283 | +1.676 |
+| Col3a1 | +0.1348 | 0.0159 | +0.06125 | 0.0238 | +0.2358 | +1.983 |
+| Col5a1 | +0.02404 | 0.0159 | +0.00913 | 0.0238 | +0.4862 | +0.6564 |
+| Dcn | +0.3152 | 0.0238 | -0.01871 | 0.563 | +0.01428 | -0.1824 |
+| Fbln1 | +0.07505 | 0.111 | +0.01047 | 0.341 | +0.1623 | +0.8287 |
+| Fbln2 | +0.02492 | 0.19 | +0.02016 | 0.0556 | +0.1585 | +0.8138 |
+| Lum | +0.05296 | 0.206 | -0.003403 | 0.54 | +0.08674 | +0.6811 |
+| Sparc | +0.237 | 0.0238 | +0.02653 | 0.302 | +0.03023 | +0.7818 |
+(b2) F (the index genes): young minus old +0.07909, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+(b2) F⁺ (with Col1a1): young minus old +0.07987, exact p 0.05556 over 126 relabelings (non-fibroblast types)
+MI within the non-fibroblast types: young minus old +0.01636, exact p 0.01587
+(b3-i) within type and age, scored: r +0.089, p 0.1905 (227 values, 62 cells, 9999 permutations)
+(b3-0) within type, reported: r +0.319, p 0.0007 (227 values, 31 cells, 9999 permutations)
+(b3-ii) across types, reported: r +0.566, p 0.0218 (31 values, 1 cells, 9999 permutations)
+
+| type | fibroblast-like | units young/old | Δ MI | Δ F |
+|---|---|---|---|---|
+| B cell | False | 4/4 | +0.001333 | -0.01558 |
+| CD4-positive, alpha-beta T cell | False | 4/4 | +0.03427 | -0.09338 |
+| CD8-positive, alpha-beta T cell | False | 4/4 | -0.0002567 | -0.04106 |
+| DN4 thymocyte | False | 3/4 | +0.008699 | -0.04111 |
+| T cell | False | 4/4 | +0.0101 | +0.06181 |
+| basal cell of epidermis | False | 4/4 | +0.00348 | +0.06278 |
+| bladder urothelial cell | False | 3/3 | +0.01936 | +0.03037 |
+| bronchial smooth muscle cell | False | 3/4 | +0.001209 | +0.09481 |
+| cardiac valve cell | False | 3/4 | +0.09668 | +0.9055 |
+| endothelial cell | False | 4/4 | +0.004041 | +0.2169 |
+| endothelial cell of coronary artery | False | 4/4 | +0.009685 | +0.2492 |
+| enterocyte of epithelium of large intestine | False | 4/4 | +0.01186 | +0.106 |
+| epidermal cell | False | 4/3 | +0.003867 | +0.05806 |
+| epithelial cell of large intestine | False | 4/4 | +0.008971 | +0.01221 |
+| fibroblast | True | 3/4 | -0.03036 | -0.02875 |
+| fibroblast of cardiac tissue | True | 4/4 | -0.009285 | +0.323 |
+| granulocyte | False | 3/4 | +0.02075 | -0.01898 |
+| granulocytopoietic cell | False | 3/3 | +0.01179 | -0.03732 |
+| hematopoietic stem cell | False | 3/4 | +0.002582 | +0.002345 |
+| intestinal crypt stem cell | False | 4/3 | +0.04041 | +0.03976 |
+| keratinocyte | False | 3/4 | +0.01184 | +0.02898 |
+| keratinocyte stem cell | False | 4/4 | +0.008537 | +0.2007 |
+| large intestine goblet cell | False | 4/4 | +0.0272 | +0.1022 |
+| macrophage | False | 4/4 | +0.01243 | -0.01292 |
+| mesenchymal stem cell | True | 3/4 | +0.007052 | +0.2405 |
+| mesenchymal stem cell of adipose tissue | True | 4/4 | +9.85e-05 | +0.188 |
+| microglial cell | False | 3/4 | +0.005171 | +0.01342 |
+| monocyte | False | 4/4 | +0.02027 | -0.1067 |
+| myeloid cell | False | 4/4 | +0.01479 | -0.113 |
+| naive B cell | False | 3/4 | +0.01551 | -0.03861 |
+| natural killer cell | False | 3/3 | -0.0004627 | -0.03893 |
+| precursor B cell | False | 3/3 | +0.0295 | -0.0454 |
+| promonocyte | False | 3/4 | +0.03096 | -0.01124 |
+| skeletal muscle satellite cell | False | 4/4 | +0.02445 | +0.8291 |
+| thymocyte | False | 3/3 | +0.01814 | +0.05188 |
+
+part b: 26.4 s
+# part a (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+(a1) §4 in males: the domain ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']; does not hold: the domain is ['enterocyte of epithelium of large intestine', 'epithelial cell of large intestine', 'fibroblast', 'fibroblast of cardiac tissue', 'granulocyte', 'granulocytopoietic cell', 'keratinocyte', 'mesenchymal stem cell', 'mesenchymal stem cell of adipose tissue', 'precursor B cell', 'skeletal muscle satellite cell']
+(a2) Marsh M1 ENZ-INHIB -> ENZ-NONE: in the domain True; detection ENZ-INHIB: Fos 0.002, Jun 0.173, ENZ-NONE: Fos 0.230, Jun 0.612; under 'both groups' False, 'pooled cells' True
+(a2) Marsh M2 DNC-NONE -> ENZ-NONE: in the domain True; detection DNC-NONE: Fos 0.012, Jun 0.283, ENZ-NONE: Fos 0.230, Jun 0.612; under 'both groups' False, 'pooled cells' True
+(a2) Marsh M3 DNC-NONE -> DNC-INHIB: in the domain False; detection DNC-NONE: Fos 0.012, Jun 0.283, DNC-INHIB: Fos 0.002, Jun 0.174; under 'both groups' False, 'pooled cells' False
+
+part a: 5.3 s
+# part case2 (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A1: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional] (13.7 s)
+    effect 0.22152022929431608 CI [0.052466026321236314, 0.39057443226739585] over the domain's cell types, equally weighted; s_m 0.0585509102788086; domain ['fibroblast of cardiac tissue']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A2: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; judged within the domain: fibroblast of cardiac tissue, the types weighted equally; the whole mixture is reported beside] [cause provisional] (12.8 s)
+    effect -0.6698668081520598 CI [-0.739349827408054, -0.6003837888960656] over the domain's cell types, equally weighted; s_m 0.17007302840714333; domain ['fibroblast of cardiac tissue']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+
+part case2: 27.3 s
+# part case1m (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A3: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002584 (95% lower bound 0.001921) against a tolerance of 0.0007749 (0.5 x SESOI; z=42.7) — the nuisance can create a difference with no biology [cause metric_invalid_gate0] (105.7 s)
+    effect None CI None over None; s_m 0.0015497185351903203; domain None
+    gates: 0 FAIL; 1 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+
+part case1m: 114.0 s
+# part case1 (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A4: NOT SUPPORTED — metric invalid: 'extra_dropout' biases the metric (null moves): 0.002458 (95% lower bound 0.001552) against a tolerance of 0.0007367 (0.5 x SESOI; z=38.2) — the nuisance can create a difference with no biology [cause metric_invalid_gate0] (92.1 s)
+    effect None CI None over None; s_m 0.0014733313172126618; domain None
+    gates: 0 FAIL; 1 PASS; 3 JUDGMENT; 4 PASS; 5 PASS
+
+part case1: 99.2 s
+# part marsh (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A5: SUPPORTED (provisional until replicated) [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause provisional] (60.6 s)
+    effect -0.3639797500425672 CI [-0.4365975478166636, -0.29136195226847084] over the domain's cell types, equally weighted; s_m 0.08328563448054571; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A6: INCONCLUSIVE — effect +0.06794 [-1.22, +1.356] within the domain's types, equally weighted, p=0.842 (t, parametric only); neither detected nor equivalent within ±0.07354 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (65.1 s)
+    effect 0.0679378178633469 CI [-1.2201489316401382, 1.356024567366832] over the domain's cell types, equally weighted; s_m 0.07353831771580364; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A7: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain] (57.9 s)
+    effect None CI None over None; s_m None; domain None
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A5m: INCONCLUSIVE — effect -0.08764 [-0.2027, +0.02739] within the domain's types, equally weighted, p=0.0818 (t, parametric only); neither detected nor equivalent within ±0.009223 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (73.9 s)
+    effect -0.08763824437021052 CI [-0.2026695618925735, 0.02739307315215246] over the domain's cell types, equally weighted; s_m 0.00922340294131453; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A6m: INCONCLUSIVE — effect -0.08322 [-0.1966, +0.03017] within the domain's types, equally weighted, p=0.0873 (t, parametric only); neither detected nor equivalent within ±0.009206 [parametric only — too few replicates for the permutation test to reach alpha; underpowered relative to the SESOI; judged within the domain: CD45+/CD11b+ sorted cells, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (82.5 s)
+    effect -0.08321818927664554 CI [-0.19660205214450988, 0.030165673591218814] over the domain's cell types, equally weighted; s_m 0.009205559839548232; domain ['CD45+/CD11b+ sorted cells']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+- A7m: INCONCLUSIVE — the claim's domain is empty: no cell type with enough cells and replicates has the claim's genes detected by the rule (types where, in at least one group, both genes are detected in at least 10% of the type's cells; estimable with at least 20 cells in at least 3 replicates of each group); the whole mixture's estimate is reported beside [cause empty_domain] (71.2 s)
+    effect None CI None over None; s_m 0.00017006475566293215; domain None
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 WARN
+
+part marsh: 412.3 s
+# part case3a (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A8-3a1: NO DETECTABLE EFFECT — effect +0.005107 [-0.03309, +0.0433] within the domain's types, equally weighted: the 90% interval lies within ±0.05636 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04977, +0.06295] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (155.6 s)
+    effect 0.0051074274660861604 CI [-0.03308622064934978, 0.0433010755815221] over the domain's cell types, equally weighted; s_m 0.05635913724723109; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a2: NO DETECTABLE EFFECT — effect +0.02382 [-0.000316, +0.04795] within the domain's types, equally weighted: the 90% interval lies within ±0.05052 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0453, +0.05574] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (156.5 s)
+    effect 0.02381914771450857 CI [-0.0003159860549474258, 0.047954281483964564] over the domain's cell types, equally weighted; s_m 0.05052186167665576; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a3: NO DETECTABLE EFFECT — effect -0.02398 [-0.04782, -0.0001353] within the domain's types, equally weighted: the 90% interval lies within ±0.07032 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06593, +0.0747] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (157.4 s)
+    effect -0.023976029198154704 CI [-0.04781679790515227, -0.00013526049115713742] over the domain's cell types, equally weighted; s_m 0.07031728154647178; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a4: NO DETECTABLE EFFECT — effect -0.001348 [-0.03592, +0.03322] within the domain's types, equally weighted: the 90% interval lies within ±0.05345 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04752, +0.05938] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (160.9 s)
+    effect -0.0013482949413964277 CI [-0.035919986088233304, 0.03322339620544045] over the domain's cell types, equally weighted; s_m 0.0534520156318951; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a5: NO DETECTABLE EFFECT — effect -0.005123 [-0.03893, +0.02868] within the domain's types, equally weighted: the 90% interval lies within ±0.06585 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06146, +0.07023] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (160.6 s)
+    effect -0.0051229851979705966 CI [-0.03892823364359317, 0.028682263247651982] over the domain's cell types, equally weighted; s_m 0.06584767412912361; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a6: NO DETECTABLE EFFECT — effect +0.02103 [-0.002907, +0.04496] within the domain's types, equally weighted: the 90% interval lies within ±0.0599 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05589, +0.06391] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (161.4 s)
+    effect 0.021026895108282297 CI [-0.0029073014703277222, 0.044961091686892315] over the domain's cell types, equally weighted; s_m 0.05990054008965327; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a7: NO DETECTABLE EFFECT — effect +0.01287 [-0.01595, +0.04169] within the domain's types, equally weighted: the 90% interval lies within ±0.06701 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0624, +0.07162] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (158.3 s)
+    effect 0.012870158698401022 CI [-0.01594821811956798, 0.04168853551637003] over the domain's cell types, equally weighted; s_m 0.067012363791497; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3a8: INCONCLUSIVE — effect -0.01174 [-0.07381, +0.05032] within the domain's types, equally weighted, p=0.685 (monte-carlo permutation); neither detected nor equivalent within ±0.05599 [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause effect_inconclusive] (157.7 s)
+    effect -0.011743846432340565 CI [-0.07380618993156426, 0.05031849706688314] over the domain's cell types, equally weighted; s_m 0.05599373417285649; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+
+part case3a: 1271.7 s
+# part case3b (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A8-3b1: NO DETECTABLE EFFECT — effect -0.003164 [-0.0498, +0.04347] within the domain's types, equally weighted: the 90% interval lies within ±0.07089 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0608, +0.08099] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.6 s)
+    effect -0.0031638203701852795 CI [-0.04979722251456864, 0.04346958177419809] over the domain's cell types, equally weighted; s_m 0.07089435899514183; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b2: NO DETECTABLE EFFECT — effect -0.003132 [-0.03525, +0.02899] within the domain's types, equally weighted: the 90% interval lies within ±0.06563 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.05727, +0.07398] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.5 s)
+    effect -0.003132038787216407 CI [-0.035253230541762624, 0.02898915296732981] over the domain's cell types, equally weighted; s_m 0.06562804369010543; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b3: NO DETECTABLE EFFECT — effect -0.02142 [-0.05901, +0.01616] within the domain's types, equally weighted: the 90% interval lies within ±0.07203 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.06601, +0.07805] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (144.7 s)
+    effect -0.02142387222255287 CI [-0.05900724139996624, 0.016159496954860506] over the domain's cell types, equally weighted; s_m 0.07202591192477573; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b4: NO DETECTABLE EFFECT — effect -0.03253 [-0.09493, +0.02988] within the domain's types, equally weighted: the 90% interval lies within ±0.0874 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07809, +0.09672] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.6 s)
+    effect -0.03252821644187752 CI [-0.09493496784476253, 0.029878534961007494] over the domain's cell types, equally weighted; s_m 0.08740103718283643; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b5: NO DETECTABLE EFFECT — effect -0.008448 [-0.05507, +0.03818] within the domain's types, equally weighted: the 90% interval lies within ±0.05114 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04469, +0.05759] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.9 s)
+    effect -0.008448144636348083 CI [-0.05507374393557282, 0.038177454662876656] over the domain's cell types, equally weighted; s_m 0.051143971828062004; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b6: NO DETECTABLE EFFECT — effect +0.03671 [-0.01475, +0.08817] within the domain's types, equally weighted: the 90% interval lies within ±0.08936 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.07881, +0.09992] over the replicates; TOST); absence shown only after the depth correction: on the uncorrected data the 90% interval [+0.005673, +0.09052] is not within ±0.08936 [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.4 s)
+    effect 0.03670866031659677 CI [-0.014753056294636475, 0.08817037692783] over the domain's cell types, equally weighted; s_m 0.08936251375505841; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b7: NO DETECTABLE EFFECT — effect -3.356e-05 [-0.04684, +0.04678] within the domain's types, equally weighted: the 90% interval lies within ±0.05283 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.04821, +0.05746] over the replicates; TOST) [underpowered relative to the SESOI; judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.2 s)
+    effect -3.3558312736946955e-05 CI [-0.04684439055289351, 0.04677727392741962] over the domain's cell types, equally weighted; s_m 0.052833427776664575; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 WARN; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+- A8-3b8: NO DETECTABLE EFFECT — effect -0.01056 [-0.04917, +0.02806] within the domain's types, equally weighted: the 90% interval lies within ±0.05655 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0522, +0.0609] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (145.2 s)
+    effect -0.010556909157371501 CI [-0.04917319506440757, 0.02805937674966457] over the domain's cell types, equally weighted; s_m 0.056551754312191116; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 3 JUDGMENT; 4 PASS
+
+part case3b: 1166.6 s
+# part case3c (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+engine 0.4.0.dev0 from /home/runner/work/metric-autopsy/metric-autopsy/src/metric_autopsy; python 3.13.16; numpy 2.5.3; pandas 2.3.3; numerics {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_CORETYPE': 'Haswell', 'NPY_DISABLE_CPU_FEATURES': 'X86_V4 AVX512_ICL AVX512_SPR'}
+
+- A8-3c1: NO DETECTABLE EFFECT — effect +0.05445 [-0.133, +0.2419] within the domain's types, equally weighted: the 90% interval lies within ±0.4844 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.481, +0.4878] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (131.8 s)
+    effect 0.054449013866056474 CI [-0.13303586366561615, 0.24193389139772908] over the domain's cell types, equally weighted; s_m 0.48439779631416524; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c2: NO DETECTABLE EFFECT — effect +0.03067 [-0.01669, +0.07803] within the domain's types, equally weighted: the 90% interval lies within ±0.4897 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4893, +0.49] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (131.4 s)
+    effect 0.03066924719508162 CI [-0.01669049933714218, 0.07802899372730543] over the domain's cell types, equally weighted; s_m 0.4896863391470796; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c3: EFFECT BELOW SESOI — effect +0.1211 [+0.07505, +0.1671] within the domain's types, equally weighted, p=0.000999 (monte-carlo permutation); its 90% interval [+0.08322, +0.1589] lies within ±0.4913, the effective SESOI: detected, but smaller than the smallest effect that matters [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside; non-directional claim] [cause effect_below_sesoi] (130.8 s)
+    effect 0.12106750599028579 CI [0.07504778955888738, 0.1670872224216842] over the domain's cell types, equally weighted; s_m 0.49132535369823827; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+- A8-3c4: NO DETECTABLE EFFECT — effect +0.04595 [-0.01083, +0.1027] within the domain's types, equally weighted: the 90% interval lies within ±0.4909 (s_m, GATE 4's response to a change of 0.5 on the construct's scale, 95% CI [+0.4905, +0.4913] over the replicates; TOST) [judged within the domain: L2/3-6 intratelencephalic projecting glutamatergic neuron, the types weighted equally; the whole mixture is reported beside] [cause no_detectable_effect] (129.7 s)
+    effect 0.04594686291824991 CI [-0.010828057155469986, 0.10272178299196981] over the domain's cell types, equally weighted; s_m 0.49086988448289026; domain ['L2/3-6 intratelencephalic projecting glutamatergic neuron']
+    gates: 0 PASS; 1 PASS; 2 PASS; 4 PASS
+
+part case3c: 526.7 s

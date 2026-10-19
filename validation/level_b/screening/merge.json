@@ -1,0 +1,69 @@
+{
+ "n_screened": 3506,
+ "kappa": 0.9114049865229094,
+ "agreement": 0.9974329720479178,
+ "kappa_keep_or_unclear_vs_exclude": 0.9113218258362217,
+ "code_agreement_where_both_exclude": 0.8269565217391305,
+ "table": {
+  "pass 1": {
+   "EXCLUDE": 3452,
+   "KEEP": 50,
+   "UNCLEAR": 4,
+   "X1": 118,
+   "X2": 1100,
+   "X3": 0,
+   "X4": 1980,
+   "X5": 70,
+   "X6": 179,
+   "X7": 5,
+   "X8": 0,
+   "X9": 0,
+   "X10": 0
+  },
+  "pass 2": {
+   "EXCLUDE": 3457,
+   "KEEP": 46,
+   "UNCLEAR": 3,
+   "X1": 120,
+   "X2": 1072,
+   "X3": 0,
+   "X4": 2054,
+   "X5": 45,
+   "X6": 161,
+   "X7": 5,
+   "X8": 0,
+   "X9": 0,
+   "X10": 0
+  }
+ },
+ "crosstab": {
+  "EXCLUDE / EXCLUDE": 3450,
+  "EXCLUDE / KEEP": 2,
+  "KEEP / EXCLUDE": 6,
+  "KEEP / KEEP": 44,
+  "UNCLEAR / EXCLUDE": 1,
+  "UNCLEAR / UNCLEAR": 3
+ },
+ "both_keep": 44,
+ "to_owner": 12,
+ "fulltext": 56,
+ "sets": {
+  "pass 1": {
+   "code_X6": 179,
+   "code_X7": 5,
+   "kind_set": 456,
+   "kind_global": 16
+  },
+  "pass 2": {
+   "code_X6": 161,
+   "code_X7": 5,
+   "kind_set": 390,
+   "kind_global": 16
+  },
+  "both passes": {
+   "code_X6": 135,
+   "code_X7": 5,
+   "either_X6_or_X7": 210
+  }
+ }
+}

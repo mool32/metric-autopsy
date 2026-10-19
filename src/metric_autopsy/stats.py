@@ -287,6 +287,47 @@ def permutation_test_nested(y, g, s, *, n_perm: int = 1000, rng=None, max_exact:
     return PermResult(p, "monte-carlo", int(n_perm), math.sqrt(p * (1 - p) / n_perm), 1.0 / (1 + n_perm), obs)
 
 
+def nested_relabelings(g, s, *, n_perm: int = 1000, rng=None, max_exact: int = 20000) -> tuple[np.ndarray, str]:
+    """The relabelings of replicates nested in groups (and strata) that ``permutation_test_nested``
+    uses, for a statistic of any shape: every assignment of the labels within the strata when there
+    are at most `max_exact` (the observed one among them), else `n_perm` Monte Carlo draws. Returns
+    (a matrix of label vectors, "exact" | "monte-carlo")."""
+    g, s = np.asarray(g, int), np.asarray(s)
+    rng = rng if rng is not None else np.random.default_rng(0)
+    strata = list(dict.fromkeys(s.tolist()))
+    total = 1
+    for st in strata:
+        m = s == st
+        total *= comb(int(m.sum()), int(g[m].sum()))
+    if total <= max_exact:
+        choices = []
+        for st in strata:
+            idx = np.where(s == st)[0]
+            choices.append([(idx, c) for c in itertools.combinations(idx.tolist(), int(g[idx].sum()))])
+        out = np.zeros((total, len(g)), int)
+        for i, combo in enumerate(itertools.product(*choices)):
+            for _, chosen in combo:
+                out[i, list(chosen)] = 1
+        return out, "exact"
+    out = np.empty((n_perm, len(g)), int)
+    for i in range(n_perm):
+        lab = g.copy()
+        for st in strata:
+            idx = np.where(s == st)[0]
+            lab[idx] = rng.permutation(g[idx])
+        out[i] = lab
+    return out, "monte-carlo"
+
+
+def relabeling_p(observed: float, null: np.ndarray, method: str) -> float:
+    """Two-sided p of a non-negative statistic over its relabelings: the share at least as large
+    (exact, the observed relabeling included), or (1 + count) / (1 + n) (Monte Carlo)."""
+    null = np.asarray(null, float)
+    eps = 1e-12 * max(1.0, abs(observed))
+    count = int(np.sum(null >= observed - eps))
+    return float(count / len(null)) if method == "exact" else float((1 + count) / (1 + len(null)))
+
+
 def permutation_test_paired(d, *, n_perm: int = 1000, rng=None, max_exact: int = 20000) -> PermResult:
     """Sign-flip test on within-replicate differences; statistic = mean difference."""
     d = np.asarray(d, float)

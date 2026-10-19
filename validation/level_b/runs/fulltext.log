@@ -1,0 +1,22 @@
+# Level B, the fulltext — 2026-10-19T21:47:15+00:00
+python 3.13.16; the protocol validation/plans/level_b_protocol.md (approved 2026-10-19); this script validation/level_b/search.py
+
+## The full texts of 56 records (Europe PMC, open access, JATS XML)
+Core records asked for 7 records without a PMCID: 7 found
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+Full texts: 46 of 56 fetched; 10 without an accessible full text
+  of which 3 answered with a server error on every attempt: R00014, R00173, R00394

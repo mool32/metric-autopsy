@@ -211,3 +211,70 @@ called depth although the corrected effect was not shown to be negligible.
 `test_a_sesoi_on_the_observed_scale_is_not_attenuated`. The panel's allowed outcomes follow
 (validation/prereg/v1.md 3.2): below the SESOI, "explained by depth" is allowed on a real effect
 with a planted artifact (E2, E3), as NO DETECTABLE EFFECT is.
+
+## D8 — v0.4's changes 3 and 4 against p09 and p14 (2026-10-18; for the owner's decision)
+
+**The finding.** Two of the owner's decisions on v0.4 contradict two expectations of the dev set.
+- **Change 3** (decided 2026-10-17, on conditions 2026-10-18): GATE 4 decides only whether the metric
+  is blind, FAIL where the upper bound of its response lies at or below zero; delta_min is dropped.
+  p14 expects GATE 4 to FAIL log-normalized Pearson at the low expression level, where its population
+  response to the injected coupling is −0.023 to +0.019, in at least 7 of 8 datasets. With v0.4 the
+  low level gives FAIL in 1 of 8 (PASS 4, UNTESTED 3); the high and medium levels stay as expected
+  (8 of 8 PASS each).
+- **Change 4** (decided 2026-10-12, its final form 2026-10-18): without a declared SESOI the design's
+  floor is the margin of absence. p09 expects the effect on its null data without a SESOI to be
+  INCONCLUSIVE; with v0.4 it is NO_DETECTABLE_EFFECT, flagged NO_SESOI_FLOOR, absence confirmed only
+  for effects of at least the floor, 0.1126. The verdict stays INCONCLUSIVE there, because the metric's
+  response is untested. p09's other truth (a moderate real effect is never called "no difference")
+  holds.
+
+**What changed.** Nothing in the expectations. Each of the two tests is split, its assertions
+verbatim: the parts that hold stay ordinary tests; the parts that conflict with the decided changes,
+`test_p09_without_a_sesoi_the_null_is_inconclusive` and
+`test_p14_gate4_fails_the_metric_at_the_low_level_where_it_is_blind`, are `xfail(strict=True)`, so
+that a later change that meets them shows as an XPASS error.
+
+**For the owner.** Whether these expectations follow the decided changes (p14's low level PASSes
+where the response is shown above zero, however small; p09's null without a SESOI is an absence at
+the floor), or the changes are reconsidered where they meet them. At the low level the price of
+dropping delta_min is concrete: 4 of the 8 datasets certify a response that the truth calls absent.
+
+
+## D9 — what p09's and p14's conflicting expectations encode, and their update (2026-10-18; the owner's decision)
+
+**Decided** (the owner's second decisions of 2026-10-18, item 7): for each expectation of D8, state what
+it encodes; where it is the probe's truth (an artifact or biology), keep the xfail and explain the
+divergence; where it is v0.3's mechanics, update the expectation with a record here.
+
+**p09, "on null data without a SESOI the effect is INCONCLUSIVE": v0.3's mechanics.** p09's truth is
+that absence of evidence is not evidence of absence: v0.1.1 wrote "the groups simply do not differ"
+without any test of absence (the probe's v0.1.1 failure), and on the null data there is no effect.
+INCONCLUSIVE was v0.3's way of keeping that truth when no SESOI is declared — no margin, no TOST, so no
+absence. Change 4 gives the test a margin without a SESOI, the design's floor (0.1126 here), and says
+so: NO_DETECTABLE_EFFECT flagged NO_SESOI_FLOOR, "absence is confirmed only for effects of at least"
+the floor. That is a test of absence, not its omission, and it is true of the null; the verdict stays
+INCONCLUSIVE because the metric's response is untested (cause `absence_untested_metric`). **Updated:**
+`test_p09_without_a_sesoi_the_null_is_judged_at_the_floor` asserts NO_DETECTABLE_EFFECT with the flag
+and the floor named in the reason, the cause `absence_untested_metric`, and never "do not differ" (the
+probe's truth, kept); the xfail is removed.
+
+**p14, "at the low level GATE 4 FAILs with probability >= 0.8": v0.3's mechanics, on top of a truth that
+stands.** p14's truth is the population response of log-normalized Pearson to the injected coupling per
+pool pair (its log, section 2: 24 datasets x 10 injections at the level's dose); at the low level it
+lies between −0.0227 and +0.0185. "Blind" was that response below 0.8 x delta_min = 0.04, a threshold of
+v0.3's rule; change 3 makes "blind" a response at or below zero. `d8_p14_low_level.py` (log
+`d8_p14_low_level.log`) classes the 8 low pairs by v0.4's definition with the log's standard errors
+— responds where r − 1.96 SE > 0 (pool 16), blind where r + 1.96 SE <= 0 (pools 21 and 22), undecided
+otherwise (pools 17–20, 23) — and runs v0.4's GATE 4 on p14's 40 low-level null datasets (its step 3's
+datasets, seeds and dose): on the blind pairs PASS 0 of 10 (FAIL 4, UNTESTED 6); on the pair that
+responds FAIL 0 of 5 (PASS 2, UNTESTED 3); on the undecided pairs PASS 5, FAIL 5, UNTESTED 15 of 25.
+**Updated:** `test_p14_gate4_never_certifies_a_blind_pair_nor_fails_one_that_responds` asserts, on 16 of
+those datasets (two per pair), no PASS on the blind pairs and no FAIL on the pair that responds; the
+xfail is removed. The expectation of the high and medium levels is unchanged.
+
+**What the update costs, for the record.** In this probe GATE 4 is called alone, without groups, so
+its interval is over the injections into one dataset (v0.3's all-cell mode), not over replicates: on
+the undecided pairs it certifies a response in 5 of 25 datasets where the population response is
+within ±0.02 of zero and its sign is not established, and calls the metric blind in 5. With a
+replicate unit `run_autopsy` judges GATE 4 on the claim's statistic over the replicates (change 1),
+which this probe does not measure.

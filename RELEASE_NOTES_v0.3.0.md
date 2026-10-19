@@ -102,6 +102,33 @@ INCONCLUSIVE only where the raw difference was detected. Of the 275 SUPPORTED on
 had `raw_detected` false (none of the 118 valid cards with |Δ\*| ≥ SESOI). v0.4 is to make this
 the rule: a correction can only remove a conclusion, never create one.
 
+## `norm_pearson`'s fallback 0.0 in v1's donor values (exploratory, after the results)
+
+v0.3.0's `norm_pearson` returns 0.0 where fewer than 3 cells carry both genes, or where one gene does
+not vary among them: a value that was not measured, reported as no correlation (found on the third
+diagnostics of v0.4, Marsh et al. 2022's inhibited arm; v0.4 returns NaN and leaves such replicates
+out). Counted on v1's own data (the owner's decision of 2026-10-18;
+[`v1_fallbacks.py`](https://github.com/mool32/metric-autopsy/blob/claude/v0.4/validation/exploratory/v1_fallbacks.py),
+log [`v1_fallbacks.log`](https://github.com/mool32/metric-autopsy/blob/claude/v0.4/validation/exploratory/v1_fallbacks.log)):
+every dataset rebuilt from the key and checked against the manifest's hash (8,910 claim cards on
+`norm_pearson`, all identical), and on the 2,342 cards whose effect v1's engine estimated, the five
+thinnings to equal depth redrawn with the tag's engine and each card's seed (the recomputed raw values
+equal the reports' on all 2,081 nested cards, the corrected values on all 2,342).
+- **The uncorrected donor values of every claim card:** 1,112 of 133,080 (0.84%) were the fallback,
+  all with fewer than 3 cells carrying both genes, none for want of variance: high 11 of 44,640
+  (0.02%), medium 291 of 44,828 (0.65%), low 810 of 43,612 (1.86%); a card had at least one in 0.30%,
+  8.12% and 18.29% of the cards of the three levels.
+- **The values v1's verdicts used:** on the 2,342 cards with an estimated effect (2,331 of them high),
+  3 uncorrected donor values (0.01%) were the fallback, and 10 corrected ones (0.03%) averaged at
+  least one fallback over their five thinnings (6 all five), on 9 cards, all NO DETECTABLE EFFECT (9 of
+  1,676); none on the 329 SUPPORTED, the 47 explained by depth, the 58 in the opposite direction or the
+  232 INCONCLUSIVE. Most of the fallbacks lay on the medium and low levels, whose effects v1's engine
+  did not estimate.
+- **v0.4's minimum of 20 cells with both genes per replicate on the same data:** 1.06%, 12.54% and
+  40.54% of the uncorrected donor values of the three levels fall below it; on the 2,342 estimated
+  cards it would leave out 281 donor values (0.76%) on 196 cards, and leave 4 cards (0.17%: 2
+  INCONCLUSIVE, 2 NO DETECTABLE EFFECT, no SUPPORTED) with fewer than 3 replicates per group.
+
 ## Limitations
 
 - **The SESOI and GATE 4's dose came from the pilot**, that is, from the oracle, on every card.

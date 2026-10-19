@@ -37,7 +37,7 @@ from .effect import estimate_effect
 from .report import Autopsy, decide, run_autopsy
 from . import injected_signal, metrics, qc
 
-__version__ = "0.3.0.dev0"
+__version__ = "0.4.0.dev0"
 
 __all__ = [
     "SimpleData",
