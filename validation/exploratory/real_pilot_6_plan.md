@@ -149,3 +149,42 @@ null.
 criterion's score and the prediction's; A3's domain against the expected list; A8's changes against the
 third run; and `real_pilot_6_text.log` with the authors' quotes. The hashes of the inputs and the
 engine's commit. One report to the owner.
+
+## The run
+
+Workflow run 39163054704 of `real-pilot-6.yml`, started by the label `pilot-run-6` at 20:23 UTC on
+2026-10-18 on the pull request's head 57980d5 (the engine's `src/` git tree
+d7f5fef250dd440c8110d09d2baa78f86917b59d), one attempt, every job green (the text 56 s, the extraction
+639 s, the six parts 32 s to 20 min); its outputs on `results/real-pilot-6` at 1e2f824, every file as its
+SHA256SUMS. Copied here: the log as `real_pilot_6.log`, the extraction's as `real_pilot_6_extract.log`,
+the inputs' as `real_pilot_6_inputs.log`, the authors' quotes as `real_pilot_6_text.log`. The extraction
+matched the case files' counts (62 of 62 genes checked in case 1, 55 of 55 in case 2, 50 of 50 in case 3).
+**Accepted by the owner (2026-10-19): 5 of 5 criteria, the prediction scored as "partly holds"; no
+further run on the development cases (A1–A8) before the tag of v0.4.**
+
+| test | criterion | verdict | met |
+|---|---|---|---|
+| A1, Xist | SUPPORTED | SUPPORTED (provisional; parametric only) | yes |
+| A2, the Y genes | SUPPORTED | SUPPORTED (provisional; parametric only) | yes |
+| A3, §4 in males (attempt 2) | not SUPPORTED, with the dossier | INCONCLUSIVE (`effect_inconclusive`) | yes |
+| A4, §4 within sex (attempt 2) | not SUPPORTED, with the dossier | INCONCLUSIVE (`effect_inconclusive`) | yes |
+| A8, SEA-AD | no SUPPORTED; INCONCLUSIVE allowed | 18 NO DETECTABLE EFFECT, 1 EFFECT BELOW SESOI (3c3), 1 INCONCLUSIVE (3a8) | yes |
+
+- **The owner's prediction: partly holds.** Its first part does not: GATE 0 passes on both claims,
+  so change 12 was not reached. On the domain by the rule "in each group" (five types, as expected)
+  extra dropout is an attenuation, −64% of the signal (−63% in A4), its null moving by −0.00117 (z 2.09,
+  below 4) against a tolerance of 0.00136 (0.5 × s_m, s_m +0.00273); in the third run, on the
+  eleven types of the rule "in at least one group", it moved the null by −0.00258 (z 7.6). The second
+  part holds: the young male units have 1,298 more genes and 189,000 fewer counts per cell (exact p
+  0.0159 and 0.0079 over 126 relabelings), on the domain's cells 1,166 more genes (p 0.0159).
+- **A3 within the domain**: −0.0018 [−0.0179, +0.0142] (exact p 0.771 over 70 relabelings), the MDE
+  0.0219; the whole mixture +0.0198 (p 0.0159), outside the domain +0.0172 (p 0.0286). What these
+  show is written up in `real_pilot_6_summary.md`, computed from the run's JSON by
+  `real_pilot_6_summary.py`.
+- **A8**: every verdict as in the third run.
+- **What the TMS authors write** (2 of 3 sources: Europe PMC answered HTTP 500; NCBI's BioC and the
+  preprint's JATS text were read): by the rule above the authors state that the 3-month data are the
+  original Tabula Muris's — "The previously published 3m time point, referred to as the Tabula Muris,
+  ... was used as a basis to perform semi-automated cell type annotation of the additional time
+  points", and "We used the Tabula Muris (3m time point) as a reference for the automated pipeline";
+  no quoted sentence gives another origin.
