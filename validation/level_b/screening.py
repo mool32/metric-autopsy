@@ -9,6 +9,7 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
     python -I validation/level_b/screening.py check-fulltext --batch <batch_NN.list> --decisions <tsv>
+    python -I validation/level_b/screening.py merge-fulltext --merge <dir> --ft1 <dir> --ft2 <dir> --out <dir>
 
 `batches` reads the search's merged list (`records.jsonl.gz`, checked against the search's SHA256SUMS) and its
 sample (`sample.txt`, every record where the list holds at most 5,000), and writes the screened records in
@@ -24,8 +25,10 @@ is fetched (kept or unclear in either pass). `fulltext-list` writes those record
 the title, the abstract, every section with its heading, the figures' and tables' captions and the tables'
 cells, the back matter (data availability, notes); the references are left out. `fulltext-batches` gives
 each pass the full texts of the records it kept (`FT_BATCH` to a batch; a record without a full text is
-listed apart, for the owner), and `check-fulltext` checks a full-text decision file against
-`screening_fulltext.md`'s format.
+listed apart, for the owner), `check-fulltext` checks a full-text decision file against
+`screening_fulltext.md`'s format, and `merge-fulltext` compares the passes' full-text decisions: Cohen's
+kappa over the records both passes read, the counts per pass, the papers both keep with each pass's claims,
+and what goes to the owner (decided differently, unclear, read by one pass only, or without a full text).
 """
 from __future__ import annotations
 
@@ -366,6 +369,80 @@ def check_fulltext(batch: Path, decisions: Path) -> list:
     return problems
 
 
+def read_fulltext_pass(ft_dir: Path) -> tuple[dict, dict, list]:
+    """A pass's full-text decisions (`ft_dir`: its batch lists and, beside each, `batch_NN.tsv`): per rid the
+    decision line and the claim lines, and the problems found."""
+    decisions, claims, problems = {}, {}, []
+    for lst in sorted(ft_dir.glob("batch_*.list")):
+        tsv = lst.with_suffix(".tsv")
+        problems += [f"{tsv.name}: {p}" for p in check_fulltext(lst, tsv)]
+        if not tsv.exists():
+            continue
+        for line in tsv.read_text().splitlines()[1:]:
+            r = line.split("\t")
+            if len(r) != len(FT_HEADER):
+                continue
+            row = dict(zip(FT_HEADER, r))
+            if row["decision"] == "CLAIM":
+                claims.setdefault(row["rid"], []).append(row)
+            else:
+                decisions[row["rid"]] = row
+    return decisions, claims, problems
+
+
+def merge_fulltext(merge_dir: Path, ft1: Path, ft2: Path, out: Path) -> dict:
+    d1, c1, p1 = read_fulltext_pass(ft1)
+    d2, c2, p2 = read_fulltext_pass(ft2)
+    if p1 or p2:
+        raise SystemExit("the passes' full-text files do not check:\n" + "\n".join(p1 + p2))
+    rows = [line.split("\t") for line in (merge_dir / "all.tsv").read_text().splitlines()[1:] if line.strip()]
+    ta = {r[0]: (r[1], r[5]) for r in rows}
+    titles = {r[0]: r[11] for r in rows}
+    without = {k: [x for x in (ft / "without_fulltext.txt").read_text().split() if x]
+               for k, ft in ((1, ft1), (2, ft2))}
+    both = sorted(set(d1) & set(d2))
+    a, b = [d1[r]["decision"] for r in both], [d2[r]["decision"] for r in both]
+    counts = {f"pass {k}": {**Counter(x["decision"] for x in d.values()),
+                           **{c: sum(x["code"] == c for x in d.values()) for c in FT_CODES},
+                           "kept at titles and abstracts": sum(ta[r][k - 1] == "KEEP" for r in ta),
+                           "without a full text": len(without[k])}
+              for k, d in ((1, d1), (2, d2))}
+    kept = [r for r in both if d1[r]["decision"] == d2[r]["decision"] == "KEEP"]
+    owner = sorted(set(r for r in both if d1[r]["decision"] != d2[r]["decision"] or "UNCLEAR" in (d1[r]["decision"],
+                                                                                                    d2[r]["decision"]))
+                   | (set(d1) ^ set(d2)) | set(without[1]) | set(without[2]))
+    res = dict(read_by_both=len(both), kappa=cohen_kappa(a, b),
+               agreement=(sum(x == y for x, y in zip(a, b)) / len(both)) if both else float("nan"),
+               crosstab={f"{x} / {y}": n for (x, y), n in sorted(Counter(zip(a, b)).items())},
+               counts=counts, kept_by_both=len(kept), to_owner=len(owner),
+               sets_or_global={f"pass {k}": sum(x["code"] == "F2" for x in d.values()) for k, d in ((1, d1), (2, d2))})
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "ft_merge.json").write_text(json.dumps(res, indent=1) + "\n")
+
+    def dline(k, d, rid):
+        x = d.get(rid)
+        if x is None:
+            return f"pass {k}: not read" + (" (no full text)" if rid in without[k] else
+                                             f" (titles and abstracts: {ta.get(rid, ('?', '?'))[k - 1]})")
+        return f"pass {k}: {x['decision']} {x['code']} — {x['note']}"
+    cols = [c for c in FT_HEADER if c not in ("decision", "code")]
+    with (out / "ft_kept.tsv").open("w") as f:
+        f.write("pass\t" + "\t".join(cols) + "\ttitle\n")
+        for rid in kept:
+            for k, c in ((1, c1), (2, c2)):
+                for cl in c.get(rid, []):
+                    f.write(f"{k}\t" + "\t".join(cl[x] for x in cols) + f"\t{titles.get(rid, '')}\n")
+    with (out / "ft_to_owner.txt").open("w") as f:
+        for rid in owner:
+            f.write(f"{rid}  {titles.get(rid, '')}\n  {dline(1, d1, rid)}\n  {dline(2, d2, rid)}\n")
+            for k, c in ((1, c1), (2, c2)):
+                for cl in c.get(rid, []):
+                    f.write(f"    pass {k} claim {cl['claim']}: {cl['genes']} | {cl['conditions']} | {cl['direction']} | "
+                            f"{cl['metric']} | {cl['donors']} (rule 4 {cl['rule4']}) | {cl['data']}\n")
+            f.write("\n")
+    return res
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
@@ -395,6 +472,11 @@ def main(argv=None) -> int:
     cf = sub.add_parser("check-fulltext")
     cf.add_argument("--batch", type=Path, required=True)
     cf.add_argument("--decisions", type=Path, required=True)
+    mf = sub.add_parser("merge-fulltext")
+    mf.add_argument("--merge", type=Path, required=True)
+    mf.add_argument("--ft1", type=Path, required=True)
+    mf.add_argument("--ft2", type=Path, required=True)
+    mf.add_argument("--out", type=Path, required=True)
     m = sub.add_parser("merge")
     m.add_argument("--batches", type=Path, required=True)
     m.add_argument("--pass1", type=Path, required=True)
@@ -422,6 +504,9 @@ def main(argv=None) -> int:
             print(p)
         print(f"{len(problems)} problems")
         return 1 if problems else 0
+    if a.mode == "merge-fulltext":
+        print(json.dumps(merge_fulltext(a.merge, a.ft1, a.ft2, a.out), indent=1))
+        return 0
     if a.mode == "check-one":
         batch = a.batch.with_suffix(".jsonl")
         d, problems = read_decisions(a.decisions, read_batch(batch))

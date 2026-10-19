@@ -151,3 +151,37 @@ def test_the_fulltext_batches_and_their_check(tmp_path):
     assert S.check_fulltext(batch, dec) == ["R00009: KEEP without a claim line"]
     dec.write_text("\n".join([good[0], good[1].replace("KEEP\t-", "EXCLUDE\t-")]) + "\n")
     assert S.check_fulltext(batch, dec) == ["R00009: code '-' with EXCLUDE"]
+
+
+def test_the_fulltext_merge_keeps_what_both_passes_keep_and_sends_the_rest_to_the_owner(tmp_path):
+    m = tmp_path / "m"
+    m.mkdir()
+    head = "rid\tdecision 1\tcode 1\tkinds 1\tnote 1\tdecision 2\tcode 2\tkinds 2\tnote 2\tpmid\tdoi\ttitle"
+    ta = {"R00001": ("KEEP", "KEEP"), "R00002": ("KEEP", "KEEP"), "R00003": ("KEEP", "EXCLUDE"), "R00004": ("KEEP", "KEEP")}
+    (m / "all.tsv").write_text(head + "\n" + "\n".join(
+        f"{r}\t{x}\t{'-' if x == 'KEEP' else 'X4'}\t-\tn\t{y}\t{'-' if y == 'KEEP' else 'X4'}\t-\tn\t\t\tTitle {r}"
+        for r, (x, y) in ta.items()) + "\n")
+    claim = ["A, B", "mouse", "T cells", "young; old", "lower in old", "Pearson", "results", "q", "GSE1", "4 v 4", "yes", "-", "-"]
+
+    def write(ft, rows, without):
+        ft.mkdir()
+        rids = [r for r, *_ in rows]
+        (ft / "batch_01.list").write_text("".join(f"{r}\t/x/{r}.txt\n" for r in rids))
+        lines = ["\t".join(S.FT_HEADER)]
+        for r, dec, code in rows:
+            lines.append("\t".join([r, dec, code, "0"] + ["-"] * 12 + ["note"]))
+            if dec == "KEEP":
+                lines.append("\t".join([r, "CLAIM", "-", "1"] + claim))
+        (ft / "batch_01.tsv").write_text("\n".join(lines) + "\n")
+        (ft / "without_fulltext.txt").write_text("".join(f"{r}\n" for r in without))
+    write(tmp_path / "f1", [("R00001", "KEEP", "-"), ("R00002", "EXCLUDE", "F7"), ("R00003", "KEEP", "-")], ["R00004"])
+    write(tmp_path / "f2", [("R00001", "KEEP", "-"), ("R00002", "KEEP", "-")], ["R00004"])
+    res = S.merge_fulltext(m, tmp_path / "f1", tmp_path / "f2", tmp_path / "out")
+    assert res["read_by_both"] == 2 and res["kept_by_both"] == 1 and res["to_owner"] == 3
+    assert res["crosstab"] == {"EXCLUDE / KEEP": 1, "KEEP / KEEP": 1}
+    assert res["counts"]["pass 1"]["F7"] == 1 and res["counts"]["pass 2"]["without a full text"] == 1
+    kept = (tmp_path / "out" / "ft_kept.tsv").read_text().splitlines()
+    assert len(kept) == 3 and kept[1].startswith("1\tR00001\t1\tA, B")
+    owner = (tmp_path / "out" / "ft_to_owner.txt").read_text()
+    assert "R00003" in owner and "pass 2: not read (titles and abstracts: EXCLUDE)" in owner
+    assert "R00004" in owner and "not read (no full text)" in owner
