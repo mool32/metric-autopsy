@@ -151,6 +151,9 @@ screening started. If it yields more than 30, 30 are drawn at random with a seed
 6. Whether claims on a metric of level (a marker's mean expression, through the module probe), which
    `real_claims.md`'s selection rule admits, are searched for too: then section 1's definition and
    section 3's terms widen, or the rule in `real_claims.md` narrows to coordination.
+7. Whether an independent verdict is a condition of inclusion for both questions (as `real_claims.md`'s
+   rule and section 5.6 have it) or only for the second: the first question, the frequency, needs no
+   verdict, and requiring one limits its sample to claims that someone checked independently.
 
 How many records each term brings is not known before the run (no database is reachable from here;
 the script's dry run uses fabricated responses only), so no term is judged by its yield before the
