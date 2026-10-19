@@ -1,0 +1,181 @@
+# Level B's search for claims, by validation/plans/level_b_protocol.md (approved by the owner on 2026-10-19,
+# the second decisions of that day): validation/level_b/search.py. This environment reaches neither PubMed nor
+# Europe PMC; the runs reach them here. Nothing of the engine runs on level B.
+#
+# On every push to the pull request: the dry run. The search's tests, then the lookup and the search on
+# fabricated responses (validation/level_b/fabricated.py): nothing is fetched.
+#
+# The lookup, by the label "level-b-lookup": the method papers whose forward citations are searched, each found
+# in Europe PMC by its query and checked against method_papers.json. Verified, its records go to the new branch
+# results/level-b-lookup; not verified, the job fails before any search and its log shows the records found, so
+# that method_papers.json can be corrected. The search refuses to run until method_papers.json records every
+# paper as verified (committed after the lookup).
+#
+# The search, once, by the label "level-b-search": PubMed, Europe PMC and the forward citations, every raw
+# response as it came, the merged list and the sample for screening, with SHA256SUMS, to the new branch
+# results/level-b-search. A second start finds the branch and stops; if the search fails nothing is committed,
+# and a fix and a second start are recorded in the report (the protocol, section 2).
+name: Level B's search for claims
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+env:
+  PYTHONHASHSEED: "0"
+
+jobs:
+  dry:
+    if: github.event.action != 'labeled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment (its numpy draws the sample)
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps pytest==9.1.1 pluggy==1.6.0 iniconfig==2.3.1 pygments==2.21.0
+      - name: The search's tests
+        run: python -m pytest -q -p no:cacheprovider -c /dev/null validation/level_b/test_search.py
+      - name: The lookup and the search on fabricated responses (FABRICATED, nothing fetched)
+        run: |
+          python -I validation/level_b/search.py lookup --out dry/lookup --fabricated
+          python -I validation/level_b/search.py search --out dry/search --fabricated --papers dry/lookup/method_papers.verified.json
+          grep -v "^  window" dry/search/search.log
+
+  lookup:
+    if: github.event.action == 'labeled' && github.event.label.name == 'level-b-lookup'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: One attempt; the branch results/level-b-lookup must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" refs/heads/results/level-b-lookup > /dev/null; then
+            echo "results/level-b-lookup exists: the lookup has run"; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The method papers in Europe PMC, checked against method_papers.json
+        run: python -I validation/level_b/search.py lookup --out lookup
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-lookup
+          path: lookup
+          if-no-files-found: error
+
+  publish-lookup:
+    needs: lookup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-lookup
+          path: pub
+      - name: To results/level-b-lookup, with SHA256SUMS
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          cd pub
+          {
+            echo "# Level B: the lookup of the method papers"
+            echo
+            echo "Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}: validation/level_b/search.py lookup, against validation/level_b/method_papers.json there. lookup.log and lookup.json: each paper's query, the records found, the one that matches; raw/: Europe PMC's responses as they came."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          git init -q -b results/level-b-lookup
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B: the lookup of the method papers (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-lookup && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" refs/heads/results/level-b-lookup | cut -f1)" = "$(git rev-parse HEAD)"
+
+  search:
+    if: github.event.action == 'labeled' && github.event.label.name == 'level-b-search'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: One run, one attempt; the branch results/level-b-search must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "the search runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" refs/heads/results/level-b-search > /dev/null; then
+            echo "results/level-b-search exists: the search has run"; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment (its numpy draws the sample)
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+      - name: The search (PubMed, Europe PMC, the forward citations)
+        timeout-minutes: 110
+        run: python -I validation/level_b/search.py search --out search
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-search
+          path: search
+          if-no-files-found: error
+
+  publish-search:
+    needs: search
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-search
+          path: pub
+      - name: To results/level-b-search, with SHA256SUMS (a second start finds the branch and stops)
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" refs/heads/results/level-b-search > /dev/null; then
+            echo "results/level-b-search exists: nothing is pushed"; exit 1
+          fi
+          cp repo/validation/level_b/method_papers.json pub/method_papers.json
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/search.py)
+          cd pub
+          {
+            echo "# Level B: the search for claims"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/search.py (blob $blob) by validation/plans/level_b_protocol.md there (approved by the owner on 2026-10-19)."
+            echo "- search.log and search.json: the queries, each source's counts, the merged list and the sample; requests.tsv: every request (its URL, parameters, status, size and SHA256)."
+            echo "- raw/: every response as it came (gzip): PubMed's esearch by date window and efetch by PMID, Europe PMC's search pages, each method paper's citations and its citing records' core records."
+            echo "- records.jsonl.gz: the merged records, numbered (rid), each with every source that found it; sample.txt: the rids the screening reads (all of them, or 5,000 drawn with the protocol's seed)."
+            echo "- method_papers.json: the method papers as verified by the lookup (results/level-b-lookup)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b results/level-b-search
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B: the search for claims (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-search && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" refs/heads/results/level-b-search | cut -f1)" = "$(git rev-parse HEAD)"
+          grep -v "^  window" search.log | head -80
