@@ -18,6 +18,14 @@ of 2026-10-19, change 17 of the v0.4 spec): the numbers behind its acceptance te
    detection, over 40 datasets.
 
     python validation/exploratory/differential_sensitivity.py > validation/exploratory/differential_sensitivity.log
+
+It runs at 1e4696c only. The owner rejected change 17 on this log (decisions of 2026-10-19, the second): a
+group's response to the injection depends on its own biology, so the check subtracted the biology itself.
+The change was reverted with the test file it imports and the dossier's ``differential_sensitivity`` it reads
+(GATE 4's second injection, the ratio k); its log stays as the evidence of the rejection. To rerun it, check
+1e4696c out in a worktree:
+
+    git worktree add ../ma-1e4696c 1e4696c && cd ../ma-1e4696c && python validation/exploratory/differential_sensitivity.py
 """
 from __future__ import annotations
 

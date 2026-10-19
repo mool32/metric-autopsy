@@ -31,10 +31,12 @@ MI = partial(metrics.mi_3bin, gene_a="Smad3", gene_b="Col1a1")
 
 
 def mice(n_per_group=6, cells=200, n_filler=30, claim_keep=(1.0, 1.0), efficiency=(1.0, 1.0),
-         coupling=(1.5, 1.5), sexes=("female",), absent_in=(), seed=0):
+         coupling=(1.5, 1.5), sexes=("female",), absent_in=(), seed=0, g0_keep=(1.0, 1.0)):
     """Mice nested in age (young, old). Per group: a capture efficiency of every gene (`efficiency`),
     and a share of the claim genes' counts kept (`claim_keep`: a dropout of the claim genes alone,
-    which equal depth does not remove). Col1a1 has no count in the mice named in `absent_in`."""
+    which equal depth does not remove; since change 17' the equalization of the pair's detection does),
+    and of the filler G0's (`g0_keep`: a dropout outside the claim). Col1a1 has no count in the mice named
+    in `absent_in`."""
     rng = np.random.default_rng(seed)
     rows, blocks = [], []
     for gi, age in enumerate(("young", "old")):
@@ -47,6 +49,8 @@ def mice(n_per_group=6, cells=200, n_filler=30, claim_keep=(1.0, 1.0), efficienc
                 X = rng.poisson(np.column_stack([pair, filler]) * efficiency[gi]).astype(float)
                 if claim_keep[gi] < 1.0:
                     X[:, :2] = rng.binomial(X[:, :2].astype(np.int64), claim_keep[gi])
+                if g0_keep[gi] < 1.0:
+                    X[:, 2] = rng.binomial(X[:, 2].astype(np.int64), g0_keep[gi])
                 if name in absent_in:
                     X[:, 1] = 0.0
                 blocks.append(X)
@@ -60,6 +64,13 @@ def coupling_and_detection(data):
     the second term is no biology of the pair, and dropout moves it on GATE 0's null too."""
     X = as_dense(data.X)
     return NPR(data) + float(np.mean(X[:, list(data.var_names).index("Smad3")] > 0))
+
+
+def coupling_and_g0_detection(data):
+    """The pair's normalized Pearson plus the share of cells with a count of the filler G0: a term outside
+    the claim's genes, which the equalization of the pair's detection (change 17') leaves alone."""
+    X = as_dense(data.X)
+    return NPR(data) + float(np.mean(X[:, list(data.var_names).index("G0")] > 0))
 
 
 def big(**kw):
@@ -203,7 +214,15 @@ def test_a_bias_equal_between_the_groups_is_reported_and_one_that_differs_blocks
     assert r["handling"] == "equal between groups" and g0.status.value == "WARN"
     assert g0.detail["between_groups"]["equivalent"] and "shown within it" in g0.message
     assert same.metric_validity.status != "FAIL"
-    differ = run_autopsy(coupling_and_detection, big(claim_keep=(1.0, 0.3)), **kw)
+    # a dropout of the claim's genes alone in one group: since change 17' (the owner's second decisions of
+    # 2026-10-19) the technical difference is estimated as the effect is, the pair's detection equalized, so
+    # it is shown equal between the groups (before 17' it blocked)
+    claim_only = run_autopsy(coupling_and_detection, big(claim_keep=(1.0, 0.3)), **kw)
+    g0c = next(r for r in claim_only.results if r.gate == 0)
+    assert g0c.detail["responses"]["extra_dropout"]["handling"] == "equal between groups" and g0c.status.value == "WARN"
+    assert g0c.detail["between_groups"]["equivalent"]
+    # a dropout outside the claim's genes that the metric reads still differs between the groups, and blocks
+    differ = run_autopsy(coupling_and_g0_detection, big(g0_keep=(1.0, 0.3)), **kw)
     g0d = next(r for r in differ.results if r.gate == 0)
     assert g0d.status.value == "FAIL" and g0d.detail["responses"]["extra_dropout"]["handling"] == "blocking"
     assert not g0d.detail["between_groups"]["equivalent"] and "not shown within" in g0d.message

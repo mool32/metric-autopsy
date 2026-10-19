@@ -111,12 +111,18 @@ def test_two_claims_on_the_same_data_get_different_draws():
 
 
 def test_on_an_exact_tie_both_groups_are_injected_and_the_weaker_is_judged():
-    """A marker with the same counts in every cell of both groups: the probe runs in each group."""
+    """A marker with the same counts in every cell of both groups: the probe runs in each group. The rule is
+    GATE 4's own, so it is tested on the gate: since the owner's second decisions of 2026-10-19 the autopsy
+    gives GATE 4 one draw of the correction (equal depth), whose thinning breaks a tie of the raw counts."""
     d = sex_marker(constant_marker=3)
-    g = _g4(_claim(d, ("female", "male"), "two-sided"))
+    probe = injected_signal.module(["Xist"])
+    g = gate4_signal_response(mean_lognorm_xist, d, probe, direction=getattr(probe, "direction", None), alpha=0.05,
+                              seed=0, group_col="sex", groups=("female", "male"), replicate_col="mouse",
+                              construct_change=0.5)
     assert g.detail["tie"] is True and len(g.detail["runs"]) == 2
     weaker = min(g.detail["runs"], key=lambda r: r["interval"]["signed_lower"])
     assert g.detail["injected_group"] == weaker["group"]
+    assert _g4(_claim(d, ("female", "male"), "two-sided")).detail["data"] == "equal depth"
 
 
 def test_without_a_replicate_unit_gate4_judges_the_all_cell_response():

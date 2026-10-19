@@ -169,10 +169,15 @@ def gate0_independence(
       other bias blocks only if its size exceeds `bias_tolerance` x `sesoi` and so does the
       lower bound of its 95% interval. Without a SESOI a bias cannot be sized for the claim:
       it is reported as unsized (and ``report.decide`` then withholds SUPPORTED);
-    * **attenuation** — the signal shrinks toward the null while the null stays put. This
-      is reliability, not confounding: uniform attenuation pulls toward zero and cannot
-      create an effect. It is reported (``detail["attenuation"]``, fraction of signal lost)
-      and passed to ``design_adequacy`` as a power check against the SESOI;
+    * **attenuation** — the signal shrinks toward the null while the null stays put. An
+      attenuation equal in both groups pulls toward zero and cannot create an effect. It is
+      reported (``detail["attenuation"]``, fraction of signal lost) and passed to
+      ``design_adequacy`` as a power check against the SESOI. Where the groups differ in
+      detection it is not equal, and an equal coupling can show as a difference; GATE 0 perturbs
+      the pooled cells and cannot see that. For a claim about a pair the effect field therefore
+      equalizes the claim genes' detection after equal depth (v0.4 change 17', the owner's
+      decision of 2026-10-19: on preprint §4 extra dropout removed 64% of the signal while the
+      young units detected 1,166 more genes per cell);
     * **level_shift** — no gene-gene structure to reference (e.g. a mean score), so
       attenuation and bias cannot be told apart. A shift larger than `tol` x the effect
       scale is flagged and reported, not failed. A between-group version is removed by the
@@ -1539,8 +1544,10 @@ def gate5_controls(
                   legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
                   pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
                   pos_dose=pos_dose, delta_min=delta_min, direction=direction, n_rep=n_rep)
-    centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
-    centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
+    # the strata whose null has a centre (a metric that gives no value there leaves it NaN: no "nan..nan")
+    centres = [float(r["null_center"]) for r in rows
+               if r.get("null_center") is not None and np.isfinite(r["null_center"])]
+    centre_note = (f"; null centre {min(centres):.3g}..{max(centres):.3g}"
                    if centres and not legacy else "")
     weak_neg = [r for r in rows if "unattainable" in str(r.get("method", "")).split("/")[0]]
     detail["neg_test_unattainable"] = [r["stratum"] for r in weak_neg]
@@ -1626,8 +1633,10 @@ def gate6_replication(
     attenuation_half: float | None = None,
     seed: int = 0,
     sesoi_scale: str = "construct",
+    claim_genes: Sequence[str] = (),
 ) -> GateResult:
-    """Re-estimate the effect on an independent dataset with the same estimand, correction,
+    """Re-estimate the effect on an independent dataset with the same estimand, correction (for a pair,
+    `claim_genes`, its genes' detection equalized after equal depth too: v0.4 change 17'),
     replicate rule, strata and SESOI scale. REPLICATED (PASS) = effect detected with the primary sign;
     NOT_REPLICATED (FAIL) = equivalent to zero within the SESOI, or detected with the opposite
     sign; anything else is INCONCLUSIVE (WARN). QC parity on the replication set is reported.
@@ -1646,7 +1655,7 @@ def gate6_replication(
         replicate_col=replicate_col, estimand=estimand, sesoi=sesoi, alpha=alpha,
         min_replicates=min_replicates, n_perm=n_perm,
         qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=attenuation_half,
-        sesoi_scale=sesoi_scale, seed=seed,
+        sesoi_scale=sesoi_scale, seed=seed, claim_genes=claim_genes,
     )
     est = eff.detail.get("effect")
     same_sign = (primary_effect is None or est is None or not np.isfinite(est)

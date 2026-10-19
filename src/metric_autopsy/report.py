@@ -25,10 +25,7 @@ No rescue language: a FAIL in an earlier field is never softened by a later one.
 the first FAIL; since v0.4 the effect, the domain's, the mixture's and the composition are estimated
 after it too and reported as the dossier, marked as not deciding the verdict (the owner's decision
 of 2026-10-18). Every difference in the dossier is groups[0] - groups[1], the effect test's convention
-(the owner's decision of 2026-10-19). For a metric of structure whose groups differ in detection, the
-difference their unequal responses to the same coupling would make at an equal coupling (the
-differential sensitivity, decided 2026-10-19) is subtracted at its bound before the effect can support
-the claim (``differential_sensitivity``).
+(the owner's decision of 2026-10-19).
 Judgment gates (4, 7) are pending unless the pre-registration says otherwise, so a
 SUPPORTED verdict is never reached by default. The Python API, the CLI and the MCP server
 all call this one function.
@@ -114,12 +111,7 @@ CAUSES = ("degenerate_metric", "metric_invalid_gate0", "metric_invalid_gate5", "
           "absence_untested_metric", "no_detectable_effect", "detected_only_after_correction",
           "effect_inconclusive",
           "detected_untested_metric", "bias_unsized", "no_direction", "opposite_direction",
-          "differential_sensitivity", "not_replicated", "effect_below_sesoi", "judgment_pending", "replicated",
-          "provisional")
-# The probes of a metric of structure (a pair; a probe that couples a set would join them): for these the
-# groups' sensitivity to the same coupling is compared (the owner's decision of 2026-10-19); a metric of
-# level (a module's expression) is not
-STRUCTURE_PROBES = ("coupling",)
+          "not_replicated", "effect_below_sesoi", "judgment_pending", "replicated", "provisional")
 
 
 def decide_cause(a: "Autopsy") -> tuple[str, str]:
@@ -199,22 +191,6 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
     if direction == "two-sided":
         notes.append("non-directional claim")
         tail = f" [{'; '.join(notes)}]"
-    ds = ef.detail.get("differential_sensitivity") or {}
-    if ds.get("unsized"):
-        return ("INCONCLUSIVE — effect detected, but the groups' sensitivity to the same coupling could not be "
-                f"compared ({ds.get('error')}), so a difference it alone would make cannot be sized" + tail,
-                "differential_sensitivity")
-    if ds.get("applies"):
-        adj = ds.get("adjusted") or {}
-        what = (f"at an equal coupling the groups' unequal responses to it would make a difference of "
-                f"{ds['artifact']:+.4g} [{ds['artifact_ci'][0]:+.4g}, {ds['artifact_ci'][1]:+.4g}] "
-                f"({ds['rich']} responds {ds['k_rich']:+.4g}, {ds['poor']} {ds['k_poor']:+.4g}, ratio "
-                f"{ds['ratio']:.3g}), beyond ±{ds['tolerance']:.4g}; the effect less its bound "
-                f"{ds['offset']:+.4g} is {_adjusted_text(adj)}")
-        if not adj.get("passes"):
-            return f"NOT SUPPORTED — differential sensitivity: {what}{tail}", "differential_sensitivity"
-        notes.append(f"judged on the effect less the differential sensitivity's bound {ds['offset']:+.4g}: {what}")
-        tail = f" [{'; '.join(notes)}]"
     if rp.status == "NOT_REPLICATED":
         return f"NOT SUPPORTED — the effect did not replicate: {rp.reason}{tail}", "not_replicated"
     if ef.detail.get("tost_equivalent") and ef.detail.get("sesoi_source", "declared") == "declared":
@@ -236,120 +212,6 @@ def decide_cause(a: "Autopsy") -> tuple[str, str]:
 def decide(a: "Autopsy") -> str:
     """The verdict of ``decide_cause`` (the single verdict rule)."""
     return decide_cause(a)[0]
-
-
-def _adjusted_text(adj: dict) -> str:
-    if not adj:
-        return "not estimated"
-    if adj.get("error"):
-        return f"not estimated ({adj['error']})"
-    e, ci = adj.get("effect"), adj.get("ci") or (float("nan"), float("nan"))
-    if e is None or not np.isfinite(e):
-        return f"not estimated ({adj.get('status')})"
-    return (f"{e:+.4g} [{ci[0]:+.4g}, {ci[1]:+.4g}], p {adj['p']:.3g} ({adj.get('test')}): "
-            + ("detected in the claim's direction" if adj.get("passes") else "not detected in the claim's direction"))
-
-
-def detection_gap(tech: dict | None, cells: str) -> dict:
-    """The premise of the differential sensitivity (the owner's decision of 2026-10-19): the groups differ in
-    detection on the claim's cells — the genes detected per cell, the claim's own genes left out
-    (``composition.technical_covariates`` with `exclude`), with a permutation p below alpha in a stratum or
-    over the strata. A test that cannot be made leaves the premise open (the conservative side)."""
-    if not tech or tech.get("error"):
-        return dict(differs=True, cells=cells, rows=[], error=(tech or {}).get("error") or "not assessed")
-    rows = [r for r in tech["rows"] if r["cells"] == cells and r["covariate"] == "genes per cell"]
-    sig = [r for r in rows if r.get("difference") is not None and r["p"] < tech["alpha"]]
-    return dict(differs=bool(sig), cells=cells, rows=rows, excluded=tech.get("excluded") or [], alpha=tech["alpha"])
-
-
-def differential_sensitivity(d: dict | None, effect: Assessment | None, prereg: dict,
-                             sesoi_metric: float | None, gap: dict | None = None) -> dict:
-    """The verdict's use of GATE 4's differential sensitivity (``gates._differential``; the owner's decision
-    of 2026-10-19), for a metric of structure. A, the difference the groups' unequal responses would make at
-    an equal coupling (groups[0] - groups[1]), applies where the groups differ in detection (`gap`,
-    ``detection_gap``: GATE 0's premise fails only there), A lies on the claim's side (the declared
-    direction; for a two-sided claim the observed effect's) and its bound on that side exceeds
-    bias_tolerance x the SESOI in the metric's units (0 without one): the effect is then judged less that
-    bound (`offset`, in the effect's convention), and the verdict falls where the effect less it is not
-    detected. Without a difference in detection A is reported only: the groups' responses then differ by
-    their biology too (a coupling that changes with the genes' variance changes the metric's reliability:
-    on ``tests/test_v03_verdict.py``'s clean data the check would remove a true effect,
-    ``validation/exploratory/differential_sensitivity.log``, section 3), which is not an artifact. An A that
-    cannot be sized where the groups differ in detection leaves the effect unsized."""
-    if d is None:
-        return {}
-    rec = dict(d)
-    gap = gap if gap is not None else dict(differs=True, rows=[], error="not assessed")
-    rec.update(detection=gap, applies=False, offset=None, unsized=False)
-    if d.get("error"):
-        rec["unsized"] = bool(gap.get("differs"))
-        return rec
-    side = {"decrease": 1.0, "increase": -1.0}.get(prereg.get("direction"))
-    if side is None:
-        e = (effect.detail or {}).get("effect") if effect is not None else None
-        side = float(np.sign(e)) if e is not None and np.isfinite(e) and e != 0 else None
-    tol = float(prereg.get("bias_tolerance", DEFAULT_PREREG["bias_tolerance"])) * float(sesoi_metric) if sesoi_metric else 0.0
-    A, (lo, hi) = d["artifact"], d["artifact_ci"]
-    rec.update(tolerance=tol, side=side)
-    if side is None:
-        rec["in_direction"] = None
-        return rec
-    if not (np.isfinite(A) and np.isfinite(lo) and np.isfinite(hi)):
-        rec.update(unsized=bool(gap.get("differs")),
-                   error="the interval of the difference at an equal coupling could not be computed")
-        return rec
-    bound = max(side * lo, side * hi)
-    rec.update(in_direction=bool(side * A > 0), bound=float(bound))
-    if gap.get("differs") and side * A > 0 and bound > tol:
-        rec.update(applies=True, offset=float(side * bound))
-    return rec
-
-
-def describe_differential(ds: dict) -> list:
-    """Lines of the dossier for the differential sensitivity (``differential_sensitivity``)."""
-    if not ds:
-        return []
-    if ds.get("error") and "responses" not in ds:
-        return [f"not sized: {ds['error']}"]
-
-    def iv(x, lo_hi, f="+.4g"):
-        lo, hi = lo_hi
-        return f"{x:{f}} [{lo:{f}}, {hi:{f}}]" if np.isfinite(lo) and np.isfinite(hi) else f"{x:{f}} [—]"
-    change = ds.get("construct_change")
-    out = [f"the same change of the construct ({f'{change:g}' if change is not None else 'the declared probe'}) "
-           "injected into each group on the claim's units: " + "; ".join(f"{g} responds {iv(v['response'], v['ci'])} ({v['n_units']} units)"
-                                            for g, v in ds["responses"].items())
-           + f"; the ratio k_{ds['poor']} / k_{ds['rich']} = {iv(ds['ratio'], ds['ratio_ci'], '.3g')}",
-           f"the metric minus its null in {ds['rich']}, the more sensitive group: {iv(ds['signal'], ds['signal_ci'])} "
-           f"({ds['null_draws']} draws of GATE 0's null of the claim's genes per unit)",
-           f"at an equal coupling the groups would differ by (metric − null in {ds['rich']}) × (1 − k_{ds['poor']} / "
-           f"k_{ds['rich']}) = {iv(ds['artifact'], ds['artifact_ci'])}"]
-    gap = ds.get("detection") or {}
-    if gap:
-        rows = "; ".join(f"{r['stratum']} {r['difference']:+.4g} (p {r['p']:.3g})" for r in gap.get("rows", [])
-                         if r.get("difference") is not None)
-        out.append(f"the groups' genes detected per cell on {gap.get('cells', 'the cells')}, the claim's genes left out: "
-                   + (rows or f"not compared ({gap.get('error', 'no row')})") + " — "
-                   + ("they differ in detection" if gap.get("differs") and not gap.get("error") else
-                      "not tested, so taken to differ" if gap.get("differs") else
-                      "no difference in detection shown, so the groups' responses may differ by their biology: reported only"))
-    if ds.get("unsized"):
-        out.append(f"not sized: {ds.get('error')}")
-    elif not gap.get("differs", True):
-        pass
-    elif ds.get("side") is None:
-        out.append("reported only: the claim has no direction and the effect none to compare with")
-    elif ds.get("applies"):
-        out.append(f"on the claim's side and beyond ±{ds['tolerance']:.4g} (bias_tolerance × the SESOI in the metric's "
-                   f"units): the effect is judged less the bound {ds['offset']:+.4g}"
-                   + (f": {_adjusted_text(ds['adjusted'])}" if "adjusted" in ds else
-                      " (the effect is not detected, so the verdict does not change)"))
-    elif ds.get("in_direction"):
-        out.append(f"on the claim's side, its bound within ±{ds['tolerance']:.4g} (bias_tolerance × the SESOI in the "
-                   "metric's units): reported only")
-    else:
-        out.append("on the other side of the claim's direction: reported only")
-    return out
 
 
 def capture_summary(effect: Assessment | None, design: Assessment | None, groups) -> dict:
@@ -392,25 +254,36 @@ def describe_capture(cap: dict) -> list:
     return out
 
 
-def _shifted(metric, group_col: str, group, offset: float):
-    """`metric` less `offset` on data whose cells all belong to `group` (groups[0]): every difference
-    groups[0] - groups[1] the effect field forms (per cell set, replicate, unit, raw and at equal depth) then
-    falls by `offset`, and its test becomes the test of the effect against `offset`."""
-    def shifted(d):
-        v = metric(d)
-        g = np.asarray(d.obs[group_col])
-        return v - offset if v is not None and len(g) and bool((g == group).all()) else v
-    shifted.__name__ = getattr(metric, "__name__", "metric")
-    return shifted
+def describe_detection(det: dict, effect_detail: dict, groups) -> list:
+    """Lines of the dossier for change 17': per cell set and gene, each group's share of cells with a count
+    uncorrected, at equal depth and after the equalization (the first draw's), the thinned group and its
+    keep probability; then the effect at equal depth alone against the verdict's, at equal depth and
+    detection."""
+    g0, g1 = (str(g) for g in groups)
 
+    def pct(d, g):
+        return f"{d[g]:.1%}" if d and d.get(g) is not None else "—"
 
-def _adjusted_record(adj: Assessment, side: float) -> dict:
-    d = adj.detail or {}
-    e = d.get("effect")
-    p = d.get("p_perm") if d.get("tier") == "permutation" else d.get("p_t")
-    passes = bool(adj.status == "DETECTED" and e is not None and np.isfinite(e) and side * e > 0)
-    return dict(effect=e, ci=d.get("ci"), p=p, test=d.get("test"), status=adj.status, passes=passes,
-                reason=adj.reason)
+    out = []
+    for r in det.get("records", []):
+        cells = r["cells"] if isinstance(r["cells"], str) else ", ".join(str(v) for v in r["cells"].values())
+        raw, eqd, aft = r.get("raw"), r.get("equal_depth"), r.get("after")
+        out.append(f"{cells}, {r['gene']}: detected in {g0} {pct(raw, g0)} uncorrected, {pct(eqd, g0)} at equal depth, "
+                   f"{pct(aft, g0)} after; in {g1} {pct(raw, g1)}, {pct(eqd, g1)}, {pct(aft, g1)}"
+                   + (f" — {r['thinned_group']}'s counts of {r['gene']} thinned, keep probability {r['keep_p']:.3f}"
+                      if r.get("thinned_group") else " — equal: nothing thinned"))
+
+    def est(e, ci, p):
+        if e is None or not np.isfinite(e):
+            return "not estimated"
+        lo, hi = ci or (float("nan"), float("nan"))
+        return f"{e:+.4g} [{lo:+.4g}, {hi:+.4g}] (p {p:.3g})"
+    before = effect_detail.get("equal_depth_effect")
+    if before:
+        p_after = effect_detail.get("p_perm") if effect_detail.get("tier") == "permutation" else effect_detail.get("p_t")
+        out.append(f"the effect at equal depth alone {est(before['effect'], before['ci'], before['p'])}; at equal depth "
+                   f"and the pair's detection equalized, the verdict's {est(effect_detail.get('effect'), effect_detail.get('ci'), p_after if p_after is not None else float('nan'))}")
+    return out
 
 
 @dataclass
@@ -474,8 +347,11 @@ class Autopsy:
             lines.append(f"| {r.gate} | {_cell(r.name)} | **{r.status.value}** | {_cell(r.message)} |")
         g4 = next((r for r in self.results if r.gate == 4), None)
         if g4 is not None and g4.detail.get("dose_response"):
-            lines += ["", "## The probe's dose and the metric's response (the SESOI in the metric's units)", "",
-                      "| Construct change | Dose | Response | 95% CI |", "|---|---|---|---|"]
+            lines += ["", "## The probe's dose and the metric's response (the SESOI in the metric's units)", ""]
+            if g4.detail.get("data"):
+                lines += [f"Measured on the data the effect is judged on: {_cell(g4.detail['data'])} (one draw of the "
+                          "correction).", ""]
+            lines += ["| Construct change | Dose | Response | 95% CI |", "|---|---|---|---|"]
             for pnt in g4.detail["dose_response"]:
                 dose = pnt.get("dose") or {}
                 dtxt = (f"strength {dose['strength']:.4g}" if "strength" in dose else
@@ -488,15 +364,15 @@ class Autopsy:
                   f"Every difference below is {_cell(g0n)} − {_cell(g1n)} (groups[0] − groups[1], the effect test's "
                   f"convention): positive where {_cell(g0n)} is higher, so a decrease from {_cell(g0n)} to "
                   f"{_cell(g1n)} is a positive difference."]
-        ds = ((self.effect.detail if self.effect is not None else None) or {}).get("differential_sensitivity")
-        if ds:
-            lines += ["", "## Differential sensitivity (a metric of structure: each group's response to the same "
-                          "coupling)", ""]
-            for ln in describe_differential(ds):
-                lines.append(f"- {_cell(ln)}")
         if self.capture.get("rows"):
             lines += ["", "## The correction and the groups' detection (reported, not a gate)", ""]
             for ln in describe_capture(self.capture):
+                lines.append(f"- {_cell(ln)}")
+        ed = (self.effect.detail if self.effect is not None else None) or {}
+        if (ed.get("detection") or {}).get("records"):
+            lines += ["", "## The pair's detection, equalized after equal depth (change 17'; the verdict's effect is "
+                          "at equal depth and detection)", ""]
+            for ln in describe_detection(ed["detection"], ed, [g0n, g1n]):
                 lines.append(f"- {_cell(ln)}")
         dom = (self.effect.detail.get("domain") if self.effect is not None else None) or {}
         if dom:
@@ -805,13 +681,14 @@ TECHNICAL_DRAWS = 3  # GATE 0's null draws averaged per unit in the groups' tech
 def technical_difference(metric, data, genes, *, group_col: str, groups, within=(), replicate_col: str,
                          estimand, margin: float, alpha: float = 0.05, power: float = 0.8, n_perm: int = 1000,
                          min_replicates: int = 3, spikein_prefix: str = "ERCC-", domain: dict | None = None,
-                         seed: int = 0, n_draws: int = TECHNICAL_DRAWS) -> dict:
+                         seed: int = 0, n_draws: int = TECHNICAL_DRAWS, claim_genes=()) -> dict:
     """v0.4 change 12: the groups' technical difference — the claim's metric on GATE 0's null (each claim
     gene's counts redrawn independently from cells at least as deep within the unit, ``gates.claim_null``:
     no gene-gene biology, each group's own technology), averaged over `n_draws` draws per unit, estimated
     between the groups as the effect is (``effect.estimate_effect``: the same units, domain, correction
-    and test). Equivalent to no difference where its 90% interval lies within ±`margin` (TOST); a null
-    the metric cannot measure (fewer replicates than the test needs) is not equivalent."""
+    and test; for a pair, `claim_genes`, its genes' detection equalized after equal depth, change 17').
+    Equivalent to no difference where its 90% interval lies within ±`margin` (TOST); a null the metric
+    cannot measure (fewer replicates than the test needs) is not equivalent."""
     from .effect import estimate_effect
 
     rng = np.random.default_rng(seed)
@@ -826,7 +703,8 @@ def technical_difference(metric, data, genes, *, group_col: str, groups, within=
         eff, _design = estimate_effect(
             null_metric, data, group_col=group_col, groups=groups, within=within, replicate_col=replicate_col,
             estimand=estimand, sesoi=margin, alpha=alpha, power=power, min_replicates=min_replicates,
-            n_perm=n_perm, spikein_prefix=spikein_prefix, sesoi_scale="observed", seed=seed, domain=domain)
+            n_perm=n_perm, spikein_prefix=spikein_prefix, sesoi_scale="observed", seed=seed, domain=domain,
+            claim_genes=claim_genes)
     except Exception as e:  # never silent: the test is recorded as not done, and the bias keeps blocking
         return dict(equivalent=False, margin=margin, alpha=alpha, error=f"{type(e).__name__}: {e}")
     d = eff.detail
@@ -838,27 +716,25 @@ def technical_difference(metric, data, genes, *, group_col: str, groups, within=
 
 
 def coupling_reference(metric, data, gene_pair, *, group_col: str, groups, replicate_col: str, within=(),
-                       alpha: float = 0.05, n_perm: int = 1000, seed: int = 0, domain: dict | None = None) -> dict:
-    """The engine's own ``norm_pearson`` of the pair beside the user's metric, on the uncorrected data
-    at the replicate level, by stratum and over the strata (v0.4 change 15, decided 2026-10-17: on
-    preprint section 4 ``mi_3bin`` fell where ``norm_pearson`` rose). Not a gate: always shown. With a
-    `domain` both are combined within it, the types weighted equally, as the verdict is. The differences
-    are groups[0] - groups[1], the effect test's convention, as every line of the dossier (the owner's
-    decision of 2026-10-19; v0.4.0.dev0 gave groups[1] - groups[0] here), each with the permutation (or,
-    below its reach, the t) p."""
+                       alpha: float = 0.05, n_perm: int = 1000, seed: int = 0, domain: dict | None = None,
+                       values: dict | None = None) -> dict:
+    """The engine's own ``norm_pearson`` of the pair beside the user's metric, at the replicate level, by
+    stratum and over the strata (v0.4 change 15, decided 2026-10-17: on preprint section 4 ``mi_3bin`` fell
+    where ``norm_pearson`` rose). Not a gate: always shown. With a `domain` both are combined within it, the
+    types weighted equally, as the verdict is. With `values` (``estimate_effect``'s ``detail["_reference"]``)
+    both are on the data the effect is judged on — at equal depth, the pair's detection equalized (change
+    17'), the effect's own draws, so the metric's row over the strata is the effect itself; without them
+    (the effect could not be estimated) on the uncorrected data. The differences are groups[0] - groups[1],
+    the effect test's convention, as every line of the dossier (the owner's decision of 2026-10-19), each
+    with the permutation (or, below its reach, the t) p."""
     from functools import partial
     from .effect import _infer, _replicate_design, _rep_values, _restrict, _units_inference
     from .metrics import norm_pearson
 
-    ref = partial(norm_pearson, gene_a=gene_pair[0], gene_b=gene_pair[1])
     rng = np.random.default_rng(seed)
-    if domain is not None and not domain.get("error"):
-        from .domain import build_units, unit_values
-        units = build_units(domain, data, group_col=group_col, groups=groups, replicate_col=replicate_col)
-        if units is None:
-            return dict(error="the domain holds no type with enough cells and replicates")
-        vals = {k: unit_values(m, data, units) for k, m in (("metric", metric), ("reference", ref))}
+    head = dict(measure="norm_pearson (the engine's)", genes=list(gene_pair), groups=[str(g) for g in groups])
 
+    def unit_rows(units, vals):
         def summary_u(v, sub):
             inf = _units_inference(sub, v, groups, "permutation", alpha, n_perm, rng)
             p = inf["perm"].p if inf["tier"] == "permutation" else inf["p_t"]
@@ -871,33 +747,50 @@ def coupling_reference(metric, data, gene_pair, *, group_col: str, groups, repli
             if sel.any():
                 sub = units.subset(sel)
                 rows.append(dict(stratum=" ".join(st.split("\x1f")) or "all",
-                                 **{k: summary_u(v[sel], sub) for k, v in vals.items()}))
+                                 **{k: summary_u(np.asarray(v, float)[sel], sub) for k, v in vals.items()}))
         rows.append(dict(stratum="over the strata" if len(units.strata) > 1 else "all",
-                         **{k: summary_u(v, units) for k, v in vals.items()}))
-        return dict(measure="norm_pearson (the engine's)", genes=list(gene_pair), groups=[str(g) for g in groups],
-                    data="uncorrected", over="the domain's types, equally weighted", rows=rows)
+                         **{k: summary_u(np.asarray(v, float), units) for k, v in vals.items()}))
+        return rows
+
+    def replicate_rows(design, vals):
+        def summary(v, sub):
+            inf = _infer(v, sub, groups, "permutation", alpha, n_perm, rng)
+            p = inf["perm"].p if inf["tier"] == "permutation" else inf["p_t"]
+            return dict(difference=float(inf["est"]) if np.isfinite(inf["est"]) else None, p=float(p),
+                        tier=inf["tier"], n=inf["n_counts"])
+        rows = []
+        strata = list(dict.fromkeys(design["strata"][r] for r in design["reps"]))
+        for st in strata if len(strata) > 1 else []:
+            reps = [r for r in design["reps"] if design["strata"][r] == st]
+            sub = dict(design, reps=reps, strata={r: "" for r in reps})
+            rows.append(dict(stratum=" ".join(st.split("\x1f")) or "all",
+                             **{k: summary({r: v.get(r) for r in reps}, sub) for k, v in vals.items()}))
+        rows.append(dict(stratum="over the strata" if len(strata) > 1 else "all",
+                         **{k: summary(v, design) for k, v in vals.items()}))
+        return rows
+
+    if values is not None:
+        data_label = ("the effect's: at equal depth, the pair's detection equalized (change 17'), the effect's own "
+                      "draws" if values.get("corrected") else "uncorrected (no thinning correction applies)")
+        vals = dict(metric=values["metric"], reference=values["reference"])
+        if values["kind"] == "units":
+            return dict(head, data=data_label, over="the domain's types, equally weighted",
+                        rows=unit_rows(values["units"], vals))
+        return dict(head, data=data_label, over="the replicates", rows=replicate_rows(values["design"], vals))
+    ref = partial(norm_pearson, gene_a=gene_pair[0], gene_b=gene_pair[1])
+    if domain is not None and not domain.get("error"):
+        from .domain import build_units, unit_values
+        units = build_units(domain, data, group_col=group_col, groups=groups, replicate_col=replicate_col)
+        if units is None:
+            return dict(error="the domain holds no type with enough cells and replicates")
+        vals = {k: unit_values(m, data, units) for k, m in (("metric", metric), ("reference", ref))}
+        return dict(head, data="uncorrected", over="the domain's types, equally weighted", rows=unit_rows(units, vals))
     sd = _restrict(data, group_col, groups)
     design = _replicate_design(sd.obs, group_col, groups, replicate_col, list(within))
     if design["kind"] == "mixed":
         return dict(error=design["reason"])
-    values = {k: _rep_values(m, sd, group_col, groups, replicate_col, design) for k, m in (("metric", metric), ("reference", ref))}
-
-    def summary(vals, sub):
-        inf = _infer(vals, sub, groups, "permutation", alpha, n_perm, rng)
-        p = inf["perm"].p if inf["tier"] == "permutation" else inf["p_t"]
-        return dict(difference=float(inf["est"]) if np.isfinite(inf["est"]) else None, p=float(p),
-                    tier=inf["tier"], n=inf["n_counts"])
-    rows = []
-    strata = list(dict.fromkeys(design["strata"][r] for r in design["reps"]))
-    for st in strata if len(strata) > 1 else []:
-        reps = [r for r in design["reps"] if design["strata"][r] == st]
-        sub = dict(design, reps=reps, strata={r: "" for r in reps})
-        rows.append(dict(stratum=" ".join(st.split("\x1f")) or "all",
-                         **{k: summary({r: v[r] for r in reps}, sub) for k, v in values.items()}))
-    rows.append(dict(stratum="over the strata" if len(strata) > 1 else "all",
-                     **{k: summary(v, design) for k, v in values.items()}))
-    return dict(measure="norm_pearson (the engine's)", genes=list(gene_pair), groups=[str(g) for g in groups],
-                data="uncorrected", over="the replicates", rows=rows)
+    vals = {k: _rep_values(m, sd, group_col, groups, replicate_col, design) for k, m in (("metric", metric), ("reference", ref))}
+    return dict(head, data="uncorrected", over="the replicates", rows=replicate_rows(design, vals))
 
 
 def _sesoi_in_metric_units(prereg: dict, g4: GateResult | None, signal_test) -> dict:
@@ -985,12 +878,14 @@ def run_autopsy(
     ``norm_pearson`` is reported beside the metric (change 15). `delta_min` in a pre-registration is
     recorded and not used.
 
-    For a coupling probe (a metric of structure, ``STRUCTURE_PROBES``) GATE 4 also injects the same change
-    of the construct into the other group, and where the groups differ in detection (genes per cell, the
-    claim's genes left out, ``detection_gap``) the effect is judged less the bound of the difference their
-    unequal responses would make at an equal coupling (``differential_sensitivity``; the owner's decision
-    of 2026-10-19), with the same estimate and test (``_shifted``). The dossier carries it always, and the
-    correction's change of the groups' gap in genes per cell (``capture_summary``).
+    For a claim about a pair (a metric of structure; v0.4 change 17', the owner's decision of 2026-10-19)
+    the correction equalizes the pair's detection after equal depth: in every cell set where the effect is
+    estimated, the group that detects a gene more often has that gene's counts thinned to the other's
+    share (``equalize.equalize_detection``). The effect, GATE 4's response s_m and the line of
+    ``norm_pearson`` are all on the data the effect is judged on: GATE 4 runs on one draw of the
+    correction (equal depth, and for a pair equal detection; ``effect.equalized_for_probe``), for every
+    claim. The dossier carries the detection before and after, the effect at equal depth alone, and the
+    correction's change of the groups' gap in genes per cell (``capture_summary``, change 19).
     """
     name = _metric_name(metric)
     preregistered = bool(prereg)
@@ -1047,19 +942,31 @@ def run_autopsy(
     if domain is not None and domain["n_domain_types"]:
         cells_data = data[_g._domain_mask(data.obs, domain, within)]
 
-    # ---- GATE 4 first: with a construct-scale SESOI its response is the SESOI in the metric's units
+    # a claim about a pair is a claim about structure: its genes' detection is equalized (change 17')
+    equalized_genes = [str(g) for g in gene_pair] if gene_pair else []
+    dom_used = domain is not None and domain["n_domain_types"]
+
+    # ---- GATE 4 first: with a construct-scale SESOI its response is the SESOI in the metric's units,
+    # measured on the data the effect is judged on (one draw of the correction; the owner, 2026-10-19)
     g4 = None
     if signal_test is not None:
         construct = (float(sesoi) if sesoi is not None and sesoi_scale == "construct"
                      and getattr(signal_test, "kind", None) in ("coupling", "module") else None)
-        g4 = _g.gate4_signal_response(metric, data, signal_test,
+        from .effect import equalized_for_probe
+        g4_data, g4_equalized = equalized_for_probe(
+            data, group_col=group_col, groups=groups, within=within, type_col=domain["column"] if dom_used else None,
+            estimand=prereg.get("estimand"), spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
+            claim_genes=equalized_genes, seed=seed_of("gate4:equalize"))
+        g4 = _g.gate4_signal_response(metric, g4_data, signal_test,
                                       direction=signal_direction or getattr(signal_test, "direction", None),
                                       alpha=alpha, seed=seed_of("gate4"),
                                       group_col=group_col if replicate_col else None, groups=groups,
                                       replicate_col=replicate_col, within=within,
                                       domain=domain if domain is not None and domain["n_domain_types"] else None,
-                                      construct_change=construct,
-                                      differential=getattr(signal_test, "kind", None) in STRUCTURE_PROBES)
+                                      construct_change=construct)
+        del g4_data
+        g4.detail["data"] = g4_equalized["data"]
+        g4.detail["equalization"] = {k: v for k, v in g4_equalized.items() if k != "data"}
     sesoi_info = _sesoi_in_metric_units(prereg, g4, signal_test)
     sesoi_metric = sesoi_info["value"]
 
@@ -1083,7 +990,8 @@ def run_autopsy(
             replicate_col=replicate_col, estimand=prereg.get("estimand"), margin=g0.detail["bias_tolerance_abs"],
             alpha=alpha, power=float(prereg["power"]), n_perm=n_perm, min_replicates=int(prereg["min_replicates"]),
             spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
-            domain=domain if domain is not None and domain["n_domain_types"] else None, seed=seed_of("gate0:between"))
+            domain=domain if domain is not None and domain["n_domain_types"] else None, seed=seed_of("gate0:between"),
+            claim_genes=equalized_genes)
         g0 = _g.gate0_between_groups(g0, between)
     results.append(g0)
     g5 = None
@@ -1122,30 +1030,14 @@ def run_autopsy(
         power=float(prereg["power"]), min_replicates=int(prereg["min_replicates"]),
         n_perm=n_perm, spikein_prefix=prereg.get("spikein_prefix", "ERCC-"),
         qc_imbalanced=g1.status == GateStatus.WARN, attenuation_half=att_half,
-        sesoi_scale=effect_scale_name, seed=seed_of("effect"), domain=domain, sesoi_label=sesoi_info.get("label"))
-    eff, design = estimate_effect(metric, data, **effect_args)
-    # the differential sensitivity of a metric of structure (the owner's decision of 2026-10-19): where the
-    # groups' unequal responses to the same coupling would make a difference on the claim's side beyond the
-    # tolerance, the effect is judged less its bound — the same estimate and test on values shifted by it
-    if g4 is not None and "differential" in g4.detail:
-        dom_used = domain is not None and domain["n_domain_types"]
-        try:
-            from .composition import technical_covariates
-            gap_tech = technical_covariates(
-                data, group_col, groups, replicate_col, within, domain=domain if dom_used else None,
-                pool=specificity_pool, alpha=alpha, n_perm=n_perm, rng=np.random.default_rng(seed_of("differential")),
-                exclude=claim_genes)
-        except Exception as e:  # the premise is then not tested, and stays open
-            gap_tech = dict(error=f"{type(e).__name__}: {e}")
-        gap = detection_gap(gap_tech, "the domain's cells" if dom_used else "all cells")
-        ds = differential_sensitivity(g4.detail["differential"], eff, prereg, sesoi_metric, gap)
-        if ds.get("applies") and eff.status == "DETECTED":
-            try:
-                adj, _ = estimate_effect(_shifted(metric, group_col, groups[0], ds["offset"]), data, **effect_args)
-                ds["adjusted"] = _adjusted_record(adj, ds["side"])
-            except Exception as e:  # never silent: the effect is then not judged less the bound, and fails
-                ds["adjusted"] = dict(error=f"{type(e).__name__}: {e}", passes=False)
-        eff.detail["differential_sensitivity"] = ds
+        sesoi_scale=effect_scale_name, seed=seed_of("effect"), domain=domain, sesoi_label=sesoi_info.get("label"),
+        claim_genes=equalized_genes)
+    from functools import partial
+    from .metrics import norm_pearson
+    reference_fn = (partial(norm_pearson, gene_a=gene_pair[0], gene_b=gene_pair[1])
+                    if gene_pair is not None and replicate_col is not None else None)
+    eff, design = estimate_effect(metric, data, reference=reference_fn, **effect_args)
+    reference_values = eff.detail.pop("_reference", None)
     if mv.status in ("FAIL", "DEGENERATE"):
         eff.detail["dossier_only"] = True
         eff = Assessment(eff.status, f"(the dossier: estimated after metric validity's {mv.status}, which "
@@ -1164,7 +1056,8 @@ def run_autopsy(
             estimand=prereg.get("estimand"), sesoi=effect_sesoi,
             primary_effect=eff.detail.get("effect"), alpha=alpha,
             min_replicates=int(prereg["min_replicates"]), n_perm=n_perm,
-            attenuation_half=att_half, seed=seed_of("gate6"), sesoi_scale=effect_scale_name)
+            attenuation_half=att_half, seed=seed_of("gate6"), sesoi_scale=effect_scale_name,
+            claim_genes=equalized_genes)
         results.append(g6)
     rp = _replication(g6)
 
@@ -1190,7 +1083,8 @@ def run_autopsy(
         autopsy.reference = coupling_reference(metric, data, gene_pair, group_col=group_col, groups=groups,
                                                replicate_col=replicate_col, within=within, alpha=alpha,
                                                n_perm=n_perm, seed=seed_of("reference"),
-                                               domain=domain if domain is not None and domain["n_domain_types"] else None)
+                                               domain=domain if domain is not None and domain["n_domain_types"] else None,
+                                               values=reference_values)
     if specificity and replicate_col is not None and claim_genes:
         from . import specificity as _spec
         metric_of = (None if (kind == "pair" and pair_metric is None) or (kind == "set" and gene_metric is None) else

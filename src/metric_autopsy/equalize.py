@@ -12,6 +12,11 @@ deeper group's counts:
   would delete the signal itself. The only way to separate capture from content is an
   external standard. With spike-ins (e.g. ERCC) the groups are thinned to equal
   **spike-in capture**; without one the comparison is unidentifiable.
+
+After equal depth, a claim about a pair (a metric of structure) has its genes' detection equalized
+too (``equalize_detection``, v0.4 change 17', the owner's decision of 2026-10-19): equal depth leaves
+the groups' detection unequal where their libraries differ in complexity (on preprint §4 it widened the
+gap in genes per cell from 24% to 29%), and a metric of structure reads detection.
 """
 from __future__ import annotations
 
@@ -110,3 +115,84 @@ def _ks_distance(x: np.ndarray, y: np.ndarray) -> float:
     fx = np.searchsorted(x, grid, side="right") / len(x)
     fy = np.searchsorted(y, grid, side="right") / len(y)
     return float(np.max(np.abs(fx - fy)))
+
+
+def detection_keep_probability(x, target: float) -> float:
+    """The keep probability p at which binomial thinning of the counts `x` (one gene, one group's cells of
+    one cell set) leaves an expected share `target` of the cells with a count:
+    mean(1 - (1 - p)^x) = target, solved by bisection (the share rises with p, from 0 at p = 0 to the cells'
+    share now at p = 1). 1 where the share already is at or below the target, 0 where the target is 0."""
+    x = np.asarray(x, dtype=np.int64)
+    n, pos = len(x), x[x > 0]
+    if n == 0 or len(pos) == 0 or target >= len(pos) / n:
+        return 1.0
+    if target <= 0:
+        return 0.0
+    vals, counts = np.unique(pos, return_counts=True)
+    lo, hi = 0.0, 1.0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        if float((counts * (1.0 - (1.0 - mid) ** vals)).sum()) / n < target:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def equalize_detection(data: SimpleData, genes: Sequence[str], group_col: str, groups: tuple, *,
+                       within: Sequence[str] = (), rng=None) -> list:
+    """Equalize the claim genes' detection between the groups, after equal depth (v0.4 change 17', the
+    owner's decision of 2026-10-19), in place on `data` (a copy the thinning made; its X dense).
+
+    In every cell set of the `within` columns (the strata, and the cell type where the effect is estimated
+    per type) and for each gene of `genes`, the group whose cells detect the gene in the larger share has
+    the gene's counts thinned binomially, with one keep probability for the set
+    (``detection_keep_probability``): its expected share of cells with a count becomes the other group's.
+    No threshold: where the shares are equal the probability is 1, and near it the thinning is slight. The
+    other genes, and the cells' depth otherwise, are left as they are. Returns one record per set and gene:
+    both groups' shares before and after, the thinned group and its keep probability."""
+    rng = rng if rng is not None else np.random.default_rng(0)
+    X = data.X
+    if not isinstance(X, np.ndarray):
+        raise TypeError("equalize_detection works on the dense copy that thin_to_match makes")
+    names = [str(v) for v in data.var_names]
+    cols = [(str(g), names.index(str(g))) for g in genes if str(g) in names]
+    labels = np.asarray(data.obs[group_col])
+    g0, g1 = (str(g) for g in groups)
+    out = []
+    for stratum, smask in stratum_masks(data.obs, within):
+        a = np.where(smask & (labels == groups[0]))[0]
+        b = np.where(smask & (labels == groups[1]))[0]
+        if len(a) == 0 or len(b) == 0:
+            continue
+        for gene, j in cols:
+            da, db = float((X[a, j] > 0).mean()), float((X[b, j] > 0).mean())
+            hi, target, thinned = (a, db, g0) if da > db else (b, da, g1)
+            p = detection_keep_probability(X[hi, j], target) if da != db else 1.0
+            if p < 1.0:
+                X[hi, j] = rng.binomial(X[hi, j].astype(np.int64), p).astype(float)
+            out.append(dict(cells=stratum or "pooled", gene=gene, before={g0: da, g1: db},
+                            after={g0: float((X[a, j] > 0).mean()), g1: float((X[b, j] > 0).mean())},
+                            thinned_group=thinned if p < 1.0 else None, keep_p=float(p),
+                            n_cells={g0: int(len(a)), g1: int(len(b))}))
+    return out
+
+
+def detection_shares(data, genes: Sequence[str], group_col: str, groups: tuple, *, within: Sequence[str] = ()) -> list:
+    """Per cell set of the `within` columns and gene of `genes`: each group's share of cells with a count
+    (the dossier's uncorrected detection, beside ``equalize_detection``'s)."""
+    names = [str(v) for v in data.var_names]
+    cols = [(str(g), names.index(str(g))) for g in genes if str(g) in names]
+    labels = np.asarray(data.obs[group_col])
+    g0, g1 = (str(g) for g in groups)
+    columns = {gene: np.asarray(as_dense(data.X[:, [j]]), dtype=float).ravel() for gene, j in cols}
+    out = []
+    for stratum, smask in stratum_masks(data.obs, within):
+        a, b = smask & (labels == groups[0]), smask & (labels == groups[1])
+        if not a.any() or not b.any():
+            continue
+        for gene, _ in cols:
+            x = columns[gene]
+            out.append(dict(cells=stratum or "pooled", gene=gene,
+                            shares={g0: float((x[a] > 0).mean()), g1: float((x[b] > 0).mean())}))
+    return out

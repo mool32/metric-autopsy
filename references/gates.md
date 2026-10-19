@@ -27,7 +27,7 @@ API, the CLI and the MCP server) from **four independent fields**, each answerin
 different question. The verdict comes with its **cause** (`report.decide_cause`; `cause` in the
 JSON report): one code per line of the rule below, e.g. `metric_invalid_gate4` (shown blind to the
 injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`,
-`opposite_direction`, `differential_sensitivity`.
+`opposite_direction`.
 
 | Field | Question | Statuses |
 |---|---|---|
@@ -50,16 +50,11 @@ injected signal), `metric_invalid_gate0` (a nuisance bias), `explained_by_depth`
 10. a nuisance bias that could not be sized (no SESOI) → **INCONCLUSIVE**
 11. no pre-registered `direction` → **INCONCLUSIVE**; the effect is in the direction opposite to
     the pre-registered one → **NOT SUPPORTED**
-12. a metric of structure (a coupling probe) whose groups differ in detection, where the difference
-    their unequal responses to the same coupling would make at an equal coupling lies on the claim's
-    side beyond `bias_tolerance` × SESOI: the effect less its bound not detected → **NOT SUPPORTED**
-    (`differential_sensitivity`; the differential sensitivity, v0.4 change 17, GATE 4 below); that
-    difference not sizeable → **INCONCLUSIVE** (same cause)
-13. replication NOT_REPLICATED → **NOT SUPPORTED**
-14. the effect, detected in the claimed direction, is shown smaller than the SESOI by the same
+12. replication NOT_REPLICATED → **NOT SUPPORTED**
+13. the effect, detected in the claimed direction, is shown smaller than the SESOI by the same
     report's TOST (v0.4) → **EFFECT BELOW SESOI** (`effect_below_sesoi`)
-15. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
-16. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
+14. judgment gates 4 and 7 pending (the default) → **INCONCLUSIVE**
+15. → **SUPPORTED — replicated**, or **SUPPORTED (provisional until replicated)**
 
 **The claim's domain (v0.4, decided 2026-10-18).** With `composition=` naming a cell-type column
 (first), the effect is judged in the claim's domain: the types where both genes of a pair are
@@ -72,6 +67,21 @@ weighted equally (strata by precision), on (replicate, type) units at equal dept
 (stratum, type), with its interval over the replicates (`combined.py`). GATE 4 and GATE 0 run on the
 domain's cells. The whole mixture's estimate, the estimate outside the domain and each type's are
 reported, not judged.
+
+**The pair's detection (v0.4 change 17', the owner's decision of 2026-10-19).** For a claim about a
+pair, a metric of structure, the correction equalizes the pair's detection after equal depth: in every
+cell set where the effect is estimated (each stratum; with a domain, each stratum and cell type), the
+group that detects a gene of the pair in the larger share of its cells has that gene's counts thinned
+binomially, one keep probability for the set, to the other group's share
+(`equalize.equalize_detection`), from a random stream of its own keyed like every draw. No threshold: at
+an equal detection the probability is near 1. The effect, and so the verdict, is at equal depth and
+detection, by the effect's usual rule (no new cause); GATE 4's response s_m, the SESOI in the metric's
+units, is measured on the same data (one draw of the correction, for every claim:
+`effect.equalized_for_probe`), and so is the line of `norm_pearson`. The dossier gives each gene's
+detection per group uncorrected, at equal depth and after, and the effect at equal depth alone. A
+difference in detection that equalizing the pair's shares does not reach — dropout correlated within a
+cell by a wider spread of capture in one group — is a known limitation (the acceptance's case (vi),
+`validation/exploratory/detection_equalization.log`).
 
 **The dossier** (v0.4) is everything reported beside the verdict; every difference in it is
 `groups[0] − groups[1]`, the effect test's convention, which its header names (the owner's decision of
@@ -192,9 +202,10 @@ classified:
   toward zero and cannot create one. It is **reported, not failed** — the fraction of signal lost
   goes to `design_adequacy` as a power check (below). Where the groups differ in detection it is not
   equal: the same coupling then moves the metric less in the poorer group, and an equal coupling
-  shows as a difference. GATE 0 perturbs the pooled cells and cannot see that; for a metric of
-  structure the differential sensitivity sizes it (GATE 4, v0.4 change 17: on preprint §4 extra
-  dropout removed 64% of the signal while the young units detected 1,166 more genes per cell).
+  shows as a difference. GATE 0 perturbs the pooled cells and cannot see that; for a claim about a
+  pair the effect field equalizes the pair's detection after equal depth (v0.4 change 17', above: on
+  preprint §4 extra dropout removed 64% of the signal while the young units detected 1,166 more genes
+  per cell).
 - **level_shift** — the metric has no material gene-gene structure (e.g. a mean score, or a
   signal above the null smaller than `tol` × the effect scale), so attenuation and bias
   cannot be told apart. A shift larger than `tol` × the effect scale (observed difference or
@@ -398,22 +409,13 @@ demonstrate response, except where GATE 4 ran on the analysed construct and is U
 on another pair does not stand in for it. With neither, the metric is **UNTESTED** and no
 positive verdict is reachable.
 
-**The differential sensitivity (v0.4 change 17, the owner's decision of 2026-10-19).** For a metric of
-structure (a coupling probe; a metric of level such as a module's expression is not checked), the
-other group gets the same change of the construct as well, dosed by its own biological variances, on
-the same units. The more sensitive group is the one whose response k is larger; with M the metric
-minus its null there (GATE 0's null of the claim's genes, 3 draws per unit), the difference at an
-equal coupling is A = M × (1 − k_poor / k_rich), more sensitive minus less, with a delta-method
-interval over the replicates (`gates._differential`). It is a line of the dossier always. It decides
-only where the groups differ in detection — the genes detected per cell, the claim's genes left out,
-permutation p below alpha on the claim's cells (`report.detection_gap`): without such a difference
-the groups' responses differ by their biology too (a coupling that changes with the genes' variance
-changes the metric's reliability; on the clean synthetic data of the tests the check would remove a
-true effect). Where A lies on the claim's side and its bound there exceeds `bias_tolerance` × SESOI,
-the effect is judged less that bound — the same estimate and test on values shifted by it — and the
-verdict falls (`differential_sensitivity`) where that is not detected. A metric not linear in the
-coupling (`mi_3bin`) responds more where the coupling is larger, so with a real difference of
-coupling A also takes a part of it: conservative (`validation/exploratory/differential_sensitivity.log`).
+**GATE 4's data (v0.4, the owner's decision of 2026-10-19).** The probe is injected into one draw of the
+effect's correction — equal depth (or spike-in capture) and, for a pair, the pair's detection equalized —
+so that s_m, the SESOI in the metric's units, is measured on the data the effect is judged on. The
+differential sensitivity (change 17: the same change of the construct injected into each group, the
+ratio of the responses and the difference it would make at an equal coupling) was coded and rejected the
+same day by the owner: a group's response to the probe depends on its own biology, so subtracting it
+removes biology too (`validation/exploratory/differential_sensitivity.log`, `v0.4_spec.md`, section 17).
 
 **Judgment part.** Enumerate every scenario that could move the metric and decide which your
 result is consistent with:

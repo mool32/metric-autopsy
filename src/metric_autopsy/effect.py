@@ -49,7 +49,7 @@ from typing import Sequence
 import numpy as np
 
 from .core import Assessment, SimpleData
-from .equalize import looks_like_counts, spikein_columns, thin_to_match
+from .equalize import detection_shares, equalize_detection, looks_like_counts, spikein_columns, thin_to_match
 from .gates import _as_simple, _safe_call
 from . import qc as _qc
 from .stats import mde, nested_t, paired_t, permutation_test_nested, permutation_test_paired, t_ppf
@@ -450,10 +450,31 @@ def _summary(inf: dict | None, alpha: float) -> dict | None:
                 test=inf["test"], tier=inf["tier"], detected=inf["detected"], n_replicates=inf["n_counts"])
 
 
+def _mean_over_sets(sets) -> np.ndarray:
+    """Per unit, the mean of its finite values over the equalized draws (NaN where none is finite)."""
+    stack = np.array(sets)
+    ok = np.isfinite(stack)
+    return np.where(ok.any(axis=0), np.where(ok, stack, 0.0).sum(axis=0) / np.maximum(ok.sum(axis=0), 1), np.nan)
+
+
+def _mean_over_dicts(per_set: list, reps) -> dict:
+    """Per replicate, the mean of its values over the equalized draws (None where it has none)."""
+    out = {}
+    for r in reps:
+        xs = [p[r] for p in per_set if p.get(r) is not None]
+        out[r] = float(np.mean(xs)) if xs else None
+    return out
+
+
 def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, within, replicate_col, correction,
-                   tier, alpha, n_perm, n_equalize, rng, max_exact, min_replicates, spikein_prefix) -> dict:
+                   tier, alpha, n_perm, n_equalize, rng, max_exact, min_replicates, spikein_prefix,
+                   claim_genes=(), det_rng=None, dossier_rng=None, reference=None) -> dict:
     """The claim within its domain (types equally weighted), raw and corrected, and beside it the types
-    outside the domain and every type on its own. The correction thins within each stratum and type."""
+    outside the domain and every type on its own. The correction thins within each stratum and type; for a
+    pair (`claim_genes`, change 17') each draw at equal depth then has the claim genes' detection equalized
+    within each stratum and type (``equalize_detection``, from `det_rng`), and the same estimate at equal
+    depth alone is kept for the dossier. `reference` (the engine's ``norm_pearson``) is computed on the same
+    data, raw and corrected, for the line beside the metric."""
     from .domain import build_units, unit_values
 
     lab = np.asarray(sd.obs[dom["column"]]).astype(str)
@@ -475,23 +496,31 @@ def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, with
     if not in_dom.any():
         return dict(empty=True)
     raw = unit_values(metric, typed, units)
-    eq_info, cc = None, None
+    ref_raw = unit_values(reference, typed, units) if reference is not None else None
+    eq_info, cc, det_info, corr_depth, ref_corr = None, None, None, None, None
+    cells_by = list(within) + [dom["column"]]
     if correction in THINNING:
         totals = _totals(typed, correction, spikein_prefix)
-        sets = []
+        sets, sets_depth, ref_sets = [], [], []
         for i in range(max(1, n_equalize)):
-            eq, info = thin_to_match(typed, group_col, groups, totals=totals, within=list(within) + [dom["column"]],
-                                     rng=rng)
+            eq, info = thin_to_match(typed, group_col, groups, totals=totals, within=cells_by, rng=rng)
             eq_info = eq_info or info
             if i == 0:
                 cc = capture_check(typed, eq, group_col, groups, replicate_col)
+            if claim_genes:
+                sets_depth.append(unit_values(metric, eq, units))
+                det = equalize_detection(eq, claim_genes, group_col, groups, within=cells_by, rng=det_rng)
+                det_info = det_info or det
             sets.append(unit_values(metric, eq, units))
+            if reference is not None:
+                ref_sets.append(unit_values(reference, eq, units))
             del eq
-        stack = np.array(sets)
-        ok = np.isfinite(stack)
-        corr = np.where(ok.any(axis=0), np.where(ok, stack, 0.0).sum(axis=0) / np.maximum(ok.sum(axis=0), 1), np.nan)
+        corr = _mean_over_sets(sets)
+        corr_depth = _mean_over_sets(sets_depth) if sets_depth else None
+        ref_corr = _mean_over_sets(ref_sets) if ref_sets else None
     else:
         corr = raw
+        ref_corr = ref_raw
     # the units where the metric gives no value, uncorrected or at equal depth, are left out and listed;
     # an Estimator counts a replicate by its units, so they must go before it is built
     measured = np.isfinite(raw) & np.isfinite(corr)
@@ -501,16 +530,26 @@ def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, with
                   for r, t, d, v, c, m in zip(units.unit_rep, units.unit_type, in_dom, raw, corr, measured)]
     unmeasured = [u for u in unit_table if not u["measured"]]
     n_before = _units_n_eff(units.subset(in_dom))
-    units, raw, corr, in_dom = units.subset(measured), raw[measured], corr[measured], in_dom[measured]
+    keep = measured
+    units, raw, corr, in_dom = units.subset(keep), raw[keep], corr[keep], in_dom[keep]
+    corr_depth = corr_depth[keep] if corr_depth is not None else None
+    ref_raw = ref_raw[keep] if ref_raw is not None else None
+    ref_corr = ref_corr[keep] if ref_corr is not None else None
     n_after = _units_n_eff(units.subset(in_dom)) if in_dom.any() else 0
+    detection = (dict(genes=list(claim_genes), cells="each stratum and cell type of the domain",
+                      records=_detection_records(typed, claim_genes, group_col, groups, cells_by, det_info,
+                                                 [t for ts in dom["domain"].values() for t in ts], dom["column"]))
+                 if det_info is not None else None)
     if unmeasured and (not in_dom.any() or n_after < min_replicates <= n_before):
         return dict(empty=False, unmeasured=unmeasured, unmeasured_insufficient=True, n_before=n_before,
                     n_after=n_after, n_units=int(len(unit_table)), n_cells=int(typed.n_obs), units=unit_table,
                     types=sorted({u["type"] for u in unit_table if u["in_domain"]}), eq_info=eq_info,
-                    capture_check=cc, outside=None, per_type=[])
+                    capture_check=cc, outside=None, per_type=[], detection=detection)
     dom_units = units.subset(in_dom)
     inf = _units_inference(dom_units, corr[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     inf_raw = _units_inference(dom_units, raw[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
+    inf_depth = (_units_inference(dom_units, corr_depth[in_dom], groups, tier, alpha, n_perm, dossier_rng, max_exact,
+                                  min_replicates) if corr_depth is not None else None)
     outside = None
     if (~in_dom).any():
         out_units = units.subset(~in_dom)
@@ -533,10 +572,56 @@ def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, with
                    raw=_summary(_units_inference(sub, raw[sel], groups, tier, alpha, n_perm, rng, max_exact,
                                                  min_replicates), alpha))
         per_type.append(rec)
-    return dict(empty=False, inf=inf, inf_raw=inf_raw, outside=outside, per_type=per_type, eq_info=eq_info,
-                capture_check=cc, n_units=int(in_dom.sum()), n_cells=int(typed.n_obs), units=unit_table,
-                types=sorted({units.types[t] for t in units.unit_type[in_dom]}), unmeasured=unmeasured,
-                unmeasured_insufficient=False, n_before=n_before, n_after=n_after)
+    ref = (dict(kind="units", units=dom_units, metric=corr[in_dom], reference=ref_corr[in_dom],
+                raw_metric=raw[in_dom], raw_reference=ref_raw[in_dom], corrected=correction in THINNING)
+           if reference is not None else None)
+    return dict(empty=False, inf=inf, inf_raw=inf_raw, inf_depth=inf_depth, outside=outside, per_type=per_type,
+                eq_info=eq_info, capture_check=cc, n_units=int(in_dom.sum()), n_cells=int(typed.n_obs),
+                units=unit_table, types=sorted({units.types[t] for t in units.unit_type[in_dom]}),
+                unmeasured=unmeasured, unmeasured_insufficient=False, n_before=n_before, n_after=n_after,
+                detection=detection, _reference=ref)
+
+
+def _detection_records(raw_data, genes, group_col, groups, cells_by, det_info, keep_types=None, type_col=None) -> list:
+    """The dossier's detection of the claim's genes per cell set: each group's share of cells with a count,
+    uncorrected, at equal depth and after the equalization (the first draw's), with the thinned group and
+    its keep probability; with `keep_types`, only the cell sets of those types."""
+    raw = {(r["cells"] if isinstance(r["cells"], str) else tuple(sorted(r["cells"].items())), r["gene"]): r["shares"]
+           for r in detection_shares(raw_data, genes, group_col, groups, within=cells_by)}
+    out = []
+    for r in det_info or []:
+        cells = r["cells"]
+        if keep_types is not None and type_col is not None and isinstance(cells, dict) and cells.get(type_col) not in keep_types:
+            continue
+        key = (cells if isinstance(cells, str) else tuple(sorted(cells.items())), r["gene"])
+        out.append(dict(cells=cells, gene=r["gene"], raw=raw.get(key), equal_depth=r["before"], after=r["after"],
+                        thinned_group=r["thinned_group"], keep_p=r["keep_p"], n_cells=r["n_cells"]))
+    return out
+
+
+def equalized_for_probe(data, *, group_col: str, groups: tuple, within: Sequence[str] = (), type_col: str | None = None,
+                        estimand: str | None = None, spikein_prefix: str = "ERCC-", claim_genes: Sequence[str] = (),
+                        seed: int = 0) -> tuple:
+    """The data GATE 4 measures its response on (the owner's decision of 2026-10-19: the SESOI in the metric's
+    units is measured on the data the effect is judged on, at equal depth and, for a pair, at equal detection).
+    One draw of the effect's correction: the comparison's cells thinned to equal depth (or spike-in capture)
+    within each stratum, and each cell type with `type_col` (the domain's), then for a pair the claim genes'
+    detection equalized in the same cell sets (``equalize.equalize_detection``), from streams keyed by
+    `seed`. Without a thinning correction (no estimand that implies one, or no counts) the data as they
+    are. Returns (data, a record of what was done)."""
+    sd = _restrict(data, group_col, groups)
+    correction = equalizing_correction(sd, estimand, spikein_prefix)
+    if correction not in THINNING:
+        return data, dict(correction=None, data="as they are (no thinning correction)")
+    cells_by = list(within) + ([type_col] if type_col else [])
+    eq, info = thin_to_match(sd, group_col, groups, totals=_totals(sd, correction, spikein_prefix), within=cells_by,
+                             rng=np.random.default_rng([int(seed), 4]))
+    genes = [str(g) for g in (claim_genes or ())]
+    det = (equalize_detection(eq, genes, group_col, groups, within=cells_by, rng=np.random.default_rng([int(seed), 4, 17]))
+           if genes else None)
+    what = "equal depth" if correction == "depth_thinning" else "equal spike-in capture"
+    return eq, dict(correction=correction, cells_by=cells_by, depth=info, detection=det,
+                    data=what + (", the claim genes' detection equalized" if genes else ""))
 
 
 def _units_n_eff(units) -> int:
@@ -571,6 +656,8 @@ def estimate_effect(
     max_exact: int = 20000,
     domain: dict | None = None,
     sesoi_label: str | None = None,
+    claim_genes: Sequence[str] = (),
+    reference=None,
 ) -> tuple[Assessment, dict]:
     """Estimate the between-group effect; return (effect assessment, design info).
 
@@ -580,10 +667,25 @@ def estimate_effect(
     floor (``design_floor``, v0.4 change 4) is the margin of absence, and the report says that absence
     is confirmed only for effects of at least the floor. With a `domain` (``domain.claim_domain``) the
     effect is the claim's combined estimate within the domain's cell types, types weighted equally, and
-    the whole mixture's estimate goes into the detail beside it (v0.4, decided 2026-10-18)."""
+    the whole mixture's estimate goes into the detail beside it (v0.4, decided 2026-10-18).
+
+    `claim_genes` (a claim about a pair, a metric of structure: v0.4 change 17', the owner's decision of
+    2026-10-19): after equal depth, each draw has the claim genes' detection equalized
+    (``equalize.equalize_detection``) in every cell set where the effect is estimated (each stratum; with a
+    domain, each stratum and type), from a random stream of its own keyed by `seed`, so the thinning to
+    equal depth draws as before; the corrected effect, and so the verdict, is at equal depth and detection.
+    The same estimate at equal depth alone (``detail["equal_depth_effect"]``) and each group's detection of
+    each gene, uncorrected, at equal depth and after (``detail["detection"]``), go to the dossier. Without a
+    thinning correction (no counts) nothing is equalized. `reference` (the engine's ``norm_pearson`` for
+    the line beside the metric) is computed on the same data, raw and corrected
+    (``detail["_reference"]``, for ``report.coupling_reference``)."""
     if sesoi_scale not in SESOI_SCALES:
         raise ValueError(f"sesoi_scale must be one of {SESOI_SCALES}, not {sesoi_scale!r}")
     rng = np.random.default_rng(seed)
+    claim_genes = [str(g) for g in (claim_genes or ())]
+    # change 17': the detection's thinning and the dossier's extra tests draw from streams of their own
+    det_rng = np.random.default_rng([int(seed), 17]) if claim_genes else None
+    dossier_rng = np.random.default_rng([int(seed), 17, 1]) if claim_genes else None
     within = list(within)
     sd = _restrict(data, group_col, groups)
     design = assess_design(sd, group_col=group_col, groups=groups, within=within,
@@ -594,17 +696,26 @@ def estimate_effect(
 
     cell_raw = _cell_effect(metric, sd, group_col, groups)
     eq_info, cc, per_set, cell_corr_vals = None, None, [], []
-    if design["identifiable"] and design["correction"] in THINNING:
+    det_info, per_set_depth, ref_set = None, [], []
+    equalizes = design["identifiable"] and design["correction"] in THINNING
+    if equalizes:
         for i in range(max(1, n_equalize)):
             eq, info = thin_to_match(sd, group_col, groups, totals=totals, within=within, rng=rng)
             eq_info = eq_info or info
             if i == 0:
                 cc = capture_check(sd, eq, group_col, groups, replicate_col)
+            if claim_genes:
+                if rep_design is not None:
+                    per_set_depth.append(_rep_values(metric, eq, group_col, groups, replicate_col, rep_design))
+                det = equalize_detection(eq, claim_genes, group_col, groups, within=within, rng=det_rng)
+                det_info = det_info or det
             v = _cell_effect(metric, eq, group_col, groups)
             if v is not None:
                 cell_corr_vals.append(v)
             if rep_design is not None:
                 per_set.append(_rep_values(metric, eq, group_col, groups, replicate_col, rep_design))
+                if reference is not None:
+                    ref_set.append(_rep_values(reference, eq, group_col, groups, replicate_col, rep_design))
             del eq
     else:
         if cell_raw is not None:
@@ -627,30 +738,45 @@ def estimate_effect(
 
     # ---- 3. replicate values and the graded test ----------------------------------------
     raw_vals = _rep_values(metric, sd, group_col, groups, replicate_col, rep_design)
+    ref_raw = _rep_values(reference, sd, group_col, groups, replicate_col, rep_design) if reference is not None else None
     if not per_set:
         per_set = [raw_vals]
-    corr_vals = {}
-    for r in rep_design["reps"]:
-        xs = [p[r] for p in per_set if p.get(r) is not None]
-        corr_vals[r] = float(np.mean(xs)) if xs else None
+    corr_vals = _mean_over_dicts(per_set, rep_design["reps"])
+    corr_depth = _mean_over_dicts(per_set_depth, rep_design["reps"]) if per_set_depth else None
+    ref_corr = _mean_over_dicts(ref_set, rep_design["reps"]) if ref_set else ref_raw
     # a replicate where the metric gives no value (not measured) leaves both tests and is listed
     raw_vals, corr_vals, unmeasured, n_before, n_after = _measured(raw_vals, corr_vals, rep_design, groups)
+    kept = {r for r, v in corr_vals.items() if v is not None}
+    if corr_depth is not None:
+        corr_depth = {r: (v if r in kept else None) for r, v in corr_depth.items()}
 
     inf = _infer(corr_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     inf_raw = _infer(raw_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
+    inf_depth = (_infer(corr_depth, rep_design, groups, tier, alpha, n_perm, dossier_rng, max_exact, min_replicates)
+                 if corr_depth is not None else None)
     mixture = None
     detail["unmeasured"] = unmeasured
+    detection = (dict(genes=claim_genes, cells="each stratum" if within else "all the comparison's cells",
+                      records=_detection_records(sd, claim_genes, group_col, groups, within, det_info))
+                 if det_info is not None else None)
+    reference_values = (dict(kind="replicates", design=rep_design, metric=corr_vals, reference=ref_corr,
+                             raw_metric=raw_vals, raw_reference=ref_raw, corrected=equalizes)
+                        if reference is not None else None)
     if domain is not None and not domain.get("error"):
         mixture = dict(corrected=_summary(inf, alpha), raw=_summary(inf_raw, alpha),
                        replicate_values=[dict(replicate=r, raw=raw_vals.get(r), corrected=corr_vals.get(r))
                                          for r in rep_design["reps"]],
                        equalization=eq_info, unmeasured=unmeasured)
+        if claim_genes:
+            mixture.update(equal_depth=_summary(inf_depth, alpha), detection=detection)
         dres = _domain_effect(metric, sd, domain, group_col=group_col, groups=groups, within=within,
                               replicate_col=replicate_col, correction=design["correction"], tier=tier, alpha=alpha,
                               n_perm=n_perm, n_equalize=n_equalize, rng=rng, max_exact=max_exact,
-                              min_replicates=min_replicates, spikein_prefix=spikein_prefix)
+                              min_replicates=min_replicates, spikein_prefix=spikein_prefix,
+                              claim_genes=claim_genes, det_rng=det_rng, dossier_rng=dossier_rng, reference=reference)
         detail["mixture"] = mixture
-        detail["domain"] = {k: v for k, v in dres.items() if k not in ("inf", "inf_raw", "eq_info")}
+        detail["domain"] = {k: v for k, v in dres.items() if k not in ("inf", "inf_raw", "inf_depth", "eq_info",
+                                                                         "detection", "_reference")}
         detail["domain"]["rule"] = domain["rule"]
         if dres["empty"]:
             detail.update(domain_empty=True, effect=None, raw_effect=None)
@@ -665,7 +791,8 @@ def estimate_effect(
             return Assessment("NOT_ESTIMABLE", _unmeasured_reason(
                 n_off, n_dom, dres["n_after"], min_replicates, "units (replicate, type) of the domain"),
                 [], detail), public_design(design)
-        inf, inf_raw = dres["inf"], dres["inf_raw"]
+        inf, inf_raw, inf_depth = dres["inf"], dres["inf_raw"], dres["inf_depth"]
+        detection, reference_values = dres["detection"], dres["_reference"]
         if dres["eq_info"] is not None:
             eq_info = dict(dres["eq_info"], capture_check=dres["capture_check"])
             depth_ratio = eq_info["depth_ratio"]
@@ -698,6 +825,11 @@ def estimate_effect(
                           for r in rep_design["reps"]],
         estimate_over=("the domain's cell types, equally weighted" if mixture is not None else "the replicates"),
     )
+    if claim_genes:
+        detail.update(detection=detection, equal_depth_effect=_summary(inf_depth, alpha),
+                      corrected_for=("depth and the claim genes' detection" if equalizes else "nothing (no counts)"))
+    if reference_values is not None:
+        detail["_reference"] = reference_values
     raw_est, est = inf_raw["est"], inf["est"]
     retained = est / raw_est if (raw_est and np.isfinite(raw_est) and raw_est != 0) else float("nan")
     detail["retained"] = float(retained) if np.isfinite(retained) else float("nan")

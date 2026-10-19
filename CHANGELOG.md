@@ -8,31 +8,47 @@ comparability.
 ## [0.4.0.dev0] — in development, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-19):
-1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 17, 18 and 19, and the claim's domain
+1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 17', 18 and 19, and the claim's domain
 (the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
 `validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
-`validation/exploratory/real_pilot_5_summary.log`, and the decisions of 2026-10-19, after the fourth run,
-`validation/exploratory/real_pilot_6_summary.md`). Validation v1's scope stays the tag
-`v0.3.0-prereg`'s: nothing here is validated.
+`validation/exploratory/real_pilot_5_summary.log`, and the two sets of decisions of 2026-10-19, after the
+fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 17's acceptance,
+`validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day.
+Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
-- **The differential sensitivity of a metric of structure (change 17, the owner's decisions of
-  2026-10-19).** GATE 0's premise that an attenuation cannot create an effect holds only where it is the
-  same in both groups; on preprint §4 extra dropout removed 64% of `mi_3bin`'s signal while the young
-  units detected 1,166 more genes per cell. For a coupling probe (`report.STRUCTURE_PROBES`; a metric of
-  level is not checked) GATE 4 now injects the same change of the construct into the other group as
-  well, dosed by its own biological variances, from a random stream of its own (GATE 4's numbers do not
-  change); `gates._differential` gives each group's response k, their ratio k_poor / k_rich, the
-  metric minus GATE 0's null of the claim's genes in the more sensitive group (M, 3 draws per unit), and
-  A = M × (1 − k_poor / k_rich), the difference at an equal coupling (groups[0] − groups[1]), with a
-  delta-method interval over the replicates (`detail["differential"]` of GATE 4). Where the groups differ
-  in detection (`report.detection_gap`: genes per cell, the claim's genes left out, permutation p below
-  alpha on the claim's cells), A lies on the claim's side and its bound there exceeds bias_tolerance ×
-  SESOI, the effect is judged less that bound — the same estimate and test on shifted values
-  (`report._shifted`) — and a verdict that does not pass is NOT SUPPORTED, cause
-  `differential_sensitivity` (`report.differential_sensitivity`, `effect.detail["differential_sensitivity"]`);
-  where A cannot be sized there, a detected effect is INCONCLUSIVE with the same cause. A line of the
-  dossier always. GATE 0's docstring and `references/gates.md` corrected.
+- **The pair's detection, equalized after equal depth (change 17', the owner's second decisions of
+  2026-10-19).** Equal depth leaves the groups' detection unequal where their libraries differ in
+  complexity (on preprint §4 it widened the gap in genes per cell from 24% to 29%), and a metric of
+  structure reads detection. For a claim about a pair (`gene_pair`; a set waits for change 9, a metric of
+  level is not equalized) every draw of the correction now has, after equal depth, the pair's detection
+  equalized in every cell set where the effect is estimated — each stratum, and with a domain each
+  stratum and cell type: the group that detects a gene in the larger share of its cells has that gene's
+  counts thinned binomially, one keep probability per set, to the other group's share
+  (`equalize.equalize_detection`, `equalize.detection_keep_probability`), from a random stream of its own
+  keyed by the effect's seed (the thinning to equal depth draws as before). No threshold. The effect, and
+  so the verdict, is at equal depth and detection, by the effect's usual rule (no new cause); the change
+  12 test of the technical difference and GATE 6 equalize the same way. The dossier gives each gene's
+  detection per group uncorrected, at equal depth and after, and the effect at equal depth alone
+  (`effect.detail["detection"]`, `["equal_depth_effect"]`).
+- **GATE 4 measures s_m on the data the effect is judged on (the owner's second decisions of
+  2026-10-19).** For every claim GATE 4 now runs on one draw of the effect's correction — equal depth (or
+  spike-in capture) within each stratum and, with a domain, each cell type, and for a pair the pair's
+  detection equalized (`effect.equalized_for_probe`, its own keyed stream); `detail["data"]` says which.
+  So the SESOI in the metric's units, GATE 0's tolerance, the TOST and EFFECT BELOW SESOI change for every
+  claim with a probe and a thinning correction. The line of `norm_pearson` beside a pair's metric is
+  computed inside the effect's estimate on the same draws (`report.coupling_reference(values=)`): its
+  metric over the strata is the effect itself.
+- **Change 17, the differential sensitivity, reverted (the owner's second decisions of 2026-10-19).**
+  Coded at 1e4696c (GATE 4's second injection, the ratio k_poor / k_rich, the bound subtracted from the
+  effect, the cause `differential_sensitivity`, the test of detection that gated it, its line of the
+  dossier) and removed at the next engine commit, `composition.technical_covariates(exclude=)` with it.
+  The reason, from its own acceptance log (`validation/exploratory/differential_sensitivity.log`): a
+  group's response to the injection depends on its own biology — at an equal detection with a real
+  decrease `mi_3bin`'s ratio was 0.625, on the clean data of `tests/test_v03_verdict.py` 0.13 by the
+  genes' variance, and with a gap as on §4 the estimate of A grew with the true effect (what was left of
+  `mi_3bin`'s effect: −0.005, +0.001, −0.007 at 3, 5 and 7 × SESOI). It subtracted biology, not an
+  artifact.
 - **One direction for every difference of the dossier (change 18).** The line of `norm_pearson` beside
   the metric gave groups[1] − groups[0]; it now gives groups[0] − groups[1], as every other line, and the
   dossier's header says so (`differences` in the JSON report). The specificity line gives its t and its
@@ -197,28 +213,25 @@ The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to
 - **The correction's line (change 19).** How equal depth changed the groups' relative gap in genes
   detected per cell, on the domain's cells and on all cells, with a WARNING where the gap grew
   (`Autopsy.capture`, `report.capture_summary`); on §4 it grew from 24.4% to 29.1%.
-- `composition.technical_covariates(exclude=)`: genes left out of both counts.
-- `tests/test_v04_differential.py`: the acceptance of the differential sensitivity on synthetic data
-  (an equal coupling with a gap of detection not SUPPORTED; an equal detection unchanged; a real decrease
-  SUPPORTED, with a gap where the effect less the bound passes) and the tests of the dossier's direction
-  and of the correction's line; `validation/exploratory/differential_sensitivity.py` and its log.
+- `tests/test_v04_detection.py`: the mechanics of change 17' (the keep probability, the equalization per
+  cell set, the verdict's data, GATE 4's data for a pair and for a metric of level, nothing equalized
+  without counts) and the tests of changes 18 and 19; `tests/detection_data.py`, the synthetic generator
+  (mice nested in age, the old group deeper but less complex, as on §4); its acceptance on 20 seeds per
+  scenario, `validation/exploratory/detection_equalization.py` and its log.
+- `validation/exploratory/differential_sensitivity.py` and its log: the acceptance of the reverted change
+  17 (it runs at 1e4696c), the evidence of its rejection.
 
 ### Known issues
-- **The differential sensitivity over-corrects a metric that is not linear in the coupling.** `mi_3bin`
-  responds more where the coupling is already larger, so with a real difference of coupling its ratio
-  of responses also takes the slope of its curve and A takes a part of the true difference: on the
-  synthetic data a decrease of 3, 5 or 7 × SESOI with a gap of detection as on §4 does not pass
-  (`validation/exploratory/differential_sensitivity.log`, sections 2 and 4). Conservative: power is lost,
-  no false SUPPORTED is added. Measured at a common coupling (GATE 0's null) the confound goes, but
-  `mi_3bin`'s response there is of second order and too noisy.
-- **The differential sensitivity costs power wherever the groups differ in detection**: the effect is
-  judged less the bound of A's interval, whose width grows with the metric's distance from its null. With
-  the gap as on §4 `norm_pearson`'s real decrease of 3 × SESOI does not pass either; 5 × does.
-- **The differential sensitivity is measured on the uncorrected data**, as GATE 4 is, while the effect is
-  judged at equal depth, where the gap in detection can be larger (the correction's line warns).
-- **The differential sensitivity's condition reads a difference in detection by its p, not its size**: at
-  an equal detection it opens at alpha's rate, and the groups' responses then differ by their biology
-  and the metric's curve as well.
+- **The owner's construction of change 17, the differential sensitivity, rejected on its own log**
+  (`validation/exploratory/differential_sensitivity.log`): the groups' responses to the same injected
+  coupling differ by their biology, not only by their detection, so the difference it subtracted was in
+  part the effect.
+- **Change 17' does not reach a difference in detection that is correlated within cells**: where one
+  group's cells vary more in capture, the pair's detection shares can be equalized while the cells'
+  shared capture still couples the genes (the acceptance's case (vi), reported, not a criterion:
+  `validation/exploratory/detection_equalization.log`).
+- **GATE 0's tolerance is bias_tolerance × s_m with s_m now measured at equal depth and detection**, while
+  GATE 0 perturbs the uncorrected data; the line of specificity (change 13) stays on the uncorrected data.
 - **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
   test data (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's
   scale), the `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against
