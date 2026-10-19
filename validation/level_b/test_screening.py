@@ -121,3 +121,33 @@ def test_the_screeners_text_holds_each_record_in_short_lines_and_check_one_reads
     assert S.main(["check-one", "--batch", str(tmp_path / "b" / "batch_01.txt"), "--decisions", str(dec)]) == 0
     dec.write_text("\t".join(S.HEADER) + "\nR00001\tEXCLUDE\tX1\t-\ta review\n")
     assert S.main(["check-one", "--batch", str(tmp_path / "b" / "batch_01.txt"), "--decisions", str(dec)]) == 1
+
+
+def test_the_fulltext_batches_and_their_check(tmp_path):
+    m = tmp_path / "m"
+    m.mkdir()
+    head = "rid\tdecision 1\tcode 1\tkinds 1\tnote 1\tdecision 2\tcode 2\tkinds 2\tnote 2\tpmid\tdoi\ttitle"
+    rows = [f"R{i:05d}\t{'KEEP' if i <= 10 else 'EXCLUDE'}\t{'-' if i <= 10 else 'X4'}\t-\tn\t"
+            f"{'KEEP' if i % 2 else 'EXCLUDE'}\t{'-' if i % 2 else 'X4'}\t-\tn\t\t\tt" for i in range(1, 21)]
+    (m / "all.tsv").write_text(head + "\n" + "\n".join(rows) + "\n")
+    texts = tmp_path / "texts"
+    texts.mkdir()
+    for i in range(1, 10):  # R00010 has no full text
+        (texts / f"R{i:05d}.txt").write_text(f"=== R{i:05d} ===\n")
+    res = S.fulltext_batches(m, 1, texts, tmp_path / "b1")
+    assert res == dict(kept=10, with_fulltext=9, without=1, batches=["batch_01.list", "batch_02.list"])
+    assert (tmp_path / "b1" / "without_fulltext.txt").read_text() == "R00010\n"
+    assert S.fulltext_batches(m, 2, texts, tmp_path / "b2")["kept"] == 10
+    batch = tmp_path / "b1" / "batch_02.list"
+    assert batch.read_text().split("\t")[0] == "R00009"
+    claim = ["A, B", "mouse", "T cells", "young; old", "lower in old", "Pearson", "results, Fig. 2", "a quote", "GSE1",
+             "4 v 4", "yes", "-"]
+    good = ["\t".join(S.FT_HEADER), "\t".join(["R00009", "KEEP", "-", "0"] + ["-"] * 12 + ["a pair falls with age"]),
+            "\t".join(["R00009", "CLAIM", "-", "1"] + claim + ["-"])]
+    dec = tmp_path / "d.tsv"
+    dec.write_text("\n".join(good) + "\n")
+    assert S.check_fulltext(batch, dec) == []
+    dec.write_text("\n".join(good[:2]) + "\n")
+    assert S.check_fulltext(batch, dec) == ["R00009: KEEP without a claim line"]
+    dec.write_text("\n".join([good[0], good[1].replace("KEEP\t-", "EXCLUDE\t-")]) + "\n")
+    assert S.check_fulltext(batch, dec) == ["R00009: code '-' with EXCLUDE"]

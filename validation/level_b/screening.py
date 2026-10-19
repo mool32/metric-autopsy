@@ -7,6 +7,8 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py merge --batches <dir> --pass1 <dir> --pass2 <dir> --out <dir>
     python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
+    python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
+    python -I validation/level_b/screening.py check-fulltext --batch <batch_NN.list> --decisions <tsv>
 
 `batches` reads the search's merged list (`records.jsonl.gz`, checked against the search's SHA256SUMS) and its
 sample (`sample.txt`, every record where the list holds at most 5,000), and writes the screened records in
@@ -20,7 +22,10 @@ in either), the counts of claims about sets and global measures (section 1), and
 is fetched (kept or unclear in either pass). `fulltext-list` writes those records' ids for `search.py fulltext`
 (`fulltext_list.tsv`); `fulltext-text` turns each fetched full text (JATS XML) into the text a screener reads:
 the title, the abstract, every section with its heading, the figures' and tables' captions and the tables'
-cells, the back matter (data availability, notes); the references are left out.
+cells, the back matter (data availability, notes); the references are left out. `fulltext-batches` gives
+each pass the full texts of the records it kept (`FT_BATCH` to a batch; a record without a full text is
+listed apart, for the owner), and `check-fulltext` checks a full-text decision file against
+`screening_fulltext.md`'s format.
 """
 from __future__ import annotations
 
@@ -41,6 +46,10 @@ HEADER = ["rid", "decision", "code", "kinds", "note"]
 DECISIONS = ("KEEP", "EXCLUDE", "UNCLEAR")
 CODES = tuple(f"X{i}" for i in range(1, 11))
 KINDS = ("pair", "set", "global")
+FT_BATCH = 8
+FT_HEADER = ["rid", "decision", "code", "claim", "genes", "species", "cells", "conditions", "direction", "metric",
+             "where", "quote", "data", "donors", "rule4", "verdict", "note"]
+FT_CODES = tuple(f"F{i}" for i in range(1, 11))
 CODE_NAMES = {
     "X1": "not a paper with findings of its own", "X2": "no single-cell RNA counts",
     "X3": "development data or a control", "X4": "no changed coordination between conditions",
@@ -299,6 +308,64 @@ def fulltext_text(fulltext: Path, out: Path) -> dict:
     return dict(converted=done, failed=failed, listed=len(index))
 
 
+def fulltext_batches(merge_dir: Path, which: int, texts: Path, out: Path, size: int = FT_BATCH) -> dict:
+    """Pass `which`'s kept records with a full text, `size` to a batch (`batch_NN.list`: rid, text file), and
+    those without one (`without_fulltext.txt`)."""
+    rows = [line.split("\t") for line in (merge_dir / "all.tsv").read_text().splitlines()[1:] if line.strip()]
+    col = 1 if which == 1 else 5
+    kept = [r[0] for r in rows if r[col] == "KEEP"]
+    have = [rid for rid in kept if (texts / f"{rid}.txt").exists()]
+    without = [rid for rid in kept if rid not in set(have)]
+    out.mkdir(parents=True, exist_ok=True)
+    names = []
+    for k in range(0, len(have), size):
+        name = f"batch_{k // size + 1:02d}.list"
+        (out / name).write_text("".join(f"{rid}\t{(texts / f'{rid}.txt').resolve()}\n" for rid in have[k:k + size]))
+        names.append(name)
+    (out / "without_fulltext.txt").write_text("".join(f"{rid}\n" for rid in without))
+    return dict(kept=len(kept), with_fulltext=len(have), without=len(without), batches=names)
+
+
+def check_fulltext(batch: Path, decisions: Path) -> list:
+    rids = [line.split("\t")[0] for line in batch.read_text().splitlines() if line.strip()]
+    lines = decisions.read_text().splitlines() if decisions.exists() else []
+    if not lines:
+        return [f"{decisions.name}: missing or empty"]
+    problems = [] if lines[0].split("\t") == FT_HEADER else [f"{decisions.name}: the header is {lines[0]!r}"]
+    rows = [line.split("\t") for line in lines[1:] if line.strip()]
+    order, last, claims = [], None, 0
+    for r in rows:
+        if len(r) != len(FT_HEADER):
+            problems.append(f"{r[0]}: {len(r)} fields, not {len(FT_HEADER)}")
+            continue
+        rid, decision, code, claim = r[:4]
+        if decision == "CLAIM":
+            claims += 1
+            if last is None or last[0] != rid or last[1] != "KEEP":
+                problems.append(f"{rid}: a claim line without its KEEP line just before")
+            if claim != str(claims) or claims > 5:
+                problems.append(f"{rid}: claim {claim!r} (claims are numbered 1 to 5 in order)")
+            if code != "-" or r[14] not in ("yes", "no") or any(not x.strip() for x in r[4:16]):
+                problems.append(f"{rid}: claim {claim}: code, rule4 or an empty field")
+            continue
+        if last is not None and last[1] == "KEEP" and claims == 0:
+            problems.append(f"{last[0]}: KEEP without a claim line")
+        last, claims = (rid, decision), 0
+        order.append(rid)
+        if decision not in DECISIONS:
+            problems.append(f"{rid}: decision {decision!r}")
+        elif (decision == "EXCLUDE") != (code in FT_CODES) or (decision != "EXCLUDE" and code != "-"):
+            problems.append(f"{rid}: code {code!r} with {decision}")
+        if claim != "0" or not r[16].strip():
+            problems.append(f"{rid}: a decision line needs claim 0 and a note")
+    if last is not None and last[1] == "KEEP" and claims == 0:
+        problems.append(f"{last[0]}: KEEP without a claim line")
+    if order != rids:
+        problems.append(f"the decisions' rids {order[:3]}... are not the batch's {rids[:3]}... in order "
+                        f"({len(order)} for {len(rids)})")
+    return problems
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
@@ -319,6 +386,15 @@ def main(argv=None) -> int:
     ft = sub.add_parser("fulltext-text")
     ft.add_argument("--fulltext", type=Path, required=True)
     ft.add_argument("--out", type=Path, required=True)
+    fb = sub.add_parser("fulltext-batches")
+    fb.add_argument("--merge", type=Path, required=True)
+    fb.add_argument("--pass", dest="which", type=int, choices=(1, 2), required=True)
+    fb.add_argument("--texts", type=Path, required=True)
+    fb.add_argument("--out", type=Path, required=True)
+    fb.add_argument("--size", type=int, default=FT_BATCH)
+    cf = sub.add_parser("check-fulltext")
+    cf.add_argument("--batch", type=Path, required=True)
+    cf.add_argument("--decisions", type=Path, required=True)
     m = sub.add_parser("merge")
     m.add_argument("--batches", type=Path, required=True)
     m.add_argument("--pass1", type=Path, required=True)
@@ -337,6 +413,15 @@ def main(argv=None) -> int:
         res = fulltext_text(a.fulltext, a.out)
         print(json.dumps(res, indent=1))
         return 1 if res["failed"] else 0
+    if a.mode == "fulltext-batches":
+        print(json.dumps(fulltext_batches(a.merge, a.which, a.texts, a.out, a.size), indent=1))
+        return 0
+    if a.mode == "check-fulltext":
+        problems = check_fulltext(a.batch, a.decisions)
+        for p in problems:
+            print(p)
+        print(f"{len(problems)} problems")
+        return 1 if problems else 0
     if a.mode == "check-one":
         batch = a.batch.with_suffix(".jsonl")
         d, problems = read_decisions(a.decisions, read_batch(batch))
