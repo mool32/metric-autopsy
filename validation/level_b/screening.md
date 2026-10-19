@@ -145,3 +145,8 @@ and correct what it reports.
   instructions of their own written before that step.
 - **Sets and global measures** (protocol, section 1): per pass and for both, the records excluded as X6
   or X7, and the records whose `kinds` name a set or a global measure.
+
+**Added after the screening (2026-10-19), the rules above unchanged:** the list of 3,394 records was wrong
+(the search's PubMed parser took the references' ids, and 112 papers were hidden in false merges). The
+corrected list holds 3,506 records (18 batches); the decisions on the 3,394 unchanged texts carry over, and
+the 112 new records were screened by two new passes under this text. The record: `screening/README.md`.

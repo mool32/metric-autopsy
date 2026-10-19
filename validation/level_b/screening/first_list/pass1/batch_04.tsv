@@ -1,0 +1,201 @@
+rid	decision	code	kinds	note
+R00601	EXCLUDE	X4	-	scRNA-seq analysis toolbox (CDI-based DE, annotation, gene-program networks); no between-condition change in a gene pair's association reported
+R00602	EXCLUDE	X2	-	WGCNA and comparisons on bulk microarray (GSE87466); scRNA-seq of UC patients only to locate pyroptosis in macrophages
+R00603	EXCLUDE	X2	-	WGCNA and prognosis on bulk TCGA/GEO cohorts; scRNA-seq only for macrophage subtype markers
+R00604	EXCLUDE	X4	-	GPCRs co-expressed (correlated) with MRAPs in single-cell and bulk data of normal tissues; no change between conditions
+R00605	EXCLUDE	X4	-	PD-1/TIM3 co-expression means double-positive cells; scRNA-seq found no blockade-specific programs; no gene-pair coordination change
+R00606	EXCLUDE	X2	-	co-expression modules from bulk RNA-seq of 725 cortical samples; snRNA-seq only for cell-type expression changes
+R00607	EXCLUDE	X1	-	narrative review of telomeres, telomerase and cancer
+R00608	EXCLUDE	X2	-	WGCNA and DEGs on bulk microarrays; scRNA-seq only to locate TNFSF13B and OAS1 expression in monocytes
+R00609	EXCLUDE	X6	set	method; differential hubness of cell-type gene networks between disease and healthy conditions, no named pair with direction
+R00610	EXCLUDE	X4	-	database of developmental expression; co-expression means cells expressing target genes; no between-condition coordination change
+R00611	EXCLUDE	X2	-	comparisons and WGCNA on bulk TCGA; single-cell CancerSEA only for UBE2T correlation with a cell-cycle state
+R00612	EXCLUDE	X4	-	STRING database update; co-expression channel for interaction prediction; no between-condition comparison
+R00613	EXCLUDE	X2	-	spatial transcriptomics (Visium) denoising method; spatial co-expression only
+R00614	EXCLUDE	X4	-	single-cell shows cell types co-expressing CD93 (cell-type sense); comparisons on bulk; no gene-pair coordination change
+R00615	EXCLUDE	X4	-	gene clustering method applied to AD scRNA-seq without a between-condition comparison of coordination
+R00616	EXCLUDE	X2	-	WGCNA and comparisons on bulk microarrays; PBMC scRNA-seq only for cell clusters and pathway activity
+R00617	EXCLUDE	X2	-	WGCNA and DEGs on bulk arrays; scRNA-seq of valve leaflets only for S100A8/S100A9 expression
+R00618	EXCLUDE	X2	-	WGCNA on bulk NAFLD data; scRNA-seq only for signature gene expression in HCC cells
+R00619	EXCLUDE	X4	-	single-cell shows cell types co-expressing CD73 (cell-type sense); comparisons on bulk; no gene-pair coordination change
+R00620	KEEP	-	set	scRNA-seq of biparental vs parthenogenetic/androgenic human embryos; comparative coexpression network analysis between embryo types; TF (CTCF, POU5F1)-ERV correlation; pair changes possible in results
+R00621	EXCLUDE	X4	-	temporal coexpression modules of anther development and single-cell TF activation screens; no between-condition change of a gene pair's association
+R00622	EXCLUDE	X4	-	PBMC scRNA-seq of PD-1 sensitive vs resistant ESCC; composition and DE only; no gene-pair coordination change
+R00623	EXCLUDE	X2	-	WGCNA coexpression on bulk RNA-seq; scRNA-seq only for cell types and communication
+R00624	EXCLUDE	X4	-	single-cell multi-omics of reindeer skin repair; decoupling refers to fibroblast-immune interactions, not two genes' coordination
+R00625	EXCLUDE	X2	-	co-expression networks from bulk UKBEC brain data; scRNA-seq only for cell-type enrichment (EWCE)
+R00626	EXCLUDE	X2	-	WGCNA on bulk NAFLD data; single-cell only for hub gene expression by cell type
+R00627	EXCLUDE	X2	-	WGCNA on bulk TCGA/GEO; single-cell only for TRIM27 characteristics
+R00628	EXCLUDE	X2	-	bulk ccRCC cohorts and WGCNA; single-cell only for polyamine gene expression by cell type
+R00629	EXCLUDE	X2	-	WGCNA and subtyping on bulk sepsis datasets; scRNA-seq only to validate immune features
+R00630	EXCLUDE	X2	-	WGCNA on bulk microarray GSE4290; glioblastoma scRNA-seq only for clusters and markers
+R00631	EXCLUDE	X2	-	bulk TCGA-based risk model and co-expression networks; scRNA-seq only for expression distribution
+R00632	EXCLUDE	X4	-	scRNA-seq of one macaque shows NKG2A/NKG2C double-expressing cells; CMV comparison by flow cytometry; no across-cell association change
+R00633	EXCLUDE	X4	-	comparative scRNA-seq of sea star and sea urchin; coexpression means Pks1 and Fmo3 expressed in the same cells
+R00634	EXCLUDE	X4	-	WGCNA-selected hypoxia genes from single-cell levels and bulk prognostic model; no between-condition change of a pair's association
+R00635	EXCLUDE	X2	-	ceRNA network from bulk mRNA/miRNA co-expression; scRNA-seq only for marker genes
+R00636	EXCLUDE	X2	-	bulk endometrial transcriptomes (9 vs 7) with co-expression modules; single-cell only for immune cell expression
+R00637	EXCLUDE	X2	set	Visium spatial transcriptomics of AD vs control MTG; co-expression modules altered in AD
+R00638	EXCLUDE	X2	-	WGCNA on bulk microarrays; scRNA-seq only for NPPA, OMD, PRELP expression
+R00639	EXCLUDE	X4	-	scRNA-seq COVID-19 vs healthy; expression changes; co-expression means ACE2 and PROC expressed by the same cluster
+R00640	KEEP	-	pair	CS-CORE method; differential cell-type-specific co-expressions (gene pairs) between AD patients and controls, COVID-19 patients and controls; pairs and directions in results
+R00641	EXCLUDE	X2	-	single-molecule RNA-FISH imaging of SARS-CoV-2 RNAs only
+R00642	EXCLUDE	X4	-	scRNA-seq of NASH vs healthy HSCs: DE and WGCNA pathways; no change in a gene pair's association
+R00643	EXCLUDE	X2	-	WGCNA on bulk METABRIC data; mouse single-cell only for pathways
+R00644	EXCLUDE	X2	-	WGCNA on bulk GEO/TCGA; single-cell only for hub gene expression in immune subsets
+R00645	EXCLUDE	X4	-	OPA1-MFN1 co-amplification and co-expression in LUAD; no between-condition change of their association across cells
+R00646	EXCLUDE	X4	-	octopus genome and brain snRNA-seq; co-expression of protocadherin and GPCR in specific cells; no conditions compared
+R00647	EXCLUDE	X4	-	scRNA-seq simulation tool; no between-condition comparison of coordination
+R00648	EXCLUDE	X4	-	age-related transcriptional noise and composition only; no gene-pair coordination change
+R00649	EXCLUDE	X2	-	lncRNA co-expression and risk model on bulk TCGA; scRNA-seq of 4 patients only for expression
+R00650	EXCLUDE	X4	-	exome genetics of familial pulmonary fibrosis; coexpression network and single-cell enrichment for candidate genes; no between-condition change of a pair's association
+R00651	EXCLUDE	X2	-	TCGA bulk subtypes and WGCNA hub genes; single-cell data only descriptive
+R00652	EXCLUDE	X4	-	bulk CHEK1 comparisons; single-cell TF activity in CHEK1-coexpressing cells (expressing cells); no between-condition change of a pair's association
+R00653	EXCLUDE	X2	-	ceRNA network and WGCNA on bulk psoriasis data; scRNA-seq only for cell cycle and trajectory
+R00654	EXCLUDE	X2	-	bulk nascent RNA-seq and Pol II ChIP-seq of aged mouse organs; no single-cell co-expression
+R00655	EXCLUDE	X4	-	co-expression network of dysregulated genes in malignant breast cells (one condition); no between-condition change of a pair's association
+R00656	EXCLUDE	X4	-	FGL2-co-expressed genes in KPMP single-cell data for upstream regulators; CKD vs control comparison on bulk; no change in a pair's association
+R00657	EXCLUDE	X1	-	review of single-cell transcriptomics in diabetic kidney disease
+R00658	EXCLUDE	X2	-	bulk liver RNA-seq NASH vs no-NAFLD; scRNA-seq only to locate SMOC2 in stellate cells
+R00659	EXCLUDE	X4	-	bulk deconvolution method using single-cell references and gene covariance; no between-condition coordination change
+R00660	EXCLUDE	X4	-	TF atlas and Perturb-seq of CD8+ T cell states; decoupling of programs, not two genes' coordination between conditions
+R00661	EXCLUDE	X2	-	co-expression modules from bulk lung RNA-seq (96 PAH, 52 controls); single-cell data only for integration
+R00662	EXCLUDE	X2	-	WGCNA and prognostic model on patient bulk data; single-cell only for angiogenesis scores and DEGs
+R00663	EXCLUDE	X2	-	WGCNA modules on bulk PBMC data (GSE36809); scRNA-seq of 3 controls vs 5 trauma patients only for composition and autophagy
+R00664	EXCLUDE	X2	-	pan-cancer bulk analyses and LinkedOmics co-expression of CD276; single-cell only for expression patterns
+R00665	EXCLUDE	X4	-	bladder cancer scRNA-seq: atlas, DE between NMIBC and MIBC, WGCNA for prognostic genes; no change in a pair's association
+R00666	EXCLUDE	X2	-	bulk RNA-seq of purified monocytes and CD4 T cells with coexpression modules; public single-cell only for validation
+R00667	EXCLUDE	X4	-	benchmark of single-cell co-expression estimators on simulated and real data; no between-condition comparison
+R00668	EXCLUDE	X5	-	MI-based method; network and regulon rewiring across cell types, lineages and tissues, not between conditions
+R00669	EXCLUDE	X4	-	feature gene selection method for clustering; no between-condition coordination comparison
+R00670	EXCLUDE	X4	-	integrated single-cell, bulk and microarray osteosarcoma analysis; pathways and subtypes, no change in a pair's association
+R00671	EXCLUDE	X2	-	consensus WGCNA on bulk nasal and tracheal RNA-seq; single-cell only for deconvolution
+R00672	EXCLUDE	X2	-	WGCNA and risk model on bulk TCGA; scRNA-seq only for expression of signature genes
+R00673	EXCLUDE	X4	-	OX40/GITR coexpression means double-positive pathogenic Th17 cells (scRNA of 6 AS patients, flow); not an across-cell association between conditions
+R00674	EXCLUDE	X2	-	metabolic engineering in yeast; co-expression means expressing two transgenes; no single-cell RNA data
+R00675	EXCLUDE	X4	-	co-expression of exogenous Runx1, Hoxa9, Hoxa10 transgenes; scRNA-seq only for cell identity
+R00676	EXCLUDE	X2	-	reporter cell lines and lectin signaling; co-expression means receptor overexpression; no single-cell RNA counts
+R00677	EXCLUDE	X2	set	SparseGMM networks on bulk liver cancer and normal tissue; higher gene entropy in cancer; scRNA-seq only to evaluate modules
+R00678	EXCLUDE	X2	-	WGCNA and comparisons on bulk TCGA/GEO; single-cell only for RASGRP2 differences in immune cells
+R00679	EXCLUDE	X4	-	bulk and single-cell IDD analysis: composition, trajectories, OS-related genes; no change in a pair's association
+R00680	EXCLUDE	X2	-	WGCNA and hub genes on bulk GEO data; scRNA-seq only for pathways by cell type
+R00681	EXCLUDE	X2	-	WGCNA on bulk microarray GSE45885; scRNA-seq only for macrophage expression
+R00682	EXCLUDE	X2	-	spatial transcriptomics package for spatial gene correlations
+R00683	EXCLUDE	X1	-	review of transcriptional noise in aging, including global coordination measures
+R00684	EXCLUDE	X2	-	bulk RNA-seq of curcumin-treated HCC cell lines with WGCNA; single-cell only for ferroptosis scores by cell subtype
+R00685	EXCLUDE	X2	-	co-expression network on bulk microarrays of spinal cord injury; single-cell only for immune marker cells
+R00686	EXCLUDE	X2	-	WGCNA and prognostic model on bulk data; single-cell only descriptive
+R00687	EXCLUDE	X2	-	enhancer ChIP-seq with bulk expression and coexpression for target prioritization; no single-cell co-expression comparison
+R00688	EXCLUDE	X2	-	FACS protocol; co-expression of surface markers by flow cytometry; scRNA-seq only for quality
+R00689	EXCLUDE	X2	-	WGCNA on bulk TCGA GBM; scRNA-seq only to identify necroptotic genes
+R00690	EXCLUDE	X2	-	prognostic model and comparisons on bulk TCGA/GEO with WGCNA; single-cell only descriptive
+R00691	EXCLUDE	X2	-	electrochemistry of water electrolysis; no RNA data
+R00692	EXCLUDE	X4	-	GRN inference method from gene-pair co-expression matrices; no between-condition comparison
+R00693	EXCLUDE	X2	-	TCGA bulk immune subtypes and WGCNA; single-cell only for antigen expression
+R00694	EXCLUDE	X2	-	bulk TCGA MAM score; single-cell only for scores and CellChat by cell type
+R00695	EXCLUDE	X4	-	single-cell WGCNA during hESC differentiation; HOTAIRM1 co-expressed with HOX genes; no between-condition comparison of coordination
+R00696	EXCLUDE	X4	-	sex-biased expression of ECM gene sets in mouse neutrophils (bulk and single-cell, WGCNA); expression levels only
+R00697	EXCLUDE	X2	-	WGCNA on bulk GEO datasets; scRNA-seq only to locate SLC45A3 in oligodendrocytes
+R00698	EXCLUDE	X2	-	WGCNA on bulk TCGA; single-cell dataset only descriptive
+R00699	EXCLUDE	X4	-	sepsis vs healthy PBMC scRNA-seq; markers, communication, Bayesian network of LILRA5 co-expressed genes without between-condition change
+R00700	EXCLUDE	X2	-	WGCNA on bulk TCGA immune clusters; single-cell only for immune relation of genes
+R00701	EXCLUDE	X2	-	WGCNA and model on bulk ccRCC data; single-cell only to verify immune infiltration
+R00702	EXCLUDE	X2	-	WGCNA on bulk ALS data; snRNA-seq only for CHMP5 expression ALS vs normal
+R00703	EXCLUDE	X2	pair	NR4A1-EGR3 Pearson co-expression in a metastasis-specific network from bulk TCGA ovarian cancer RNA-seq
+R00704	EXCLUDE	X2	-	m6A microarray 4 vs 4 with WGCNA; scRNA-seq only for cell-type localization
+R00705	EXCLUDE	X4	-	scRNA-seq of mouse dental pulp at one age; Dot1L co-expressed with partners, no conditions compared
+R00706	EXCLUDE	X2	-	GTEx bulk expression variation and co-expression clusters; single-cell only for confirmation
+R00707	EXCLUDE	X2	-	protein-protein interaction network in iPSC neurons; no single-cell RNA co-expression
+R00708	EXCLUDE	X2	-	WGCNA on bulk microglia profiles; scRNA-seq only for subpopulations
+R00709	EXCLUDE	X2	-	WGCNA and DEGs on bulk islet RNA-seq; scRNA-seq only for clusters, communication, pseudotime
+R00710	EXCLUDE	X2	-	WGCNA on bulk COPD RNA-seq; scRNA-seq only for macrophage markers
+R00711	EXCLUDE	X2	-	WGCNA modules per condition on bulk/microarray prostate data; single-cell only supportive; no change in a pair's association
+R00712	KEEP	-	-	scRNA-seq over an estrogen treatment time course; gene-pair co-expression across single cells linked to looping, timing, noise; change with treatment possible in results
+R00713	EXCLUDE	X4	-	gene-gene correlation method applied to a clonal melanoma cell line; no between-condition comparison
+R00714	EXCLUDE	X4	-	ITGA5/VEGFA coexpression in a tumor cell subpopulation (cell-type sense); comparisons on bulk and IHC
+R00715	EXCLUDE	X4	-	scRNA-seq analysis web server update; no between-condition coordination change reported
+R00716	EXCLUDE	X2	-	WGCNA and DEGs on bulk microarrays; PBMC scRNA-seq only for subpopulations and metabolic scores
+R00717	EXCLUDE	X2	-	WGCNA modules on combined bulk GEO NASH data; single-cell only for expression by immune cells
+R00718	EXCLUDE	X2	-	WGCNA and risk model on bulk NSCLC cohorts; single-cell only for FBLIM1 expression in CAFs
+R00719	EXCLUDE	X4	-	ACE2-TMPRSS2 co-expression means both expressed in the same ductal cells, increased in T2DM; not an across-cell association
+R00720	EXCLUDE	X4	-	method for jointly learning GRNs across conditions; real-data results only identify known regulators, no pair change
+R00721	EXCLUDE	X2	-	simulated multicellular reservoir computing; no RNA data
+R00722	EXCLUDE	X2	-	bulk TCGA/METABRIC subtypes and WGCNA; single-cell only for immune composition
+R00723	EXCLUDE	X4	-	whole mouse brain cell-type atlas; neurotransmitter co-expression by cell types; no conditions compared
+R00724	EXCLUDE	X6	set,global	meta-analysis of organoid vs primary brain scRNA-seq; gene-level and overall preservation of co-expression, no named pair with direction
+R00725	EXCLUDE	X6	set	cell-type networks of primary vs metastatic breast cancer cell lines compared by gene centrality; no named pair
+R00726	EXCLUDE	X4	-	ovarian cancer scRNA-seq; hdWGCNA hub genes of a metastasis-associated cluster; no between-condition change of a pair's association
+R00727	EXCLUDE	X2	set	ligand-receptor communication (scRNA) and a monocyte subnetwork related to BMD from deconvolved bulk data
+R00728	EXCLUDE	X2	-	WGCNA and TMEindex on bulk TARGET data; scRNA-seq only for gene expression by cell type
+R00729	EXCLUDE	X2	-	WGCNA and DEGs on bulk microarrays; scRNA-seq only for cell types and CellPhoneDB
+R00730	EXCLUDE	X4	-	PDX1/NKX6-1 coexpression means double-positive progenitors; scRNA-seq for heterogeneity and ligand-receptor interactions
+R00731	EXCLUDE	X4	-	single-sample gene set testing method detecting differential correlation; no real-data change of a pair reported
+R00732	EXCLUDE	X2	-	WGCNA and groups on bulk TCGA HNSCC; single-cell only for trajectories
+R00733	EXCLUDE	X2	-	oncogene coexpression from multispectral imaging (proteins) as share of positive cells; transcriptomes only for features
+R00734	KEEP	-	pair,set	co-eQTLs: SNP genotypes alter co-expression of 946 gene pairs in PBMC scRNA-seq; rs1131017 changes RPS26 co-expression with ribosomal and T-cell activation genes
+R00735	EXCLUDE	X4	-	Paramecium scRNA-seq dividing vs growing cells; DE and WGCNA hub genes; no change in a pair's association
+R00736	EXCLUDE	X2	-	OLR1-CD68 co-expression by protein histology; scRNA-seq only for OLR1 enrichment in TAMs; comparisons on bulk TCGA
+R00737	EXCLUDE	X4	-	scRNA-seq of 24 SSc patients; LASSO severity biomarkers and correlation networks of their co-correlates; no between-condition change of a pair's association
+R00738	EXCLUDE	X2	-	WGCNA on bulk glioma transcriptome; scRNA-seq only for pseudotime
+R00739	EXCLUDE	X4	-	age-associated changes in TF regulon activity in a mouse scRNA-seq atlas; activity, not two genes' coordination
+R00740	EXCLUDE	X2	-	WGCNA on bulk TCGA BLCA; scRNA-seq only for CAF markers
+R00741	EXCLUDE	X4	-	coexpression of Ikzf1 and Ikzf4 transgenes for reprogramming; no across-cell association
+R00742	EXCLUDE	X4	-	lung aging bulk and scRNA-seq: age-associated gene networks and senescence-associated modules (expression associations); no change in a pair's association
+R00743	EXCLUDE	X4	-	prostate cancer DC scRNA-seq; ligand-receptor pairs and a co-expression network for targets; no between-condition change of a pair's association
+R00744	EXCLUDE	X2	-	WGCNA on bulk ovarian cancer cohorts; scRNA-seq only for NK markers
+R00745	EXCLUDE	X2	-	bacterial proteome allocation theory; no RNA counts
+R00746	EXCLUDE	X2	-	WGCNA on bulk microarray GSE24514; scRNA-seq only for DE and cell types
+R00747	EXCLUDE	X2	-	database bulk analyses of EYA genes including co-expression; single-cell only descriptive
+R00748	EXCLUDE	X5	-	pIBD colonic lymphocytes scRNA-seq; WGCNA modules compared across ILC and T cell types; no between-condition change of a pair's association
+R00749	EXCLUDE	X6	set	Dozer method; co-expression modules with different co-expression levels between AD and controls (oligodendrocytes); no named pair
+R00750	EXCLUDE	X2	-	WGCNA on bulk IPF lung data; scRNA-seq only for CDKN2A expression in macrophages
+R00751	EXCLUDE	X2	-	co-expression screening and risk model on bulk TCGA LUAD; single-cell only for KRT14 expression
+R00752	EXCLUDE	X4	-	embryonic mouse scRNA-seq; Irf6, Grhl3, Tfap2a co-expressed in some cell types; no conditions compared
+R00753	EXCLUDE	X4	-	WGCNA at single-cell and bulk levels for AMI biomarkers; no between-condition change of a pair's association
+R00754	EXCLUDE	X2	-	WGCNA aging modules from bulk canine skin; human scRNA-seq only for expression changes
+R00755	EXCLUDE	X4	-	cell type annotation tool; co-expression genes for marker selection; no between-condition comparison
+R00756	EXCLUDE	X4	-	kidney development scRNA-seq ligand-receptor interactions; no gene-pair coordination change
+R00757	EXCLUDE	X2	-	interaction proteomics network in induced neurons; transcriptomic data only for expression down-regulation
+R00758	EXCLUDE	X1	-	review of eQTL methods from bulk to single cells
+R00759	EXCLUDE	X4	-	HSC lineage tracing; decoupling of stem cells from hematopoiesis, not two genes' coordination
+R00760	EXCLUDE	X4	-	TF regulons from scRNA-seq of 19 ICI-treated melanoma samples; regulon activity by cell state and response groups; no coordination change of a pair
+R00761	EXCLUDE	X2	-	bulk tissue RNA-seq of insecticide exposure; co-expression with single-cell markers only for cell attribution
+R00762	EXCLUDE	X2	-	WGCNA on bulk GEO data of MS and NSCLC; scRNA-seq only for immune microenvironment
+R00763	EXCLUDE	X2	-	capture by surface co-expression of CD39, PD-1, TIGIT (flow); scRNA-seq only for clonotype states
+R00764	EXCLUDE	X4	-	heart scRNA-seq meta-analysis; co-expression of ACE2 with proteases to locate cell types; no change in a pair's association
+R00765	EXCLUDE	X2	-	WGCNA and prognostic index on bulk LGG data; single-cell only to verify expression
+R00766	EXCLUDE	X2	-	WGCNA on bulk GEO neuropathic pain data; single-cell only for Abca1 and Fyb expression
+R00767	EXCLUDE	X4	-	osteosarcoma scRNA-seq of TANs and WGCNA of their DEGs for metastasis markers; no change in a pair's association
+R00768	EXCLUDE	X4	-	ICD genes screened by WGCNA at single-cell and bulk levels; prognostic signature; no change in a pair's association
+R00769	EXCLUDE	X2	-	WGCNA and clusters on bulk IBD microarrays; scRNA-seq only for CRG expression
+R00770	EXCLUDE	X4	-	cell type defined by coexpression of SCGB3A2/SFTPB/CFTR; lineage tracing; no conditions compared
+R00771	EXCLUDE	X4	-	macrophage-like B cells defined by co-expression of B-cell and macrophage markers; no gene-pair association change between conditions
+R00772	EXCLUDE	X2	-	WGCNA modules on bulk azoospermia data; scRNA-seq only for validation
+R00773	EXCLUDE	X2	-	WGCNA on bulk OA and COVID-19 datasets; single-cell only for expression patterns
+R00774	EXCLUDE	X2	-	microarray DEGs and WGCNA for ASD and IBD; single-cell analysis only descriptive
+R00775	KEEP	-	pair,set	differential gene-gene correlation between AD patients and healthy individuals in seven scRNA-seq datasets; rewiring of gene-gene relationships; pairs likely in results
+R00776	EXCLUDE	X4	-	calcium imaging; snRNA-seq co-expression means feeding- and social-hormone genes expressed in the same neurons
+R00777	EXCLUDE	X6	set	duplicate of R00749 (published version); co-expression modules with different co-expression levels between AD and controls; no named pair
+R00778	EXCLUDE	X4	-	visualization tool with two-gene co-expression and DE; demonstration reports no pair's coordination change between conditions
+R00779	EXCLUDE	X2	-	bulk HCC expression map and MEGENA coexpression for patient classification; scRNA-seq only for trajectories
+R00780	EXCLUDE	X2	-	bulk co-expression modules and risk model; scRNA-seq only for disulfidptosis groups
+R00781	EXCLUDE	X2	-	WGCNA on bulk GSE142025; single-cell only for immune infiltration changes
+R00782	EXCLUDE	X2	-	WGCNA and prognostic model on bulk TCGA/GEO; scRNA-seq only for expression by cell type
+R00783	EXCLUDE	X4	-	case report of one patient; co-expression of TCR alpha, beta and gamma chains in the same malignant cells
+R00784	EXCLUDE	X2	-	WGCNA modules on bulk AD brain transcriptomes; snRNA-seq only for relation to neurons and microglia
+R00785	EXCLUDE	X2	-	WGCNA hub module on bulk NOA RNA-seq; scRNA-seq for Wnt activity and SCENIC TFs without coordination change
+R00786	EXCLUDE	X2	-	WGCNA on bulk breast cancer transcriptomes; single-cell only for LLPS grouping
+R00787	EXCLUDE	X2	set	sex-specific co-expression networks and modules from bulk postmortem brain (MSBB, ROSMAP); scRNA-seq only for LRP10 targets
+R00788	EXCLUDE	X2	-	serum proteomics co-expression patterns; single-cell only to map proteins to liver cells
+R00789	EXCLUDE	X4	-	maize root scRNA-seq Fv vs mock; Fv-responsive modules of DEGs and cell-type regulatory networks; expression responses, no change in a pair's association
+R00790	EXCLUDE	X1	-	review of protein network methods in cardiovascular proteomics
+R00791	EXCLUDE	X4	-	targeted single-cell expression of EBV-associated B cells; co-expression means genes expressed in the same cells
+R00792	EXCLUDE	X4	-	CD38 co-expression with PDCD1, CTLA4, ITGAE means double-positive exhausted T cells; not an across-cell association change
+R00793	EXCLUDE	X4	-	PPI and co-expression network method on HCC scRNA-seq; no between-condition change of a pair's association
+R00794	EXCLUDE	X4	-	regulatory velocity method; GRN along acinar-to-ductal transdifferentiation; no between-condition change of a pair's association
+R00795	EXCLUDE	X2	-	single-cell western blotting of proteins; no RNA counts
+R00796	EXCLUDE	X4	-	Tfap2 mutant bulk and scRNA-seq: expression changes; TFAP2-ALX co-expression in the same neural crest cells
+R00797	EXCLUDE	X4	-	KPMP single-cell endothelial co-expression modules associated with arteriolar hyalinosis (expression association); ligand-receptor analysis; no change in a pair's association
+R00798	EXCLUDE	X2	-	WGCNA Python package applied to bulk RNA-seq of MODEL-AD mice
+R00799	EXCLUDE	X4	-	PBMC scRNA-seq of 2 moyamoya patients vs 4 controls; WGCNA gene sets, composition, pseudotime; no change in a pair's association
+R00800	EXCLUDE	X4	-	dimensionality reduction method using gene-gene correlations; no between-condition comparison
