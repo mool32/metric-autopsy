@@ -1,4 +1,4 @@
-# JOURNAL D8: p14's low level under the engine installed — git 1e4696c, metric-autopsy 0.4.0.dev0, python 3.13.16, numpy 2.5.3
+# JOURNAL D8: p14's low level under the engine installed — git 3f35c47, metric-autopsy 0.4.0.dev0, python 3.13.16, numpy 2.5.3
 # p14's population responses (its log, section 2) classed by v0.4's definition (r -/+ 1.96 SE against 0):
 #   pool 16: +0.0133 (SE 0.0051, 95% [+0.0033, +0.0233]) -> responds
 #   pool 17: +0.0094 (SE 0.0061, 95% [-0.0026, +0.0214]) -> undecided
