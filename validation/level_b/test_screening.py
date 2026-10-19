@@ -229,3 +229,42 @@ def test_the_carry_keeps_the_decisions_of_unchanged_texts_and_screens_the_rest(t
     assert not problems and d2["R00460"]["decision"] == "KEEP" and d2["R00001"]["decision"] == "UNCLEAR"
     m = S.merge(tmp_path / "b2", tmp_path / "all" / "pass1", tmp_path / "all" / "pass2", tmp_path / "m")
     assert m["n_screened"] == 460 and m["to_owner"] == 11 and m["fulltext"] == 11
+
+
+def test_the_claims_list_draws_30_lists_small_designs_and_the_papers_verdicts(tmp_path):
+    import numpy as np
+    m = tmp_path / "m"
+    m.mkdir()
+    n = 35
+    rids = [f"R{i:05d}" for i in range(1, n + 1)]
+    head = "rid\tdecision 1\tcode 1\tkinds 1\tnote 1\tdecision 2\tcode 2\tkinds 2\tnote 2\tpmid\tdoi\ttitle"
+    (m / "all.tsv").write_text(head + "\n" + "\n".join(f"{r}\tKEEP\t-\tpair\tn\tKEEP\t-\tpair\tn\t{i}\t10.1/{i}\tTitle {r}"
+                                                       for i, r in enumerate(rids, 1)) + "\n")
+    table = {**{d: 0 for d in S.DECISIONS}, **{c: 0 for c in S.CODES}, "KEEP": n}
+    (m / "merge.json").write_text(json.dumps(dict(n_screened=n, kappa=1.0, agreement=1.0, both_keep=n, to_owner=0,
+                                                  fulltext=n, table={"pass 1": table, "pass 2": table},
+                                                  sets={"both passes": {"code_X6": 0}})))
+    donors = {"R00001": "2 against 8", "R00002": "eight per group", "R00003": "6 paired donors"}
+
+    def write(ft):
+        ft.mkdir()
+        (ft / "batch_01.list").write_text("".join(f"{r}\t/x/{r}.txt\n" for r in rids))
+        lines = ["\t".join(S.FT_HEADER)]
+        for r in rids:
+            lines.append("\t".join([r, "KEEP", "-", "0"] + ["-"] * 12 + ["note"]))
+            verdict = "smFISH: the correlation falls too" if r == "R00004" else "-"
+            lines.append("\t".join([r, "CLAIM", "-", "1", "A, B", "mouse", "T cells", "young; old", "lower in old", "Pearson",
+                                    "results", "q", "GSE1", donors.get(r, "4 vs 4"), "yes", verdict, "-"]))
+        (ft / "batch_01.tsv").write_text("\n".join(lines) + "\n")
+        (ft / "without_fulltext.txt").write_text("")
+    write(tmp_path / "f1")
+    write(tmp_path / "f2")
+    S.merge_fulltext(m, tmp_path / "f1", tmp_path / "f2", tmp_path / "ftm")
+    res = S.claims_list(m, tmp_path / "ftm", tmp_path / "f1", tmp_path / "f2", tmp_path / "out")
+    assert res["papers_kept"] == 35 and res["papers_listed"] == 30 and res["drawn"] and not res["fewer_than_target"]
+    assert res["small_designs"] == 1 and res["donors_unread"] == 1 and res["verdicts_found"] == 1
+    listed = json.loads((tmp_path / "out" / "claims.json").read_text())["listed"]
+    assert listed == sorted(rids[i] for i in np.random.default_rng(20261020).choice(35, 30, replace=False))
+    md = (tmp_path / "out" / "claims.md").read_text()
+    assert "Kept, not drawn: " in md and "- R00001, pass 1, claim 1: **A, B**" in md
+    assert "R00002, pass 2, claim 1: eight per group" in md and "smFISH: the correlation falls too" in md

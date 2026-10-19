@@ -7,6 +7,7 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py merge --batches <dir> --pass1 <dir> --pass2 <dir> --out <dir>
     python -I validation/level_b/screening.py carry --old-batches <dir> --pass1 <dir> --pass2 <dir> --batches <dir> --out <dir>
     python -I validation/level_b/screening.py combine --batches <dir> --carried <dir> --pass1 <dir> --pass2 <dir> --out <dir>
+    python -I validation/level_b/screening.py claims --merge <dir> --ft-merge <dir> --ft1 <dir> --ft2 <dir> --out <dir>
     python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
@@ -36,6 +37,10 @@ listed apart, for the owner), `check-fulltext` checks a full-text decision file 
 `screening_fulltext.md`'s format, and `merge-fulltext` compares the passes' full-text decisions: Cohen's
 kappa over the records both passes read, the counts per pass, the papers both keep with each pass's claims,
 and what goes to the owner (decided differently, unclear, read by one pass only, or without a full text).
+`claims` writes the list for the owner (`claims.md`, `claims.json`): both steps' counts per pass, the sets and
+global measures, the papers both passes keep with each pass's claims (more than 30: 30 drawn by the protocol's
+seed), the designs with fewer than `MIN_REPLICATES` donors in a group listed apart, the verdicts the papers
+give, and the records for the owner.
 """
 from __future__ import annotations
 
@@ -68,6 +73,13 @@ CODE_NAMES = {
     "X8": "too few donors (the abstract shows it)", "X9": "data not public or not counts",
     "X10": "duplicate",
 }
+FT_CODE_NAMES = {
+    "F1": "no claim about a named pair with a direction", "F2": "SET or GLOBAL only", "F3": "a metric v0.4 cannot check",
+    "F4": "not single-cell RNA counts", "F5": "cell states within donors", "F6": "development data or a control",
+    "F7": "data not public as counts", "F8": "no donor ids", "F9": "too few donors", "F10": "duplicate",
+}
+PAPERS_MIN, PAPERS_MAX, PAPERS_SEED = 20, 30, 20261020  # the protocol's section 9
+MIN_REPLICATES = 3  # the engine's default minimum of replicates per group (report.DEFAULT_PREREG's min_replicates)
 
 
 def sha256(path: Path) -> str:
@@ -549,6 +561,102 @@ def merge_fulltext(merge_dir: Path, ft1: Path, ft2: Path, out: Path) -> dict:
     return res
 
 
+def donor_counts(text: str):
+    """The numbers a claim's `donors` field names, and whether it says the same donors are in both conditions;
+    None where it names no number (the owner reads it). A hint for the owner, not a parse of the design."""
+    t = re.sub(r"\bn\s*[12]\b", " ", text.lower())
+    nums = [int(x) for x in re.findall(r"(?<![\w.])(\d+)(?![\w.])", t)]
+    paired = any(w in t for w in ("paired", "same donors", "same animals", "same patients", "both conditions"))
+    return (nums, paired) if nums else None
+
+
+def claims_list(merge_dir: Path, ft_merge: Path, ft1: Path, ft2: Path, out: Path) -> dict:
+    """The list for the owner (protocol, section 11.5): the counts of both steps, the sets and global measures
+    (section 1), the papers both passes keep with each pass's claims (more than 30: 30 drawn, section 9), the
+    designs the engine cannot run, the verdicts the papers give, and what the owner decides."""
+    import numpy as np
+    ta = json.loads((merge_dir / "merge.json").read_text())
+    ft = json.loads((ft_merge / "ft_merge.json").read_text())
+    rows = {r[0]: r for r in (line.split("\t") for line in (merge_dir / "all.tsv").read_text().splitlines()[1:]) if r[0]}
+    d1, c1, _ = read_fulltext_pass(ft1)
+    d2, c2, _ = read_fulltext_pass(ft2)
+    kept = sorted(r for r in set(d1) & set(d2) if d1[r]["decision"] == d2[r]["decision"] == "KEEP")
+    drawn = (sorted(kept[i] for i in np.random.default_rng(PAPERS_SEED).choice(len(kept), PAPERS_MAX, replace=False))
+             if len(kept) > PAPERS_MAX else list(kept))
+    small, unread, verdicts = [], [], []
+    for rid in kept:
+        for k, c in ((1, c1), (2, c2)):
+            for cl in c.get(rid, []):
+                n = donor_counts(cl["donors"])
+                if n is None:
+                    unread.append((rid, k, cl))
+                elif not n[1] and min(n[0]) < MIN_REPLICATES:
+                    small.append((rid, k, cl))
+                if cl["verdict"].strip() not in ("-", ""):
+                    verdicts.append((rid, k, cl))
+    res = dict(titles_and_abstracts=dict(n=ta["n_screened"], kappa=ta["kappa"], agreement=ta["agreement"],
+                                         both_keep=ta["both_keep"], to_owner=ta["to_owner"], fulltext=ta["fulltext"]),
+               full_texts=dict(read_by_both=ft["read_by_both"], kappa=ft["kappa"], kept_by_both=ft["kept_by_both"],
+                               to_owner=ft["to_owner"]),
+               sets=ta["sets"], sets_at_full_text=ft["sets_or_global"], papers_kept=len(kept), papers_listed=len(drawn),
+               drawn=len(kept) > PAPERS_MAX, fewer_than_target=len(kept) < PAPERS_MIN,
+               claims={f"pass {k}": sum(len(c.get(r, [])) for r in kept) for k, c in ((1, c1), (2, c2))},
+               small_designs=len({r for r, *_ in small}), donors_unread=len({r for r, *_ in unread}),
+               verdicts_found=len({r for r, *_ in verdicts}))
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "claims.json").write_text(json.dumps(dict(res, kept=kept, listed=drawn), indent=1) + "\n")
+
+    def cl_line(k, cl):
+        return (f"  - pass {k}, claim {cl['claim']}: **{cl['genes']}** ({cl['species']}; {cl['cells']}); {cl['conditions']}; "
+                f"{cl['direction']}; {cl['metric']}; {cl['where']}; data {cl['data']}; donors {cl['donors']} (rule 4 "
+                f"{cl['rule4']}); verdict {cl['verdict']}\n    > {cl['quote']}")
+    L = ["# Level B: the claims for the owner", "",
+         f"Titles and abstracts: {ta['n_screened']} records, kappa {ta['kappa']:.3f}, agreement {ta['agreement']:.4f}; "
+         f"kept by both {ta['both_keep']}, to the owner {ta['to_owner']}, full texts asked {ta['fulltext']}.",
+         f"Full texts: read by both passes {ft['read_by_both']}, kappa {ft['kappa']:.3f}; kept by both {ft['kept_by_both']}, "
+         f"to the owner {ft['to_owner']}.", "",
+         "## The counts per pass", "", "| step | pass 1 | pass 2 |", "|---|---|---|"]
+    for key in ("KEEP", "UNCLEAR", "EXCLUDE"):
+        L.append(f"| titles and abstracts: {key} | {ta['table']['pass 1'].get(key, 0)} | {ta['table']['pass 2'].get(key, 0)} |")
+    for c in CODES:
+        L.append(f"| titles and abstracts: {c} ({CODE_NAMES[c]}) | {ta['table']['pass 1'].get(c, 0)} | "
+                 f"{ta['table']['pass 2'].get(c, 0)} |")
+    for key in ("KEEP", "UNCLEAR", "EXCLUDE", "without a full text"):
+        L.append(f"| full texts: {key} | {ft['counts']['pass 1'].get(key, 0)} | {ft['counts']['pass 2'].get(key, 0)} |")
+    for c in FT_CODES:
+        L.append(f"| full texts: {c} ({FT_CODE_NAMES[c]}) | {ft['counts']['pass 1'].get(c, 0)} | {ft['counts']['pass 2'].get(c, 0)} |")
+    L += ["", "## Sets and global measures (protocol, section 1: counted, not kept)", "",
+          f"Titles and abstracts: {json.dumps(ta['sets'])}. Full texts, F2: {json.dumps(ft['sets_or_global'])}.", "",
+          f"## The papers both passes keep: {len(kept)}", ""]
+    if len(kept) > PAPERS_MAX:
+        L.append(f"More than {PAPERS_MAX}: {PAPERS_MAX} drawn by numpy.random.default_rng({PAPERS_SEED}).choice({len(kept)}, "
+                 f"{PAPERS_MAX}, replace=False) over the kept papers in the order of their records; the others listed below.")
+    if len(kept) < PAPERS_MIN:
+        L.append(f"**Fewer than {PAPERS_MIN} papers with pairs** (section 9): the owner decides about change 9 from the counts "
+                 "of sets above.")
+    L.append("")
+    for rid in drawn:
+        r = rows.get(rid, [rid] + [""] * 11)
+        L.append(f"### {rid}: {r[11]}")
+        L.append(f"PMID {r[9] or '-'}, DOI {r[10] or '-'}")
+        for k, c in ((1, c1), (2, c2)):
+            L += [cl_line(k, cl) for cl in c.get(rid, [])]
+        L.append("")
+    if len(kept) > PAPERS_MAX:
+        L += ["Kept, not drawn: " + ", ".join(r for r in kept if r not in set(drawn)), ""]
+    L += [f"## Two groups whose donors field names a number below {MIN_REPLICATES} (the engine's minimum of replicates per "
+          "group; a 2-against-8 design passes rule 4 but not the engine): listed apart, the owner checks each", ""]
+    L += [f"- {rid}, " + cl_line(k, cl).strip()[2:] for rid, k, cl in small] or ["- none"]
+    L += ["", "## Claims whose donors field gives no numbers (the owner reads them)", ""]
+    L += [f"- {rid}, pass {k}, claim {cl['claim']}: {cl['donors']}" for rid, k, cl in unread] or ["- none"]
+    L += ["", "## The verdicts the papers themselves give (section 7; the search of section 7 is not yet run)", ""]
+    L += [f"- {rid}, pass {k}, claim {cl['claim']} ({cl['genes']}): {cl['verdict']}" for rid, k, cl in verdicts] or ["- none"]
+    L += ["", "## To the owner", "", "At titles and abstracts: `to_owner.tsv` (both notes). At the full texts:", ""]
+    L += ["```", (ft_merge / "ft_to_owner.txt").read_text().rstrip(), "```", ""]
+    (out / "claims.md").write_text("\n".join(L) + "\n")
+    return res
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
@@ -594,6 +702,12 @@ def main(argv=None) -> int:
     cy.add_argument("--pass2", type=Path, required=True)
     cy.add_argument("--batches", type=Path, required=True)
     cy.add_argument("--out", type=Path, required=True)
+    cl = sub.add_parser("claims")
+    cl.add_argument("--merge", type=Path, required=True)
+    cl.add_argument("--ft-merge", type=Path, required=True)
+    cl.add_argument("--ft1", type=Path, required=True)
+    cl.add_argument("--ft2", type=Path, required=True)
+    cl.add_argument("--out", type=Path, required=True)
     cb = sub.add_parser("combine")
     cb.add_argument("--batches", type=Path, required=True)
     cb.add_argument("--carried", type=Path, required=True)
@@ -603,6 +717,9 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.mode == "carry":
         print(json.dumps(carry(a.old_batches, a.pass1, a.pass2, a.batches, a.out), indent=1))
+        return 0
+    if a.mode == "claims":
+        print(json.dumps(claims_list(a.merge, a.ft_merge, a.ft1, a.ft2, a.out), indent=1))
         return 0
     if a.mode == "combine":
         print(json.dumps(combine(a.batches, a.carried, a.pass1, a.pass2, a.out), indent=1))
