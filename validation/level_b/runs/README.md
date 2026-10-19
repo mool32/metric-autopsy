@@ -53,3 +53,21 @@ technical failures of the run:
    through the forward citations.
 2. **PubMed dropped the phrase "loss of coordination"**: it is not in PubMed's phrase index
    (`quotedphrasesnotfound`), so PubMed's query ran without that term; Europe PMC's held it.
+
+## The full texts (`fulltext.log`, `fulltext.json`, `fulltext_index.tsv`)
+
+Copies of `results/level-b-fulltext` at e373c68 (workflow run 39329931756 at fb76f44), each identical to the
+branch's file (SHA256 `8610881dbc9e4492355ac616b6da87e6a838308c3e02ed722e5dc61af5d836b7`, `6de517adf46aff7b9fd1a8c9b5d68e9167f19e6fd115e7b8ab5df2cfd2d99247`,
+`572d91e6836fe0b9acac34bacb28849c6ff001c031d12e78a62d5c1bffdd9b8c`); the branch's `fulltext_list.tsv` is `../fulltext_list.tsv`; the raw full texts stay on the
+branch.
+
+- **The first run failed technically** (workflow run 39328790646 at cb79ec7): Europe PMC answered HTTP 500 to
+  all six attempts at `PMC8392141/fullTextXML` (R00014, the list's first record with a PMCID), and the script
+  stopped before anything was published. Since fb76f44 a full text refused on every attempt is recorded as
+  none for its record and the run goes on; a network failure, or server errors on more than a quarter of the
+  records, still fail it. The protocol allows a second run after a technical failure (section 2): the second
+  run is the record.
+- **The second run:** 46 of the 56 records' full texts fetched (Europe PMC's open-access JATS XML). 10 without
+  one, which go to the owner: 3 answered HTTP 500 on every attempt (R00014, R00173, R00394), and 7 have no
+  PMCID in PubMed or in their Europe PMC core records and no preprint id, so nothing could be asked (R00222,
+  R00438, R00582, R01062, R01338, R02068, R02134).

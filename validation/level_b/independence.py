@@ -25,6 +25,8 @@ def main(argv=None) -> int:
     ap.add_argument("--pass1", required=True)
     ap.add_argument("--pass2", required=True)
     ap.add_argument("--forbid", nargs="*", default=[], help="paths no session may name (the other decisions)")
+    ap.add_argument("--batch-pattern", default=r"batches/batch_(\d+)",
+                    help=r"the regular expression of a batch's path, its number the group (full texts: /batch_(\d+)\.list)")
     a = ap.parse_args(argv)
     dirs = {"1": a.pass1, "2": a.pass2}
     bad = n = 0
@@ -41,7 +43,7 @@ def main(argv=None) -> int:
         s = f.read_text(errors="replace")
         other = s.count(dirs["2" if p == "1" else "1"])
         forbidden = {x: s.count(x) for x in a.forbid}
-        batches = sorted(set(re.findall(r"batches/batch_(\d+)", s)))
+        batches = sorted(set(re.findall(a.batch_pattern, s)))
         ok = other == 0 and not any(forbidden.values()) and batches == [b]
         bad += not ok
         extra = "".join(f"; {x} named {k} times" for x, k in forbidden.items())
