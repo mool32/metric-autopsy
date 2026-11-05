@@ -342,7 +342,8 @@ by *responding* to signal, not merely by resisting nuisance — a metric that re
 numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`,
 `injected_signal.coupling_set(genes, strength, couple)` for a metric of a set's coordination, or
 `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
-(seqgendiff-style, so the data stay valid counts with real technical noise).
+(seqgendiff-style, so the data stay valid counts with real technical noise). The CLI and the MCP tool offer
+the coupling probe and, since v0.4 change 11, the module probe (`--inject-signal module --module-genes …`).
 
 **On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
 group whose replicates have more of the probed genes' counts per cell (each replicate weighted

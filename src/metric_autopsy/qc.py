@@ -14,7 +14,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .core import as_dense, warn_if_dense_too_large
+from .core import as_dense, column_block, issparse, n_detected, row_sums, warn_if_dense_too_large
 from .stats import norm_sf
 
 MITO_PREFIXES = ("mt-", "MT-", "Mt-")
@@ -37,6 +37,8 @@ def per_cell_qc(data) -> pd.DataFrame:
     out = pd.DataFrame(index=range(n))
 
     X = None
+    if issparse(data.X):  # v0.4 change 10: the same numbers from the stored entries, nothing densified
+        X = data.X
 
     def _dense_X():
         warn_if_dense_too_large(getattr(data.X, "shape", (n, len(data.var_names))), "per-cell QC")
@@ -46,13 +48,13 @@ def per_cell_qc(data) -> pd.DataFrame:
         out["n_genes"] = np.asarray(obs["n_genes_by_counts"])
     else:
         X = _dense_X() if X is None else X
-        out["n_genes"] = (X > 0).sum(axis=1)
+        out["n_genes"] = n_detected(X)
 
     if "total_counts" in obs:
         out["total_counts"] = np.asarray(obs["total_counts"])
     else:
         X = _dense_X() if X is None else X
-        out["total_counts"] = X.sum(axis=1)
+        out["total_counts"] = row_sums(X)
 
     var_names = list(data.var_names)
     # Sum over ALL columns matching a prefix (duplicate-safe, no name lookup).
@@ -60,12 +62,12 @@ def per_cell_qc(data) -> pd.DataFrame:
     ribo_cols = [i for i, g in enumerate(var_names) if str(g).startswith(RIBO_PREFIXES)]
     if mito_cols or ribo_cols:
         X = _dense_X() if X is None else X
-        tot = X.sum(axis=1)
+        tot = row_sums(X)
         tot_safe = np.where(tot == 0, 1.0, tot)
         if mito_cols:
-            out["pct_mito"] = X[:, mito_cols].sum(axis=1) / tot_safe
+            out["pct_mito"] = column_block(X, mito_cols).sum(axis=1) / tot_safe
         if ribo_cols:
-            out["pct_ribo"] = X[:, ribo_cols].sum(axis=1) / tot_safe
+            out["pct_ribo"] = column_block(X, ribo_cols).sum(axis=1) / tot_safe
     return out
 
 

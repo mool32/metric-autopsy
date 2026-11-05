@@ -85,7 +85,7 @@ python scripts/run_gates.py --h5ad <data.h5ad> \
     --metric <name> --gene-a <A> --gene-b <B> \
     --group-col <col> --groups <g1> <g2> --within <factor...> \
     --replicate-col <mouse> --prereg <prereg.json> \
-    --pos-pair <A> <B> --neg-pair <A> <B> [--inject-signal coupling] \
+    --pos-pair <A> <B> --neg-pair <A> <B> [--inject-signal coupling | --inject-signal module --module-genes <G> ...] \
     [--data2 <replicate.h5ad>] --json autopsy.json
 ```
 

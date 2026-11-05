@@ -8,7 +8,7 @@ comparability.
 ## [0.4.0.dev0] — in development, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-05):
-1, 2, 3, 4, 6, 7, 8, 9, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
+1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
 (the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
 `validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
 `validation/exploratory/real_pilot_5_summary.log`, and the two sets of decisions of 2026-10-19, after the
@@ -16,7 +16,8 @@ fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 1
 `validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day;
 change 17' was coded, failed its acceptance and was reverted by the owner on 2026-11-05. Change 9 was
 coded on the owner's decision of 2026-11-05, without its precondition of 2026-10-12 (GCL's definition
-checked against Levy et al. 2020; spec, section 9).
+checked against Levy et al. 2020; spec, section 9); changes 10 and 11 on the owner's second decisions of that
+day, before the tag.
 Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
@@ -154,6 +155,25 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   replication check and before the judgment gates.
 
 ### Added
+- **Sparse input (change 10, coded on the owner's decision of 2026-11-05).** `SimpleData` accepts a
+  scipy.sparse X (CSR, CSC, COO, a sparse array) and holds it as a float64 CSR matrix in canonical form; an
+  AnnData's sparse X stays sparse in the gates' working copy. No path densifies the whole matrix: the cells'
+  totals and genes detected, the claim's and the probes' columns as dense blocks
+  (`core.row_sums`, `n_detected`, `column_block`, `with_columns`), the equal-depth thinning on the stored
+  entries, GATE 0's perturbations and its depth-matched null (256 genes at a time), the injections, GATE 5's
+  null and positive control, the reference `norm_pearson`. The same data stored dense or sparse get the same
+  report, number for number and draw for draw (a canonical CSR matrix stores its entries in the row-major
+  order of the dense matrix's nonzeros, and numpy's binomial draws nothing for a zero count; a sparse
+  matrix's non-integer rows are summed as numpy sums the dense rows). One step works on a block of every
+  gene: GATE 0's null in depth bins (non-count input, the library-size perturbation) permutes the genes of one
+  depth bin at a time on its dense block. `spectral_entropy`, a whole-matrix metric, densifies its input.
+  scipy is imported only when a sparse matrix is passed. `tests/test_v04_sparse.py`;
+  `validation/exploratory/sparse_scale.py` and its log (a pair's claim at a realistic size, synthetic).
+- **The module probe in the CLI and the MCP server (change 11, coded on the owner's decision of
+  2026-11-05).** `--inject-signal module --module-genes G1 G2 … [--module-fold F]`, the MCP tool's
+  `inject_signal="module"`, `module_genes`, `module_fold`; one builder for every front end
+  (`injected_signal.named`); with a SESOI on the construct's scale GATE 4 doses the probe to exp(SESOI)-fold.
+  `tests/test_v04_frontends.py`.
 - **A coupling probe on a set of genes (change 9, coded on the owner's decision of 2026-11-05).**
   `injected_signal.coupling_set(genes, strength=1.0, couple="all")`: the genes it couples are thinned with
   one per-cell keep probability (a shared factor), against a sham that thins every gene of the set with its
@@ -222,6 +242,10 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   17 (it runs at 1e4696c), the evidence of its rejection.
 
 ### Known issues
+- **On a sparse X, GATE 0's null in depth bins works one bin at a time on its dense block** (a tenth of the
+  cells by every gene: non-count input, and the null of the library-size perturbation, whose counts are no
+  longer integers), to draw the dense path's random numbers; it warns above the dense budget
+  (`METRIC_AUTOPSY_DENSE_WARN_GB`). Every other path keeps a sparse X sparse.
 - **The owner's construction of change 17, the differential sensitivity, rejected on its own log**
   (`validation/exploratory/differential_sensitivity.log`): the groups' responses to the same injected
   coupling differ by their biology, not only by their detection, so the difference it subtracted was in

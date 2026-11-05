@@ -29,13 +29,26 @@ from typing import Sequence
 
 import numpy as np
 
-from .core import SimpleData, as_dense, unique_col_index
+from .core import SimpleData, as_dense, canonical_csr, column_block, issparse, unique_col_index, with_columns
 
 
 def _materialize(data) -> SimpleData:
+    """A private SimpleData to inject into. A sparse X is not copied: it is never written in place, the
+    injected columns go into a new matrix (``_replaced``; v0.4 change 10)."""
     if isinstance(data, SimpleData):
-        return SimpleData(data.X.copy(), data.obs.copy(), data.var_names)
+        return SimpleData(data.X if issparse(data.X) else data.X.copy(), data.obs.copy(), data.var_names)
+    if issparse(data.X):
+        return SimpleData(canonical_csr(data.X), data.obs.copy(), list(data.var_names))
     return SimpleData(as_dense(data.X).copy(), data.obs.copy(), list(data.var_names))
+
+
+def _replaced(sd: SimpleData, cols, after):
+    """`sd`'s matrix with the columns `cols` set to `after`: in place for a dense X (a private copy), a new
+    matrix for a sparse one."""
+    if issparse(sd.X):
+        return with_columns(sd.X, cols, after)
+    sd.X[:, cols] = after
+    return sd.X
 
 
 def _require_counts(X: np.ndarray, what: str):
@@ -79,24 +92,27 @@ def module(genes: Sequence[str], fold: float = 2.0, frac: float = 1.0):
     def inject(data, rng):
         sd = _materialize(data)
         idx = [unique_col_index(sd.var_names, g) for g in genes]
-        before = sd.X[:, idx]
+        before = column_block(sd.X, idx)
         _require_counts(before, "module injection")
         after = _columns(before, rng)
-        sd.X[:, idx] = after
+        X = _replaced(sd, idx, after)
         obs = sd.obs
         if "total_counts" in obs:
             # gene-subset objects carry library size in obs: remove the counts thinned (a copy:
             # pandas' copy-on-write hands out read-only arrays)
             tot = np.array(obs["total_counts"], dtype=float)
             obs["total_counts"] = tot - (before - after).sum(axis=1)
-        return SimpleData(sd.X, obs, sd.var_names)
+        return SimpleData(X, obs, sd.var_names)
 
     def depth_loss(data) -> float:
         """The expected share of the cells' counts the injection removes."""
-        X = as_dense(data.X)
         idx = [unique_col_index(list(data.var_names), g) for g in genes]
-        total = float(X.sum())
-        return float(frac * (1.0 - 1.0 / fold) * X[:, idx].sum() / total) if total > 0 else 0.0
+        if issparse(data.X):
+            total, part = float(data.X.sum()), float(column_block(data.X, idx).sum())
+        else:
+            X = as_dense(data.X)
+            total, part = float(X.sum()), X[:, idx].sum()
+        return float(frac * (1.0 - 1.0 / fold) * part / total) if total > 0 else 0.0
 
     inject.description = f"module({len(genes)} genes, 1/{fold:g} by thinning, frac={frac:g})"
     inject.kind = "module"
@@ -130,15 +146,15 @@ def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
     def _thin(data, rng, shared: bool):
         sd = _materialize(data)
         cols = [unique_col_index(sd.var_names, g) for g in genes]
-        before = sd.X[:, cols]
+        before = column_block(sd.X, cols)
         _require_counts(before, "coupling injection")
         after = _columns(before, rng, shared)
-        sd.X[:, cols] = after
+        X = _replaced(sd, cols, after)
         obs = sd.obs
         if "total_counts" in obs:
             obs["total_counts"] = (np.asarray(obs["total_counts"], dtype=float)
                                    - (before - after).sum(axis=1))
-        return SimpleData(sd.X, obs, sd.var_names)
+        return SimpleData(X, obs, sd.var_names)
 
     def inject(data, rng):
         return _thin(data, rng, shared=True)
@@ -199,15 +215,15 @@ def coupling_set(genes: Sequence[str], strength: float = 1.0, couple: str = "all
     def _thin(data, rng, shared: bool):
         sd = _materialize(data)
         cols = [unique_col_index(sd.var_names, g) for g in genes]
-        before = sd.X[:, cols]
+        before = column_block(sd.X, cols)
         _require_counts(before, "coupling injection")
         after = _columns(before, rng, shared)
-        sd.X[:, cols] = after
+        X = _replaced(sd, cols, after)
         obs = sd.obs
         if "total_counts" in obs:
             obs["total_counts"] = (np.asarray(obs["total_counts"], dtype=float)
                                    - (before - after).sum(axis=1))
-        return SimpleData(sd.X, obs, sd.var_names)
+        return SimpleData(X, obs, sd.var_names)
 
     def inject(data, rng):
         return _thin(data, rng, shared=True)
@@ -225,6 +241,25 @@ def coupling_set(genes: Sequence[str], strength: float = 1.0, couple: str = "all
     sham.columns = lambda before, rng: _columns(before, rng, False)
     inject.sham = sham
     return inject
+
+
+FRONT_END_PROBES = ("coupling", "module")
+
+
+def named(kind: str | None, *, gene_pair=None, module_genes=None, module_fold: float = 2.0):
+    """The probe a front end names (the CLI's ``--inject-signal``, the MCP tool's ``inject_signal``; v0.4 change
+    11): ``"coupling"`` of the gene pair (none without a pair, as before), ``"module"`` of `module_genes` lowered
+    `module_fold`-times by thinning (with a SESOI on the construct's scale GATE 4 doses it to exp(SESOI)-fold);
+    None for no probe."""
+    if not kind:
+        return None
+    if kind == "coupling":
+        return coupling(*gene_pair) if gene_pair else None
+    if kind == "module":
+        if not module_genes:
+            raise ValueError("the module probe needs its genes (--module-genes, module_genes)")
+        return module(list(module_genes), fold=float(module_fold))
+    raise ValueError(f"unknown probe {kind!r}: one of {FRONT_END_PROBES}")
 
 
 def describe(inject) -> str:

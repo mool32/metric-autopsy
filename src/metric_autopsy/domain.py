@@ -87,7 +87,8 @@ def claim_domain(data, *, type_col: str, group_col: str, groups: Sequence, repli
     if G is not None:
         detected = (G > 0) if kind == "pair" else (G.sum(axis=1, keepdims=True) > 0)
         names = [str(g) for g in genes] if kind == "pair" else ["set"]
-        tot = np.asarray(data.X.sum(axis=1), dtype=float).ravel()[keep]
+        from .core import issparse, row_sums
+        tot = np.asarray(row_sums(data.X) if issparse(data.X) else data.X.sum(axis=1), dtype=float).ravel()[keep]
         index = np.log1p(1e4 * G.sum(axis=1) / np.where(tot > 0, tot, 1.0))
     need = max(int(min_replicates), MIN_REPLICATES)
     g0, g1 = (str(x) for x in groups)

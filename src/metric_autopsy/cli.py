@@ -19,6 +19,11 @@ Real analysis on your AnnData:
 (``--sesoi 0.1`` is on the construct's scale: a change of 0.1 in the correlation of the pair's log
 expected expression, which GATE 4's coupling probe translates into the metric's units.)
 
+The module probe (v0.4 change 11) lowers a module's genes by thinning; with ``--sesoi`` on the construct's
+scale (a change of the module's natural-log expression) GATE 4 doses it to exp(SESOI)-fold:
+    metric-autopsy --h5ad data.h5ad --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 ... \
+        --inject-signal module --module-genes Smad3 Col1a1 --sesoi 0.2
+
 ``--metric`` names a function in ``metric_autopsy.metrics``. Bring-your-own metrics are
 supported from Python via ``metric_autopsy.run_autopsy``; the CLI covers the reference set.
 A pre-registration can be given as JSON (``--prereg``); explicit flags override it. Every
@@ -107,8 +112,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale, "
                    "unless --sesoi-scale observed)")
     p.add_argument("--sesoi-scale", choices=["construct", "observed"],
-                   help="the scale of the SESOI: 'construct' (default; a change of the correlation of the pair's "
-                        "log expected expression, translated into the metric's units by the --inject-signal probe) "
+                   help="the scale of the SESOI: 'construct' (default; for the coupling probe a change of the "
+                        "correlation of the pair's log expected expression, for the module probe of the module's "
+                        "natural-log expression, translated into the metric's units by the --inject-signal probe) "
                         "or 'observed' (a difference of the metric as measured at this depth)")
     p.add_argument("--bias-tolerance", type=float,
                    help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
@@ -117,8 +123,13 @@ def build_parser() -> argparse.ArgumentParser:
                         "blind only where its response is shown at or below zero")
     p.add_argument("--min-replicates", type=int, help="minimum replicates per group (>= 3)")
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
-    p.add_argument("--inject-signal", choices=["coupling"],
-                   help="test the metric's response to an injected coupling of the gene pair")
+    p.add_argument("--inject-signal", choices=list(injected_signal.FRONT_END_PROBES),
+                   help="test the metric's response to an injected signal: 'coupling' of the gene pair, or "
+                        "'module': the --module-genes lowered --module-fold-times by thinning")
+    p.add_argument("--module-genes", nargs="+", help="the module's genes for --inject-signal module")
+    p.add_argument("--module-fold", type=float, default=2.0,
+                   help="the module probe's fold (default 2; with --sesoi on the construct's scale GATE 4 doses it "
+                        "to exp(SESOI))")
     p.add_argument("--composition", nargs="*", default=[],
                    help="obs columns of an annotation, the cell type first (e.g. cell_type tissue): their shares "
                         "are compared between the groups at the replicate level, and the claim is judged within "
@@ -183,8 +194,11 @@ def main(argv=None):
 
     data2 = _load_h5ad(args.data2) if args.data2 else None
     pairwise_controls = bool(is_pairwise and args.pos_pair and args.neg_pair)
-    signal = (injected_signal.coupling(*gene_pair) if (args.inject_signal == "coupling" and gene_pair)
-              else None)
+    try:
+        signal = injected_signal.named(args.inject_signal, gene_pair=gene_pair, module_genes=args.module_genes,
+                                       module_fold=args.module_fold)
+    except ValueError as e:
+        sys.exit(str(e))
     is_demo = bool(args.demo or not args.h5ad)
     # None lets run_autopsy apply the shared rule (logged iff pre-registered)
     log_path = "off" if args.no_log else (args.log or ("off" if is_demo else None))

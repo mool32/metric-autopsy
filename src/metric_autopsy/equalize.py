@@ -21,11 +21,22 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .core import SimpleData, as_dense
+from .core import SimpleData, as_dense, canonical_csr, issparse, stored_rows
 
 
 def looks_like_counts(X) -> bool:
-    """Non-negative integers (checked on a sample of entries for large matrices)."""
+    """Non-negative integers (checked on a sample of entries for large matrices). A sparse matrix is
+    checked on the same sample of entries as its dense form, without densifying it (v0.4 change 10)."""
+    if issparse(X):
+        n, m = X.shape
+        size = int(n) * int(m)
+        if size > 200_000:
+            pick = np.random.default_rng(0).integers(0, size, 200_000)
+            M = canonical_csr(X)
+            flat = np.asarray(M[pick // m, pick % m], dtype=float).ravel()
+        else:
+            flat = np.asarray(X.toarray(), dtype=float).ravel()
+        return bool(np.all(flat >= 0) and np.allclose(flat, np.round(flat)))
     X = as_dense(X) if not isinstance(X, np.ndarray) else X
     flat = X.ravel()
     if flat.size > 200_000:
@@ -71,7 +82,10 @@ def thin_to_match(data: SimpleData, group_col: str, groups: tuple, *, totals: np
     distributions are reported (``ks_after``), not removed.
     """
     rng = rng if rng is not None else np.random.default_rng(0)
-    X = np.array(data.X, dtype=float, copy=True)
+    sparse = issparse(data.X)
+    # a sparse X is thinned on its stored entries, in the dense matrix's row-major order: numpy's
+    # binomial draws nothing for a zero count, so the draws are the dense path's (v0.4 change 10)
+    X = canonical_csr(data.X, copy=True) if sparse else np.array(data.X, dtype=float, copy=True)
     totals = np.asarray(totals, dtype=float)
     obs = data.obs.copy()
     labels = np.asarray(obs[group_col])
@@ -89,7 +103,11 @@ def thin_to_match(data: SimpleData, group_col: str, groups: tuple, *, totals: np
         before = float(totals[hi].mean())
         p = float(np.clip(totals[lo].mean() / before, 0.0, 1.0)) if before > 0 else 1.0
         keep_p[hi] = p
-        X[hi] = rng.binomial(X[hi].astype(np.int64), p).astype(float)
+        if sparse:
+            pos = stored_rows(X, hi)
+            X.data[pos] = rng.binomial(X.data[pos].astype(np.int64), p).astype(float)
+        else:
+            X[hi] = rng.binomial(X[hi].astype(np.int64), p).astype(float)
         after_t = totals[hi] * p
         info.append(dict(stratum=stratum or "pooled", thinned_group=str(labels[hi[0]]),
                          n_thinned=int(len(hi)), mean_before=before, mean_after=float(after_t.mean()),
@@ -98,6 +116,8 @@ def thin_to_match(data: SimpleData, group_col: str, groups: tuple, *, totals: np
     if "total_counts" in obs:
         obs["total_counts"] = np.asarray(obs["total_counts"], dtype=float) * keep_p
     depth_ratio = min((r["depth_ratio"] for r in info), default=1.0)
+    if sparse:
+        X.eliminate_zeros()
     return SimpleData(X, obs, data.var_names), dict(strata=info, depth_ratio=depth_ratio)
 
 

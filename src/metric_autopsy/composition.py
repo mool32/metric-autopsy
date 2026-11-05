@@ -190,7 +190,8 @@ def technical_covariates(data, group_col: str, groups: Sequence, replicate_col: 
     if design["kind"] == "mixed":
         return dict(error=design["reason"])
     X = src.X
-    per_cell = {TECHNICAL[0]: np.asarray(X.sum(axis=1), dtype=float).ravel(),
+    from .core import issparse, row_sums
+    per_cell = {TECHNICAL[0]: np.asarray(row_sums(X) if issparse(X) else X.sum(axis=1), dtype=float).ravel(),
                 TECHNICAL[1]: np.asarray((X > 0).sum(axis=1), dtype=float).ravel()}
     rep = np.asarray(obs[replicate_col]).astype(str)
     cell_sets = {"all cells": keep}

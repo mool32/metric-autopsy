@@ -108,16 +108,20 @@ def norm_pearson(data, *, gene_a: str, gene_b: str, min_codetected: int = MIN_CO
     not measured reported as no correlation (the third diagnostics, Marsh et al. 2022's inhibited
     arm); the engine leaves out the replicates where the metric gives no value and lists them.
     """
-    from .core import as_dense, unique_col_index
+    from .core import as_dense, column_block, issparse, row_sums, unique_col_index
 
-    X = as_dense(data.X)
     var_names = list(data.var_names)
     ia, ib = unique_col_index(var_names, gene_a), unique_col_index(var_names, gene_b)
-    raw_a, raw_b = X[:, ia], X[:, ib]
+    if issparse(data.X):  # its two columns and the cells' totals, nothing densified (v0.4 change 10)
+        X = data.X
+        raw_a, raw_b = column_block(X, [ia, ib]).T
+    else:
+        X = as_dense(data.X)
+        raw_a, raw_b = X[:, ia], X[:, ib]
     both = (raw_a > 0) & (raw_b > 0)
     if both.sum() < max(3, int(min_codetected)):
         return float("nan")
-    tot = X.sum(axis=1)
+    tot = row_sums(X)
     tot = np.where(tot == 0, 1.0, tot)
     a = np.log1p(raw_a / tot * 1e4)[both]
     b = np.log1p(raw_b / tot * 1e4)[both]
@@ -139,8 +143,10 @@ def spectral_entropy(data) -> float:
     metric typically PASSES GATE 0. It is here as an honest whole-matrix example, not an
     antihero; `mi_3bin` is the metric that reliably fails.
     """
-    from .core import as_dense
+    from .core import as_dense, issparse, warn_if_dense_too_large
 
+    if issparse(data.X):  # a whole-matrix metric: its gene-gene correlation needs every gene densely
+        warn_if_dense_too_large(data.X.shape, "spectral_entropy (a whole-matrix metric)")
     X = as_dense(data.X)
     # keep genes with nonzero variance
     v = X.var(axis=0)

@@ -48,7 +48,7 @@ from typing import Sequence
 
 import numpy as np
 
-from .core import Assessment, SimpleData
+from .core import Assessment, SimpleData, column_block, issparse, n_detected, row_sums
 from .equalize import looks_like_counts, spikein_columns, thin_to_match
 from .gates import _as_simple, _safe_call
 from . import qc as _qc
@@ -339,7 +339,7 @@ def assess_design(
         elif not looks_like_counts(sd.X):
             design.update(identifiable=False, reason="spike-in capture correction needs raw counts")
         else:
-            totals = sd.X[:, cols].sum(axis=1)
+            totals = column_block(sd.X, cols).sum(axis=1)
             frac_with = float(np.mean(totals > 0))
             design["spikein_columns"] = len(cols)
             design["frac_cells_with_spikeins"] = frac_with
@@ -401,9 +401,9 @@ def capture_check(raw: SimpleData, equalized: SimpleData, group_col: str, groups
     capture model does not describe (entry-level dropout, say); the check cannot tell which."""
     out = {}
     for name, d in (("raw", raw), ("equalized", equalized)):
-        X = d.X if isinstance(d.X, np.ndarray) else np.asarray(d.X)
-        depth = X.sum(axis=1)
-        genes = (X > 0).sum(axis=1)
+        X = d.X if isinstance(d.X, np.ndarray) or issparse(d.X) else np.asarray(d.X)
+        depth = row_sums(X)
+        genes = n_detected(X)
         grp = np.asarray(d.obs[group_col])
         rep = np.asarray(d.obs[replicate_col]).astype(str) if replicate_col else None
         row = {}
@@ -431,7 +431,7 @@ def public_design(design: dict) -> dict:
 def _totals(data, correction: str, spikein_prefix: str) -> np.ndarray:
     if correction == "capture_thinning":
         cols = spikein_columns(data.var_names, spikein_prefix)
-        return np.asarray(data.X[:, cols].sum(axis=1), dtype=float)
+        return np.asarray(column_block(data.X, cols).sum(axis=1), dtype=float)
     return np.asarray(_qc.per_cell_qc(data)["total_counts"], dtype=float)
 
 

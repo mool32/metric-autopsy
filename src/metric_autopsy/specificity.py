@@ -36,7 +36,7 @@ from typing import Callable, Sequence
 import numpy as np
 
 from .combined import Estimator, Units
-from .core import SimpleData, as_dense
+from .core import SimpleData, as_dense, issparse, row_sums
 from .stats import clopper_pearson
 
 K_CONTROLS = 1000
@@ -158,7 +158,7 @@ def _units_on_rows(data, group_col, groups, replicate_col, within, domain) -> Un
 def _reduced(pool_X, rows, cols, names, obs) -> SimpleData:
     """The cells `rows` with the columns `cols` and one column of their other counts."""
     sub = pool_X[rows]
-    tot = np.asarray(sub.sum(axis=1), dtype=float).ravel()
+    tot = np.asarray(row_sums(sub) if issparse(sub) else sub.sum(axis=1), dtype=float).ravel()
     sel = np.asarray(as_dense(sub[:, cols]), dtype=float).reshape(len(rows), len(cols))
     rest = np.clip(tot - sel.sum(axis=1), 0.0, None)
     return SimpleData(np.column_stack([sel, rest]), obs.iloc[rows], list(names) + [REST])

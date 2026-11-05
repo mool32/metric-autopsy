@@ -21,7 +21,8 @@ from typing import Callable, Sequence
 import numpy as np
 import pandas as pd
 
-from .core import GateResult, GateStatus, SimpleData, as_dense, warn_if_dense_too_large
+from .core import (GateResult, GateStatus, SimpleData, as_dense, canonical_csr, column_block, issparse,
+                   looks_like_counts_matrix, row_sums, warn_if_dense_too_large, with_columns)
 from . import qc as _qc
 from .stats import extend_null, t_ppf
 
@@ -30,9 +31,12 @@ Metric = Callable[[object], float]
 
 
 def _as_simple(data) -> SimpleData:
-    """Materialize any duck-typed data object as a mutable SimpleData copy."""
+    """Materialize any duck-typed data object as a mutable SimpleData copy (a sparse X stays sparse:
+    v0.4 change 10)."""
     if isinstance(data, SimpleData):
         return SimpleData(data.X.copy(), data.obs.copy(), data.var_names)
+    if issparse(data.X):
+        return SimpleData(canonical_csr(data.X, copy=True), data.obs.copy(), list(data.var_names))
     warn_if_dense_too_large(getattr(data.X, "shape", (len(data.obs), len(data.var_names))),
                             "the gates (dense working copy)")
     return SimpleData(as_dense(data.X).copy(), data.obs.copy(), list(data.var_names))
@@ -63,13 +67,58 @@ def _safe_call(fn):
 NULL_DEPTH_BINS = 10
 
 
-def _looks_like_counts(X: np.ndarray) -> bool:
-    return bool(np.all(X >= 0) and np.allclose(X, np.round(X)))
+def _looks_like_counts(X) -> bool:
+    return looks_like_counts_matrix(X)
+
+
+def _scale_rows(X, factors: np.ndarray):
+    """A sparse X with every row multiplied by its factor (the dense ``X * factors[:, None]``)."""
+    out = X.copy()
+    out.data = out.data * np.repeat(factors, np.diff(out.indptr))
+    return out
+
+
+def _perturb_sparse(data: SimpleData, kind: str, rng: np.random.Generator,
+                    protect: frozenset = frozenset()) -> tuple[SimpleData, dict]:
+    """`_perturb` on a sparse X, with the dense path's draws (v0.4 change 10): its stored entries are in
+    the dense matrix's row-major order, a zero count draws no binomial, and only positive entries can be
+    dropped."""
+    X = data.X.copy()
+    note = {}
+    if kind == "extra_dropout":
+        nz = np.flatnonzero(X.data > 0)
+        k = int(0.2 * len(nz))
+        if k:
+            pick = nz[rng.choice(len(nz), size=k, replace=False)]
+            X.data[pick] = 0.0
+            X.eliminate_zeros()
+    elif kind == "depth_downsample":
+        if _looks_like_counts(X) and np.all(X.data <= np.iinfo(np.int64).max):
+            X.data = rng.binomial(X.data.astype(np.int64), 0.5).astype(float)
+            X.eliminate_zeros()
+        else:
+            X = _scale_rows(X, rng.uniform(0.25, 0.75, size=X.shape[0]))
+            note["note"] = "approximate: input is not raw counts (per-cell scaling used)"
+    elif kind == "library_scale":
+        X = _scale_rows(X, rng.uniform(0.5, 2.0, size=X.shape[0]))
+    elif kind == "gene_subsample":
+        keep = rng.random(X.shape[1]) < 0.8
+        for j, gname in enumerate(data.var_names):
+            if gname in protect:
+                keep[j] = True
+        if keep.sum() >= 2:
+            return SimpleData(X[:, keep], data.obs,
+                              [g for g, k in zip(data.var_names, keep) if k]), note
+    else:
+        raise ValueError(kind)
+    return SimpleData(X, data.obs, data.var_names), note
 
 
 def _perturb(data: SimpleData, kind: str, rng: np.random.Generator,
              protect: frozenset = frozenset()) -> tuple[SimpleData, dict]:
     """Return (perturbed data, note-dict) for one nuisance perturbation."""
+    if issparse(data.X):
+        return _perturb_sparse(data, kind, rng, protect)
     X = data.X.copy()
     note = {}
     if kind == "extra_dropout":
@@ -120,8 +169,11 @@ def _shuffle_null(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) ->
     """Permute every gene independently across cells *within depth bins*.
 
     Keeps each gene's distribution and the depth structure; destroys gene-gene co-variation.
-    The metric's value on this data is its 'no biology, same technology' reference.
+    The metric's value on this data is its 'no biology, same technology' reference. A sparse X is
+    permuted one depth bin at a time on that bin's dense block, with the same draws (v0.4 change 10).
     """
+    if issparse(sd.X):
+        return _shuffle_null_sparse(sd, bins, rng)
     X = sd.X.copy()
     for b in np.unique(bins):
         idx = np.where(bins == b)[0]
@@ -130,6 +182,26 @@ def _shuffle_null(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) ->
         order = np.argsort(rng.random((len(idx), X.shape[1])), axis=0)
         X[idx] = np.take_along_axis(X[idx], order, axis=0)
     return SimpleData(X, sd.obs, sd.var_names)
+
+
+def _shuffle_null_sparse(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) -> SimpleData:
+    import scipy.sparse as sp
+    X = sd.X
+    parts, order_rows = [], []
+    for b in np.unique(bins):
+        idx = np.where(bins == b)[0]
+        block = X[idx]
+        if len(idx) >= 2:
+            warn_if_dense_too_large((len(idx), X.shape[1]), "GATE 0's null of non-count data (one depth bin)")
+            order = np.argsort(rng.random((len(idx), X.shape[1])), axis=0)
+            block = sp.csr_matrix(np.take_along_axis(block.toarray(), order, axis=0))
+        parts.append(block)
+        order_rows.append(idx)
+    rows = np.concatenate(order_rows)
+    stacked = sp.vstack(parts, format="csr")
+    back = np.empty(len(rows), dtype=np.int64)
+    back[rows] = np.arange(len(rows))
+    return SimpleData(stacked[back], sd.obs, sd.var_names)
 
 
 def _mean_sd(vals):
@@ -438,8 +510,16 @@ def claim_null(sd: SimpleData, genes, rng) -> SimpleData:
     the counts of every other gene of the claim's), the other genes untouched; a claim without genes, or
     non-count input, takes the whole null (`_gene_null`)."""
     from .core import unique_col_index
-    if not genes or not _looks_like_counts(np.asarray(sd.X)):
+    if not genes or not _looks_like_counts(sd.X if issparse(sd.X) else np.asarray(sd.X)):
         return _gene_null(sd, rng)
+    if issparse(sd.X):  # v0.4 change 10: the claim's columns only, the same draws
+        cols = [unique_col_index(list(sd.var_names), str(g)) for g in genes]
+        B = column_block(sd.X, cols)
+        depth = row_sums(sd.X) - B.sum(axis=1)
+        new = B.copy()
+        for jj in range(len(cols)):
+            new[:, jj] = _depth_matched_draw(B[:, jj], depth, rng)
+        return SimpleData(with_columns(sd.X, cols, new), sd.obs, sd.var_names)
     X = np.array(sd.X, dtype=float, copy=True)
     cols = [unique_col_index(list(sd.var_names), str(g)) for g in genes]
     depth = X.sum(axis=1) - X[:, cols].sum(axis=1)
@@ -827,7 +907,10 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
         return out
     if decouple is not None and sham is None:
         raise ValueError("decoupling needs an injector with a sham")
-    work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    if issparse(data.X):
+        work = SimpleData(canonical_csr(data.X, copy=True), data.obs.copy(), list(data.var_names))
+    else:
+        work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
     return _column_deltas(metric, work, inject, n_rep, rng, decouple=decouple)
 
 
@@ -838,13 +921,14 @@ def _column_deltas(metric, work: SimpleData, inject, n_rep: int, rng, *, decoupl
     sham = getattr(inject, "sham", None)
     X, obs = work.X, work.obs
     cols = [unique_col_index(work.var_names, g) for g in inject.genes]
-    original = X[:, cols].copy()
+    sparse = issparse(X)
+    original = column_block(X, cols).copy()
     if not _looks_like_counts(original):
         raise ValueError("the injection needs raw counts (non-negative integers)")
     tot = np.asarray(obs["total_counts"], dtype=float).copy() if "total_counts" in obs else None
     if decouple is not None:
         kb = list(inject.genes).index(decouple)
-        depth = X.sum(axis=1) - original.sum(axis=1)
+        depth = row_sums(X) - original.sum(axis=1)
     base = _safe_call(lambda: metric(work)) if sham is None else None
     out = []
     try:
@@ -855,6 +939,13 @@ def _column_deltas(metric, work: SimpleData, inject, n_rep: int, rng, *, decoupl
             vals = []
             for fn in ((inject.columns,) if sham is None else (inject.columns, sham.columns)):
                 after = fn(before, rng)
+                if sparse:  # a new matrix with the columns replaced: the values a dense copy holds
+                    o = obs.copy()
+                    if tot is not None:
+                        o["total_counts"] = tot - (original - after).sum(axis=1)
+                    cur = SimpleData(with_columns(X, cols, after), o, work.var_names)
+                    vals.append(_safe_call(lambda: metric(cur)))
+                    continue
                 X[:, cols] = after
                 if tot is not None:
                     obs["total_counts"] = tot - (original - after).sum(axis=1)
@@ -863,7 +954,8 @@ def _column_deltas(metric, work: SimpleData, inject, n_rep: int, rng, *, decoupl
             if v is not None and ref is not None and np.isfinite(v - ref):
                 out.append(v - ref)
     finally:
-        X[:, cols] = original
+        if not sparse:
+            X[:, cols] = original
         if tot is not None:
             obs["total_counts"] = tot
     return out
@@ -916,9 +1008,10 @@ def _unit_group(units, i: int) -> int:
 
 def _bio_variances(X: np.ndarray, cols, units, k: int) -> list:
     """Each probed gene's biological variance of log expression, the mean over group k's units."""
-    tot = X.sum(axis=1)
+    tot = row_sums(X)
+    B = column_block(X, cols)
     out = []
-    for j in cols:
+    for jj, j in enumerate(cols):
         vals = []
         for i in range(units.n_units):
             if units.kind == "nested" and _unit_group(units, i) != k:
@@ -926,7 +1019,7 @@ def _bio_variances(X: np.ndarray, cols, units, k: int) -> list:
             idx = _unit_cells(units, i, k)
             if len(idx) >= 3:
                 from .injected_signal import biological_log_variance
-                v = biological_log_variance(X[idx, j], tot[idx])
+                v = biological_log_variance(B[idx, jj], tot[idx])
                 if np.isfinite(v):
                     vals.append(v)
         out.append(float(np.mean(vals)) if vals else float("nan"))
@@ -946,7 +1039,8 @@ def _unit_responses(metric, sd: SimpleData, X: np.ndarray, units, k: int, inject
         if len(idx) == 0:
             continue
         used[i] = True
-        sub = SimpleData(np.array(X[idx], copy=True), sd.obs.iloc[idx].copy(), list(sd.var_names))
+        sub = SimpleData(X[idx] if issparse(X) else np.array(X[idx], copy=True), sd.obs.iloc[idx].copy(),
+                         list(sd.var_names))
         v, n_ok = _replicate_delta(metric, sub, inject, n_rep, rng)
         if v is not None and np.isfinite(v) and n_ok >= max(2, n_rep // 2):
             resp[i] = v
@@ -988,9 +1082,9 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
         if units is None:
             return dict(error=design["reason"])
         kind = units.kind
-    X = as_dense(sd.X)
+    X = sd.X if issparse(sd.X) else as_dense(sd.X)
     cols = [unique_col_index(sd.var_names, g) for g in genes]
-    probe = np.asarray(X[:, cols], dtype=float).sum(axis=1)
+    probe = np.asarray(column_block(X, cols), dtype=float).sum(axis=1)
     level = {}
     for k, gname in enumerate(groups):
         per = []
@@ -1245,9 +1339,11 @@ def _matched_pool(sub, pair, exclude, rng) -> list:
     Pairs are unordered and never repeated: the null's resolution is limited by the number of
     distinct pairs, and drawing the same pair twice would overstate it (a small panel offers
     only a few hundred)."""
-    X = as_dense(sub.X)
     names = [str(g) for g in sub.var_names]
-    means = X.mean(axis=0)
+    if issparse(sub.X):  # the sums of counts are exact in any order: the dense means
+        means = np.asarray(sub.X.sum(axis=0), dtype=float).ravel() / sub.X.shape[0]
+    else:
+        means = as_dense(sub.X).mean(axis=0)
     na = _neighbourhood(means, names, str(pair[0]), exclude)
     nb = _neighbourhood(means, names, str(pair[1]), exclude)
     pool = sorted({tuple(sorted((a, b))) for a in na for b in nb if a != b})
@@ -1316,15 +1412,29 @@ def _depth_matched_matrix(X: np.ndarray, depth: np.ndarray, rng, window: int = D
     up = (width_up > 0)[:, None]
     width = np.maximum(width_up, 1)[:, None]
     safe = np.where(depth > 0, depth, 1.0)
-    out = np.empty((n, n_genes), dtype=float)
+    sparse = issparse(X)
+    if sparse:  # v0.4 change 10: chunk by chunk on the chunk's dense block, the same draws, a sparse result
+        import scipy.sparse as sp
+        Xc, blocks = X.tocsc(), []
+    else:
+        out = np.empty((n, n_genes), dtype=float)
     for c0 in range(0, n_genes, chunk):
         c1 = min(n_genes, c0 + chunk)
         u = rng.random((n, c1 - c0))
         partner = np.where(up, rank[:, None] + 1 + np.floor(u * width).astype(np.int64), rank[:, None])
         j = order[np.clip(partner, 0, n - 1)]
-        counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
+        if sparse:
+            counts = np.round(Xc[:, c0:c1].toarray()[j, np.arange(c1 - c0)[None, :]]).astype(np.int64)
+        else:
+            counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
         ratio = np.where(depth[j] > 0, depth[:, None] / safe[j], 1.0)
-        out[:, c0:c1] = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+        drawn = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+        if sparse:
+            blocks.append(sp.csc_matrix(drawn.astype(float)))
+        else:
+            out[:, c0:c1] = drawn
+    if sparse:
+        return canonical_csr(sp.hstack(blocks, format="csr") if blocks else sp.csr_matrix((n, n_genes)))
     return out
 
 
@@ -1342,13 +1452,16 @@ def _gene_null(sd: SimpleData, rng, bins: np.ndarray | None = None, mode: str | 
     depth bins.
     """
     if (mode or _null_mode(sd)) == "depth-matched":
-        X = np.asarray(sd.X, float)
-        return SimpleData(_depth_matched_matrix(X, X.sum(axis=1), rng), sd.obs, sd.var_names)
+        X = sd.X if issparse(sd.X) else np.asarray(sd.X, float)
+        return SimpleData(_depth_matched_matrix(X, row_sums(X), rng), sd.obs, sd.var_names)
     return _shuffle_null(sd, bins if bins is not None else _depth_bins(sd), rng)
 
 
 def _pair_depth(X: np.ndarray, ia: int, ib: int) -> np.ndarray:
     """Per-cell depth for the pair's null: total counts of all *other* genes."""
+    if issparse(X):
+        B = column_block(X, [ia, ib])
+        return row_sums(X) - B[:, 0] - B[:, 1]
     return X.sum(axis=1) - X[:, ia] - X[:, ib]
 
 
@@ -1365,8 +1478,9 @@ def _shuffled_null(pair_metric, sub, pair, n_null, rng):
     sd = _as_simple(sub)
     names = list(map(str, sd.var_names))
     ia, jb = names.index(str(pair[0])), names.index(str(pair[1]))
-    original = sd.X[:, jb].copy()
-    counts = _looks_like_counts(sd.X[:, [ia, jb]])
+    sparse = issparse(sd.X)
+    original = column_block(sd.X, [jb])[:, 0].copy() if sparse else sd.X[:, jb].copy()
+    counts = _looks_like_counts(column_block(sd.X, [ia, jb]) if sparse else sd.X[:, [ia, jb]])
     depth = _pair_depth(sd.X, ia, jb)
     groups = None
     if not counts:
@@ -1374,12 +1488,18 @@ def _shuffled_null(pair_metric, sub, pair, n_null, rng):
         groups = [np.where(bins == k)[0] for k in np.unique(bins)]
     vals = []
     for _ in range(n_null):
-        sd.X[:, jb] = (_depth_matched_draw(original, depth, rng) if counts
-                       else _shuffle_within(original, groups, rng))
-        v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
+        col = (_depth_matched_draw(original, depth, rng) if counts
+               else _shuffle_within(original, groups, rng))
+        if sparse:  # v0.4 change 10: a new matrix with gene b replaced, the values the dense copy holds
+            cur = SimpleData(with_columns(sd.X, [jb], col[:, None]), sd.obs, sd.var_names)
+            v = _safe_call(lambda: pair_metric(cur, gene_a=pair[0], gene_b=pair[1]))
+        else:
+            sd.X[:, jb] = col
+            v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
         if v is not None:
             vals.append(v)
-    sd.X[:, jb] = original
+    if not sparse:
+        sd.X[:, jb] = original
     return np.asarray(vals)
 
 
