@@ -20,6 +20,9 @@ Deterministic; ~25 min.
 
     python validation/probes/verdicts_v03.py > validation/probes/verdicts_v0.3.0.dev0.log
 
+The engine is this checkout's `src`, whatever is installed (a worktree's run of another commit included);
+the script stops if another engine was imported. Two logs are compared by `compare_verdicts.py`.
+
 Development set: these probes found the bugs and the fixes were developed against them, so
 the numbers below have no confirmatory weight.
 """
@@ -37,7 +40,11 @@ from typing import Callable, Optional
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+SRC = HERE.parents[1] / "src"
+# this checkout's engine first: run from a worktree, Python otherwise imports the editable install's engine
+# (another checkout's src) while the header names this checkout's commit (README.md, "v0.4: the dev set at
+# two engines")
+sys.path[:0] = [str(SRC), str(HERE)]
 import test_probes as tp  # noqa: E402  (builders and the frozen calls)
 from test_gates import add_mice, make_clean  # noqa: E402
 from test_v03_verdict import (  # noqa: E402
@@ -50,6 +57,11 @@ from metric_autopsy import (  # noqa: E402
     metrics, run_autopsy,
 )
 from metric_autopsy.cli import demo_data  # noqa: E402
+import metric_autopsy as _engine  # noqa: E402
+
+if Path(_engine.__file__).resolve().parent.parent != SRC.resolve():
+    sys.exit(f"the engine imported is {_engine.__file__}, not this checkout's ({SRC}): its verdicts "
+             "would be logged under another commit")
 
 AGE = dict(group_col="age", groups=("young", "old"))
 

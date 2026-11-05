@@ -23,9 +23,11 @@ It runs at 1e4696c only. The owner rejected change 17 on this log (decisions of 
 group's response to the injection depends on its own biology, so the check subtracted the biology itself.
 The change was reverted with the test file it imports and the dossier's ``differential_sensitivity`` it reads
 (GATE 4's second injection, the ratio k); its log stays as the evidence of the rejection. To rerun it, check
-1e4696c out in a worktree:
+1e4696c out in a worktree and put the worktree's src first on the path (without it Python imports the
+editable install's engine, another checkout's; validation/probes/README.md, "v0.4: the dev set at two
+engines"):
 
-    git worktree add ../ma-1e4696c 1e4696c && cd ../ma-1e4696c && python validation/exploratory/differential_sensitivity.py
+    git worktree add ../ma-1e4696c 1e4696c && cd ../ma-1e4696c && PYTHONPATH=src python validation/exploratory/differential_sensitivity.py
 """
 from __future__ import annotations
 
