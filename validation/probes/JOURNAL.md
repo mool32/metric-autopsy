@@ -303,3 +303,18 @@ ordinary test; v1's failure (`test_a_sparse_background_failed_before_d1`) is `xf
 **For the owner.** Whether p12's expectation follows change 10 (proposed: on this path nothing is densified,
 and where a sparse matrix is still densified beyond the budget the engine warns first), and whether v1's
 failure is kept as a record only (D1), not as a test of the current engine.
+
+**The owner's decision (2026-11-05): accepted.** p12's expectation follows change 10, and v1's failure is
+D1's record (`validation/prereg/DEVIATIONS.md`), not a test of the current engine.
+- p12 (`test_p12_never_densifies_a_large_sparse_matrix_silently`): GATE 1's per-cell QC on the same 2,000 x 500
+  sparse AnnData with the same 0.001 GB budget never densifies the matrix (a guard refuses a dense copy of it,
+  through `toarray` and `as_dense`) and announces nothing (a `DenseMemoryWarning` would fail the test); a step
+  that densifies it, the whole-matrix metric `spectral_entropy`, warns first, naming the dense size. The engine
+  before change 10 fails the first part: at ac0bca4 GATE 1 warns, and with the warning allowed it densifies
+  the matrix (both checks run against ac0bca4's `src` and this checkout's, `python -I`).
+- The anchors' `test_a_sparse_background_failed_before_d1` is removed; `test_a_sparse_background_loads_dense_after_d1`
+  stays as it was.
+- One precision on the finding above, from the code: where the values are not integers (p12's are not) the
+  cells' totals are summed a block of 256 rows at a time (`core.ROW_CHUNK`; the dense rows' numpy sums, change
+  10), so "densifies nothing" means the matrix: GATE 1 densifies blocks of 256 rows by every gene, of a size
+  fixed whatever the number of cells, and never the matrix. The test allows such blocks.

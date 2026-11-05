@@ -37,7 +37,7 @@ def per_cell_qc(data) -> pd.DataFrame:
     out = pd.DataFrame(index=range(n))
 
     X = None
-    if issparse(data.X):  # v0.4 change 10: the same numbers from the stored entries, nothing densified
+    if issparse(data.X):  # v0.4 change 10: the same numbers from the stored entries, the matrix never densified
         X = data.X
 
     def _dense_X():

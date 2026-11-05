@@ -481,25 +481,54 @@ def test_p11b_depth_artifact_with_enough_mice_is_explained_by_depth():
 
 
 # --------------------------------------------------------------------------- #
-# p12 — atlas-scale memory: warn before densifying
+# p12 — atlas-scale memory: no silent densification
 # --------------------------------------------------------------------------- #
 # fixed in v0.3.0.dev0 — v0.1.1 failure (p12): silent densification of sparse X
-# v0.4 change 10 keeps a sparse X sparse, so this path densifies nothing and warns of nothing (JOURNAL.md,
-# D10; for the owner's decision)
-@pytest.mark.xfail(strict=True, reason="v0.4 change 10: per-cell QC reads a sparse X's stored entries and "
-                                       "densifies nothing (JOURNAL.md, D10)")
-def test_p12_warns_before_densifying_a_large_sparse_matrix(monkeypatch):
-    """Truth: densifying this sparse matrix exceeds the configured budget. The engine must
-    warn (naming the dense size) before it allocates."""
+# the expectation follows v0.4 change 10 by the owner's decision of 2026-11-05 (JOURNAL.md, D10): v0.3
+# densified the matrix for the per-cell QC and warned first; v0.4 keeps it sparse there, and warns where it
+# still densifies one
+def test_p12_never_densifies_a_large_sparse_matrix_silently(monkeypatch):
+    """Truth: densifying this sparse matrix exceeds the configured budget, and the engine must not do it
+    silently. GATE 1's per-cell QC never densifies it (it reads the stored entries; the cells' totals of
+    non-integer values are summed a block of `core.ROW_CHUNK` rows at a time) and announces nothing; a step
+    that densifies it, the whole-matrix metric `spectral_entropy`, warns (naming the dense size) first."""
     anndata = pytest.importorskip("anndata")
     sparse = pytest.importorskip("scipy.sparse")
+    import warnings
+
+    from metric_autopsy import core, qc
+
     monkeypatch.setenv("METRIC_AUTOPSY_DENSE_WARN_GB", "0.001")
     X = sparse.random(2000, 500, density=0.02, format="csr", random_state=0)
     obs = pd.DataFrame({"age": ["young", "old"] * 1000}, index=[f"c{i}" for i in range(2000)])
     var = pd.DataFrame(index=["mt-Co1"] + [f"g{i}" for i in range(499)])
-    ad = anndata.AnnData(X=X, obs=obs, var=var)
-    with pytest.warns(UserWarning, match="dense"):
-        gate1_qc_parity(ad, "age", ("young", "old"))
+
+    def whole(shape):  # more rows than a block of the totals' sums and wider than any block of columns
+        return shape[0] > core.ROW_CHUNK and shape[1] > 256
+
+    class Guarded(sparse.csr_matrix):  # its slices and copies keep the class
+        def toarray(self, *a, **k):
+            if whole(self.shape):
+                raise AssertionError(f"the whole matrix densified: {self.shape}")
+            return super().toarray(*a, **k)
+
+    as_dense = core.as_dense
+
+    def guarded(x):
+        if core.issparse(x) and whole(x.shape):
+            raise AssertionError(f"the whole matrix densified: {x.shape}")
+        return as_dense(x)
+    for mod in (core, qc):
+        monkeypatch.setattr(mod, "as_dense", guarded)
+    ad = anndata.AnnData(X=Guarded(X), obs=obs, var=var)
+    assert isinstance(ad.X, Guarded)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", core.DenseMemoryWarning)  # nothing to announce: nothing densified
+        assert gate1_qc_parity(ad, "age", ("young", "old")).status != GateStatus.FAIL
+    monkeypatch.undo()
+    monkeypatch.setenv("METRIC_AUTOPSY_DENSE_WARN_GB", "0.001")
+    with pytest.warns(core.DenseMemoryWarning, match="2000 x 500 matrix .* dense"):
+        metrics.spectral_entropy(anndata.AnnData(X=X, obs=obs, var=var))
 
 
 # --------------------------------------------------------------------------- #

@@ -290,3 +290,10 @@ engine: `verdicts_v0.4_229d685.log` (17' reverted) and `verdicts_v0.4_ac0bca4.lo
 **Changes 10 and 11 (b40742a, 2026-11-05)**, run in a worktree of b40742a (the script runs its own checkout's
 engine): `verdicts_v0.4_b40742a.log` against 1337ead's (`verdicts_v0.4_b40742a_compare.log`): 0 lines differ. The dev set's data are dense, so this checks that the dense path is the code it was; the sparse
 path's own check is `tests/test_v04_sparse.py`.
+
+**p12 at change 10 (D10, the owner's decision of 2026-11-05).** p12's expectation follows change 10. v0.3
+densified the sparse matrix for GATE 1's per-cell QC and warned first; v0.4 reads its stored entries and
+never densifies the matrix there (the cells' totals of non-integer values are summed 256 rows at a time), so
+`test_p12_never_densifies_a_large_sparse_matrix_silently` checks that GATE 1 neither densifies the matrix nor
+announces anything, and that a step which still densifies it, the whole-matrix metric `spectral_entropy`,
+warns first. Against the engine before change 10 (ac0bca4) the first check fails (`d10_p12_engines.log`).
