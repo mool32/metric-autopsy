@@ -286,3 +286,7 @@ which held the code of changes 17–19 in progress (committed at 12:00 as 1e4696
 engine: `verdicts_v0.4_229d685.log` (17' reverted) and `verdicts_v0.4_ac0bca4.log` (change 9) are
 1337ead's lines, the header aside (`verdicts_v0.4_revert_compare.log`: against `verdicts_v0.4_1337ead.log`,
 0 lines differ for the rerun of 1337ead, for 229d685 and for ac0bca4).
+
+**Changes 10 and 11 (b40742a, 2026-11-05)**, run in a worktree of b40742a (the script runs its own checkout's
+engine): `verdicts_v0.4_b40742a.log` against 1337ead's (`verdicts_v0.4_b40742a_compare.log`): 0 lines differ. The dev set's data are dense, so this checks that the dense path is the code it was; the sparse
+path's own check is `tests/test_v04_sparse.py`.
