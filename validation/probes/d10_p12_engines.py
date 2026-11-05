@@ -51,7 +51,8 @@ def one(src: str) -> None:
             with warnings.catch_warnings():
                 warnings.simplefilter("error" if strict else "ignore", core.DenseMemoryWarning)
                 r = gate1_qc_parity(ad, "age", ("young", "old"))
-            print(f"  {label}: GATE 1 {r.status.value}, no warning and no dense copy of the matrix")
+            print(f"  {label}: GATE 1 {r.status.value}, " + ("no warning and no dense copy of the matrix" if strict
+                  else "no dense copy of the matrix"))
         except Exception as e:  # what the check records
             print(f"  {label}: {type(e).__name__}: {str(e).splitlines()[0][:120]}")
 
