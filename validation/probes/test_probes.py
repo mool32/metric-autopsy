@@ -484,6 +484,10 @@ def test_p11b_depth_artifact_with_enough_mice_is_explained_by_depth():
 # p12 — atlas-scale memory: warn before densifying
 # --------------------------------------------------------------------------- #
 # fixed in v0.3.0.dev0 — v0.1.1 failure (p12): silent densification of sparse X
+# v0.4 change 10 keeps a sparse X sparse, so this path densifies nothing and warns of nothing (JOURNAL.md,
+# D10; for the owner's decision)
+@pytest.mark.xfail(strict=True, reason="v0.4 change 10: per-cell QC reads a sparse X's stored entries and "
+                                       "densifies nothing (JOURNAL.md, D10)")
 def test_p12_warns_before_densifying_a_large_sparse_matrix(monkeypatch):
     """Truth: densifying this sparse matrix exceeds the configured budget. The engine must
     warn (naming the dense size) before it allocates."""

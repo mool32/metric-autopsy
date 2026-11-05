@@ -43,10 +43,17 @@ def _background(tmp: Path, *, dense: bool = False, mice: int = 4, cells: int = 3
     return spec, X, genes
 
 
-def test_a_sparse_background_failed_before_d1_and_loads_dense_after(tmp_path):
+# split verbatim on 2026-11-05 (validation/probes/JOURNAL.md, D10; for the owner's decision): v0.4 change 10
+# makes SimpleData accept a sparse X, so v1's failure no longer occurs; the load after D1 still holds
+@pytest.mark.xfail(strict=True, reason="v0.4 change 10: SimpleData accepts a sparse X (JOURNAL.md, D10)")
+def test_a_sparse_background_failed_before_d1(tmp_path):
     spec, X, genes = _background(tmp_path)
     with pytest.raises(ValueError):  # the path of v1's run: a scipy matrix into SimpleData
         SimpleData(sparse.csr_matrix(X), pd.DataFrame(index=range(len(X))), genes)
+
+
+def test_a_sparse_background_loads_dense_after_d1(tmp_path):
+    spec, X, genes = _background(tmp_path)
     got, kept, obs = anchors._load(spec, "B2", tmp_path, named=("Xist", *anchors.Y_GENES))
     assert isinstance(got, np.ndarray) and got.shape == X.shape  # fewer genes than N_GENES: all kept
     assert kept == genes and np.array_equal(got, X)

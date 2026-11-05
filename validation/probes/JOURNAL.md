@@ -278,3 +278,28 @@ the undecided pairs it certifies a response in 5 of 25 datasets where the popula
 within ±0.02 of zero and its sign is not established, and calls the metric blind in 5. With a
 replicate unit `run_autopsy` judges GATE 4 on the claim's statistic over the replicates (change 1),
 which this probe does not measure.
+
+
+## D10 — v0.4's change 10 against p12 and the anchors' D1 test (2026-11-05; for the owner's decision)
+
+**The finding.** Change 10 (sparse input; decided 2026-10-12, coded on the owner's decision of 2026-11-05)
+contradicts two expectations written for v0.3's handling of a sparse X. The CI of b40742a found them (its
+full jobs; `validation/probes` and `validation/prereg` were not rerun locally before that push).
+- **p12** (`test_p12_warns_before_densifying_a_large_sparse_matrix`): GATE 1 on a 2,000 x 500 sparse AnnData,
+  with a dense budget of 0.001 GB, must warn before densifying it. v0.3 densified the whole matrix for the
+  per-cell QC; v0.4 reads its stored entries and densifies nothing, so nothing is announced. The truth behind
+  p12, that the engine does not exhaust memory silently on a sparse matrix (v0.1.1's failure), holds more
+  strongly: the allocation the warning announced no longer happens. The warning stays where the engine still
+  densifies a sparse matrix (GATE 0's null in depth bins, one bin at a time; `spectral_entropy`).
+- **The anchors' D1 test** (`validation/prereg/test_anchors.py`): its first assertion is v1's failure itself,
+  a scipy matrix into SimpleData raising ValueError, so that R1 never reached the engine
+  (`validation/prereg/DEVIATIONS.md`, D1). Change 10 removes that failure by design; its record stays in D1.
+  The test's second part, the background loaded dense after D1's fix, holds.
+
+**What changed.** Nothing in the expectations. p12's test is `xfail(strict=True)`. The anchors' test is split,
+its assertions verbatim: the part that holds (`test_a_sparse_background_loads_dense_after_d1`) stays an
+ordinary test; v1's failure (`test_a_sparse_background_failed_before_d1`) is `xfail(strict=True)`.
+
+**For the owner.** Whether p12's expectation follows change 10 (proposed: on this path nothing is densified,
+and where a sparse matrix is still densified beyond the budget the engine warns first), and whether v1's
+failure is kept as a record only (D1), not as a test of the current engine.

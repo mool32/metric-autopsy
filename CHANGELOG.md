@@ -167,7 +167,9 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   matrix's non-integer rows are summed as numpy sums the dense rows). One step works on a block of every
   gene: GATE 0's null in depth bins (non-count input, the library-size perturbation) permutes the genes of one
   depth bin at a time on its dense block. `spectral_entropy`, a whole-matrix metric, densifies its input.
-  scipy is imported only when a sparse matrix is passed. `tests/test_v04_sparse.py`;
+  scipy is imported only when a sparse matrix is passed. Two expectations written for v0.3's handling of a
+  sparse X, p12's warning before densifying and v1's failure in the anchors' D1 test, are xfail(strict=True)
+  for the owner's decision (`validation/probes/JOURNAL.md`, D10). `tests/test_v04_sparse.py`;
   `validation/exploratory/sparse_scale.py` and its log (a pair's claim at a realistic size, synthetic: 10,000
   cells by 10,000 genes, 9.4 million stored entries, 361 s, a peak resident memory of 949 MB where a dense copy
   alone would take 800 MB). The dev set at b40742a: 1337ead's lines (0 lines differ).
