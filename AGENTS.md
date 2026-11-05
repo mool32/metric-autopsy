@@ -39,10 +39,9 @@ v0.4 the rest is still estimated and reported as the dossier, marked `DOSSIER_ON
 effect is judged across biological replicates at equal depth (or spike-in capture), never
 across cells. SUPPORTED needs a metric whose response is demonstrated (positive control or
 injected signal), a replicate-level DETECTED effect in the pre-registered direction and resolved
-judgment gates. For a claim about a pair (a metric of structure) the correction equalizes the pair's
-detection after equal depth, and GATE 4's s_m is measured on the same corrected data (v0.4 change 17';
-its acceptance on synthetic data failed criterion (ii) on 2026-10-19 — `validation/plans/v0.4_spec.md`,
-section 17' — and the owner decides).
+judgment gates. A difference between the groups in detection is not corrected beyond equal depth: v0.4's
+change 17' (a pair's detection equalized) failed its acceptance and was reverted on 2026-11-05
+(`validation/plans/v0.4_spec.md`, section 17'); the dossier's correction line reports the gap.
 Every difference in the dossier is groups[0] − groups[1].
 Always stratify
 by every factor (`--within sex tissue …`) — confounds hide in interactions that pooling

@@ -8,38 +8,24 @@ comparability.
 ## [0.4.0.dev0] — in development, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-19):
-1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 17', 18 and 19, and the claim's domain
+1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
 (the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
 `validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
 `validation/exploratory/real_pilot_5_summary.log`, and the two sets of decisions of 2026-10-19, after the
 fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 17's acceptance,
-`validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day.
+`validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day;
+change 17' was coded, failed its acceptance and was reverted by the owner on 2026-11-05.
 Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
-- **The pair's detection, equalized after equal depth (change 17', the owner's second decisions of
-  2026-10-19).** Equal depth leaves the groups' detection unequal where their libraries differ in
-  complexity (on preprint §4 it widened the gap in genes per cell from 24% to 29%), and a metric of
-  structure reads detection. For a claim about a pair (`gene_pair`; a set waits for change 9, a metric of
-  level is not equalized) every draw of the correction now has, after equal depth, the pair's detection
-  equalized in every cell set where the effect is estimated — each stratum, and with a domain each
-  stratum and cell type: the group that detects a gene in the larger share of its cells has that gene's
-  counts thinned binomially, one keep probability per set, to the other group's share
-  (`equalize.equalize_detection`, `equalize.detection_keep_probability`), from a random stream of its own
-  keyed by the effect's seed (the thinning to equal depth draws as before). No threshold. The effect, and
-  so the verdict, is at equal depth and detection, by the effect's usual rule (no new cause); the change
-  12 test of the technical difference and GATE 6 equalize the same way. The dossier gives each gene's
-  detection per group uncorrected, at equal depth and after, and the effect at equal depth alone
-  (`effect.detail["detection"]`, `["equal_depth_effect"]`). **Its acceptance on synthetic data failed, on
-  criterion (ii)** (Known issues).
-- **GATE 4 measures s_m on the data the effect is judged on (the owner's second decisions of
-  2026-10-19).** For every claim GATE 4 now runs on one draw of the effect's correction — equal depth (or
-  spike-in capture) within each stratum and, with a domain, each cell type, and for a pair the pair's
-  detection equalized (`effect.equalized_for_probe`, its own keyed stream); `detail["data"]` says which.
-  So the SESOI in the metric's units, GATE 0's tolerance, the TOST and EFFECT BELOW SESOI change for every
-  claim with a probe and a thinning correction. The line of `norm_pearson` beside a pair's metric is
-  computed inside the effect's estimate on the same draws (`report.coupling_reference(values=)`): its
-  metric over the strata is the effect itself.
+- **Change 17' reverted (the owner, 2026-11-05).** Coded at 07935fa: for a claim about a pair, after equal
+  depth, the pair's detection equalized in every cell set where the effect is estimated, and GATE 4 run on
+  one draw of the correction for every claim, so that s_m was measured on the data the effect is judged
+  on. Its acceptance on synthetic data failed on criterion (ii) (Known issues). The engine is again
+  1337ead's but for changes 18 and 19 and the fix of GATE 5's note on its null's centre:
+  `equalize.equalize_detection`, `effect.equalized_for_probe`, `estimate_effect(claim_genes=, reference=)`,
+  `coupling_reference(values=)`, `gate6_replication(claim_genes=)` and the dossier's line of detection are
+  gone; GATE 4 runs on the data as they are, and the line of `norm_pearson` is again on the uncorrected data.
 - **Change 17, the differential sensitivity, reverted (the owner's second decisions of 2026-10-19).**
   Coded at 1e4696c (GATE 4's second injection, the ratio k_poor / k_rich, the bound subtracted from the
   effect, the cause `differential_sensitivity`, the test of detection that gated it, its line of the
@@ -214,11 +200,10 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
 - **The correction's line (change 19).** How equal depth changed the groups' relative gap in genes
   detected per cell, on the domain's cells and on all cells, with a WARNING where the gap grew
   (`Autopsy.capture`, `report.capture_summary`); on §4 it grew from 24.4% to 29.1%.
-- `tests/test_v04_detection.py`: the mechanics of change 17' (the keep probability, the equalization per
-  cell set, the verdict's data, GATE 4's data for a pair and for a metric of level, nothing equalized
-  without counts) and the tests of changes 18 and 19; `tests/detection_data.py`, the synthetic generator
-  (mice nested in age, the old group deeper but less complex, as on §4); its acceptance on 20 seeds per
-  scenario, `validation/exploratory/detection_equalization.py` and its log.
+- `tests/test_v04_direction.py`: the tests of changes 18 and 19 (they were in `tests/test_v04_detection.py`,
+  which went with change 17'), on `tests/detection_data.py`, the synthetic generator (mice nested in age,
+  the old group deeper but less complex, as on §4). The acceptance of the reverted change 17', on 20 seeds
+  per scenario: `validation/exploratory/detection_equalization.py` (it runs at 07935fa to 572c1da) and its log.
 - `validation/exploratory/differential_sensitivity.py` and its log: the acceptance of the reverted change
   17 (it runs at 1e4696c), the evidence of its rejection.
 
@@ -227,20 +212,14 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   (`validation/exploratory/differential_sensitivity.log`): the groups' responses to the same injected
   coupling differ by their biology, not only by their detection, so the difference it subtracted was in
   part the effect.
-- **Change 17' failed its acceptance on synthetic data, on criterion (ii)**
-  (`validation/exploratory/detection_equalization.log`, 2026-10-19): at an equal detection the verdicts
-  are those of v0.4 without change 17 (1337ead) in 65 of 80 seeds for `mi_3bin` and 78 of 80 for
-  `norm_pearson`; criteria (i), (iii), (iv) and (v) pass. Of `mi_3bin`'s 15 differences 13 are GATE 0's
-  decision, which moves with s_m now measured on a draw of the corrected data (by 113% on average over
-  the 15 seeds, 17% over the 65 that agree), the rest an equivalence test at its boundary
-  (`detection_equalization_flips.log`). By the owner's rule nothing further is designed; v0.4 is not
-  proposed for the tag.
-- **Change 17' does not reach a difference in detection that is correlated within cells**: where one
-  group's cells vary more in capture, the pair's detection shares can be equalized while the cells'
-  shared capture still couples the genes (the acceptance's case (vi), reported, not a criterion: no
-  SUPPORTED, and `norm_pearson`'s effect moved by about 0.05 toward the group whose capture varies more).
-- **GATE 0's tolerance is bias_tolerance × s_m with s_m now measured at equal depth and detection**, while
-  GATE 0 perturbs the uncorrected data; the line of specificity (change 13) stays on the uncorrected data.
+- **A difference between the groups in detection is not corrected beyond equal depth.** Change 17' failed
+  its acceptance on synthetic data on criterion (ii) (`validation/exploratory/detection_equalization.log`,
+  2026-10-19): at an equal detection the verdicts were those of v0.4 without change 17 (1337ead) in 65 of 80
+  seeds for `mi_3bin` and 78 of 80 for `norm_pearson`, criteria (i), (iii), (iv) and (v) passing; of
+  `mi_3bin`'s 15 differences 13 were GATE 0's decision, which moved with s_m measured on a draw of the
+  corrected data (`detection_equalization_flips.log`). Reverted on 2026-11-05. Where the groups differ in
+  detection an equal coupling can show as a difference; the correction's line (change 19) reports the gap,
+  nothing corrects it.
 - **GATE 0 falsely fails a valid metric in 4 of 40 seeds, with change 12 too.** On the nested-mice
   test data (`norm_pearson`, groups without a difference in dropout, SESOI 0.02 on the metric's
   scale), the `extra_dropout` perturbation moves the metric by 0.0195 to 0.0213 (about 0.021) against

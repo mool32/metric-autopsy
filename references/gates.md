@@ -68,21 +68,6 @@ weighted equally (strata by precision), on (replicate, type) units at equal dept
 domain's cells. The whole mixture's estimate, the estimate outside the domain and each type's are
 reported, not judged.
 
-**The pair's detection (v0.4 change 17', the owner's decision of 2026-10-19).** For a claim about a
-pair, a metric of structure, the correction equalizes the pair's detection after equal depth: in every
-cell set where the effect is estimated (each stratum; with a domain, each stratum and cell type), the
-group that detects a gene of the pair in the larger share of its cells has that gene's counts thinned
-binomially, one keep probability for the set, to the other group's share
-(`equalize.equalize_detection`), from a random stream of its own keyed like every draw. No threshold: at
-an equal detection the probability is near 1. The effect, and so the verdict, is at equal depth and
-detection, by the effect's usual rule (no new cause); GATE 4's response s_m, the SESOI in the metric's
-units, is measured on the same data (one draw of the correction, for every claim:
-`effect.equalized_for_probe`), and so is the line of `norm_pearson`. The dossier gives each gene's
-detection per group uncorrected, at equal depth and after, and the effect at equal depth alone. A
-difference in detection that equalizing the pair's shares does not reach — dropout correlated within a
-cell by a wider spread of capture in one group — is a known limitation (the acceptance's case (vi),
-`validation/exploratory/detection_equalization.log`).
-
 **The dossier** (v0.4) is everything reported beside the verdict; every difference in it is
 `groups[0] − groups[1]`, the effect test's convention, which its header names (the owner's decision of
 2026-10-19: v0.4.0.dev0's `norm_pearson` row gave groups[1] − groups[0]); the specificity line gives its
@@ -198,14 +183,12 @@ classified:
   depth falls — that the earlier rule failed in 4 of 4 datasets although the composition
   correction removes it between groups.
 - **attenuation** — the signal shrinks toward the null while the null stays put. This is
-  reliability, not confounding (Spearman): an attenuation equal in both groups pulls an effect
-  toward zero and cannot create one. It is **reported, not failed** — the fraction of signal lost
-  goes to `design_adequacy` as a power check (below). Where the groups differ in detection it is not
-  equal: the same coupling then moves the metric less in the poorer group, and an equal coupling
-  shows as a difference. GATE 0 perturbs the pooled cells and cannot see that; for a claim about a
-  pair the effect field equalizes the pair's detection after equal depth (v0.4 change 17', above: on
-  preprint §4 extra dropout removed 64% of the signal while the young units detected 1,166 more genes
-  per cell).
+  reliability, not confounding (Spearman): uniform attenuation pulls an effect toward zero
+  and cannot create one. It is **reported, not failed** — the fraction of signal lost goes to
+  `design_adequacy` as a power check (below). Where the groups differ in detection it is not
+  uniform, and an equal coupling can show as a difference; GATE 0 perturbs the pooled cells and
+  cannot see that. A known issue: v0.4's change 17', which equalized a pair's detection after equal
+  depth, failed its acceptance and was reverted (2026-11-05; `v0.4_spec.md`, section 17').
 - **level_shift** — the metric has no material gene-gene structure (e.g. a mean score, or a
   signal above the null smaller than `tol` × the effect scale), so attenuation and bias
   cannot be told apart. A shift larger than `tol` × the effect scale (observed difference or
@@ -409,10 +392,9 @@ demonstrate response, except where GATE 4 ran on the analysed construct and is U
 on another pair does not stand in for it. With neither, the metric is **UNTESTED** and no
 positive verdict is reachable.
 
-**GATE 4's data (v0.4, the owner's decision of 2026-10-19).** The probe is injected into one draw of the
-effect's correction — equal depth (or spike-in capture) and, for a pair, the pair's detection equalized —
-so that s_m, the SESOI in the metric's units, is measured on the data the effect is judged on. The
-differential sensitivity (change 17: the same change of the construct injected into each group, the
+**GATE 4's data (v0.4).** The probe is injected into the data as they are (with a domain, the domain's
+cells), not into a draw of the effect's correction: change 17', which measured s_m on one draw of the
+correction, was reverted with it (the owner, 2026-11-05). The differential sensitivity (change 17: the same change of the construct injected into each group, the
 ratio of the responses and the difference it would make at an equal coupling) was coded and rejected the
 same day by the owner: a group's response to the probe depends on its own biology, so subtracting it
 removes biology too (`validation/exploratory/differential_sensitivity.log`, `v0.4_spec.md`, section 17).

@@ -2,7 +2,8 @@
 group is deeper but less complex, as on preprint §4 (a block of five genes takes most of its counts, so the
 other genes get fewer: more counts and fewer genes per cell). The generator of
 `validation/exploratory/differential_sensitivity.py` (the rejected change 17) and of the acceptance of change
-17' (`validation/exploratory/detection_equalization.py`); used by `tests/test_v04_detection.py`.
+17' (`validation/exploratory/detection_equalization.py`; 17' reverted on 2026-11-05); used by
+`tests/test_v04_direction.py` (changes 18 and 19).
 
 `capture_sd` (added for the acceptance's case (vi), its default the generator's 0.3): the sd of each cell's
 log capture, per group; a wider spread in one group makes the dropout correlated within its cells. The draws

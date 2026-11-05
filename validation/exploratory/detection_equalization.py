@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""The acceptance of change 17' on synthetic data (the owner's second decisions of 2026-10-19; v0.4 spec,
+"""Runs at the engine of change 17' only (07935fa to 572c1da): the owner reverted 17' on 2026-11-05.
+To reproduce, check out 3f35c47.
+
+The acceptance of change 17' on synthetic data (the owner's second decisions of 2026-10-19; v0.4 spec,
 section 17'): the detection of a pair's genes equalized after equal depth, with GATE 4's s_m, the effect and
 the line of norm_pearson on the equalized data.
 
