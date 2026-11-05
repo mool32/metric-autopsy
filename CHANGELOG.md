@@ -251,6 +251,14 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   GATE 4's FAIL only at or below zero; the module probe's default share and its direction).
 
 ### Fixed
+- **The dev set's comparison of two engines** (`validation/probes/README.md`, "v0.4: the dev set at two
+  engines"). `verdicts_v03.py` imported the engine through the editable install whatever checkout it ran
+  from, while its header named its own directory's commit; it now runs its own checkout's `src` and stops
+  if another engine was imported. On 2026-10-19 its run in a worktree of 1337ead ran the main checkout's
+  code of changes 17–19 in progress: the check of change 17 on the dev set compared that engine with
+  itself, and the base log of the comparison at change 17' was that run. Rerun at 1337ead with its own
+  engine, the base log's lines are the same, so the comparison at 17' stands; the revert of 17' and change
+  9 give 1337ead's lines too (`verdicts_v0.4_revert_compare.log`).
 - **GATE 5's note of the null's centre** printed "nan..nan" (with an All-NaN warning) where a metric gives
   no value in a stratum's null; the strata without a centre are left out of the range.
 - **Two expectations of the dev set that encoded v0.3's mechanics** (`validation/probes/JOURNAL.md`,

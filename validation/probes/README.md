@@ -259,3 +259,30 @@ check that the corrected effect is negligible. A pre-registration may now state 
 observed scale (`sesoi_scale: "observed"`), and with a SESOI "explained by depth" needs the
 corrected effect shown smaller than it (TOST). No dev-set expectation changed; p11a and p11b, which
 declare no SESOI, keep their behaviour (JOURNAL.md, D7).
+
+## v0.4: the dev set at two engines
+
+`verdicts_v03.py` at two commits, compared line by line by `compare_verdicts.py BEFORE.log AFTER.log` (the
+header, which names the commit, aside). The script runs its own checkout's engine (`src`) and stops if
+another was imported.
+
+**Until 2026-11-05 it did not.** It imported the engine through the editable install (the main checkout's
+`src`) whatever checkout it was run from, while its header named the commit of its own directory. On
+2026-10-19 at 11:16 the dev set ran twice at once, in a worktree of 1337ead and in the main checkout,
+which held the code of changes 17–19 in progress (committed at 12:00 as 1e4696c): both runs ran that code.
+- The check of change 17, "the dev set's verdicts are the same on all 109 lines", compared that engine with
+  itself. Change 17 was reverted at 07935fa; no verdict of the current engine rests on that check.
+- `verdicts_v0.4_1337ead.log` is the worktree's run: its header names 1337ead, its verdicts were that code's.
+  Rerun on 2026-11-05 in a worktree of 1337ead with 1337ead's own engine (`verdicts_v0.4_1337ead_rerun.log`;
+  its stderr held only the 20 warnings of GATE 5's note on its null's centre, fixed later) it gives the same
+  lines, the header aside, so the comparison at change 17' (`verdicts_v0.4_compare.log`, against 71e145c: 2
+  lines differ, the demo's two NO DETECTABLE EFFECT in their numbers) is a comparison with 1337ead.
+- Not affected: the acceptance of change 17' (`validation/exploratory/detection_equalization.py` runs each
+  engine in its own `python -I` worker, its `src` first), the log of change 17's acceptance (one engine, the
+  main checkout's), `pytest` (its `pythonpath` is the checkout's `src`), the flagship audit (it installs its
+  v0.1.1 worktree).
+
+**The revert of change 17' and change 9 (2026-11-05)**, each in a worktree of its commit with its own
+engine: `verdicts_v0.4_229d685.log` (17' reverted) and `verdicts_v0.4_ac0bca4.log` (change 9) are
+1337ead's lines, the header aside (`verdicts_v0.4_revert_compare.log`: against `verdicts_v0.4_1337ead.log`,
+0 lines differ for the rerun of 1337ead, for 229d685 and for ac0bca4).
