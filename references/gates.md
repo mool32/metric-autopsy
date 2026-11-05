@@ -339,8 +339,9 @@ change is not merely dropout — without needing the metric to surface it.
 
 **Automatic part: response to an injected signal.** A metric earns `metric_validity` PASS only
 by *responding* to signal, not merely by resisting nuisance — a metric that returns random
-numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`
-or `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
+numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling(a, b, strength)`,
+`injected_signal.coupling_set(genes, strength, couple)` for a metric of a set's coordination, or
+`injected_signal.module(genes)`): a known construct change is planted by binomial thinning
 (seqgendiff-style, so the data stay valid counts with real technical noise).
 
 **On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
@@ -362,14 +363,22 @@ its own genes `fold`-times, against the untouched data and without a sham: the l
 then the signal itself, as for a real decrease of expression, and the depth falls only by the
 module's share of the counts, which is reported (v0.3 raised it by thinning every other gene
 against a sham that thinned all, and on shallow data the sham's loss of single counts made half
-the response).
+the response). The set probe (v0.4 change 9, Python API only) couples the genes of a set with one
+shared factor against a sham that thins each gene with its own; `couple="half"` couples a new random half
+at every injection, for a metric that reads what is relative within the set (the correlation between two
+halves of it, the genes' shares of the set's counts), where a factor shared by the whole set cancels. A
+set of two coupled whole is the pair's probe. GATE 5's controls are pairs, so for a set claim GATE 5 is
+SKIP and metric validity rests on GATE 4.
 
 **The dose is the SESOI, on the construct's scale (v0.4 change 3, decided 2026-10-18).** The SESOI is
 declared as a change of the construct: for a coupling, of the correlation of the pair's log
-expected expression (in (0, 1)); for a module, of its natural-log expression. The probe is dosed to
+expected expression (in (0, 1)); for a set's coupling, of the mean of that correlation over the pairs
+the probe couples; for a module, of its natural-log expression. The probe is dosed to
 it (`injected_signal.at_construct_change`): the module lowered exp(SESOI)-fold; the coupling at the
 strength whose shared factor raises that correlation by the SESOI given the genes' biological
-variances in the probed cells (a Poisson-lognormal method of moments, floored at 0.01). The response
+variances in the probed cells (a Poisson-lognormal method of moments, floored at 0.01); a set's at
+the strength whose factor raises the mean over the coupled pairs by the SESOI (the pair (i, j) rises
+by w_i w_j, w_i = √(v / (var_i + v)), v the variance the factor adds). The response
 to it, s_m, is the SESOI in the metric's units: GATE 0's tolerance, the TOST of absence and EFFECT
 BELOW SESOI use it, and design adequacy compares it with the design's floor (change 4). With a
 claim's domain the probe goes into the domain's cells only. The detail gives the dose–response at

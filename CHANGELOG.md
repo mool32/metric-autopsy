@@ -7,14 +7,16 @@ comparability.
 
 ## [0.4.0.dev0] — in development, not released
 
-The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-10-19):
-1, 2, 3, 4, 6, 7, 8, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-05):
+1, 2, 3, 4, 6, 7, 8, 9, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
 (the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
 `validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
 `validation/exploratory/real_pilot_5_summary.log`, and the two sets of decisions of 2026-10-19, after the
 fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 17's acceptance,
 `validation/exploratory/differential_sensitivity.log`). Change 17 was coded and reverted the same day;
-change 17' was coded, failed its acceptance and was reverted by the owner on 2026-11-05.
+change 17' was coded, failed its acceptance and was reverted by the owner on 2026-11-05. Change 9 was
+coded on the owner's decision of 2026-11-05, without its precondition of 2026-10-12 (GCL's definition
+checked against Levy et al. 2020; spec, section 9).
 Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
@@ -152,6 +154,18 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   replication check and before the judgment gates.
 
 ### Added
+- **A coupling probe on a set of genes (change 9, coded on the owner's decision of 2026-11-05).**
+  `injected_signal.coupling_set(genes, strength=1.0, couple="all")`: the genes it couples are thinned with
+  one per-cell keep probability (a shared factor), against a sham that thins every gene of the set with its
+  own; `couple="half"` couples a new random half of the set at every injection, for a metric that reads
+  what is relative within the set (a factor shared by the whole set cancels in it). A set of two coupled
+  whole is `coupling`, draw for draw. Its dose by change 3's rule (`coupling_set_strength_for`,
+  `at_construct_change(variances=)`): the strength at which the factor raises the mean correlation of log
+  expected expression over the coupled pairs by the SESOI, given each gene's biological variance in the
+  probed cells (floored at 0.01, the floored genes listed). GATE 4 doses it to a set claim's SESOI and
+  reports the dose (`detail["dose"]`: `kind` `coupling_set`, `n_pairs`, `variances`, `floored`); GATE 5,
+  whose controls are pairs, is SKIP or absent for a set. Through the Python API only: the CLI and the MCP
+  server do not take a set claim yet. `tests/test_v04_set.py`.
 - **Composition (change 7, the decided minimum):** `run_autopsy(composition=[...])`, the CLI's
   `--composition` and the MCP tool's `composition` name obs columns of an annotation (cell type
   first): their shares per replicate are compared between the groups (the total variation

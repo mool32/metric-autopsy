@@ -56,7 +56,7 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 | `src/metric_autopsy/effect.py` | estimand-dependent correction, replicate-level effect, graded rule, power |
 | `src/metric_autopsy/equalize.py` | binomial thinning to equal depth / spike-in capture |
 | `src/metric_autopsy/stats.py` | t / permutation tests (exact or Monte Carlo), TOST, MDE — no scipy needed |
-| `src/metric_autopsy/injected_signal.py` | known construct changes for GATE 4 (`coupling`, `module`) |
+| `src/metric_autopsy/injected_signal.py` | known construct changes for GATE 4 (`coupling`, `coupling_set` — a set's, v0.4 — and `module`) |
 | `src/metric_autopsy/provenance.py` | data / pre-registration hashes, versions, run log |
 | `src/metric_autopsy/metrics.py` | reference metrics (`mi_3bin`, `norm_pearson`, …) |
 | `src/metric_autopsy/report.py` | `run_autopsy` orchestration, the four fields, `decide` (the verdict rule) |

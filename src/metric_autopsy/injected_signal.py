@@ -6,8 +6,9 @@ an ``inject(data, rng) -> data`` callable for ``run_autopsy(signal_test=...)``. 
 only removes molecules, so the injected data stay valid counts with real technical noise
 (the approach of seqgendiff; Gerard 2020).
 
-The coupling injector carries ``inject.sham``: the same thinning, of the same intensity, without
-the signal. GATE 4 contrasts the metric on injected data with the metric on sham data. Contrasting
+The coupling injectors (``coupling`` for a pair, ``coupling_set`` for a set of genes, v0.4 change 9)
+carry ``inject.sham``: the same thinning, of the same intensity, without the signal. GATE 4
+contrasts the metric on injected data with the metric on sham data. Contrasting
 with the untouched data instead confuses the signal with the thinning noise: injecting coupling
 into a pair that is already strongly coupled *lowers* its correlation against the original
 (0.541 -> 0.524) while raising it against the sham (0.370 -> 0.524).
@@ -156,6 +157,76 @@ def coupling(gene_a: str, gene_b: str, strength: float = 1.0):
     return inject
 
 
+COUPLE = ("all", "half")
+
+
+def coupling_set(genes: Sequence[str], strength: float = 1.0, couple: str = "all"):
+    """Induce co-variation in a set of genes (v0.4 change 9): the genes the probe couples are thinned
+    with the same per-cell keep-probability ``sigmoid(strength * z)``, ``z ~ N(0, 1)`` (a shared
+    factor); the sham thins each gene of the set with its own, independent factor of the same
+    distribution, so the injection and the sham remove the same expected counts.
+
+    `couple` names the genes the factor couples, fixed by what the metric reads: ``"all"`` (the
+    default) the whole set; ``"half"`` a random half of it (``len(genes) // 2`` genes, drawn anew at
+    every injection; the other half is thinned as the sham's). A factor shared by every gene of the set
+    cancels in what is relative within the set (shares, proportions), which ``"half"`` moves. The set
+    of two with ``couple="all"`` is ``coupling``'s probe, draw for draw.
+
+    Column-local, as ``coupling``: ``inject.genes`` names the set, ``inject.columns(before, rng)`` and
+    ``inject.sham.columns`` return its thinned counts."""
+    genes = tuple(genes)
+    k = len(genes)
+    if k < 2:
+        raise ValueError("a set needs at least two genes")
+    if len(set(genes)) != k:
+        raise ValueError("the set's genes must be distinct")
+    if couple not in COUPLE:
+        raise ValueError(f"couple must be one of {COUPLE}, not {couple!r}")
+    if couple == "half" and k < 4:
+        raise ValueError("couple='half' needs at least 4 genes (a half of at least two)")
+
+    def _columns(before, rng, shared: bool):
+        n = before.shape[0]
+        if shared and couple == "all":
+            z = rng.normal(size=(n, 1))
+        else:
+            z = rng.normal(size=(n, k))
+            if shared:  # one random half shares a factor; the other keeps its own (the sham's)
+                z[:, rng.permutation(k)[: k // 2]] = rng.normal(size=(n, 1))
+        p = 1.0 / (1.0 + np.exp(-strength * z))
+        return rng.binomial(np.round(np.asarray(before)).astype(np.int64), np.broadcast_to(p, before.shape)).astype(float)
+
+    def _thin(data, rng, shared: bool):
+        sd = _materialize(data)
+        cols = [unique_col_index(sd.var_names, g) for g in genes]
+        before = sd.X[:, cols]
+        _require_counts(before, "coupling injection")
+        after = _columns(before, rng, shared)
+        sd.X[:, cols] = after
+        obs = sd.obs
+        if "total_counts" in obs:
+            obs["total_counts"] = (np.asarray(obs["total_counts"], dtype=float)
+                                   - (before - after).sum(axis=1))
+        return SimpleData(sd.X, obs, sd.var_names)
+
+    def inject(data, rng):
+        return _thin(data, rng, shared=True)
+
+    def sham(data, rng):
+        return _thin(data, rng, shared=False)
+
+    inject.description = f"coupling_set({k} genes, couple={couple}, strength={strength:g})"
+    inject.kind = "coupling_set"
+    inject.strength = strength
+    inject.couple = couple
+    inject.direction = "increase"
+    inject.genes = sham.genes = genes
+    inject.columns = lambda before, rng: _columns(before, rng, True)
+    sham.columns = lambda before, rng: _columns(before, rng, False)
+    inject.sham = sham
+    return inject
+
+
 def describe(inject) -> str:
     return getattr(inject, "description", getattr(inject, "__name__", "custom injection"))
 
@@ -196,6 +267,18 @@ def biological_log_variance(counts, totals) -> float:
     return float(np.log1p(max(excess, 0.0)))
 
 
+def _strength_for_variance(v: float) -> float:
+    """The strength whose shared factor adds `v` to a gene's log expected expression
+    (``log_sigmoid_variance`` inverted by bisection)."""
+    a, b = 0.0, 1.0
+    while log_sigmoid_variance(b) < v:
+        b *= 2.0
+    for _ in range(200):
+        mid = 0.5 * (a + b)
+        a, b = (mid, b) if log_sigmoid_variance(mid) < v else (a, mid)
+    return float(0.5 * (a + b))
+
+
 def coupling_strength_for(construct_change: float, var_a: float, var_b: float) -> dict:
     """The strength at which ``coupling``'s shared factor raises the correlation of the two genes' log
     expected expression by `construct_change` against its sham. The factor adds v = Var(log sigmoid(s z))
@@ -216,22 +299,51 @@ def coupling_strength_for(construct_change: float, var_a: float, var_b: float) -
         mid = 0.5 * (lo + hi)
         lo, hi = (mid, hi) if rise(mid) < S else (lo, mid)
     v = 0.5 * (lo + hi)
-    a, b = 0.0, 1.0
-    while log_sigmoid_variance(b) < v:
-        b *= 2.0
-    for _ in range(200):
-        mid = 0.5 * (a + b)
-        a, b = (mid, b) if log_sigmoid_variance(mid) < v else (a, mid)
-    return dict(strength=float(0.5 * (a + b)), added_variance=float(v), var_a=float(va), var_b=float(vb),
+    return dict(strength=_strength_for_variance(v), added_variance=float(v), var_a=float(va), var_b=float(vb),
                 floored=[g for g, x in (("a", var_a), ("b", var_b)) if not np.isfinite(x) or x < BIO_VAR_FLOOR])
 
 
-def at_construct_change(inject, construct_change: float, *, var_a: float | None = None, var_b: float | None = None):
+def coupling_set_strength_for(construct_change: float, variances: Sequence[float]) -> dict:
+    """The strength at which ``coupling_set``'s shared factor raises the mean correlation of the coupled
+    genes' log expected expression, over their pairs, by `construct_change` against its sham (v0.4 change
+    9; for a set of two, ``coupling_strength_for``). The factor adds v = Var(log sigmoid(s z)) to every
+    coupled gene's variance and to every pair's covariance, so pair (i, j) rises by w_i w_j with
+    w_i = sqrt(v / (var_i + v)); the mean over the pairs is ((sum w)^2 - sum w^2) / (k (k - 1)). With
+    ``couple="half"`` the coupled half is random, so the mean over all the set's pairs is the expected
+    mean over the coupled ones. The variances are floored at ``BIO_VAR_FLOOR``."""
+    S = float(construct_change)
+    if not 0 < S < 1:
+        raise ValueError(f"a change of correlation must lie in (0, 1), not {S!r}")
+    raw = [float(x) if x is not None else float("nan") for x in variances]
+    if len(raw) < 2:
+        raise ValueError("a set needs at least two genes' variances")
+    var = np.array([max(x, BIO_VAR_FLOOR) if np.isfinite(x) else BIO_VAR_FLOOR for x in raw])
+    k = len(var)
+
+    def rise(v):
+        w = np.sqrt(v / (var + v))
+        return float((w.sum() ** 2 - (w ** 2).sum()) / (k * (k - 1)))
+    lo, hi = 0.0, 1.0
+    while rise(hi) < S:
+        hi *= 2.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if rise(mid) < S else (lo, mid)
+    v = 0.5 * (lo + hi)
+    return dict(strength=_strength_for_variance(v), added_variance=float(v), variances=[float(x) for x in var],
+                n_pairs=k * (k - 1) // 2,
+                floored=[i for i, x in enumerate(raw) if not np.isfinite(x) or x < BIO_VAR_FLOOR])
+
+
+def at_construct_change(inject, construct_change: float, *, var_a: float | None = None, var_b: float | None = None,
+                        variances: Sequence[float] | None = None):
     """The probe of `inject`'s kind and genes whose construct change is `construct_change`, and a
     record of the dose: a module lowered exp(change)-fold (a change of its log expression), a coupling
     at the strength that raises the correlation of the pair's log expected expression by the change
-    (given the genes' biological variances, ``biological_log_variance``). Returns (probe, info); the
-    probe is None for an injector of another kind."""
+    (given the genes' biological variances, ``biological_log_variance``), a set's coupling at the
+    strength that raises the mean correlation over the pairs it couples by the change (`variances`, one
+    per gene of the set; change 9). Returns (probe, info); the probe is None for an injector of
+    another kind."""
     kind = getattr(inject, "kind", None)
     S = float(construct_change)
     if kind == "module":
@@ -243,4 +355,14 @@ def at_construct_change(inject, construct_change: float, *, var_a: float | None 
                                      var_b if var_b is not None else float("nan"))
         return coupling(*inject.genes, strength=info["strength"]), dict(
             kind=kind, construct_change=S, scale="correlation of the pair's log expected expression", **info)
+    if kind == "coupling_set":
+        genes = list(inject.genes)
+        info = coupling_set_strength_for(S, variances if variances is not None else [float("nan")] * len(genes))
+        info["floored"] = [genes[i] for i in info["floored"]]
+        couple = getattr(inject, "couple", "all")
+        return coupling_set(genes, strength=info["strength"], couple=couple), dict(
+            kind=kind, construct_change=S, couple=couple,
+            scale=("mean correlation of the set's log expected expression over its pairs" if couple == "all" else
+                   "mean correlation of log expected expression over the pairs of the half it couples"),
+            **info)
     return None, dict(kind=kind, construct_change=S, note="no rule translates this injector's dose")

@@ -58,7 +58,8 @@ and what would disprove the claim. Then the commitments the engine enforces:
   library-size bias blocks only above `bias_tolerance` × SESOI, default 0.5; without a SESOI
   SUPPORTED is withheld while a bias is unsized), and its scale (`sesoi_scale`). Since v0.4 the
   default, `construct`, is a change of the construct: of the correlation of the pair's log expected
-  expression for a coupling probe (in (0, 1)), of the natural-log expression for a module probe.
+  expression for a coupling probe (in (0, 1)), of its mean over the coupled pairs for a set's coupling
+  probe (`coupling_set`, Python API only), of the natural-log expression for a module probe.
   GATE 4 injects a change of that size and its response, s_m, is the SESOI in the metric's units;
   without a probe it is not translated and the design's floor stands in. `observed` is the metric's
   own scale, used as declared — and then a SESOI is in the metric's units: 0.1 is not a SESOI for

@@ -735,6 +735,11 @@ def coupling_reference(metric, data, gene_pair, *, group_col: str, groups, repli
                 data="uncorrected", over="the replicates", rows=rows)
 
 
+# the probes whose dose a SESOI on the construct's scale sets (``injected_signal.at_construct_change``): a
+# module, a pair's coupling, a set's coupling (change 9)
+PROBES_WITH_DOSE = ("coupling", "coupling_set", "module")
+
+
 def _sesoi_in_metric_units(prereg: dict, g4: GateResult | None, signal_test) -> dict:
     """The SESOI in the metric's units (v0.4 change 3): GATE 4's response s_m to a change of the
     construct of the SESOI's size; the declared SESOI when it is on the metric's scale; none (the
@@ -754,7 +759,7 @@ def _sesoi_in_metric_units(prereg: dict, g4: GateResult | None, signal_test) -> 
                            f"95% CI [{lo:+.4g}, {hi:+.4g}] over the replicates"))
     why = ("no probe (signal_test)" if signal_test is None else
            "the probe's response was not shown in the injection's direction" if g4 is not None and g4.detail.get("dose")
-           else "no rule translates this probe's dose" if getattr(signal_test, "kind", None) not in ("coupling", "module")
+           else "no rule translates this probe's dose" if getattr(signal_test, "kind", None) not in PROBES_WITH_DOSE
            else "GATE 4 could not measure the claim's statistic")
     return dict(value=None, source="not translated", label=None, not_translated=True,
                 note=(f"the SESOI {float(sesoi):g} is on the construct's scale and was not translated into the "
@@ -796,10 +801,12 @@ def run_autopsy(
     `pair_metric(data, *, gene_a, gene_b)`, `gene_pair` and both control pairs; they count only if
     `pair_metric` on `gene_pair` gives the metric's value on the data (else GATE 5 is SKIP: the
     controls would test another metric). `replicate_col` names the biological replicate (mouse, donor,
-    plate): without it there is no effect verdict. `signal_test` is an ``injected_signal`` probe.
-    `prereg` carries ``estimand`` ('composition' | 'content'), ``sesoi`` (on the construct's scale, a
-    change of correlation for a coupling probe or of natural-log expression for a module probe, or on
-    the metric's scale with ``sesoi_scale="observed"``), ``min_replicates``, ``alpha``,
+    plate): without it there is no effect verdict. `signal_test` is an ``injected_signal`` probe; a claim
+    about a set of genes (a metric of the set's coordination) takes ``injected_signal.coupling_set`` over
+    the set, which names the claim's genes (v0.4 change 9). `prereg` carries ``estimand`` ('composition' |
+    'content'), ``sesoi`` (on the construct's scale, a change of correlation for a coupling probe — for a
+    set, of the mean correlation over the pairs it couples — or of natural-log expression for a module
+    probe, or on the metric's scale with ``sesoi_scale="observed"``), ``min_replicates``, ``alpha``,
     ``judgment_pending``, optionally ``known_interactions`` (pairs) and ``known_to_differ`` (genes) for
     the check of specificity, and free-text commitments. Its hash is recorded, and a run with a
     pre-registration is appended to the run log (`log_path`, else ``$METRIC_AUTOPSY_LOG``, else
@@ -882,7 +889,7 @@ def run_autopsy(
     g4 = None
     if signal_test is not None:
         construct = (float(sesoi) if sesoi is not None and sesoi_scale == "construct"
-                     and getattr(signal_test, "kind", None) in ("coupling", "module") else None)
+                     and getattr(signal_test, "kind", None) in PROBES_WITH_DOSE else None)
         g4 = _g.gate4_signal_response(metric, data, signal_test,
                                       direction=signal_direction or getattr(signal_test, "direction", None),
                                       alpha=alpha, seed=seed_of("gate4"),

@@ -1005,13 +1005,19 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
     # on an exact tie both groups, in the order of their labels (a mirrored wording, the same draws)
     targets = [0] if a > b else [1] if b > a else sorted((0, 1), key=lambda k: str(groups[k]))
     weights = Estimator(units).weights if kind == "nested" else np.ones(1)
+    probe_kind = getattr(inject, "kind", None)
+    couples = probe_kind in ("coupling", "coupling_set")  # a change of correlation: its doses lie in (0, 1)
+
+    def dosed(change, var):
+        return at_construct_change(inject, change, var_a=var[0], var_b=var[1] if len(var) > 1 else None,
+                                   variances=var if probe_kind == "coupling_set" else None)
     runs = []
     for k in targets:
         gname = groups[k]
         probe_k, dose = inject, None
         if construct_change is not None:
-            var = _bio_variances(X, cols, units, k) if getattr(inject, "kind", None) == "coupling" else [None, None]
-            probe_k, dose = at_construct_change(inject, construct_change, var_a=var[0], var_b=var[1] if len(var) > 1 else None)
+            var = _bio_variances(X, cols, units, k) if couples else [None, None]
+            probe_k, dose = dosed(construct_change, var)
             if probe_k is None:
                 return dict(error=f"no rule translates a SESOI on the construct's scale into {describe(inject)}'s dose")
         resp, depth, used = _unit_responses(metric, sd, X, units, k, probe_k, n_rep, rng)
@@ -1032,9 +1038,9 @@ def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate
             points = []
             for mult in curve:
                 change = mult * construct_change
-                if getattr(inject, "kind", None) == "coupling" and not 0 < change < 1:
+                if couples and not 0 < change < 1:
                     continue
-                pk, dk = at_construct_change(inject, change, var_a=var[0], var_b=var[1] if len(var) > 1 else None)
+                pk, dk = dosed(change, var)
                 r_c, _, used_c = _unit_responses(metric, sd, X, units, k, pk, n_rep_curve, rng)
                 m_c, se_c, df_c, n_c = one_group_mean(r_c[used_c][None, :], units.subset(used_c), k, weights)
                 iv_c = _interval(float(m_c[0]), float(se_c[0]), float(df_c[0]), n_c, direction, alpha)
@@ -1134,8 +1140,9 @@ def gate4_signal_response(
     judged = inject
     if claim is not None and claim.get("error") is None and claim.get("dose") is not None:
         from .injected_signal import at_construct_change
-        judged = at_construct_change(inject, construct_change,
-                                     var_a=claim["dose"].get("var_a"), var_b=claim["dose"].get("var_b"))[0] or inject
+        judged = at_construct_change(inject, construct_change, var_a=claim["dose"].get("var_a"),
+                                     var_b=claim["dose"].get("var_b"),
+                                     variances=claim["dose"].get("variances"))[0] or inject
     try:
         deltas = injected_deltas(metric, sd, judged, n_rep, rng)
     except Exception as e:  # e.g. non-count input
