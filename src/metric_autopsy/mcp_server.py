@@ -73,6 +73,8 @@ def autopsy_report(
     inject_signal: str | None = None,
     module_genes: Sequence[str] | None = None,
     module_fold: float = 2.0,
+    set_genes: Sequence[str] | None = None,
+    couple: str = "all",
     seed: int = 0,
     json_path: str | None = None,
     log_path: str | None = None,
@@ -91,15 +93,20 @@ def autopsy_report(
     sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
     GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
     sesoi_scale: 'construct' (default: for the coupling probe a change of the correlation of the
-    pair's log expected expression, for the module probe of the module's natural-log expression,
-    translated into the metric's units by the inject_signal probe) or 'observed' (the SESOI is a
-    difference of the metric as measured at this depth).
+    pair's log expected expression, for the set's probe of its mean over the pairs it couples, for
+    the module probe of the module's natural-log expression, translated into the metric's units by
+    the inject_signal probe) or 'observed' (the SESOI is a difference of the metric as measured at
+    this depth).
     delta_min: recorded in the pre-registration, not used since v0.4 (GATE 4/5 call a metric blind
     only where its response is shown at or below zero).
     pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
     metric's response to an injected coupling of (gene_a, gene_b); inject_signal='module' to the
     module_genes lowered module_fold-times by thinning (default 2; with a SESOI on the construct's
-    scale, a change of the module's natural-log expression, GATE 4 doses it to exp(SESOI)).
+    scale, a change of the module's natural-log expression, GATE 4 doses it to exp(SESOI));
+    inject_signal='coupling_set' to a coupling of set_genes by one shared factor (couple='all': the
+    set; 'half': a new random half of it at every injection, for a metric of what is relative within
+    the set; with a SESOI on the construct's scale GATE 4 doses it to that change of the mean
+    correlation over the pairs it couples).
     data2_path: GATE 6.
     resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
     prereg_path: pre-registration JSON (explicit arguments override it). json_path: write the
@@ -132,7 +139,7 @@ def autopsy_report(
     if resolve_judgment:
         prereg["judgment_pending"] = False
     signal = injected_signal.named(inject_signal, gene_pair=gene_pair, module_genes=module_genes,
-                                   module_fold=module_fold)
+                                   module_fold=module_fold, set_genes=set_genes, couple=couple)
 
     autopsy = run_autopsy(
         metric_fn, data,

@@ -343,7 +343,9 @@ numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling
 `injected_signal.coupling_set(genes, strength, couple)` for a metric of a set's coordination, or
 `injected_signal.module(genes)`): a known construct change is planted by binomial thinning
 (seqgendiff-style, so the data stay valid counts with real technical noise). The CLI and the MCP tool offer
-the coupling probe and, since v0.4 change 11, the module probe (`--inject-signal module --module-genes …`).
+the coupling probe and, since v0.4 change 11, the module probe (`--inject-signal module --module-genes …`)
+and the set's probe (`--inject-signal coupling_set --set-genes … [--couple half]`, by the owner's decision of
+2026-11-05); a metric of a module's level or of a set's coordination is passed through the Python API.
 
 **On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
 group whose replicates have more of the probed genes' counts per cell (each replicate weighted
@@ -364,7 +366,7 @@ its own genes `fold`-times, against the untouched data and without a sham: the l
 then the signal itself, as for a real decrease of expression, and the depth falls only by the
 module's share of the counts, which is reported (v0.3 raised it by thinning every other gene
 against a sham that thinned all, and on shallow data the sham's loss of single counts made half
-the response). The set probe (v0.4 change 9, Python API only) couples the genes of a set with one
+the response). The set probe (v0.4 change 9; in the CLI and the MCP tool too) couples the genes of a set with one
 shared factor against a sham that thins each gene with its own; `couple="half"` couples a new random half
 at every injection, for a metric that reads what is relative within the set (the correlation between two
 halves of it, the genes' shares of the set's counts), where a factor shared by the whole set cancels. A

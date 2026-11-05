@@ -243,14 +243,18 @@ def coupling_set(genes: Sequence[str], strength: float = 1.0, couple: str = "all
     return inject
 
 
-FRONT_END_PROBES = ("coupling", "module")
+FRONT_END_PROBES = ("coupling", "module", "coupling_set")
 
 
-def named(kind: str | None, *, gene_pair=None, module_genes=None, module_fold: float = 2.0):
+def named(kind: str | None, *, gene_pair=None, module_genes=None, module_fold: float = 2.0, set_genes=None,
+          couple: str = "all"):
     """The probe a front end names (the CLI's ``--inject-signal``, the MCP tool's ``inject_signal``; v0.4 change
     11): ``"coupling"`` of the gene pair (none without a pair, as before), ``"module"`` of `module_genes` lowered
-    `module_fold`-times by thinning (with a SESOI on the construct's scale GATE 4 doses it to exp(SESOI)-fold);
-    None for no probe."""
+    `module_fold`-times by thinning (with a SESOI on the construct's scale GATE 4 doses it to exp(SESOI)-fold),
+    ``"coupling_set"`` of `set_genes` (change 9, in the front ends by the owner's decision of 2026-11-05): one
+    shared factor couples the set, or with ``couple="half"`` a new random half of it at every injection (with a
+    SESOI on the construct's scale GATE 4 doses it to that change of the mean correlation over the pairs it
+    couples); None for no probe."""
     if not kind:
         return None
     if kind == "coupling":
@@ -259,6 +263,10 @@ def named(kind: str | None, *, gene_pair=None, module_genes=None, module_fold: f
         if not module_genes:
             raise ValueError("the module probe needs its genes (--module-genes, module_genes)")
         return module(list(module_genes), fold=float(module_fold))
+    if kind == "coupling_set":
+        if not set_genes:
+            raise ValueError("the set's probe needs its genes (--set-genes, set_genes)")
+        return coupling_set(list(set_genes), couple=couple)
     raise ValueError(f"unknown probe {kind!r}: one of {FRONT_END_PROBES}")
 
 

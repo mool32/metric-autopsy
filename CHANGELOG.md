@@ -190,8 +190,15 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   expected expression over the coupled pairs by the SESOI, given each gene's biological variance in the
   probed cells (floored at 0.01, the floored genes listed). GATE 4 doses it to a set claim's SESOI and
   reports the dose (`detail["dose"]`: `kind` `coupling_set`, `n_pairs`, `variances`, `floored`); GATE 5,
-  whose controls are pairs, is SKIP or absent for a set. Through the Python API only: the CLI and the MCP
-  server do not take a set claim yet. `tests/test_v04_set.py`.
+  whose controls are pairs, is SKIP or absent for a set. In the CLI and the MCP server since the owner's
+  third decisions of 2026-11-05 (the next entry). `tests/test_v04_set.py`.
+- **The set's probe in the CLI and the MCP server (the owner's third decisions of 2026-11-05).**
+  `--inject-signal coupling_set --set-genes G1 G2 … [--couple half]`, the MCP tool's
+  `inject_signal="coupling_set"`, `set_genes`, `couple`, built by `injected_signal.named` with the module
+  probe; with a SESOI on the construct's scale GATE 4 doses it to that change of the mean correlation over
+  the pairs it couples. As for the module, the front ends offer no reference metric of a set's coordination
+  by name: from them the probe tests a reference metric's response, and a set's metric goes through the
+  Python API. `tests/test_v04_frontends.py`.
 - **Composition (change 7, the decided minimum):** `run_autopsy(composition=[...])`, the CLI's
   `--composition` and the MCP tool's `composition` name obs columns of an annotation (cell type
   first): their shares per replicate are compared between the groups (the total variation
