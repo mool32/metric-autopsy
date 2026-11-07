@@ -1,0 +1,261 @@
+{
+ "backgrounds": {
+  "B1": {
+   "cells": 5280,
+   "content_sha256": "51d25d6997586e725037c4a4f122ac35091ec9f11b432fa0a620560d9e558098",
+   "donors": 24,
+   "file": "B1.npz",
+   "genes": 2000,
+   "pool": 24,
+   "sha256": "f168ee9b25d40e13cad0d173a5aaa17e664806540b75aa47cddda5cd856ba307"
+  },
+  "B2": {
+   "cells": 2640,
+   "content_sha256": "daf4c2e68e3cc9e2a00b960e4b44b794d91d72ef20f561066e36669e5292cb0b",
+   "donors": 12,
+   "file": "B2.npz",
+   "genes": 2000,
+   "pool": 24,
+   "sha256": "270ffda7750824cc7ec3ff8cfe82e4736c0324733364532fc4e05ed5ef922e15"
+  }
+ },
+ "beacon": {
+  "chain": "quicknet",
+  "chain_hash": "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971",
+  "key": "b8b3d4bcf57ead15d1ac94f34ae9d04d8de47ed653c9e9af274be3648009f9e5",
+  "public_key": "83cf0f2896adee7eb8b5f01fcad3912212c437e0073e911fb90022d3e760183c8c4b450b6a0a6c3ac6a5776a2d1064510d1fec758c921cc22b0e17e63aaf4bcb5ed66304de9cf809bd274ca73bab4af5a6e9c76a4bc09e76eae8991ef5ece45a",
+  "randomness": "b8b3d4bcf57ead15d1ac94f34ae9d04d8de47ed653c9e9af274be3648009f9e5",
+  "round": 33749790,
+  "round_time_utc": "2026-11-07T11:58:54+00:00",
+  "signature": "a47d723412be360cdb512b6272bce2a7eb8a2cbee1a1d906b5fc56e4915a7a001a378bbc826a3e7b8d6e6cf32ec1c4ef"
+ },
+ "datasets": [
+  {
+   "cards": [
+    {
+     "card_sha256": "2b0a360196b108bbde0016ccab10053c95720f24c79c76d3dac98c211dc12c5c",
+     "error": false,
+     "id": "D0001",
+     "report_sha256": "f91a069a02788760b1efee2da64a618097ff835cc82275f5eaaa26f8cbacdcde"
+    }
+   ],
+   "data_sha256": "483cea4e1db2235ec84d3d4df90123a459889f09f79bd387e9734fedc729e603",
+   "donors": [
+    "B1d0",
+    "B1d11",
+    "B1d12",
+    "B1d14",
+    "B1d16",
+    "B1d17",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d22",
+    "B1d23",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d6",
+    "B1d7"
+   ],
+   "id": "D0001"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "57acc447aa680a4b517c59e485fa3fc5ec252b35d7f05a5547f9d7af90da6783",
+     "error": false,
+     "id": "D0002",
+     "report_sha256": "936534540487e27a6ef56b29084a0b19ed871f34d6adf60e4cf0bc693d8742c4"
+    }
+   ],
+   "data_sha256": "f0fa3c6bdc562a1a7bc9ad4c8a55fd857405f203aa28c2338e35bca657905fc9",
+   "donors": [
+    "B1d0",
+    "B1d1",
+    "B1d10",
+    "B1d11",
+    "B1d12",
+    "B1d14",
+    "B1d16",
+    "B1d18",
+    "B1d19",
+    "B1d20",
+    "B1d21",
+    "B1d4",
+    "B1d5",
+    "B1d6",
+    "B1d7",
+    "B1d9"
+   ],
+   "id": "D0002"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "66c2aa9bc4a1df629d0710424a1429402e1d8dbdfba7d59f45105ebbbd3c0357",
+     "error": false,
+     "id": "D0003",
+     "report_sha256": "4c9448bb27fd36f33f25b71cc91b703e367ed23d0f42fe154472d83972d89e97"
+    }
+   ],
+   "data_sha256": "53710f93b6e1935aad00deb73abb8fe337f0e9c011f9fdefb036875c5129f206",
+   "donors": [
+    "B1d0",
+    "B1d10",
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d15",
+    "B1d17",
+    "B1d18",
+    "B1d19",
+    "B1d21",
+    "B1d23",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d6",
+    "B1d7"
+   ],
+   "id": "D0003"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "a80d2e7555f82cbfab582596f181cca3b2dc048262f2db8a071e6b3ec3ab5d65",
+     "error": false,
+     "id": "D0004",
+     "report_sha256": "4f574d4a2a495deace8e15cc55f4152b67b9c347aba2478b0218aa226accc2e8"
+    }
+   ],
+   "data_sha256": "4e832dbe252f5cb31c32c7638fe171caf25fd0a2fcb63099a8f555a026af425e",
+   "donors": [
+    "B1d12",
+    "B1d13",
+    "B1d18",
+    "B1d20",
+    "B1d21",
+    "B1d23",
+    "B1d8",
+    "B1d9"
+   ],
+   "id": "D0004"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "ace0ce29d5e33767b3b4055f39d68e45ce6ec2e1535baf5f28e720f62b84b4ee",
+     "error": false,
+     "id": "D0005",
+     "report_sha256": "44879e8fd7ed013997ae9342bc8e5a6992caf03e6c5f5c529633d541ac653cf4"
+    }
+   ],
+   "data_sha256": "3bd7bc08f78c17f1524ebdc3352f9ae24e6ea5a6c031a9458876701848ed6522",
+   "donors": [
+    "B1d1",
+    "B1d10",
+    "B1d12",
+    "B1d13",
+    "B1d15",
+    "B1d2",
+    "B1d21",
+    "B1d23"
+   ],
+   "id": "D0005"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "01d2d253d1ba77cccdf1ad0d63d8930a376c5ecb997e2f9f7707eb9277c3bcb3",
+     "error": false,
+     "id": "D0006",
+     "report_sha256": "df01f3dbfe691b0809c157cb5d83d37aa9fd2cd08a97ab6ffb7901b09fab58a4"
+    }
+   ],
+   "data_sha256": "2cd26cad2b328909d6760fb7aece00a06783cea288ad342576130a70941d7dcc",
+   "donors": [
+    "B1d0",
+    "B1d13",
+    "B1d14",
+    "B1d15",
+    "B1d16",
+    "B1d17",
+    "B1d18",
+    "B1d2",
+    "B1d20",
+    "B1d22",
+    "B1d23",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d7",
+    "B1d9"
+   ],
+   "id": "D0006"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "42cf042b8cdd539d3f457e982cba1cd7f69f3f06441e4a0d1b9690cd03c4448d",
+     "error": false,
+     "id": "D0007",
+     "report_sha256": "8237906768a2ca1f66dccf62801e57a9038f1123d1a2957a74a899e4c60dfd8d"
+    }
+   ],
+   "data_sha256": "b13957042019a5756b683b56e53e7ee6f7be3dcd5ddd87512a643fc382a31073",
+   "donors": [
+    "B1d1",
+    "B1d10",
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d17",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d23",
+    "B1d3",
+    "B1d5",
+    "B1d7",
+    "B1d9"
+   ],
+   "id": "D0007"
+  },
+  {
+   "cards": [
+    {
+     "card_sha256": "614f0c3e81ca2e137ccb56e13f73f0832c9639484af754f1731ef6f3542e4d2a",
+     "error": false,
+     "id": "D0008",
+     "report_sha256": "2316eb4b6c0565a7235795015247c26892bcea6b9ab82b79342310ba1a8d8d12"
+    }
+   ],
+   "data_sha256": "95a1b60861b5c4c9c1eed88b24270904769d6cceb7d0686ab2ec4336adc57d15",
+   "donors": [
+    "B1d12",
+    "B1d13",
+    "B1d14",
+    "B1d15",
+    "B1d16",
+    "B1d18",
+    "B1d19",
+    "B1d2",
+    "B1d20",
+    "B1d21",
+    "B1d3",
+    "B1d4",
+    "B1d5",
+    "B1d7",
+    "B1d8",
+    "B1d9"
+   ],
+   "id": "D0008"
+  }
+ ],
+ "key": "b8b3d4bcf57ead15d1ac94f34ae9d04d8de47ed653c9e9af274be3648009f9e5",
+ "pilot_sha256": "5338f61546f40926dfa216a48e8d747d18c444af1a8a806ecb5b2d4f62f752be",
+ "shards": 2
+}
