@@ -1,0 +1,25 @@
+# The third diagnostics' extraction (validation/exploratory/real_pilot_diagnostics_3_plan.md)
+
+python 3.13.16; numpy 2.5.3; pandas 2.3.3; Census release 2025-11-08
+
+## Marsh et al. 2022 (GSE152183): the registered table of 12 samples as GEO's records
+   GSM4605687 Dounce_NO_sample_01: DNC-NONE, Batch 1; 2544 barcodes; 3,051,627 counts
+   GSM4605688 Miltenyi_NO_sample_04: ENZ-NONE, Batch 1; 2302 barcodes; 2,681,526 counts
+   GSM4605689 Dounce_IN_sample_04: DNC-INHIB, Batch 1; 2473 barcodes; 2,796,855 counts
+   GSM4605690 Miltenyi_IN_sample_01: ENZ-INHIB, Batch 1; 2274 barcodes; 2,500,723 counts
+   GSM4605691 Dounce_NO_sample_02: DNC-NONE, Batch 1; 2513 barcodes; 2,259,870 counts
+   GSM4605692 Miltenyi_NO_sample_05: ENZ-NONE, Batch 1; 2008 barcodes; 2,118,143 counts
+   GSM4605693 Dounce_IN_sample_05: DNC-INHIB, Batch 2; 2733 barcodes; 3,237,117 counts
+   GSM4605694 Miltenyi_IN_sample_02: ENZ-INHIB, Batch 2; 2024 barcodes; 2,846,874 counts
+   GSM4605695 Dounce_NO_sample_03: DNC-NONE, Batch 2; 2740 barcodes; 2,834,275 counts
+   GSM4605696 Miltenyi_NO_sample_06: ENZ-NONE, Batch 2; 2105 barcodes; 2,957,296 counts
+   GSM4605697 Dounce_IN_sample_06: DNC-INHIB, Batch 2; 2745 barcodes; 3,654,465 counts
+   GSM4605698 Miltenyi_IN_sample_03: ENZ-INHIB, Batch 2; 1965 barcodes; 2,804,074 counts
+   merged: 28426 cells x 30982 genes (71 features whose symbol names several left out); the set's genes not found: none
+## case1: 76797 cells x 21025 genes (21025 measured, 0 symbols naming several features left out; 289 s); the case file's genes with the same counts: 62 of 62 checked
+   named genes not measured: ['Loxl1']
+   the metadata: 28 Census obs columns for 76797 cells; the source h5ad (2,548,184,202 bytes, sha256 e311a6191473aca2452b18c28e93e72666f7fda68f687091faa3d1271f4155a0): 110824 cells, obs columns ['index', 'FACS.selection', 'age', 'cell', 'free_annotation', 'method', 'donor_id', 'subtissue', 'n_genes', 'n_counts', 'louvain', 'leiden', 'assay_ontology_term_id', 'disease_ontology_term_id', 'cell_type_ontology_term_id', 'tissue_ontology_term_id', 'tissue_original', 'development_stage_ontology_term_id', 'self_reported_ethnicity_ontology_term_id', 'sex_ontology_term_id', 'is_primary_data', 'suspension_type', 'tissue_type', 'cell_type', 'assay', 'disease', 'sex', 'tissue', 'self_reported_ethnicity', 'development_stage', 'observation_joinid']
+## case2: 2088 cells x 21025 genes (21025 measured, 0 symbols naming several features left out; 37 s); the case file's genes with the same counts: 55 of 55 checked
+## case3: 15711 cells x 35465 genes (35483 measured, 9 symbols naming several features left out; 157 s); the case file's genes with the same counts: 50 of 50 checked
+
+extraction: 731.9 s

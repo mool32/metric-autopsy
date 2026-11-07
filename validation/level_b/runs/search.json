@@ -1,0 +1,252 @@
+{
+ "pubmed": {
+  "total": 3359,
+  "translation": "(\"single-cell\"[Title/Abstract] OR \"single-cell\"[Title/Abstract] OR \"single-nucleus\"[Title/Abstract] OR \"single-nucleus\"[Title/Abstract] OR \"scRNA-seq\"[Title/Abstract] OR \"snRNA-seq\"[Title/Abstract]) AND (\"coexpression\"[Title/Abstract] OR \"co-expression\"[Title/Abstract] OR \"gene gene correlation*\"[Title/Abstract] OR \"gene coordination\"[Title/Abstract] OR \"transcriptional coordination\"[Title/Abstract] OR \"coordinated expression\"[Title/Abstract] OR \"decoupling\"[Title/Abstract] OR \"network rewiring\"[Title/Abstract] OR \"differential coexpression\"[Title/Abstract] OR \"co-regulation\"[Title/Abstract] OR \"transcriptional coherence\"[Title/Abstract] OR \"differential correlation\"[Title/Abstract]) AND \"English\"[Language] AND 2017/01/01:2026/09/30[Date - Publication]",
+  "errorlist": null,
+  "warninglist": {
+   "phrasesignored": [],
+   "quotedphrasesnotfound": [
+    "\"loss of coordination\"[tiab]"
+   ],
+   "outputmessages": []
+  },
+  "windows": [
+   {
+    "first": "2017-01-01",
+    "last": "2017-12-31",
+    "count": 37
+   },
+   {
+    "first": "2018-01-01",
+    "last": "2018-12-31",
+    "count": 50
+   },
+   {
+    "first": "2019-01-01",
+    "last": "2019-12-31",
+    "count": 59
+   },
+   {
+    "first": "2020-01-01",
+    "last": "2020-12-31",
+    "count": 94
+   },
+   {
+    "first": "2021-01-01",
+    "last": "2021-12-31",
+    "count": 175
+   },
+   {
+    "first": "2022-01-01",
+    "last": "2022-12-31",
+    "count": 252
+   },
+   {
+    "first": "2023-01-01",
+    "last": "2023-12-31",
+    "count": 329
+   },
+   {
+    "first": "2024-01-01",
+    "last": "2024-12-31",
+    "count": 519
+   },
+   {
+    "first": "2025-01-01",
+    "last": "2025-12-31",
+    "count": 939
+   },
+   {
+    "first": "2026-01-01",
+    "last": "2026-09-30",
+    "count": 1108
+   }
+  ],
+  "ids": 3562,
+  "unique": 3359,
+  "fetched": 3359
+ },
+ "europepmc": {
+  "hit_count": 3156,
+  "fetched": 3157,
+  "pages": 5,
+  "by_source": {
+   "MED": 3118,
+   "AGR": 28,
+   "PMC": 11
+  },
+  "query": "(TITLE:\"single-cell\" OR ABSTRACT:\"single-cell\" OR TITLE:\"single cell\" OR ABSTRACT:\"single cell\" OR TITLE:\"single-nucleus\" OR ABSTRACT:\"single-nucleus\" OR TITLE:\"single nucleus\" OR ABSTRACT:\"single nucleus\" OR TITLE:\"scRNA-seq\" OR ABSTRACT:\"scRNA-seq\" OR TITLE:\"snRNA-seq\" OR ABSTRACT:\"snRNA-seq\") AND (TITLE:\"coexpression\" OR ABSTRACT:\"coexpression\" OR TITLE:\"co-expression\" OR ABSTRACT:\"co-expression\" OR TITLE:\"gene-gene correlation\" OR ABSTRACT:\"gene-gene correlation\" OR TITLE:\"gene-gene correlations\" OR ABSTRACT:\"gene-gene correlations\" OR TITLE:\"gene coordination\" OR ABSTRACT:\"gene coordination\" OR TITLE:\"transcriptional coordination\" OR ABSTRACT:\"transcriptional coordination\" OR TITLE:\"coordinated expression\" OR ABSTRACT:\"coordinated expression\" OR TITLE:\"decoupling\" OR ABSTRACT:\"decoupling\" OR TITLE:\"loss of coordination\" OR ABSTRACT:\"loss of coordination\" OR TITLE:\"network rewiring\" OR ABSTRACT:\"network rewiring\" OR TITLE:\"differential coexpression\" OR ABSTRACT:\"differential coexpression\" OR TITLE:\"co-regulation\" OR ABSTRACT:\"co-regulation\" OR TITLE:\"transcriptional coherence\" OR ABSTRACT:\"transcriptional coherence\" OR TITLE:\"differential correlation\" OR ABSTRACT:\"differential correlation\") AND LANG:\"eng\" AND FIRST_PDATE:[2017-01-01 TO 2026-09-30]"
+ },
+ "citations": {
+  "levy2020": {
+   "hit_count": 46,
+   "listed": 46,
+   "unique": 46,
+   "core": 46,
+   "without_core": 0,
+   "verified_cited_by": 48
+  },
+  "gcl2021": {
+   "hit_count": 3,
+   "listed": 3,
+   "unique": 3,
+   "core": 3,
+   "without_core": 0,
+   "verified_cited_by": 3
+  },
+  "amit2022": {
+   "hit_count": 4,
+   "listed": 4,
+   "unique": 4,
+   "core": 4,
+   "without_core": 0,
+   "verified_cited_by": 5
+  },
+  "cscore2023": {
+   "hit_count": 77,
+   "listed": 77,
+   "unique": 77,
+   "core": 77,
+   "without_core": 0,
+   "verified_cited_by": 91
+  },
+  "skinnider2019": {
+   "hit_count": 116,
+   "listed": 116,
+   "unique": 116,
+   "core": 116,
+   "without_core": 0,
+   "verified_cited_by": 127
+  }
+ },
+ "merged": 3394,
+ "found_by": {
+  "pubmed": 189,
+  "europepmc+pubmed": 2976,
+  "cites+europepmc+pubmed": 33,
+  "cites": 179,
+  "europepmc": 16,
+  "cites+pubmed": 1
+ },
+ "sample": 3394,
+ "sample_seed": null,
+ "numpy": "2.5.3",
+ "ok": true,
+ "papers": [
+  {
+   "key": "levy2020",
+   "label": "Levy et al. 2020, Nat Metab 2:1305-1315 (the global coordination level, GCL)",
+   "query": "AUTH:\"Levy O\" AND TITLE:\"transcriptional coordination\" AND PUB_YEAR:2020",
+   "expect": {
+    "journal": "Nat Metab",
+    "year": 2020,
+    "title_words": [
+     "gene-to-gene",
+     "transcriptional coordination",
+     "single cells"
+    ]
+   },
+   "verified": {
+    "source": "MED",
+    "id": "33139959",
+    "pmid": "33139959",
+    "doi": "10.1038/s42255-020-00304-4",
+    "title": "Age-related loss of gene-to-gene transcriptional coordination among single cells.",
+    "journal": "Nat Metab",
+    "year": 2020,
+    "cited_by": 48,
+    "lookup": "results/level-b-lookup at bdb6c45a4680216221e5689779ec7e0c01cd167b (workflow run 39268500625)"
+   }
+  },
+  {
+   "key": "gcl2021",
+   "label": "Sci Rep 2021, doi:10.1038/s41598-021-90353-w (GCL's method, as real_claims.md names it)",
+   "query": "DOI:\"10.1038/s41598-021-90353-w\"",
+   "expect": {
+    "journal": "Sci Rep",
+    "year": 2021,
+    "doi": "10.1038/s41598-021-90353-w"
+   },
+   "verified": {
+    "source": "MED",
+    "id": "34040065",
+    "pmid": "34040065",
+    "doi": "10.1038/s41598-021-90353-w",
+    "title": "A top-down measure of gene-to-gene coordination for analyzing cell-to-cell variability.",
+    "journal": "Sci Rep",
+    "year": 2021,
+    "cited_by": 3,
+    "lookup": "results/level-b-lookup at bdb6c45a4680216221e5689779ec7e0c01cd167b (workflow run 39268500625)"
+   }
+  },
+  {
+   "key": "amit2022",
+   "label": "Amit et al. 2022, Sci Rep, doi:10.1038/s41598-022-11507-y (GCL's method)",
+   "query": "DOI:\"10.1038/s41598-022-11507-y\"",
+   "expect": {
+    "journal": "Sci Rep",
+    "year": 2022,
+    "doi": "10.1038/s41598-022-11507-y"
+   },
+   "verified": {
+    "source": "MED",
+    "id": "35534606",
+    "pmid": "35534606",
+    "doi": "10.1038/s41598-022-11507-y",
+    "title": "Global coordination level in single-cell transcriptomic data.",
+    "journal": "Sci Rep",
+    "year": 2022,
+    "cited_by": 5,
+    "lookup": "results/level-b-lookup at bdb6c45a4680216221e5689779ec7e0c01cd167b (workflow run 39268500625)"
+   }
+  },
+  {
+   "key": "cscore2023",
+   "label": "CS-CORE: Su et al. 2023, Nat Commun (cell-type-specific co-expression inference; named from memory)",
+   "query": "TITLE:\"co-expression inference\" AND TITLE:\"single cell\" AND PUB_YEAR:2023",
+   "expect": {
+    "journal": "Nat Commun",
+    "year": 2023,
+    "title_words": [
+     "co-expression inference",
+     "single cell"
+    ]
+   },
+   "verified": {
+    "source": "MED",
+    "id": "37563115",
+    "pmid": "37563115",
+    "doi": "10.1038/s41467-023-40503-7",
+    "title": "Cell-type-specific co-expression inference from single cell RNA-sequencing data.",
+    "journal": "Nat Commun",
+    "year": 2023,
+    "cited_by": 91,
+    "lookup": "results/level-b-lookup at bdb6c45a4680216221e5689779ec7e0c01cd167b (workflow run 39268500625)"
+   }
+  },
+  {
+   "key": "skinnider2019",
+   "label": "Skinnider, Squair and Foster 2019, Nat Methods (measures of association for single-cell transcriptomics; named from memory)",
+   "query": "AUTH:\"Skinnider MA\" AND TITLE:\"measures of association\" AND PUB_YEAR:2019",
+   "expect": {
+    "journal": "Nat Methods",
+    "year": 2019,
+    "title_words": [
+     "measures of association",
+     "single-cell transcriptomics"
+    ]
+   },
+   "verified": {
+    "source": "MED",
+    "id": "30962620",
+    "pmid": "30962620",
+    "doi": "10.1038/s41592-019-0372-4",
+    "title": "Evaluating measures of association for single-cell transcriptomics.",
+    "journal": "Nat Methods",
+    "year": 2019,
+    "cited_by": 127,
+    "lookup": "results/level-b-lookup at bdb6c45a4680216221e5689779ec7e0c01cd167b (workflow run 39268500625)"
+   }
+  }
+ ]
+}

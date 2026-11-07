@@ -1,0 +1,3 @@
+pass 1 batch 01: other pass's directory named 0 times; own 11; p1_240f7a66 named 0 times; p2_166ad225 named 0 times; lb_hold named 0 times; lb_screen2 named 0 times; screening_first_list named 0 times; carried_pass named 0 times; validation/level_b/screening/ named 0 times; batches named ['01']; ok
+pass 2 batch 01: other pass's directory named 0 times; own 13; p1_240f7a66 named 0 times; p2_166ad225 named 0 times; lb_hold named 0 times; lb_screen2 named 0 times; screening_first_list named 0 times; carried_pass named 0 times; validation/level_b/screening/ named 0 times; batches named ['01']; ok
+2 sessions: all independent

@@ -30,6 +30,11 @@ Steps (``estimate_effect``):
    cannot be "explained": the effect is then INCONCLUSIVE, and the reason reports how much
    of it the correction left. (Testing raw minus corrected per replicate instead would be
    anti-conservative: the untouched group's component is zero by construction.)
+   A correction can only remove a conclusion, never create one (v0.4 change 6): DETECTED needs
+   the effect detected, in one direction, by the raw replicate-level test (the same data without
+   the correction) and by the corrected one; ``detected_only_after_correction`` marks the rest,
+   INCONCLUSIVE. The TOST runs on the uncorrected data too, and an absence that only the corrected
+   data show is flagged ABSENCE_ONLY_AFTER_CORRECTION (reported, not blocking).
 5. **Power.** The SESOI is declared on the construct scale. GATE 0's attenuation under
    depth halving gives a reliability-model estimate of how much of a construct-scale
    difference survives at the analysed depth (lambda). The design is UNDERPOWERED when the
@@ -43,13 +48,23 @@ from typing import Sequence
 
 import numpy as np
 
-from .core import Assessment, SimpleData
+from .core import Assessment, SimpleData, column_block, issparse, n_detected, row_sums
 from .equalize import looks_like_counts, spikein_columns, thin_to_match
 from .gates import _as_simple, _safe_call
 from . import qc as _qc
-from .stats import mde, nested_t, paired_t, permutation_test_nested, permutation_test_paired
+from .stats import mde, nested_t, paired_t, permutation_test_nested, permutation_test_paired, t_ppf
 
 THINNING = ("depth_thinning", "capture_thinning")
+FLOOR_POWER = 0.95  # change 4: the TOST's power at a true difference of 0, fixed in advance (v1's rule)
+
+
+def design_floor(se: float, df: float, alpha: float, power: float = FLOOR_POWER) -> float:
+    """The design's floor (v0.4 change 4): the smallest SESOI at which this design confirms absence by
+    the TOST with probability `power` when the true difference is 0, in the metric's units:
+    se x (t(1 - alpha, df) + t((1 + power) / 2, df))."""
+    if not (np.isfinite(se) and se > 0 and df > 0):
+        return float("nan")
+    return float(se * (t_ppf(1.0 - alpha, df) + t_ppf((1.0 + power) / 2.0, df)))
 
 
 def equalizing_correction(data, estimand: str | None, spikein_prefix: str = "ERCC-") -> str | None:
@@ -132,6 +147,26 @@ def _replicate_design(obs, group_col, groups, replicate_col, within):
     return dict(kind=kind, reps=reps, membership=membership, strata=strata)
 
 
+_UNIT_SEPARATORS = "/+,;&|"
+
+
+def composite_units(reps) -> list:
+    """Units whose id names several animals (parts joined by one of ``/ + , ; & |``) and the other
+    units they overlap with (decided 2026-10-17, v0.4 change 16: on preprint section 4's setup two
+    units held two mice each, 3_10_M/3_11_M and 3_38_F/3_39_F, whose parts were units of their own).
+    A check of the ids' text, not of the cells: it warns, it does not exclude."""
+    import re
+    split = re.compile("\\s*[" + re.escape(_UNIT_SEPARATORS) + "]\\s*")
+    ids = [str(r) for r in reps]
+    parts = {r: {x for x in split.split(r) if x} or {r} for r in ids}
+    out = []
+    for r in ids:
+        if len(parts[r]) >= 2:
+            out.append(dict(unit=r, names=sorted(parts[r]),
+                            overlaps=sorted(u for u in ids if u != r and parts[u] & parts[r])))
+    return out
+
+
 def _tier(n_eff: int, min_replicates: int) -> str:
     threshold = max(3, int(min_replicates or 3))
     if n_eff <= 2 or n_eff < threshold:
@@ -154,6 +189,35 @@ def _rep_values(metric, data, group_col, groups, replicate_col, design):
     return out
 
 
+def _n_eff(reps, design: dict, groups) -> int:
+    """The replicates per group (the smaller group) or the pairs among `reps`."""
+    if design["kind"] == "paired":
+        return len(reps)
+    first = sum(1 for r in reps if groups[0] in design["membership"][r])
+    return min(first, len(reps) - first)
+
+
+def _measured(raw_vals: dict, corr_vals: dict, design: dict, groups) -> tuple[dict, dict, list, int, int]:
+    """The replicates where the metric gives a value on the uncorrected and on the corrected data. The
+    others are left out of both tests and listed (v0.4, the owner's decision of 2026-10-18: a value that
+    was not measured is not a value of 0): (raw, corrected, the unmeasured, replicates per group before
+    and after)."""
+    def fin(v):
+        return v is not None and np.isfinite(v)
+    reps = list(design["reps"])
+    ok = {r: fin(raw_vals.get(r)) and fin(corr_vals.get(r)) for r in reps}
+    unmeasured = [dict(replicate=r, raw=raw_vals.get(r) if fin(raw_vals.get(r)) else None,
+                       corrected=corr_vals.get(r) if fin(corr_vals.get(r)) else None) for r in reps if not ok[r]]
+    return ({r: raw_vals[r] if ok[r] else None for r in reps}, {r: corr_vals[r] if ok[r] else None for r in reps},
+            unmeasured, _n_eff(reps, design, groups), _n_eff([r for r in reps if ok[r]], design, groups))
+
+
+def _unmeasured_reason(n_left: int, n_total: int, n_after: int, min_replicates: int, what: str) -> str:
+    return (f"the metric gives no value (not measured) on {n_left} of the {n_total} {what}, which leaves "
+            f"{n_after} replicate(s) per group, fewer than {min_replicates}: the comparison cannot be made on "
+            "these data (the unmeasured are listed)")
+
+
 def _infer(values: dict, design: dict, groups, tier: str, alpha: float, n_perm: int, rng,
            max_exact: int = 20000, min_replicates: int = 3) -> dict:
     """Run the graded test on replicate values ({replicate: value}); NaNs dropped."""
@@ -174,6 +238,11 @@ def _infer(values: dict, design: dict, groups, tier: str, alpha: float, n_perm: 
         perm = permutation_test_nested(y, g, s, n_perm=n_perm, rng=rng, max_exact=max_exact)
         n_counts = {str(groups[0]): int(g.sum()), str(groups[1]): int((1 - g).sum())}
         n_eff = int(min(g.sum(), (1 - g).sum()))
+    return _tiered(te, perm, n_eff, n_counts, tier, alpha, min_replicates, notes)
+
+
+def _tiered(te, perm, n_eff, n_counts, tier, alpha, min_replicates, notes) -> dict:
+    """The graded rule on a t estimate and a relabeling test: which of them is the test."""
     if tier != "insufficient":
         tier = _tier(n_eff, min_replicates)  # replicates whose metric failed are dropped
         if tier == "insufficient":
@@ -198,6 +267,24 @@ def _infer(values: dict, design: dict, groups, tier: str, alpha: float, n_perm: 
                 ci=te.ci(1 - alpha), ci_2alpha=te.ci(1 - 2 * alpha), perm=perm, tier=tier,
                 detected=detected, test=test, notes=notes, n_counts=n_counts, n_eff=n_eff,
                 te=te)
+
+
+def _units_inference(units, values, groups, tier, alpha, n_perm, rng, max_exact=20000, min_replicates=3) -> dict:
+    """The graded test on the domain's combined estimate (``combined``): the same rule as on
+    replicate values, with the estimate's relabeling test and its cluster-robust t interval."""
+    from .combined import Estimator, t_estimate
+    est = Estimator(units)
+    V = np.asarray(values, float)[None, :]
+    D, se, df = est.estimate(V)
+    te = t_estimate(D[0], se[0], df[0], units.kind)
+    perm = est.permutation(V, n_perm=n_perm, rng=rng, max_exact=max_exact)[0]
+    c = est.counts()
+    if units.kind == "paired":
+        n_counts, n_eff = dict(pairs=c["pairs"]), c["pairs"]
+    else:
+        n_counts = {str(groups[0]): c["first"], str(groups[1]): c["second"]}
+        n_eff = min(c["first"], c["second"])
+    return _tiered(te, perm, n_eff, n_counts, tier, alpha, min_replicates, [])
 
 
 def _restrict(data, group_col, groups):
@@ -252,7 +339,7 @@ def assess_design(
         elif not looks_like_counts(sd.X):
             design.update(identifiable=False, reason="spike-in capture correction needs raw counts")
         else:
-            totals = sd.X[:, cols].sum(axis=1)
+            totals = column_block(sd.X, cols).sum(axis=1)
             frac_with = float(np.mean(totals > 0))
             design["spikein_columns"] = len(cols)
             design["frac_cells_with_spikeins"] = frac_with
@@ -291,15 +378,174 @@ def assess_design(
     tier = _tier(n_eff, min_replicates)
     design.update(rep_design=rep_design, tier=tier,
                   replication=dict(kind=rep_design["kind"], counts=counts, n_eff=n_eff))
+    composite = composite_units(rep_design["reps"])
+    if composite:
+        design["composite_units"] = composite
+        design["notes"].append(
+            "units whose ids name several animals: " + "; ".join(
+                f"{c['unit']}" + (f" (overlaps {', '.join(c['overlaps'])})" if c["overlaps"] else "")
+                for c in composite) + " — each counts as one replicate; check that it is one")
     if tier == "insufficient":
         design["tier_reason"] = (f"{n_eff} replicate(s) per group (need >= "
                                  f"{max(3, int(min_replicates or 3))}): no effect verdict")
     return design
 
 
+def capture_check(raw: SimpleData, equalized: SimpleData, group_col: str, groups, replicate_col=None) -> dict:
+    """The data against the capture model, for the report (not a gate; v0.4 change 6, decided).
+
+    Under the model behind the thinning the groups differ by capture alone, so at equal depth their
+    cells detect as many genes. Per group: the mean of the replicates' (else the cells') mean depth
+    and genes detected per cell, before and after the thinning, and the groups' relative difference.
+    A difference in genes detected that the thinning leaves is either biology or an artifact the
+    capture model does not describe (entry-level dropout, say); the check cannot tell which."""
+    out = {}
+    for name, d in (("raw", raw), ("equalized", equalized)):
+        X = d.X if isinstance(d.X, np.ndarray) or issparse(d.X) else np.asarray(d.X)
+        depth = row_sums(X)
+        genes = n_detected(X)
+        grp = np.asarray(d.obs[group_col])
+        rep = np.asarray(d.obs[replicate_col]).astype(str) if replicate_col else None
+        row = {}
+        for g in groups:
+            m = grp == g
+            if rep is None:
+                row[str(g)] = dict(depth=float(depth[m].mean()) if m.any() else float("nan"),
+                                   genes=float(genes[m].mean()) if m.any() else float("nan"), unit="cells")
+                continue
+            units = [r for r in dict.fromkeys(rep[m])]
+            row[str(g)] = dict(depth=float(np.mean([depth[m & (rep == r)].mean() for r in units])) if units else float("nan"),
+                               genes=float(np.mean([genes[m & (rep == r)].mean() for r in units])) if units else float("nan"),
+                               unit="replicates")
+        a, b = row[str(groups[0])], row[str(groups[1])]
+        row["relative_difference"] = {k: (a[k] / b[k] - 1.0 if b[k] else float("nan")) for k in ("depth", "genes")}
+        out[name] = row
+    return out
+
+
 def public_design(design: dict) -> dict:
     """The design dict without internal arrays/objects (for reports)."""
     return {k: v for k, v in design.items() if k not in ("totals", "rep_design")}
+
+
+def _totals(data, correction: str, spikein_prefix: str) -> np.ndarray:
+    if correction == "capture_thinning":
+        cols = spikein_columns(data.var_names, spikein_prefix)
+        return np.asarray(column_block(data.X, cols).sum(axis=1), dtype=float)
+    return np.asarray(_qc.per_cell_qc(data)["total_counts"], dtype=float)
+
+
+def _stratum_keys(obs, within) -> np.ndarray:
+    if within:
+        return obs[list(within)].astype(str).agg("\x1f".join, axis=1).to_numpy()
+    return np.full(len(obs), "", dtype=object)
+
+
+def _summary(inf: dict | None, alpha: float) -> dict | None:
+    """An inference's numbers for the report."""
+    if inf is None:
+        return None
+    p = inf["perm"].p if inf["tier"] == "permutation" else inf["p_t"]
+    return dict(effect=inf["est"], ci=inf["ci"], ci_level=1 - alpha, se=inf["se"], df=inf["df"], p=p,
+                test=inf["test"], tier=inf["tier"], detected=inf["detected"], n_replicates=inf["n_counts"])
+
+
+def _domain_effect(metric, sd: SimpleData, dom: dict, *, group_col, groups, within, replicate_col, correction,
+                   tier, alpha, n_perm, n_equalize, rng, max_exact, min_replicates, spikein_prefix) -> dict:
+    """The claim within its domain (types equally weighted), raw and corrected, and beside it the types
+    outside the domain and every type on its own. The correction thins within each stratum and type."""
+    from .domain import build_units, unit_values
+
+    lab = np.asarray(sd.obs[dom["column"]]).astype(str)
+    keys = _stratum_keys(sd.obs, within)
+    qualifying = {k: sorted(set(dom["domain"].get(k, [])) | set(dom["outside"].get(k, []))) for k in dom["domain"]}
+    mask = np.zeros(sd.n_obs, bool)
+    for k, ts in qualifying.items():
+        if ts:
+            mask |= (keys == k) & np.isin(lab, ts)
+    if not mask.any():
+        return dict(empty=True)
+    typed = sd[mask]
+    units = build_units(dom, typed, group_col=group_col, groups=groups, replicate_col=replicate_col, which="all")
+    if units is None:
+        return dict(empty=True)
+    rep_key = {r: dom["_design"]["strata"][r] for r in units.reps}
+    in_dom = np.array([units.types[t] in dom["domain"].get(rep_key[units.reps[r]], [])
+                       for r, t in zip(units.unit_rep, units.unit_type)], bool)
+    if not in_dom.any():
+        return dict(empty=True)
+    raw = unit_values(metric, typed, units)
+    eq_info, cc = None, None
+    if correction in THINNING:
+        totals = _totals(typed, correction, spikein_prefix)
+        sets = []
+        for i in range(max(1, n_equalize)):
+            eq, info = thin_to_match(typed, group_col, groups, totals=totals, within=list(within) + [dom["column"]],
+                                     rng=rng)
+            eq_info = eq_info or info
+            if i == 0:
+                cc = capture_check(typed, eq, group_col, groups, replicate_col)
+            sets.append(unit_values(metric, eq, units))
+            del eq
+        stack = np.array(sets)
+        ok = np.isfinite(stack)
+        corr = np.where(ok.any(axis=0), np.where(ok, stack, 0.0).sum(axis=0) / np.maximum(ok.sum(axis=0), 1), np.nan)
+    else:
+        corr = raw
+    # the units where the metric gives no value, uncorrected or at equal depth, are left out and listed;
+    # an Estimator counts a replicate by its units, so they must go before it is built
+    measured = np.isfinite(raw) & np.isfinite(corr)
+    unit_table = [dict(replicate=str(units.reps[r]), type=units.types[t], in_domain=bool(d),
+                       raw=float(v) if np.isfinite(v) else None, corrected=float(c) if np.isfinite(c) else None,
+                       measured=bool(m))
+                  for r, t, d, v, c, m in zip(units.unit_rep, units.unit_type, in_dom, raw, corr, measured)]
+    unmeasured = [u for u in unit_table if not u["measured"]]
+    n_before = _units_n_eff(units.subset(in_dom))
+    units, raw, corr, in_dom = units.subset(measured), raw[measured], corr[measured], in_dom[measured]
+    n_after = _units_n_eff(units.subset(in_dom)) if in_dom.any() else 0
+    if unmeasured and (not in_dom.any() or n_after < min_replicates <= n_before):
+        return dict(empty=False, unmeasured=unmeasured, unmeasured_insufficient=True, n_before=n_before,
+                    n_after=n_after, n_units=int(len(unit_table)), n_cells=int(typed.n_obs), units=unit_table,
+                    types=sorted({u["type"] for u in unit_table if u["in_domain"]}), eq_info=eq_info,
+                    capture_check=cc, outside=None, per_type=[])
+    dom_units = units.subset(in_dom)
+    inf = _units_inference(dom_units, corr[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
+    inf_raw = _units_inference(dom_units, raw[in_dom], groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
+    outside = None
+    if (~in_dom).any():
+        out_units = units.subset(~in_dom)
+        outside = dict(types=sorted({units.types[t] for t in units.unit_type[~in_dom]}),
+                       corrected=_summary(_units_inference(out_units, corr[~in_dom], groups, tier, alpha, n_perm, rng,
+                                                           max_exact, min_replicates), alpha),
+                       raw=_summary(_units_inference(out_units, raw[~in_dom], groups, tier, alpha, n_perm, rng,
+                                                     max_exact, min_replicates), alpha))
+    per_type = []
+    det = {r["type"]: r for s in dom["strata"] for r in s["types"]}
+    for ti, t in enumerate(units.types):
+        sel = units.unit_type == ti
+        if not sel.any():
+            continue
+        sub = units.subset(sel)
+        rec = dict(type=t, in_domain=bool(in_dom[sel].any()), units=int(sel.sum()),
+                   detection=det.get(t, {}).get("detection"), index=det.get(t, {}).get("index"),
+                   corrected=_summary(_units_inference(sub, corr[sel], groups, tier, alpha, n_perm, rng, max_exact,
+                                                       min_replicates), alpha),
+                   raw=_summary(_units_inference(sub, raw[sel], groups, tier, alpha, n_perm, rng, max_exact,
+                                                 min_replicates), alpha))
+        per_type.append(rec)
+    return dict(empty=False, inf=inf, inf_raw=inf_raw, outside=outside, per_type=per_type, eq_info=eq_info,
+                capture_check=cc, n_units=int(in_dom.sum()), n_cells=int(typed.n_obs), units=unit_table,
+                types=sorted({units.types[t] for t in units.unit_type[in_dom]}), unmeasured=unmeasured,
+                unmeasured_insufficient=False, n_before=n_before, n_after=n_after)
+
+
+def _units_n_eff(units) -> int:
+    """The contributing replicates per group (the smaller group) or the pairs of a set of units."""
+    from .combined import Estimator
+    if units.n_units == 0:
+        return 0
+    c = Estimator(units).counts()
+    return c["pairs"] if units.kind == "paired" else min(c["first"], c["second"])
 
 
 def estimate_effect(
@@ -323,10 +569,18 @@ def estimate_effect(
     sesoi_scale: str = "construct",
     seed: int = 0,
     max_exact: int = 20000,
+    domain: dict | None = None,
+    sesoi_label: str | None = None,
 ) -> tuple[Assessment, dict]:
-    """Estimate the between-group effect; return (effect assessment, design info). The SESOI is
-    on the construct scale by default (equivalence is tested within ±λ x SESOI, λ the measured
-    attenuation); ``sesoi_scale="observed"`` declares it on the scale of the metric as measured."""
+    """Estimate the between-group effect; return (effect assessment, design info).
+
+    The SESOI: on the construct's scale by default (equivalence within ±λ x SESOI, λ the measured
+    attenuation), or on the metric's scale with ``sesoi_scale="observed"`` (``run_autopsy`` passes
+    GATE 4's response s_m so, v0.4 change 3, with `sesoi_label` naming it); without one the design's
+    floor (``design_floor``, v0.4 change 4) is the margin of absence, and the report says that absence
+    is confirmed only for effects of at least the floor. With a `domain` (``domain.claim_domain``) the
+    effect is the claim's combined estimate within the domain's cell types, types weighted equally, and
+    the whole mixture's estimate goes into the detail beside it (v0.4, decided 2026-10-18)."""
     if sesoi_scale not in SESOI_SCALES:
         raise ValueError(f"sesoi_scale must be one of {SESOI_SCALES}, not {sesoi_scale!r}")
     rng = np.random.default_rng(seed)
@@ -338,19 +592,27 @@ def estimate_effect(
                            qc_imbalanced=qc_imbalanced, _sd=sd)
     totals, rep_design, tier = design["totals"], design["rep_design"], design["tier"]
 
-    eq_sets, eq_info = [sd], None
-    if design["identifiable"] and design["correction"] in THINNING:
-        eq_sets = []
-        for _ in range(max(1, n_equalize)):
-            eq, info = thin_to_match(sd, group_col, groups, totals=totals, within=within, rng=rng)
-            eq_sets.append(eq)
-            eq_info = eq_info or info
-    depth_ratio = eq_info["depth_ratio"] if eq_info else 1.0
-    design["equalization"] = eq_info
-
     cell_raw = _cell_effect(metric, sd, group_col, groups)
-    cell_corr_vals = [v for v in (_cell_effect(metric, e, group_col, groups) for e in eq_sets)
-                      if v is not None]
+    eq_info, cc, per_set, cell_corr_vals = None, None, [], []
+    if design["identifiable"] and design["correction"] in THINNING:
+        for i in range(max(1, n_equalize)):
+            eq, info = thin_to_match(sd, group_col, groups, totals=totals, within=within, rng=rng)
+            eq_info = eq_info or info
+            if i == 0:
+                cc = capture_check(sd, eq, group_col, groups, replicate_col)
+            v = _cell_effect(metric, eq, group_col, groups)
+            if v is not None:
+                cell_corr_vals.append(v)
+            if rep_design is not None:
+                per_set.append(_rep_values(metric, eq, group_col, groups, replicate_col, rep_design))
+            del eq
+    else:
+        if cell_raw is not None:
+            cell_corr_vals = [cell_raw]
+    depth_ratio = eq_info["depth_ratio"] if eq_info else 1.0
+    if eq_info is not None:
+        eq_info["capture_check"] = cc
+    design["equalization"] = eq_info
     cell_corr = float(np.mean(cell_corr_vals)) if cell_corr_vals else None
 
     detail = dict(cell_level_raw=cell_raw, cell_level_corrected=cell_corr,
@@ -365,14 +627,54 @@ def estimate_effect(
 
     # ---- 3. replicate values and the graded test ----------------------------------------
     raw_vals = _rep_values(metric, sd, group_col, groups, replicate_col, rep_design)
-    per_set = [_rep_values(metric, e, group_col, groups, replicate_col, rep_design) for e in eq_sets]
+    if not per_set:
+        per_set = [raw_vals]
     corr_vals = {}
     for r in rep_design["reps"]:
         xs = [p[r] for p in per_set if p.get(r) is not None]
         corr_vals[r] = float(np.mean(xs)) if xs else None
+    # a replicate where the metric gives no value (not measured) leaves both tests and is listed
+    raw_vals, corr_vals, unmeasured, n_before, n_after = _measured(raw_vals, corr_vals, rep_design, groups)
 
     inf = _infer(corr_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
     inf_raw = _infer(raw_vals, rep_design, groups, tier, alpha, n_perm, rng, max_exact, min_replicates)
+    mixture = None
+    detail["unmeasured"] = unmeasured
+    if domain is not None and not domain.get("error"):
+        mixture = dict(corrected=_summary(inf, alpha), raw=_summary(inf_raw, alpha),
+                       replicate_values=[dict(replicate=r, raw=raw_vals.get(r), corrected=corr_vals.get(r))
+                                         for r in rep_design["reps"]],
+                       equalization=eq_info, unmeasured=unmeasured)
+        dres = _domain_effect(metric, sd, domain, group_col=group_col, groups=groups, within=within,
+                              replicate_col=replicate_col, correction=design["correction"], tier=tier, alpha=alpha,
+                              n_perm=n_perm, n_equalize=n_equalize, rng=rng, max_exact=max_exact,
+                              min_replicates=min_replicates, spikein_prefix=spikein_prefix)
+        detail["mixture"] = mixture
+        detail["domain"] = {k: v for k, v in dres.items() if k not in ("inf", "inf_raw", "eq_info")}
+        detail["domain"]["rule"] = domain["rule"]
+        if dres["empty"]:
+            detail.update(domain_empty=True, effect=None, raw_effect=None)
+            reason = ("the claim's domain is empty: no cell type with enough cells and replicates has "
+                      + ("the claim's genes detected" if domain["rule"]["kind"] != "global" else "both groups")
+                      + f" by the rule ({domain['rule']['text']}); the whole mixture's estimate is reported beside")
+            return Assessment("INCONCLUSIVE", reason, [], detail), public_design(design)
+        if dres.get("unmeasured_insufficient"):
+            detail.update(unmeasured_insufficient=True, effect=None, raw_effect=None)
+            n_dom = sum(1 for u in dres["units"] if u["in_domain"])
+            n_off = sum(1 for u in dres["unmeasured"] if u["in_domain"])
+            return Assessment("NOT_ESTIMABLE", _unmeasured_reason(
+                n_off, n_dom, dres["n_after"], min_replicates, "units (replicate, type) of the domain"),
+                [], detail), public_design(design)
+        inf, inf_raw = dres["inf"], dres["inf_raw"]
+        if dres["eq_info"] is not None:
+            eq_info = dict(dres["eq_info"], capture_check=dres["capture_check"])
+            depth_ratio = eq_info["depth_ratio"]
+            design["equalization"] = eq_info
+    elif unmeasured and n_after < min_replicates <= n_before:
+        detail.update(unmeasured_insufficient=True, effect=None, raw_effect=None)
+        return Assessment("NOT_ESTIMABLE", _unmeasured_reason(
+            len(unmeasured), len(rep_design["reps"]), n_after, min_replicates, "replicates"),
+            [], detail), public_design(design)
     if tier != "insufficient" and inf["tier"] == "insufficient":
         design["tier_reason"] = "; ".join(inf["notes"]) or "insufficient replication"
     tier = inf["tier"] if tier != "insufficient" else tier
@@ -394,20 +696,32 @@ def estimate_effect(
                                group=(str(groups[0]) if groups[0] in rep_design["membership"][r]
                                       else str(groups[1])) if rep_design["kind"] == "nested" else "paired")
                           for r in rep_design["reps"]],
+        estimate_over=("the domain's cell types, equally weighted" if mixture is not None else "the replicates"),
     )
     raw_est, est = inf_raw["est"], inf["est"]
     retained = est / raw_est if (raw_est and np.isfinite(raw_est) and raw_est != 0) else float("nan")
     detail["retained"] = float(retained) if np.isfinite(retained) else float("nan")
 
-    # ---- 4. power against the (attenuated) SESOI ----------------------------------------
+    # ---- 4. the SESOI in the metric's units, the floor, power ------------------------------
+    floor = design_floor(inf["se"], inf["df"], alpha)
+    floor_raw = design_floor(inf_raw["se"], inf_raw["df"], alpha)
     lam, lam_info = attenuation_lambda(attenuation_half, depth_ratio, sesoi_scale)
-    eff_sesoi = lam * sesoi if sesoi is not None else None
+    lam_raw, _ = attenuation_lambda(attenuation_half, 1.0, sesoi_scale)
+    if sesoi is not None:
+        eff_sesoi, eff_sesoi_raw, source = lam * sesoi, lam_raw * sesoi, "declared"
+    else:
+        eff_sesoi = floor if np.isfinite(floor) else None
+        eff_sesoi_raw = floor_raw if np.isfinite(floor_raw) else None
+        source = "floor"
     mde_v = mde(inf["se"], inf["df"], alpha, power) if tier != "insufficient" else float("nan")
-    design["power"] = dict(mde=mde_v, power=power, sesoi=sesoi, lambda_=lam,
-                           effective_sesoi=eff_sesoi, attenuation=lam_info)
+    design["power"] = dict(mde=mde_v, power=power, sesoi=sesoi, lambda_=lam, effective_sesoi=eff_sesoi,
+                           attenuation=lam_info, floor=floor, floor_power=FLOOR_POWER, sesoi_source=source,
+                           sesoi_label=sesoi_label)
     design["underpowered"] = (bool(np.isfinite(mde_v) and mde_v > eff_sesoi)
-                              if eff_sesoi is not None else None)
-    detail["effective_sesoi"] = eff_sesoi
+                              if sesoi is not None and eff_sesoi is not None else None)
+    design["sesoi_below_floor"] = (bool(np.isfinite(floor) and eff_sesoi < floor)
+                                   if sesoi is not None and eff_sesoi is not None else None)
+    detail.update(effective_sesoi=eff_sesoi, sesoi_source=source, floor=floor)
 
     flags = ["PARAMETRIC_ONLY"] if tier == "parametric" else []
     if tier == "insufficient":
@@ -422,18 +736,31 @@ def estimate_effect(
     # be called depth (decided 2026-10-08, journal D7); without a SESOI only the retained share speaks
     depth_like = bool(design["correction"] in THINNING and inf_raw["detected"] and not inf["detected"]
                       and np.isfinite(retained) and abs(retained) < 0.5)
-    explained = depth_like and (eff_sesoi is None or bool(equivalent))
+    explained = depth_like and (sesoi is None or bool(equivalent))
     detail["explained_by_depth"] = explained
     # a detected raw difference whose sign the correction reverses: the estimate then hinges on
     # how exactly the correction removed a technical difference larger than the effect
     reversed_ = bool(design["correction"] in THINNING and inf_raw["detected"] and inf["detected"]
                      and np.isfinite(raw_est) and np.isfinite(est) and np.sign(est) != np.sign(raw_est))
     detail["reversed_by_correction"] = reversed_
+    # a correction can only remove a conclusion, never create one (v0.4 change 6): the corrected
+    # effect counts as detected only where the raw test detects it too, in the same direction
+    created = bool(design["correction"] in THINNING and inf["detected"] and not reversed_
+                   and not (inf_raw["detected"] and np.isfinite(raw_est) and np.sign(raw_est) == np.sign(est)))
+    detail["detected_only_after_correction"] = created
+    # the TOST on the uncorrected data, at their own depth (decided 2026-10-12): an absence that
+    # only the corrected data show is marked, not blocked
+    lo2r, hi2r = inf_raw["ci_2alpha"]
+    equivalent_raw = (eff_sesoi_raw is not None and eff_sesoi_raw > 0 and np.isfinite(lo2r) and np.isfinite(hi2r)
+                      and lo2r > -eff_sesoi_raw and hi2r < eff_sesoi_raw)
+    detail.update(tost_equivalent_raw=bool(equivalent_raw) if eff_sesoi_raw is not None else None,
+                  effective_sesoi_raw=eff_sesoi_raw, ci_2alpha_raw=inf_raw["ci_2alpha"])
 
     ci = inf["ci"]
     p_txt = (f"p={inf['perm'].p:.3g} ({inf['perm'].method} permutation)" if tier == "permutation"
              else f"p={inf['p_t']:.3g} (t, parametric only)")
-    est_txt = f"{est:+.4g} [{ci[0]:+.4g}, {ci[1]:+.4g}]"
+    over = " within the domain's types, equally weighted" if mixture is not None else ""
+    est_txt = f"{est:+.4g} [{ci[0]:+.4g}, {ci[1]:+.4g}]{over}"
     if explained:
         what = "depth" if design["correction"] == "depth_thinning" else "capture"
         return Assessment(
@@ -448,15 +775,38 @@ def estimate_effect(
             f"the correction reversed the sign: raw {raw_est:+.4g} (detected) -> {est_txt} at equal "
             f"{what}, {p_txt}; the technical difference is larger than the effect, so its direction "
             "depends on how exactly the correction removed it", flags, detail), public_design(design)
+    if created:
+        what = "depth" if design["correction"] == "depth_thinning" else "capture"
+        return Assessment(
+            "INCONCLUSIVE",
+            f"effect {est_txt} at equal {what}, {p_txt}, but the raw difference {raw_est:+.4g} is not "
+            f"detected at the replicate level in that direction (p={detail['p_raw']:.3g}): a correction "
+            "can only remove a conclusion, never create one", flags, detail), public_design(design)
     if inf["detected"]:
         return Assessment("DETECTED", f"effect {est_txt}, {p_txt}", flags, detail), public_design(design)
     if equivalent:
-        return Assessment(
-            "NO_DETECTABLE_EFFECT",
-            f"effect {est_txt}: the {1 - 2 * alpha:.0%} interval lies within ±{eff_sesoi:.4g} "
-            f"(SESOI {sesoi:g} x attenuation {lam:.2f}; TOST)", flags, detail), public_design(design)
-    why = ("no SESOI pre-registered, so equivalence cannot be tested" if sesoi is None
-           else f"neither detected nor equivalent within ±{eff_sesoi:.4g}")
+        if source == "floor":
+            margin = (f"±{eff_sesoi:.4g}, the design's floor: no SESOI was pre-registered, so absence is "
+                      f"confirmed only for effects of at least {eff_sesoi:.4g}")
+        elif sesoi_label:
+            margin = f"±{eff_sesoi:.4g} ({sesoi_label}; TOST)"
+        elif sesoi_scale == "observed":
+            margin = f"±{eff_sesoi:.4g} (SESOI {sesoi:g} on the metric's scale; TOST)"
+        else:
+            margin = f"±{eff_sesoi:.4g} (SESOI {sesoi:g} x attenuation {lam:.2f}; TOST)"
+        reason = f"effect {est_txt}: the {1 - 2 * alpha:.0%} interval lies within {margin}"
+        if source == "floor":
+            flags = flags + ["NO_SESOI_FLOOR"]
+        if design["correction"] in THINNING and not equivalent_raw:
+            what = "depth" if design["correction"] == "depth_thinning" else "capture"
+            flags = flags + ["ABSENCE_ONLY_AFTER_CORRECTION"]
+            reason += (f"; absence shown only after the {what} correction: on the uncorrected data the "
+                       f"{1 - 2 * alpha:.0%} interval [{lo2r:+.4g}, {hi2r:+.4g}] is not within "
+                       f"±{eff_sesoi_raw:.4g}")
+        return Assessment("NO_DETECTABLE_EFFECT", reason, flags, detail), public_design(design)
+    why = (f"neither detected nor equivalent within ±{eff_sesoi:.4g}" + (
+        " (the design's floor; no SESOI was pre-registered)" if source == "floor" else "")
+           if eff_sesoi is not None else "no SESOI pre-registered and no floor computable, so equivalence cannot be tested")
     if design["correction"] in THINNING and np.isfinite(retained) and abs(retained) < 0.5:
         what = "depth" if design["correction"] == "depth_thinning" else "capture"
         if inf_raw["detected"]:

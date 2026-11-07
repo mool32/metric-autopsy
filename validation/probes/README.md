@@ -259,3 +259,45 @@ check that the corrected effect is negligible. A pre-registration may now state 
 observed scale (`sesoi_scale: "observed"`), and with a SESOI "explained by depth" needs the
 corrected effect shown smaller than it (TOST). No dev-set expectation changed; p11a and p11b, which
 declare no SESOI, keep their behaviour (JOURNAL.md, D7).
+
+## v0.4: the dev set at two engines
+
+`verdicts_v03.py` at two commits, compared line by line by `compare_verdicts.py BEFORE.log AFTER.log` (the
+header, which names the commit, aside). The script runs its own checkout's engine (`src`) and stops if
+another was imported.
+
+**Until 2026-11-05 it did not.** It imported the engine through the editable install (the main checkout's
+`src`) whatever checkout it was run from, while its header named the commit of its own directory. On
+2026-10-19 at 11:16 the dev set ran twice at once, in a worktree of 1337ead and in the main checkout,
+which held the code of changes 17–19 in progress (committed at 12:00 as 1e4696c): both runs ran that code.
+- The check of change 17, "the dev set's verdicts are the same on all 109 lines", compared that engine with
+  itself. Change 17 was reverted at 07935fa; no verdict of the current engine rests on that check.
+- `verdicts_v0.4_1337ead.log` is the worktree's run: its header names 1337ead, its verdicts were that code's.
+  Rerun on 2026-11-05 in a worktree of 1337ead with 1337ead's own engine (`verdicts_v0.4_1337ead_rerun.log`;
+  its stderr held only the 20 warnings of GATE 5's note on its null's centre, fixed later) it gives the same
+  lines, the header aside, so the comparison at change 17' (`verdicts_v0.4_compare.log`, against 71e145c: 2
+  lines differ, the demo's two NO DETECTABLE EFFECT in their numbers) is a comparison with 1337ead.
+- Not affected: the acceptance of change 17' (`validation/exploratory/detection_equalization.py` runs each
+  engine in its own `python -I` worker, its `src` first), the log of change 17's acceptance (one engine, the
+  main checkout's), `pytest` (its `pythonpath` is the checkout's `src`), the flagship audit (it installs its
+  v0.1.1 worktree).
+
+**The revert of change 17' and change 9 (2026-11-05)**, each in a worktree of its commit with its own
+engine: `verdicts_v0.4_229d685.log` (17' reverted) and `verdicts_v0.4_ac0bca4.log` (change 9) are
+1337ead's lines, the header aside (`verdicts_v0.4_revert_compare.log`: against `verdicts_v0.4_1337ead.log`,
+0 lines differ for the rerun of 1337ead, for 229d685 and for ac0bca4).
+
+**Changes 10 and 11 (b40742a, 2026-11-05)**, run in a worktree of b40742a (the script runs its own checkout's
+engine): `verdicts_v0.4_b40742a.log` against 1337ead's (`verdicts_v0.4_b40742a_compare.log`): 0 lines differ. The dev set's data are dense, so this checks that the dense path is the code it was; the sparse
+path's own check is `tests/test_v04_sparse.py`.
+
+**p12 at change 10 (D10, the owner's decision of 2026-11-05).** p12's expectation follows change 10. v0.3
+densified the sparse matrix for GATE 1's per-cell QC and warned first; v0.4 reads its stored entries and
+never densifies the matrix there (the cells' totals of non-integer values are summed 256 rows at a time), so
+`test_p12_never_densifies_a_large_sparse_matrix_silently` checks that GATE 1 neither densifies the matrix nor
+announces anything, and that a step which still densifies it, the whole-matrix metric `spectral_entropy`,
+warns first. Against the engine before change 10 (ac0bca4) the first check fails (`d10_p12_engines.log`).
+
+**The engine of the tag `v0.4.0.dev0` (96a1663, 2026-11-07)**, run in a worktree of 96a1663 with its own engine
+(`verdicts_v0.4_96a1663.log`, its stderr empty): against 1337ead's (`verdicts_v0.4_96a1663_compare.log`), 0 lines
+differ, the header aside. The commits after 96a1663 up to the tag add logs and documents only.

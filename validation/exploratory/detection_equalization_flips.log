@@ -1,0 +1,42 @@
+# Criterion (ii) of change 17''s acceptance: the seeds whose verdicts differ, from detection_equalization.json
+
+## mi_3bin: 15 of 80 seeds differ
+
+| scenario | seed | 1337ead: verdict [cause] | effect | s_m | GATE 4 | new: verdict [cause] | effect | effect at equal depth alone | s_m | GATE 4 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| eq0 | 5 | INCONCLUSIVE [effect_inconclusive] | +0.007734 | +0.01359 | PASS | NO DETECTABLE EFFECT [no_detectable_effect] | +0.008185 | +0.007734 | +0.01804 | PASS |
+| eq0 | 7 | INCONCLUSIVE [effect_inconclusive] | +0.002997 | +0.01397 | PASS | NO DETECTABLE EFFECT [no_detectable_effect] | +0.0008649 | +0.002997 | +0.01346 | PASS |
+| eq3 | 9 | SUPPORTED [provisional] | +0.06371 | +0.01749 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.05898 | +0.06371 | +0.009905 | PASS |
+| eq5 | 0 | NOT SUPPORTED [metric_invalid_gate0] | +0.09692 | +0.008243 | PASS | SUPPORTED [provisional] | +0.09558 | +0.09692 | +0.01022 | PASS |
+| eq5 | 12 | NOT SUPPORTED [metric_invalid_gate0] | +0.1048 | +0.008067 | PASS | SUPPORTED [provisional] | +0.1044 | +0.1048 | +0.007514 | PASS |
+| eq5 | 13 | SUPPORTED [provisional] | +0.07762 | +0.008625 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.07882 | +0.07762 | +0.008625 | PASS |
+| eq5 | 17 | SUPPORTED [provisional] | +0.104 | +0.02349 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.1008 | +0.104 | +0.008522 | PASS |
+| eq7 | 0 | SUPPORTED [provisional] | +0.125 | +0.02841 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.1239 | +0.125 | +0.006152 | PASS |
+| eq7 | 4 | NOT SUPPORTED [metric_invalid_gate0] | +0.1216 | +0.005914 | PASS | SUPPORTED [provisional] | +0.1202 | +0.1216 | +0.007241 | PASS |
+| eq7 | 5 | NOT SUPPORTED [metric_invalid_gate0] | +0.1374 | +0.006545 | PASS | SUPPORTED [provisional] | +0.1346 | +0.1374 | +0.02605 | PASS |
+| eq7 | 8 | SUPPORTED [provisional] | +0.1385 | +0.02517 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.1346 | +0.1385 | +0.005048 | PASS |
+| eq7 | 10 | NOT SUPPORTED [metric_invalid_gate0] | +0.1278 | +0.004707 | PASS | SUPPORTED [provisional] | +0.1269 | +0.1278 | +0.02702 | PASS |
+| eq7 | 12 | NOT SUPPORTED [metric_invalid_gate0] | +0.1422 | +0.005296 | PASS | SUPPORTED [provisional] | +0.1413 | +0.1422 | +0.006607 | PASS |
+| eq7 | 16 | NOT SUPPORTED [metric_invalid_gate0] | +0.1301 | +0.004887 | PASS | SUPPORTED [provisional] | +0.1304 | +0.1301 | +0.02696 | PASS |
+| eq7 | 17 | SUPPORTED [provisional] | +0.134 | +0.0263 | PASS | NOT SUPPORTED [metric_invalid_gate0] | +0.1322 | +0.134 | +0.003162 | PASS |
+
+The 15 seeds that differ: s_m's relative change, mean 1.128 (max 4.740); |effect's change| mean 0.001779 (max 0.00473); the effect at equal depth alone equal to 1337ead's effect in 15; a GATE 0 FAIL in either engine in 13
+
+The 65 seeds that agree: s_m's relative change, mean 0.172 (max 1.027); |effect's change| mean 0.001519 (max 0.007663); the effect at equal depth alone equal to 1337ead's effect in 65; a GATE 0 FAIL in either engine in 2
+
+The changes: INCONCLUSIVE [effect_inconclusive] -> NO DETECTABLE EFFECT [no_detectable_effect]: 2; NOT SUPPORTED [metric_invalid_gate0] -> SUPPORTED [provisional]: 7; SUPPORTED [provisional] -> NOT SUPPORTED [metric_invalid_gate0]: 6
+
+## norm_pearson: 2 of 80 seeds differ
+
+| scenario | seed | 1337ead: verdict [cause] | effect | s_m | GATE 4 | new: verdict [cause] | effect | effect at equal depth alone | s_m | GATE 4 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| eq0 | 6 | NO DETECTABLE EFFECT [no_detectable_effect] | +0.02394 | +0.06831 | PASS | INCONCLUSIVE [effect_inconclusive] | +0.02536 | +0.02394 | +0.06768 | PASS |
+| eq0 | 8 | INCONCLUSIVE [effect_inconclusive] | -0.02496 | +0.06657 | PASS | NO DETECTABLE EFFECT [no_detectable_effect] | -0.02314 | -0.02496 | +0.06657 | PASS |
+
+The 2 seeds that differ: s_m's relative change, mean 0.005 (max 0.009); |effect's change| mean 0.00162 (max 0.001828); the effect at equal depth alone equal to 1337ead's effect in 2; a GATE 0 FAIL in either engine in 0
+
+The 78 seeds that agree: s_m's relative change, mean 0.089 (max 0.358); |effect's change| mean 0.003611 (max 0.01396); the effect at equal depth alone equal to 1337ead's effect in 78; a GATE 0 FAIL in either engine in 0
+
+The changes: INCONCLUSIVE [effect_inconclusive] -> NO DETECTABLE EFFECT [no_detectable_effect]: 1; NO DETECTABLE EFFECT [no_detectable_effect] -> INCONCLUSIVE [effect_inconclusive]: 1
+
+The new engine's effect at equal depth alone equals 1337ead's effect in 281 of the 281 runs both engines made (the log's line "281 of 280" counted the clean data's run in the first number only).

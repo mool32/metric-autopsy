@@ -1,0 +1,21 @@
+# Level B: the first list against the corrected one — lb_search, lb_remerge
+
+## 1. PubMed's records, parsed as the first list did and as now
+  3359 records: another DOI in the first list 2183; another PMCID 2596 (of which a PMCID where the record has none: 40)
+
+## 2. The first list's records with several PMIDs
+  102 records; the corrected list splits 64 of them, which held 176 papers (the corrected list's records); PMIDs per split record: 2: 39, 3: 12, 4: 7, 6: 2, 7: 3, 10: 1
+  the others (38) are records of the corrected list as they were
+
+## 3. The corrected list's records with several PMIDs
+  47 records (2 PMIDs: 46, 3 PMIDs: 1); their PubMed records share one title (normalized) in 46; one of them is a preprint (type 'Preprint' or a preprint server's DOI) in 47
+    R01450 ['39605403', '42289047'] ['10.1093/bib/bbag300', '10.1101/2024.11.08.622700']:
+      PubMed 39605403: DOI 10.1101/2024.11.08.622700; Inferring Cell-Type-Specific Co-Expressed Genes from Single Cell Data.
+      PubMed 42289047: DOI 10.1093/bib/bbag300; A unified framework for selecting and evaluating cell-type-specific gene co-expressions in single-cell data.
+      Europe PMC MED:42289047: DOI 10.1093/bib/bbag300; A unified framework for selecting and evaluating cell-type-specific gene co-expressions in single-cell data.
+      Europe PMC PPR:PPR938262: DOI 10.1101/2024.11.08.622700; A Unified Framework for Selecting and Evaluating Cell-Type-Specific Gene Co-expressions in Single-Cell Data
+
+## 4. The records' texts as the screeners read them
+  the first list: 3394 records, 3394 distinct texts; the corrected list: 3506 records, 3506 distinct texts
+  the first list's texts in the corrected list unchanged: 3394; the corrected list's texts not in the first list: 112
+  of the first list's records, 2038 have another DOI in the corrected list and 2448 another PMCID

@@ -1,0 +1,7 @@
+# D10: p12's first check (GATE 1 on a 2,000 x 500 sparse AnnData, budget 0.001 GB) against each engine; python 3.13.16
+engine at git ac0bca4:
+  (1) DenseMemoryWarning an error: DenseMemoryWarning: densifying a 2000 x 500 matrix for per-cell QC needs ~0.01 GB dense (budget 0.001 GB, METRIC_AUTOPSY_DENSE_WARN_GB). Sub
+  (2) the warning allowed: AssertionError: the whole matrix densified: (2000, 500)
+engine at git 8defc23:
+  (1) DenseMemoryWarning an error: GATE 1 PASS, no warning and no dense copy of the matrix
+  (2) the warning allowed: GATE 1 PASS, no dense copy of the matrix

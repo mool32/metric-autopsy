@@ -1,0 +1,73 @@
+# norm_pearson's fallback 0.0 in validation v1's donor-level values (v1_fallbacks.py; exploratory)
+# key 7bb8eab615c44438ebbd20582b58d6caeeba2f9ec57f313e40dc8dd846c4286b; pilot.json sha256 485bcf3cdd61394bcec3e58587c73f9e3e6e2afb98d1ab71d635340c49b22a57; rows sha256 7c6a0d0e2eb352eb5a973bfcde768777aab3f4414f4d0f098904cddece5a96e0
+# claim cards on norm_pearson: 8910; datasets rebuilt identical to the manifest's: 8910 cards' datasets
+
+The fallback: fewer than 3 cells with both genes, or no variance among them (v0.3.0's metrics.norm_pearson).
+
+## 1. The uncorrected donor values, every claim card on norm_pearson (rebuilt from the key)
+
+| level | cards | donor values | fallback: fewer than 3 | fallback: no variance | below 20 cells with both genes |
+|---|---|---|---|---|---|
+| high | 3002 | 44640 | 11/44640 (0.02%) | 0/44640 (0.00%) | 471/44640 (1.06%) |
+| medium | 3016 | 44828 | 291/44828 (0.65%) | 0/44828 (0.00%) | 5621/44828 (12.54%) |
+| low | 2892 | 43612 | 810/43612 (1.86%) | 0/43612 (0.00%) | 17681/43612 (40.54%) |
+| all | 8910 | 133080 | 1112/133080 (0.84%) | 0/133080 (0.00%) | 23773/133080 (17.86%) |
+
+Cards with at least one uncorrected donor value at the fallback: high 9/3002 (0.30%), medium 245/3016 (8.12%), low 529/2892 (18.29%)
+
+## 2. The cards whose effect v1's engine estimated (the donor values its verdicts used)
+
+Cards: 2342; the raw values recomputed here equal the reports' in 2081 of 2081 nested cards; the corrected values (the mean over five thinnings) equal the reports' in 2342 of 2342 cards.
+
+| level | cards | donor values | raw at the fallback | corrected with >= 1 thinning at the fallback | corrected with all 5 at the fallback | cards with >= 1 corrected donor value touched |
+|---|---|---|---|---|---|---|
+| high | 2331 | 36686 | 3/36686 (0.01%) | 10/36686 (0.03%) | 6/36686 (0.02%) | 9/2331 (0.39%) |
+| medium | 11 | 124 | 0/124 (0.00%) | 0/124 (0.00%) | 0/124 (0.00%) | 0/11 (0.00%) |
+| low | 0 | 0 | 0/0 | 0/0 | 0/0 | 0/0 |
+| all | 2342 | 36810 | 3/36810 (0.01%) | 10/36810 (0.03%) | 6/36810 (0.02%) | 9/2342 (0.38%) |
+
+By v1's outcome (the cards with an estimated effect): cards with at least one corrected donor value touched by the fallback
+
+| outcome | cards | touched |
+|---|---|---|
+| INCONCLUSIVE | 232 | 0/232 (0.00%) |
+| NO DETECTABLE EFFECT | 1676 | 9/1676 (0.54%) |
+| NOT SUPPORTED: explained by depth | 47 | 0/47 (0.00%) |
+| NOT SUPPORTED: opposite direction | 58 | 0/58 (0.00%) |
+| SUPPORTED | 329 | 0/329 (0.00%) |
+
+## 3. v0.4's minimum on the same cards: a donor value counts with at least 20 cells with both genes
+
+v0.4's engine leaves out a replicate whose uncorrected value, or whose value at equal depth on every one of the five thinnings, has fewer cells with both genes, and makes the comparison UNIDENTIFIABLE where fewer than v1's minimum of 3 replicates per group (or pairs) are left; v1's draws, not v0.4's.
+
+| level | cards | donors left out | cards with >= 1 left out | cards left with fewer than 3 |
+|---|---|---|---|---|
+| high | 2331 | 272/36686 (0.74%) | 193/2331 (8.28%) | 3/2331 (0.13%) |
+| medium | 11 | 9/124 (7.26%) | 3/11 (27.27%) | 1/11 (9.09%) |
+| low | 0 | 0/0 | 0/0 | 0/0 |
+| all | 2342 | 281/36810 (0.76%) | 196/2342 (8.37%) | 4/2342 (0.17%) |
+
+By v1's outcome (the cards with an estimated effect): cards left with fewer than 3 replicates per group by v0.4's minimum
+
+| outcome | cards | fewer than 3 |
+|---|---|---|
+| INCONCLUSIVE | 232 | 2/232 (0.86%) |
+| NO DETECTABLE EFFECT | 1676 | 2/1676 (0.12%) |
+| NOT SUPPORTED: explained by depth | 47 | 0/47 (0.00%) |
+| NOT SUPPORTED: opposite direction | 58 | 0/58 (0.00%) |
+| SUPPORTED | 329 | 0/329 (0.00%) |
+
+By condition (all levels): donor values at the fallback, uncorrected, every claim card
+
+| condition | cards | donor values | at the fallback |
+|---|---|---|---|
+| E1 | 1000 | 16000 | 162/16000 (1.01%) |
+| E2 | 400 | 6400 | 225/6400 (3.52%) |
+| E3 | 400 | 6400 | 325/6400 (5.08%) |
+| N1 | 790 | 12640 | 16/12640 (0.13%) |
+| N2 | 1580 | 25280 | 195/25280 (0.77%) |
+| N3 | 790 | 12640 | 44/12640 (0.35%) |
+| N4 | 1580 | 9480 | 12/9480 (0.13%) |
+| N5 | 790 | 12640 | 64/12640 (0.51%) |
+| N7 | 790 | 18960 | 23/18960 (0.12%) |
+| N8 | 790 | 12640 | 46/12640 (0.36%) |

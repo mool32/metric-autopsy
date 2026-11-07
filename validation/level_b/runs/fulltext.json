@@ -1,0 +1,14 @@
+{
+ "n": 56,
+ "fetched": 46,
+ "none": 10,
+ "core_asked": 7,
+ "core_found": 7,
+ "server_errors": [
+  "R00014",
+  "R00173",
+  "R00394"
+ ],
+ "ok": true,
+ "list": "/home/runner/work/metric-autopsy/metric-autopsy/validation/level_b/fulltext_list.tsv"
+}

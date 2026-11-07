@@ -35,14 +35,20 @@ def _load(path: str):
     return anndata.read_h5ad(path)
 
 
-def _bind(metric_name: str, gene_a: str | None, gene_b: str | None):
+def _bind(metric_name: str, gene_a: str | None, gene_b: str | None, set_genes=None, inject_signal=None):
+    """The reference metric `metric_name` bound to its genes, its unbound function and its kind ('pair', 'set',
+    'matrix'): a set's metric takes `set_genes` and the set's probe over them (``cli.set_metric``)."""
+    from .cli import set_metric
+
     fn = getattr(metrics, metric_name, None)
     if fn is None:
         raise ValueError(f"unknown metric {metric_name!r}; try list_metrics()")
-    pairwise = metric_name != "spectral_entropy"
-    if pairwise and gene_a and gene_b:
-        return partial(fn, gene_a=gene_a, gene_b=gene_b), fn, pairwise
-    return fn, fn, pairwise
+    kind = metrics.kind(metric_name)
+    if kind == "set":
+        return set_metric(metric_name, fn, set_genes, inject_signal), fn, kind
+    if kind == "pair" and gene_a and gene_b:
+        return partial(fn, gene_a=gene_a, gene_b=gene_b), fn, kind
+    return fn, fn, kind
 
 
 # --------------------------------------------------------------------------- #
@@ -71,14 +77,20 @@ def autopsy_report(
     min_replicates: int | None = None,
     prereg_path: str | None = None,
     inject_signal: str | None = None,
+    module_genes: Sequence[str] | None = None,
+    module_fold: float = 2.0,
+    set_genes: Sequence[str] | None = None,
+    couple: str = "all",
     seed: int = 0,
     json_path: str | None = None,
     log_path: str | None = None,
+    composition: Sequence[str] = (),
 ) -> str:
     """Run the full metric-autopsy gate sequence on an AnnData `.h5ad` and return a Markdown
     report: four-field assessment, gate-by-gate table, verdict and provenance hashes.
 
-    metric: one of the reference metrics (see list_metrics) or `spectral_entropy` (no genes).
+    metric: one of the reference metrics (see list_metrics): a pair's (gene_a, gene_b), a set's
+    (`set_norm_pearson`: set_genes, with inject_signal='coupling_set' over them) or `spectral_entropy` (no genes).
     groups: the two levels of `group_col` to compare, e.g. ["young", "old"].
     within: factorial obs columns to stratify QC/controls/effects by, e.g. ["sex", "tissue"].
     replicate_col: obs column of the biological replicate (mouse, donor) — required for an
@@ -87,21 +99,38 @@ def autopsy_report(
     'decrease' or 'two-sided' (non-directional); required for SUPPORTED.
     sesoi: smallest effect size of interest (enables equivalence and power checks, and sizes
     GATE 0's nuisance biases; bias_tolerance: how many SESOIs a bias may reach, default 0.5).
-    sesoi_scale: 'construct' (default: equivalence within ±attenuation x SESOI) or 'observed'
-    (the SESOI is a difference of the metric as measured at this depth).
-    delta_min: the smallest response to an injected signal that matters (GATE 4/5; default
-    0.5 x SESOI): the metric is invalid only if its response is shown below it.
+    sesoi_scale: 'construct' (default: for the coupling probe a change of the correlation of the
+    pair's log expected expression, for the set's probe of its mean over the pairs it couples, for
+    the module probe of the module's natural-log expression, translated into the metric's units by
+    the inject_signal probe) or 'observed' (the SESOI is a difference of the metric as measured at
+    this depth).
+    delta_min: recorded in the pre-registration, not used since v0.4 (GATE 4/5 call a metric blind
+    only where its response is shown at or below zero).
     pos_pair/neg_pair: control gene pairs for GATE 5. inject_signal='coupling' tests the
-    metric's response to an injected coupling of (gene_a, gene_b). data2_path: GATE 6.
+    metric's response to an injected coupling of (gene_a, gene_b); inject_signal='module' to the
+    module_genes lowered module_fold-times by thinning (default 2; with a SESOI on the construct's
+    scale, a change of the module's natural-log expression, GATE 4 doses it to exp(SESOI));
+    inject_signal='coupling_set' to a coupling of set_genes by one shared factor (couple='all': the
+    set; 'half': a new random half of it at every injection, for a metric of what is relative within
+    the set; with a SESOI on the construct's scale GATE 4 doses it to that change of the mean
+    correlation over the pairs it couples).
+    data2_path: GATE 6.
     resolve_judgment: mark judgment gates 4 & 7 resolved so a provisional SUPPORTED is reachable.
     prereg_path: pre-registration JSON (explicit arguments override it). json_path: write the
     JSON report. log_path: run log; a pre-registered run is always logged (default
     $METRIC_AUTOPSY_LOG or metric_autopsy_runs.jsonl; "off" disables).
+    composition: obs columns of an annotation, the cell type first (e.g. ["cell_type", "tissue"]):
+    their shares are compared between the groups at the replicate level, and the claim is judged
+    within its domain, the cell types where its genes are expressed, the types weighted equally;
+    the whole mixture's estimate is reported beside.
+    stop_on_first_fail: kept for compatibility; since v0.4 the effect and every report line are
+    estimated after a FAIL too (the dossier), and the verdict follows the first FAIL either way.
     """
     import json
 
+    metric_fn, raw_fn, kind = _bind(metric, gene_a, gene_b, set_genes, inject_signal)
+    pairwise = kind == "pair"
     data = _load(h5ad_path)
-    metric_fn, raw_fn, pairwise = _bind(metric, gene_a, gene_b)
     gene_pair = (gene_a, gene_b) if (pairwise and gene_a and gene_b) else None
     do_controls = bool(pairwise and pos_pair and neg_pair)
     data2 = _load(data2_path) if data2_path else None
@@ -117,7 +146,8 @@ def autopsy_report(
             prereg[key] = val
     if resolve_judgment:
         prereg["judgment_pending"] = False
-    signal = injected_signal.coupling(*gene_pair) if (inject_signal == "coupling" and gene_pair) else None
+    signal = injected_signal.named(inject_signal, gene_pair=gene_pair, module_genes=module_genes,
+                                   module_fold=module_fold, set_genes=set_genes, couple=couple)
 
     autopsy = run_autopsy(
         metric_fn, data,
@@ -133,6 +163,8 @@ def autopsy_report(
         signal_test=signal,
         seed=seed,
         log_path=log_path,  # None: the shared rule (logged iff pre-registered)
+        composition=list(composition or ()),
+        gene_metric=raw_fn if kind == "set" else None,
     )
     autopsy.metric_name = metric
     if json_path:
@@ -175,6 +207,8 @@ def list_metrics() -> str:
         ("pearson", "Pearson correlation of two genes across cells (pairwise)"),
         ("codetected_spearman", "Spearman on co-detected cells — partial fix (pairwise)"),
         ("norm_pearson", "CP10k+log1p Pearson on co-detected cells — robust reference (pairwise)"),
+        ("set_norm_pearson", "a set's coordination: the mean of norm_pearson over its pairs, NaN where a pair is "
+                             "unmeasured (set_genes; with inject_signal='coupling_set')"),
         ("spectral_entropy", "Shannon entropy of the gene-gene correlation eigenspectrum (whole-matrix)"),
     ]
     out = ["# Reference metrics", "", "| name | description |", "|---|---|"]

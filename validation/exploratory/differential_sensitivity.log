@@ -1,0 +1,77 @@
+# The differential sensitivity on synthetic data — git 1e4696c, metric-autopsy 0.4.0.dev0, python 3.13.16, numpy 2.5.3
+
+## 1. The acceptance scenarios (tests/test_v04_differential.py)
+
+- data: mi_3bin's expression level -3.0, gap, equal coupling: young depth 3162, genes per cell 142.9, detection A 94.5% B 94.0%; old depth 4412, genes per cell 123.1, detection A 80.2% B 79.0%
+- mi_3bin, gap, equal coupling {'rho': (0.5, 0.5)}: with the check NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal respons [differential_sensitivity]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.03537 [+0.0134, +0.0574], s_m +0.0187 (18 s)
+  - genes per cell all +19.6 (p 0.000155) -> differs True; k young +0.01875, old +0.009737; ratio k_old/k_young +0.519 [+0.39, +0.649]; M +0.06044; A +0.02905 [+0.0139, +0.0442]; tolerance +0.00937; applies True; the effect less +0.0442: -0.008852 [-0.0308, +0.0131], p +0.388, INCONCLUSIVE, passes False
+- data: mi_3bin's expression level -3.0, equal detection, equal coupling: young depth 3162, genes per cell 142.9, detection A 94.5% B 94.0%; old depth 3126, genes per cell 142.6, detection A 93.8% B 93.4%
+- mi_3bin, equal detection, equal coupling {'rho': (0.5, 0.5), 'dom': (0.1, 0.1), 'depth': (3000.0, 3000.0)}: with the check INCONCLUSIVE — effect +0.003715 [effect_inconclusive]; without INCONCLUSIVE — effect +0.003715 [effect_inconclusive]; the effect +0.003715 [-0.0189, +0.0263], s_m +0.0158 (20 s)
+  - genes per cell all +0.438 (p 0.119) -> differs False; k young +0.01581, old +0.01414; ratio k_old/k_young +0.894 [+0.677, +1.11]; M +0.05784; A +0.006136 [-0.00631, +0.0186]; tolerance +0.00791; applies False
+- data: mi_3bin's expression level -3.0, equal detection, decrease: young depth 3170, genes per cell 142.9, detection A 94.0% B 94.5%; old depth 3161, genes per cell 142.8, detection A 93.1% B 94.5%
+- mi_3bin, equal detection, decrease {'rho': (0.6, 0.3), 'dom': (0.1, 0.1), 'depth': (3000.0, 3000.0)}: with the check SUPPORTED (provisional until replicated) [provisional]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.05385 [+0.0342, +0.0735], s_m +0.0127 (22 s)
+  - genes per cell all -0.125 (p 1) -> differs False; k young +0.0204, old +0.01275; ratio k_old/k_young +0.625 [+0.473, +0.777]; M +0.07293; A +0.02735 [+0.0131, +0.0416]; tolerance +0.00637; applies False
+- data: mi_3bin's expression level -3.0, gap, decrease: young depth 3170, genes per cell 142.9, detection A 94.0% B 94.5%; old depth 4389, genes per cell 122.9, detection A 80.3% B 80.8%
+- mi_3bin, gap, decrease {'rho': (0.6, 0.3)}: with the check NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal respons [differential_sensitivity]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.06381 [+0.0445, +0.0831], s_m +0.0235 (17 s)
+  - genes per cell all +19.9 (p 0.000155) -> differs True; k young +0.02347, old +0.00582; ratio k_old/k_young +0.248 [+0.177, +0.319]; M +0.07219; A +0.05429 [+0.0398, +0.0688]; tolerance +0.0117; applies True; the effect less +0.0688: -0.004991 [-0.0243, +0.0143], p +0.573, NO_DETECTABLE_EFFECT, passes False
+- data: mi_3bin's expression level -3.0, smaller gap, decrease: young depth 3170, genes per cell 142.9, detection A 94.0% B 94.5%; old depth 4405, genes per cell 134.3, detection A 88.4% B 88.0%
+- mi_3bin, smaller gap, decrease {'rho': (0.6, 0.3), 'dom': (0.1, 0.6)}: with the check NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal respons [differential_sensitivity]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.05575 [+0.033, +0.0785], s_m +0.0213 (21 s)
+  - genes per cell all +8.5 (p 0.000155) -> differs True; k young +0.02131, old +0.007139; ratio k_old/k_young +0.335 [+0.126, +0.544]; M +0.07543; A +0.05016 [+0.0308, +0.0696]; tolerance +0.0107; applies True; the effect less +0.0696: -0.01382 [-0.0365, +0.00889], p +0.209, INCONCLUSIVE, passes False
+- data: norm_pearson's expression level -2.5, gap, equal coupling: young depth 3148, genes per cell 142.8, detection A 98.0% B 97.9%; old depth 4412, genes per cell 123.1, detection A 88.9% B 87.1%
+- norm_pearson, gap, equal coupling {'rho': (0.5, 0.5)}: with the check NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal respons [differential_sensitivity]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.09451 [+0.0515, +0.138], s_m +0.0639 (17 s)
+  - genes per cell all +19.6 (p 0.000155) -> differs True; k young +0.0639, old +0.05533; ratio k_old/k_young +0.866 [+0.712, +1.02]; M +0.3775; A +0.05065 [-0.00784, +0.109]; tolerance +0.032; applies True; the effect less +0.109: -0.01463 [-0.0576, +0.0284], p +0.475, NO_DETECTABLE_EFFECT, passes False
+- data: norm_pearson's expression level -2.5, equal detection, equal coupling: young depth 3148, genes per cell 142.8, detection A 98.0% B 97.9%; old depth 3161, genes per cell 142.9, detection A 98.0% B 97.5%
+- norm_pearson, equal detection, equal coupling {'rho': (0.5, 0.5), 'dom': (0.1, 0.1), 'depth': (3000.0, 3000.0)}: with the check INCONCLUSIVE — effect +0.02305 [effect_inconclusive]; without INCONCLUSIVE — effect +0.02305 [effect_inconclusive]; the effect +0.02305 [-0.0279, +0.074], s_m +0.0629 (16 s)
+  - genes per cell all -0.25 (p 0.619) -> differs False; k young +0.06291, old +0.06937; ratio k_young/k_old +0.907 [+0.751, +1.06]; M +0.3603; A -0.03355 [-0.089, +0.0219]; tolerance +0.0315; applies False
+- data: norm_pearson's expression level -2.5, equal detection, decrease: young depth 3170, genes per cell 142.8, detection A 97.9% B 97.4%; old depth 3147, genes per cell 142.5, detection A 97.2% B 97.1%
+- norm_pearson, equal detection, decrease {'rho': (0.6, 0.3), 'dom': (0.1, 0.1), 'depth': (3000.0, 3000.0)}: with the check SUPPORTED (provisional until replicated) [provisional]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.2345 [+0.18, +0.288], s_m +0.0568 (17 s)
+  - genes per cell all +0.625 (p 0.035) -> differs True; k young +0.06117, old +0.05683; ratio k_old/k_young +0.929 [+0.809, +1.05]; M +0.4599; A +0.03267 [-0.0231, +0.0884]; tolerance +0.0284; applies True; the effect less +0.0884: +0.146 [+0.0921, +0.2], p +0.000622, DETECTED, passes True
+- data: norm_pearson's expression level -2.5, gap, decrease: young depth 3170, genes per cell 142.8, detection A 97.9% B 97.4%; old depth 4381, genes per cell 122.7, detection A 88.9% B 87.6%
+- norm_pearson, gap, decrease {'rho': (0.6, 0.3)}: with the check NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal respons [differential_sensitivity]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.2741 [+0.19, +0.359], s_m +0.0665 (16 s)
+  - genes per cell all +20.4 (p 0.000155) -> differs True; k young +0.06647, old +0.04489; ratio k_old/k_young +0.675 [+0.458, +0.892]; M +0.4622; A +0.1501 [+0.0525, +0.248]; tolerance +0.0332; applies True; the effect less +0.248: +0.02645 [-0.058, +0.111], p +0.506, INCONCLUSIVE, passes False
+- data: norm_pearson's expression level -2.5, smaller gap, decrease: young depth 3170, genes per cell 142.8, detection A 97.9% B 97.4%; old depth 4392, genes per cell 134.1, detection A 94.3% B 94.7%
+- norm_pearson, smaller gap, decrease {'rho': (0.6, 0.3), 'dom': (0.1, 0.6)}: with the check SUPPORTED (provisional until replicated) [provisional]; without SUPPORTED (provisional until replicated) [provisional]; the effect +0.2934 [+0.238, +0.349], s_m +0.0622 (17 s)
+  - genes per cell all +8.81 (p 0.000155) -> differs True; k young +0.06221, old +0.05452; ratio k_old/k_young +0.876 [+0.754, +0.999]; M +0.446; A +0.05512 [-0.00126, +0.111]; tolerance +0.0311; applies True; the effect less +0.111: +0.1819 [+0.127, +0.237], p +0.000155, DETECTED, passes True
+
+## 2. Where the responses are measured: the data (as coded) or GATE 0's null of the claim's genes
+
+The change of the construct 0.1 (the SESOI), 50 injections per unit; the ratio's SE by the delta method from the two groups' standard errors.
+
+| metric | scenario | on | k young (SE) | k old (SE) | ratio old/young (SE) |
+|---|---|---|---|---|---|
+| mi_3bin | gap, equal coupling | data | +0.0161 (+0.0012) | +0.01099 (+0.00083) | +0.683 (+0.072) |
+| mi_3bin | gap, equal coupling | null | +0.004307 (+0.00099) | +0.001707 (+0.00078) | +0.396 (+0.2) |
+| mi_3bin | equal detection, decrease | data | +0.01999 (+0.0014) | +0.01174 (+0.00097) | +0.587 (+0.063) |
+| mi_3bin | equal detection, decrease | null | +0.005142 (+0.00062) | +0.004548 (+0.001) | +0.884 (+0.23) |
+| norm_pearson | gap, equal coupling | data | +0.06699 (+0.0023) | +0.04984 (+0.0037) | +0.744 (+0.061) |
+| norm_pearson | gap, equal coupling | null | +0.05111 (+0.0027) | +0.0293 (+0.0056) | +0.573 (+0.11) |
+| norm_pearson | equal detection, decrease | data | +0.06008 (+0.002) | +0.05429 (+0.0034) | +0.904 (+0.065) |
+| norm_pearson | equal detection, decrease | null | +0.05697 (+0.004) | +0.056 (+0.0025) | +0.983 (+0.081) |
+
+## 3. The clean data of tests/test_v03_verdict.py: a real difference, an equal technology
+
+- with the check (the test of detection decides): SUPPORTED (provisional until replicated) [provisional]
+  - genes per cell male +0.125 (p 1); female +0.125 (p 1); combined +0.125 (p 0.776) -> differs False; k young +0.1295, old +0.01715; ratio k_old/k_young +0.132 [-0.0893, +0.354]; M +0.8256; A +0.7163 [+0.537, +0.896]; tolerance +0; applies False
+- were the test of detection open: NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequal responses to it would make a difference of +0.7163 [differential_sensitivity]
+  (the coupling of these data changes with the genes' variance, 2.6 against 0.3 loadings of one factor, so the metric's reliability differs between the groups by their biology, at an equal technology)
+
+## 4. A real decrease with a gap of detection as on §4: what passes
+
+- mi_3bin, coupling 0.6 against 0.3 (a decrease of 0.3, 3 x SESOI): NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequ [differential_sensitivity]
+  - genes per cell all +19.9 (p 0.000155) -> differs True; k young +0.02347, old +0.00582; ratio k_old/k_young +0.248 [+0.177, +0.319]; M +0.07219; A +0.05429 [+0.0398, +0.0688]; tolerance +0.0117; applies True; the effect less +0.0688: -0.004991 [-0.0243, +0.0143], p +0.573, NO_DETECTABLE_EFFECT, passes False
+- mi_3bin, coupling 0.7 against 0.2 (a decrease of 0.5, 5 x SESOI): NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequ [differential_sensitivity]
+  - genes per cell all +19.4 (p 0.000155) -> differs True; k young +0.02526, old +0.005454; ratio k_old/k_young +0.216 [+0.112, +0.32]; M +0.1128; A +0.08843 [+0.0686, +0.108]; tolerance +0.0126; applies True; the effect less +0.108: +0.001364 [-0.0207, +0.0234], p +0.892, NO_DETECTABLE_EFFECT, passes False
+- mi_3bin, coupling 0.8 against 0.1 (a decrease of 0.7, 7 x SESOI): NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequ [differential_sensitivity]
+  - genes per cell all +19.5 (p 0.000155) -> differs True; k young +0.02603, old +0.003913; ratio k_old/k_young +0.15 [+0.101, +0.2]; M +0.1329; A +0.1129 [+0.086, +0.14]; tolerance +0.013; applies True; the effect less +0.14: -0.007439 [-0.0346, +0.0198], p +0.548, INCONCLUSIVE, passes False
+- norm_pearson, coupling 0.6 against 0.3 (a decrease of 0.3, 3 x SESOI): NOT SUPPORTED — differential sensitivity: at an equal coupling the groups' unequ [differential_sensitivity]
+  - genes per cell all +20.4 (p 0.000155) -> differs True; k young +0.06647, old +0.04489; ratio k_old/k_young +0.675 [+0.458, +0.892]; M +0.4622; A +0.1501 [+0.0525, +0.248]; tolerance +0.0332; applies True; the effect less +0.248: +0.02645 [-0.058, +0.111], p +0.506, INCONCLUSIVE, passes False
+- norm_pearson, coupling 0.7 against 0.2 (a decrease of 0.5, 5 x SESOI): SUPPORTED (provisional until replicated) [provisional]
+  - genes per cell all +19.8 (p 0.000155) -> differs True; k young +0.07127, old +0.04556; ratio k_old/k_young +0.639 [+0.515, +0.763]; M +0.5639; A +0.2034 [+0.132, +0.275]; tolerance +0.0356; applies True; the effect less +0.275: +0.1647 [+0.142, +0.187], p +0.000155, DETECTED, passes True
+- norm_pearson, coupling 0.8 against 0.1 (a decrease of 0.7, 7 x SESOI): SUPPORTED (provisional until replicated) [provisional]
+  - genes per cell all +19.8 (p 0.000155) -> differs True; k young +0.06976, old +0.0322; ratio k_old/k_young +0.462 [+0.346, +0.577]; M +0.6386; A +0.3438 [+0.266, +0.421]; tolerance +0.0349; applies True; the effect less +0.421: +0.1641 [+0.128, +0.2], p +0.000155, DETECTED, passes True
+
+## 5. The test of detection at an equal detection: how often it opens
+
+- 0 of 40 datasets (8 against 8 mice, equal technology): the test's own rate, alpha 0.05
+
+253 s

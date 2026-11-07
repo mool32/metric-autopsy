@@ -1,0 +1,17 @@
+{
+ "records_sha256": "48709ef7af34992616a929f498b0326f0aca58721cdf9ed5735af9fae4b523ca",
+ "sample_sha256": "c40f26152d75ca367c1fa6a108a4eb3857f6d7d94f130f15dbae36ad21fa5eeb",
+ "n_list": 3506,
+ "n_screened": 112,
+ "batch_size": 200,
+ "batches": [
+  {
+   "name": "batch_01.jsonl",
+   "records": 112,
+   "first": "R00177",
+   "last": "R03436",
+   "sha256": "7da1942da43d19a12924ae59acd07458a000837af76b8885cb49d3f05bdc4f5c",
+   "text_sha256": "b734cc418e8699b998e4fc9f75689948520ba16384dde383355af53879df42be"
+  }
+ ]
+}

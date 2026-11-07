@@ -1,0 +1,195 @@
+rid	decision	code	kinds	note
+R03201	EXCLUDE	X4	-	Exercise liver multi-omics (MoTrPAC bulk) with WGCNA networks linked to phenotypes; scRNA shows altered cell communication; no gene-pair coordination change.
+R03202	EXCLUDE	X2	-	DEHP-colorectal cancer: bulk WGCNA and machine learning; single-cell only maps cellular distribution of key genes.
+R03203	EXCLUDE	X2	-	Microalgal single-cell protein bioprocess study; no RNA data.
+R03204	EXCLUDE	X4	-	TRPM4 co-expressed genes in bulk TCGA, prognostic signature; scRNA shows expression changes only; no pair coordination change between conditions.
+R03205	EXCLUDE	X4	-	Drug perturbation representation method; 'decoupling' refers to mechanism versus context; no gene-pair coordination comparison.
+R03206	EXCLUDE	X4	-	Neuropathic pain microglia; 'decoupling' between phagocytosis and degradation (processes); expression, states and pseudotime only.
+R03207	EXCLUDE	X2	-	UC bile-acid genes from bulk GEO WGCNA and machine learning; single-cell only shows expression across T and B subsets.
+R03208	EXCLUDE	X4	-	Timp1+ stromal cells in UC mice: scRNA, pseudotime, Ppia-Bsg cell communication; no gene-pair coordination change.
+R03209	EXCLUDE	X5	set	Ovarian cancer Tregs: markers co-expressed by TI-Tregs; SOX4 regulon defines TI-Treg state versus other Treg subsets; no named pair.
+R03210	EXCLUDE	X4	-	Actin interactors positively correlated with ACTB in early human embryo single-cell data; one condition, no between-condition change.
+R03211	EXCLUDE	X4	-	NOA biomarkers from bulk WGCNA and machine learning; scRNA shows stage-specific dysregulation of expression; no coordination change.
+R03212	EXCLUDE	X4	-	En1 loss decouples locomotor functions (behaviour); snRNA atlas of V1 interneurons; no gene-pair coordination.
+R03213	EXCLUDE	X4	-	Steatotic liver ischemia-reperfusion: WGCNA modules, hub genes, scRNA cell communication; no gene-pair coordination change.
+R03214	EXCLUDE	X1	-	Review of PANoptosis in kidney disease.
+R03215	EXCLUDE	X2	-	LINC01871 from bulk TCGA, WGCNA and experiments; single-cell only shows expression in T and NK cells.
+R03216	EXCLUDE	X2	-	Bladder cancer signature from bulk TCGA and WGCNA; single-cell and spatial analyses only within tumours.
+R03217	EXCLUDE	X4	-	KLHL2 in AD microglia: snRNA pseudotime, hdWGCNA prioritization, expression changes; no pair coordination change.
+R03218	EXCLUDE	X2	-	Phthalates and osteoporosis: NHANES and in silico; single-cell only localizes candidate genes.
+R03219	EXCLUDE	X4	-	AML GPX1 hub gene from WGCNA and scRNA; m6A mechanism; no coordination change claim.
+R03220	KEEP	-	pair	AD lesions vs normal skin dendritic cells; kNN-DREMI (mutual information) explores NOTCH1-CD1B regulation; a between-condition change is possible, full text decides.
+R03221	EXCLUDE	X4	-	Nasal polyps: bulk RNA-seq WGCNA and machine learning; single-cell validation and localization; no coordination claim.
+R03222	EXCLUDE	X2	-	LUAD cisplatin resistance from bulk data; single-cell only shows CCT2 in resistant epithelial subpopulations.
+R03223	EXCLUDE	X4	-	SCI: 'coordinated elevation' of signature scores (processes) in bulk; scRNA localizes to DAM-like states; no gene-pair coordination.
+R03224	EXCLUDE	X4	-	Matrine in septic lung injury: scRNA immune remodeling, WGCNA candidate targets; no coordination change claim.
+R03225	EXCLUDE	X4	-	GRN inference method benchmarked on BEELINE; no comparison between conditions.
+R03226	EXCLUDE	X2	-	Sepsis subtypes from whole-blood bulk data; single-cell localization and sample-level scores only.
+R03227	EXCLUDE	X6	set	SAH: WGCNA 24-hour-specific injury module mapped onto neutrophils in scRNA; set-level only, no named pair.
+R03228	EXCLUDE	X4	-	COPD sodium-overload genes from bulk WGCNA; scRNA shows higher expression in COPD epithelium; no coordination change.
+R03229	EXCLUDE	X2	set	Poplar ray development: bulk time-series modules covary with traits and environment; spatial transcriptomics; no single-cell coordination comparison.
+R03230	EXCLUDE	X2	-	RA monocyte bulk RNA-seq WGCNA hub genes; single-cell only localizes expression in RA synovium.
+R03231	EXCLUDE	X2	-	PCOS icariin: bulk WGCNA, docking, mouse model; scRNA only for virtual knockout.
+R03232	EXCLUDE	X5	set	Sort1-containing co-expression module differs between lateral and medial EC layer II neuron populations (within donors); no named pair.
+R03233	EXCLUDE	X2	-	Cancer-associated fibroblasts from spatial transcriptomics only; spatial co-expression toolkit.
+R03234	EXCLUDE	X2	-	Obesity-related asthenozoospermia: bulk WGCNA and machine learning; scRNA only locates Ccl2 in adipose macrophages.
+R03235	EXCLUDE	X4	-	SLE severity hub genes; single-cell communication networks sSLE vs mSLE; no gene-pair coordination change.
+R03236	EXCLUDE	X2	-	Glut1 and MCT4 in a bulk co-expression module and cell-line knockdowns; single-cell only localization; no between-condition coordination change.
+R03237	EXCLUDE	X2	-	Spatial transcriptomics deconvolution method.
+R03238	EXCLUDE	X4	-	Oral lichen planus: scRNA hdWGCNA modules for gene selection, MIF signaling, CEBPZ expression; no pair coordination change.
+R03239	EXCLUDE	X4	-	Vascular dementia: hdWGCNA modules for gene selection, cell loss, ELF2 expression; no coordination change.
+R03240	EXCLUDE	X5	set	MI: co-expression modules associated with an arrhythmia-prone cardiomyocyte state; NEAT1 correlates with CACNA1C and PDLIM5 within them; no between-condition change stated.
+R03241	EXCLUDE	X4	-	Toxoplasma knockouts of genes chosen by single-cell WGCNA; no coordination comparison.
+R03242	EXCLUDE	X2	-	Dry eye and anxiety: bulk WGCNA and LASSO; single-cell only shows expression in corneal epithelium.
+R03243	EXCLUDE	X2	set	Anti-TNF non-response: laser-microdissection bulk co-expression network higher in non-responders; pseudobulk validation only.
+R03244	EXCLUDE	X2	-	RA and tuberculosis genes from bulk WGCNA and LASSO; single-cell only localizes MARCO and ZBTB20.
+R03245	EXCLUDE	X4	-	Emphysema and fibrosis signatures from bulk WGCNA; single-cell validation of hub genes; no coordination claim.
+R03246	EXCLUDE	X2	-	Melanoma spatial ROI correlations, including FN1-ITGB1 spatial co-expression; not single-cell counts, not between conditions.
+R03247	EXCLUDE	X4	-	Method projecting bulk immune networks onto scRNA to define cell states; no between-condition coordination change.
+R03248	EXCLUDE	X2	-	AD pentose-phosphate/astrocyte signature from bulk WGCNA; single-cell only locates HDAC3 in astrocytes.
+R03249	EXCLUDE	X2	-	Liver ischemia-reperfusion hub genes from bulk WGCNA; single-cell only cell-type expression and differentiation dynamics.
+R03250	EXCLUDE	X2	-	GBM UFMylation module from bulk TCGA WGCNA; single-cell sample-level scores and CellChat only.
+R03251	EXCLUDE	X5	set	HCC CD8 T cells: NR4A2 correlates with exhaustion module; NR4A2 regulon active in exhausted cells; comparison between cell states.
+R03252	EXCLUDE	X4	-	CRSwNP hub genes; scRNA ferroptosis signatures in patients' epithelium; ALOX5-tight junction correlation by imaging; no pair coordination change.
+R03253	EXCLUDE	X4	-	Oligodendroglioma mouse model; 'co-expression' of transgenes; no coordination claim.
+R03254	EXCLUDE	X2	-	AD hub gene from bulk WGCNA and machine learning; snRNA only identifies expressing clusters.
+R03255	EXCLUDE	X4	-	Gene embedding method from co-expression networks for spatial inference; no between-condition comparison.
+R03256	EXCLUDE	X4	-	UC macrophage genes from scRNA, bulk WGCNA and machine learning; expression only; no coordination change.
+R03257	EXCLUDE	X4	-	Colorectal cancer succinylation-neutrophil signature; WGCNA and single-cell virtual perturbation; no coordination change claim.
+R03258	EXCLUDE	X4	-	Diabetic kidney disease metabolite targets; WGCNA, machine learning, single-cell profiling; no coordination change claim.
+R03259	EXCLUDE	X1	-	Corrigendum; original's WGCNA was bulk and its scRNA had 3 healthy, 3 non-inflamed and 3 UC samples.
+R03260	EXCLUDE	X2	-	Myocardial infarction cGAS-STING genes from bulk WGCNA; single-cell only shows expression on macrophages.
+R03261	EXCLUDE	X6	set	RCC: hdWGCNA modules differentially activated between normal and tumour LMX1B+ epithelium; set-level only, no named pair.
+R03262	EXCLUDE	X2	-	BPA and MASH-HCC: bulk WGCNA and machine learning; single-cell only hepatocyte-enriched expression and virtual perturbation.
+R03263	EXCLUDE	X4	-	ccRCC: scRNA proportions, hdWGCNA module for gene selection, diagnostic model; no coordination change.
+R03264	EXCLUDE	X1	-	Review chapter on alternative proteins.
+R03265	EXCLUDE	X2	-	Ketamine circuits by calcium imaging and photometry; neural coupling, no RNA counts.
+R03266	EXCLUDE	X4	-	AD-Crohn's comorbidity genes from bulk WGCNA; single-cell and virtual knockout validation; no coordination claim.
+R03267	EXCLUDE	X4	-	ICC: scRNA hdWGCNA cell-type modules for gene selection; TPM2 organoid knockout; no coordination change.
+R03268	EXCLUDE	X4	-	Cervical cancer radiosensitivity genes from WGCNA and risk model; no coordination claim.
+R03269	EXCLUDE	X2	-	Wilms tumour genes from bulk WGCNA; scRNA only cell-type distribution of DCP1B and HAS2.
+R03270	EXCLUDE	X4	-	IBD senescent fibroblasts: scRNA scores and CellChat, bulk WGCNA and machine learning; no coordination change.
+R03271	EXCLUDE	X2	-	Melanoma senescence model: scRNA scores across cell types within tumours; bulk WGCNA; between-condition comparisons bulk only.
+R03272	EXCLUDE	X2	-	UC PCK1 from bulk WGCNA; single-cell and spatial data only for localization.
+R03273	EXCLUDE	X2	-	Ovarian cancer PGRMC1: scRNA of tumours only for hub-gene discovery; upregulation shown in bulk and cell lines.
+R03274	EXCLUDE	X2	-	Light-chain mRNA in situ hybridization; kappa/lambda co-expression by imaging.
+R03275	EXCLUDE	X2	set	Plasma protein co-expression modules associated with physical activity and diabetes; proteomics, not single-cell RNA.
+R03276	EXCLUDE	X4	-	PDAC autophagy scores higher in tumour macrophages (scRNA); prognostic model; expression only.
+R03277	EXCLUDE	X2	-	DKD FN1 from bulk WGCNA; mouse scRNA (3 vs 3) localization and pseudobulk increase only.
+R03278	EXCLUDE	X4	-	Atopic dermatitis and asthma CCL26: bulk WGCNA, scRNA subsets, CCL26-CCR3 ligand-receptor communication.
+R03279	EXCLUDE	X2	-	SLE mitoxyperiosis genes from bulk data; scRNA only cell-type expression and virtual perturbation.
+R03280	EXCLUDE	X2	-	Acute pancreatitis peripheral blood bulk RNA-seq and WGCNA; rat scRNA only cell-type context.
+R03281	EXCLUDE	X2	-	Chicken fat bulk RNA-seq with stage-specific WGCNA; snRNA from one bird per stage, exploratory mapping.
+R03282	EXCLUDE	X4	-	Osteoporosis osteoblast genes; scRNA DEGs, WGCNA, CellChat, spatial; SPP1 higher in OP; no coordination change.
+R03283	EXCLUDE	X2	-	Prostate cancer signature from bulk; scRNA only trajectories within tumours.
+R03284	EXCLUDE	X4	-	COPD-CAD RTN4 from PBMC bulk WGCNA; single-cell localization to monocytes; no coordination claim.
+R03285	EXCLUDE	X4	-	Acomys vs mouse heart snRNA (3 vs 3 animals); expression and program differences; no named-pair coordination change.
+R03286	EXCLUDE	X4	-	LUAD bulk WGCNA signature; scRNA shows CPED1 lower in LUAD; no coordination change.
+R03287	EXCLUDE	X2	set	Clock genes in bulk BrainSpan WGCNA: developmental module, no coordinated clock unit; MIA and ASD data bulk; atlases only for projection.
+R03288	EXCLUDE	X2	-	Ankylosing spondylitis: donor-level correlations in monocytes; JUN-CXCL8 co-expression within AS only; no between-condition change.
+R03289	EXCLUDE	X4	-	Diabetic cardiomyopathy genes; scRNA shows Txnip higher in DCM; spatial gene-score correlations; no pair coordination change.
+R03290	EXCLUDE	X4	-	OA TNFRSF10B by Mendelian randomization; snRNA shows reduced expression in OA; no coordination claim.
+R03291	EXCLUDE	X2	-	Atherosclerosis anoikis genes from bulk WGCNA; single-cell only localizes the signature.
+R03292	EXCLUDE	X2	set	CoPA: bulk co-expression modules projected onto pseudobulked snRNA cell types; modules dysregulated in AD and schizophrenia.
+R03293	EXCLUDE	X2	-	CMT1A PMP22 promoter editing in iPSC-derived cells; imaging co-expression index and qPCR.
+R03294	EXCLUDE	X4	-	Joint chromatin-RNA method; 'decoupling' between chromatin and expression; no gene-pair coordination.
+R03295	EXCLUDE	X4	-	LUAD nerve-injury signature; WGCNA, scRNA and spatial states; no coordination change claim.
+R03296	EXCLUDE	X2	-	Depression GQD targets: blood bulk co-expression and MR; snRNA only localizes the axis to neurons.
+R03297	EXCLUDE	X2	-	HCC LBP from bulk WGCNA and machine learning; scRNA only maps malignant programs within tumours.
+R03298	EXCLUDE	X4	-	Zfp469 liver fibrosis; scRNA pseudotime and network modules; no between-condition change of a pair.
+R03299	EXCLUDE	X4	-	Scalp psoriasis: Tc17 cells co-express IFNG and SLC27A2 (markers); CellChat interactions.
+R03300	EXCLUDE	X4	-	Topic-model method for gene programs; no comparison between conditions.
+R03301	EXCLUDE	X2	-	GBM radioresistance from bulk cohorts; scRNA of tumours only localizes SERPINE1 to mesenchymal-like cells.
+R03302	EXCLUDE	X4	-	Atherosclerosis and POI: scRNA composition, hdWGCNA modules for gene selection, CellChat; no coordination change.
+R03303	EXCLUDE	X2	-	Mammillary body FISH; Scn1a-Scn2a co-expression by imaging.
+R03304	EXCLUDE	X4	-	Autism genes in developmental atlases and co-expression networks; no case-control coordination change.
+R03305	EXCLUDE	X6	set	Metabolic representation method; data-driven pathways show purine-synthesis network rewiring under folate deficiency; set-level, no named pair.
+R03306	EXCLUDE	X2	-	OA and osteoporosis: bulk WGCNA module correspondence across diseases; single-cell only contextual perturbation.
+R03307	EXCLUDE	X2	-	Glioma SDF4 from bulk; single-cell and spatial data only localize to astrocytes.
+R03308	EXCLUDE	X4	-	Atherosclerosis MGST3: expanded M2-like state in scRNA, mediation analysis; no gene-pair coordination change.
+R03309	EXCLUDE	X2	-	PD PRNP co-expression network in bulk nigra; single-cell only localization; mouse experiments.
+R03310	EXCLUDE	X2	-	Cervical cancer bulk co-expression network; scRNA only confirms expression; PSAT1 drug design.
+R03311	EXCLUDE	X4	-	BDE-47 and NOA: GSTM1 lower in NOA Leydig cells, gene-score association across cells; no pair coordination change.
+R03312	EXCLUDE	X2	-	Atrial fibrillation circadian genes from bulk WGCNA; snRNA only localizes to vascular and stromal cells.
+R03313	EXCLUDE	X6	set	Frechet regression method for covariance matrices; age-related changes in single-cell co-expression networks; no named pair in abstract.
+R03314	EXCLUDE	X6	set	panAD snRNA atlas (791 donors): co-expression modules track neuropathology; TF hubs; no named-pair coordination change.
+R03315	EXCLUDE	X4	-	Preeclampsia mitochondrial genes from bulk WGCNA; single-cell trophoblast dysregulation; no coordination claim.
+R03316	EXCLUDE	X4	-	AKI Acsm2 from bulk and scRNA hdWGCNA; expression suppressed in injured tubules; no coordination change.
+R03317	EXCLUDE	X2	-	UC IRF1 from bulk WGCNA and SMR; single-cell only shows expression across cell types.
+R03318	EXCLUDE	X2	-	PRDX1 and GPX4 weakly correlated in bulk HCC; scRNA only localization; no between-condition coordination change.
+R03319	EXCLUDE	X4	-	PAD CDKN1A; scRNA shows upregulation in the ischemic niche; no coordination change.
+R03320	EXCLUDE	X2	-	Gastric cancer signature from bulk; single-cell only localizes SERPINE1 and CTHRC1 to fibroblasts.
+R03321	EXCLUDE	X4	-	Osimertinib resistance: scRNA of 6 patients, M2 proportion and DEGs; bulk WGCNA; no coordination change.
+R03322	KEEP	-	pair,set	snRNA astrocytes: APOE-PPARG-mitochondrial gene coupling stronger in European than African local ancestry APOE4 AD (10 vs 7 donors); measure unclear.
+R03323	EXCLUDE	X1	-	Review of inhibitory receptor profiles in checkpoint blockade.
+R03324	EXCLUDE	X4	-	Thyroid cancer genes from scRNA DE and WGCNA (tumour vs paratumour) and bulk LASSO; no coordination change.
+R03325	EXCLUDE	X4	-	Acute pancreatitis R-loop scores differ in fibroblasts (scRNA); hdWGCNA gene selection; no coordination change.
+R03326	EXCLUDE	X2	-	Crohn's disease genes from bulk WGCNA and MR; single-cell only cell-specific expression.
+R03327	EXCLUDE	X6	set	Atopic dermatitis: inferred regulon activity differs across treatment states in scRNA; bulk WGCNA modules; no named pair.
+R03328	EXCLUDE	X2	-	Dupuytren's PLOD1 from bulk WGCNA; scRNA only localization and pseudotime.
+R03329	EXCLUDE	X2	-	ME/CFS SGK1 from bulk WGCNA; scRNA only maps expression to myeloid cells.
+R03330	EXCLUDE	X2	-	LUAD risk model from bulk; scRNA and hdWGCNA only to select macrophage genes.
+R03331	EXCLUDE	X5	set	EBV cancers: conserved MTHFD1L co-expression signature (bulk); single-cell MTHFD1L-centred networks differ across immune cell populations.
+R03332	EXCLUDE	X2	-	HCC vs CCA RTK-RAS alterations; patient-level pseudobulk single-cell; PDGF-PDGFRA ligand-receptor co-expression.
+R03333	EXCLUDE	X1	-	Review of immune cell fibrotic plasticity.
+R03334	EXCLUDE	X4	-	COPD biomarkers; scRNA, WGCNA, HLA-E-NKG2A cell communication; no coordination change.
+R03335	EXCLUDE	X4	-	SCI mouse vs zebrafish: SPP1-CD44 ligand-receptor program and expression trajectories; no gene-pair coordination across cells.
+R03336	EXCLUDE	X4	-	PD platelet biomarkers from bulk WGCNA; single-cell consistency check; no coordination claim.
+R03337	EXCLUDE	X2	set	Network-embedding method; differential co-expression of HCC vs adjacent tissue on bulk RNA-seq only.
+R03338	EXCLUDE	X4	-	Cell-cell similarity method using polyadenylation; no gene coordination comparison.
+R03339	EXCLUDE	X4	-	Aging mammary epithelia: expression, DNA methylation and variance changes; no gene-pair coordination.
+R03340	EXCLUDE	X4	-	GRN inference method; no comparison between conditions.
+R03341	EXCLUDE	X4	-	Joint multi-network graph learning method; no reported coordination change between conditions.
+R03342	EXCLUDE	X4	-	scRNA annotation toolbox; no between-condition coordination.
+R03343	EXCLUDE	X4	-	Latent geometry method; no coordination comparison.
+R03344	EXCLUDE	X4	-	Benchmark of cell proximity metrics; no coordination comparison.
+R03345	EXCLUDE	X4	-	Transcriptional noise with age in Tabula Muris Senis (platform not stated); noise only.
+R03346	EXCLUDE	X4	-	Cell age and age-related transcriptome variance in mouse single-cell data; variability only.
+R03347	EXCLUDE	X2	-	Live-cell nanobiosensor imaging of MALAT1; no RNA counts per cell.
+R03348	EXCLUDE	X4	-	Parametric UMAP method.
+R03349	EXCLUDE	X2	-	3D super-enhancers from chromatin topology; microscopy co-expression only.
+R03350	EXCLUDE	X4	-	Lineage-specific lncRNAs and transposable elements; no coordination claim.
+R03351	EXCLUDE	X4	-	Precision of sc/snRNA-seq quantification; benchmark, no coordination comparison.
+R03352	EXCLUDE	X2	-	Spatial transcriptomics method (Vespucci).
+R03353	EXCLUDE	X2	-	Translation efficiency covariation from ribosome profiling; no single-cell RNA counts.
+R03354	EXCLUDE	X4	-	Enhancer-gene association method for single-cell multiome; chromatin-gene links, not two genes' expression.
+R03355	EXCLUDE	X4	-	Attack-defense framework for annotation methods; no coordination comparison.
+R03356	EXCLUDE	X6	set	Correlated gene module method; hypoxia-specific modules in a lymphoblastoid cell line; no named pair.
+R03357	EXCLUDE	X2	-	mtDNA heteroplasmy in GTEx bulk RNA-seq.
+R03358	EXCLUDE	X4	-	HIV brain snRNA multiome (20 vs 13): cell states, expression, communication; no coordination claim.
+R03359	EXCLUDE	X4	-	Lyme arthritis scRNA: macrophage subsets, TGF-beta communication; no gene-pair coordination.
+R03360	EXCLUDE	X4	-	Drosophila doublesex neurons across species: expression and cell types; no coordination claim.
+R03361	EXCLUDE	X4	-	Benchmark of co-expression measures using promoter-reporter pairs; no between-condition comparison.
+R03362	EXCLUDE	X6	set,global	ESC RNA exosome depletion diminishes eRNA-mRNA coordination of super-enhancer genes and global transcriptional coordination; no named gene pair.
+R03363	EXCLUDE	X6	set	HGSC vs normal fallopian tube scRNA: gene modules conserved or altered in tumorigenesis; set-level, no named pair.
+R03364	EXCLUDE	X2	-	Spatial transcriptomics co-expression method.
+R03365	EXCLUDE	X4	-	Clustering benchmark.
+R03366	EXCLUDE	X2	-	House finch host and pathogen expression heterogeneity from bulk tissue transcriptomes.
+R03367	EXCLUDE	X4	-	Conditional differential expression method; no coordination change claim.
+R03368	EXCLUDE	X4	-	Bhlhe40 in T cells; BHLHE40 inversely correlated with TCF7 within CD8 T cells, one condition; no between-condition change.
+R03369	EXCLUDE	X2	-	Yeast ribosome surveillance; no single-cell RNA data.
+R03370	EXCLUDE	X4	-	Multilayered epithelia atlas; basal and suprabasal networks 'decoupled' across layers; no gene-pair coordination between conditions.
+R03371	EXCLUDE	X5	set	Coexpression within cell clusters for multi-study trajectories; coordination compared across clusters and trajectories; no named pair.
+R03372	EXCLUDE	X4	-	R package scoring co-expression as co-occurrence in cells; no between-condition comparison.
+R03373	EXCLUDE	X4	-	Cross-species alignment method; no coordination comparison.
+R03374	EXCLUDE	X4	-	Drosophila aging and condition: expression changes, reduced variability; no gene-pair coordination.
+R03375	EXCLUDE	X4	-	SenNet data portal description; no coordination claim.
+R03376	EXCLUDE	X4	-	GWAS-metacell association method on Tabula Muris; no coordination comparison.
+R03377	EXCLUDE	X2	-	Inter-individual expression variability with age in GTEx bulk; variability only.
+R03378	EXCLUDE	X4	-	Sources of variation in iPSC-derived neurons, multi-omics; no coordination claim.
+R03379	EXCLUDE	X2	-	TAOK3 cervical cancer; scRNA only localizes TAOK3 to an epithelial subset; comparisons by bulk RNA-seq.
+R03380	EXCLUDE	X4	-	Soybean mycorrhiza snRNA atlas; 'coordinated' programs and a co-expression hub gene; no gene-pair coordination change.
+R03381	EXCLUDE	X6	set	sc-pcQTL: principal components of local co-expression clusters mapped to genotype in OneK1K; set-level, no named pair.
+R03382	EXCLUDE	X1	set	Meeting abstract; within-cell co-expression patterns differ between RA patient groups by IFN ratio.
+R03383	EXCLUDE	X4	-	No abstract; title: single-cell co-expression of viral entry proteins across digestive tissues, i.e. co-expressing cells, not donor conditions.
+R03384	EXCLUDE	X1	-	Meeting abstract (DIPG, DLX2).
+R03385	EXCLUDE	X1	-	Meeting abstract (glioma single-cell multi-omics).
+R03386	EXCLUDE	X1	-	Meeting abstract (LINC00152 in glioma).
+R03387	EXCLUDE	X4	-	Coconut embryo scRNA trajectories; co-expression by transient transformation; no coordination claim.
+R03388	EXCLUDE	X1	-	Meeting abstract (medulloblastoma atlas).
+R03389	EXCLUDE	X1	-	Meeting abstract (podoplanin in glioblastoma).
+R03390	EXCLUDE	X1	set	Meeting abstract; SCENIC Pou3f4 regulon activity increased in Prop1-mutant mice.
+R03391	EXCLUDE	X4	-	Tobacco root snRNA after Ralstonia; WGCNA module membership of resistance genes; no coordination change.
+R03392	EXCLUDE	X1	-	Meeting abstract (mass cytometry of glioblastoma).
+R03393	EXCLUDE	X1	set	Meeting abstract; bulk co-expression modules compared between glioma and normal brain.
+R03394	EXCLUDE	X1	-	Meeting abstract (podoplanin extracellular vesicles).

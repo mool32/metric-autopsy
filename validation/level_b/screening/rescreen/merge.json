@@ -1,0 +1,63 @@
+{
+ "n_screened": 112,
+ "kappa": 1.0,
+ "agreement": 1.0,
+ "kappa_keep_or_unclear_vs_exclude": 1.0,
+ "code_agreement_where_both_exclude": 0.9259259259259259,
+ "table": {
+  "pass 1": {
+   "EXCLUDE": 108,
+   "KEEP": 4,
+   "X1": 1,
+   "X2": 43,
+   "X3": 0,
+   "X4": 46,
+   "X5": 6,
+   "X6": 12,
+   "X7": 0,
+   "X8": 0,
+   "X9": 0,
+   "X10": 0
+  },
+  "pass 2": {
+   "EXCLUDE": 108,
+   "KEEP": 4,
+   "X1": 1,
+   "X2": 43,
+   "X3": 0,
+   "X4": 50,
+   "X5": 3,
+   "X6": 11,
+   "X7": 0,
+   "X8": 0,
+   "X9": 0,
+   "X10": 0
+  }
+ },
+ "crosstab": {
+  "EXCLUDE / EXCLUDE": 108,
+  "KEEP / KEEP": 4
+ },
+ "both_keep": 4,
+ "to_owner": 0,
+ "fulltext": 4,
+ "sets": {
+  "pass 1": {
+   "code_X6": 12,
+   "code_X7": 0,
+   "kind_set": 25,
+   "kind_global": 1
+  },
+  "pass 2": {
+   "code_X6": 11,
+   "code_X7": 0,
+   "kind_set": 23,
+   "kind_global": 0
+  },
+  "both passes": {
+   "code_X6": 11,
+   "code_X7": 0,
+   "either_X6_or_X7": 12
+  }
+ }
+}
