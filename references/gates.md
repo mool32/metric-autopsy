@@ -345,7 +345,9 @@ numbers resists every nuisance. Supply `signal_test=` (`injected_signal.coupling
 (seqgendiff-style, so the data stay valid counts with real technical noise). The CLI and the MCP tool offer
 the coupling probe and, since v0.4 change 11, the module probe (`--inject-signal module --module-genes …`)
 and the set's probe (`--inject-signal coupling_set --set-genes … [--couple half]`, by the owner's decision of
-2026-11-05); a metric of a module's level or of a set's coordination is passed through the Python API.
+2026-11-05). A set's coordination has a reference metric by name, `set_norm_pearson` (the mean of
+`norm_pearson` over the set's pairs, judged with the set's probe over the same genes); a metric of a module's
+level, or another of a set, is passed through the Python API.
 
 **On the claim's own statistic (v0.4 change 1).** With a replicate unit the signal goes into the
 group whose replicates have more of the probed genes' counts per cell (each replicate weighted

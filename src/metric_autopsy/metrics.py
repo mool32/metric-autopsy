@@ -14,9 +14,21 @@ metric *failing* — a validator that can only bless things is useless.
 """
 from __future__ import annotations
 
+from itertools import combinations
+
 import numpy as np
 
 from .core import gene_column
+
+# How a front end binds a reference metric by name (the CLI's --metric, the MCP tool's metric): a pair's
+# metric takes gene_a and gene_b, a set's metric takes genes, a whole-matrix metric takes none.
+SET_METRICS = ("set_norm_pearson",)
+WHOLE_MATRIX_METRICS = ("spectral_entropy",)
+
+
+def kind(name: str) -> str:
+    """'pair', 'set' or 'matrix': how the reference metric `name` is bound to its genes."""
+    return "set" if name in SET_METRICS else "matrix" if name in WHOLE_MATRIX_METRICS else "pair"
 
 
 def _to_3bin(x: np.ndarray) -> np.ndarray:
@@ -129,6 +141,46 @@ def norm_pearson(data, *, gene_a: str, gene_b: str, min_codetected: int = MIN_CO
     if np.ptp(a) == 0 or np.ptp(b) == 0:
         return float("nan")
     return float(np.corrcoef(a, b)[0, 1])
+
+
+def set_norm_pearson(data, *, genes, min_codetected: int = MIN_CODETECTED) -> float:
+    """A set's coordination: the mean of `norm_pearson` over the set's pairs — the reference metric of a claim
+    about a set of genes, by name in the CLI and the MCP tool (v0.4, the owner's decision of 2026-11-07). Its
+    construct is the one the set's probe (``injected_signal.coupling_set``) is dosed on: the mean correlation of
+    log expected expression over the set's pairs.
+
+    NaN — not measured — where any of its pairs is (`norm_pearson`'s rule: fewer than `min_codetected` cells,
+    never fewer than 3, carry both genes, or one does not vary among them): a mean over some of the pairs is
+    another quantity, as v0.3's 0.0 for a pair it did not measure was another number. Each pair's value is
+    `norm_pearson`'s, computed the same way on the set's columns and the cells' totals, read once (nothing
+    densified for a sparse X)."""
+    from .core import as_dense, column_block, issparse, row_sums, unique_col_index
+
+    genes = list(genes)
+    if len(genes) < 2 or len(set(genes)) != len(genes):
+        raise ValueError("a set needs at least two distinct genes")
+    var_names = list(data.var_names)
+    idx = [unique_col_index(var_names, g) for g in genes]
+    if issparse(data.X):
+        X = data.X
+        cols = column_block(X, idx)
+    else:
+        X = as_dense(data.X)
+        cols = X[:, idx]
+    tot = row_sums(X)
+    tot = np.where(tot == 0, 1.0, tot)
+    values = []
+    for i, j in combinations(range(len(genes)), 2):
+        raw_a, raw_b = cols[:, i], cols[:, j]
+        both = (raw_a > 0) & (raw_b > 0)
+        if both.sum() < max(3, int(min_codetected)):
+            return float("nan")
+        a = np.log1p(raw_a / tot * 1e4)[both]
+        b = np.log1p(raw_b / tot * 1e4)[both]
+        if np.ptp(a) == 0 or np.ptp(b) == 0:
+            return float("nan")
+        values.append(float(np.corrcoef(a, b)[0, 1]))
+    return float(np.mean(values))
 
 
 def spectral_entropy(data) -> float:

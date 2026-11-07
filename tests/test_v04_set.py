@@ -76,7 +76,8 @@ def mean_log_level(data, *, genes):
 
 @functools.lru_cache(maxsize=None)
 def claim(rho: tuple, metric: str = "mean_norm_pearson", couple: str = "all"):
-    fn = dict(mean_norm_pearson=mean_norm_pearson, mean_log_level=mean_log_level)[metric]
+    fn = dict(mean_norm_pearson=mean_norm_pearson, mean_log_level=mean_log_level,
+              set_norm_pearson=metrics.set_norm_pearson)[metric]
     return run_autopsy(partial(fn, genes=SET), set_data(rho=rho, seed=2), group_col="age", groups=("young", "old"),
                        replicate_col="mouse", signal_test=injected_signal.coupling_set(SET, couple=couple),
                        prereg=dict(PREREG), log_path="off", specificity=False, gene_metric=fn)
@@ -173,3 +174,41 @@ def test_an_equal_coordination_shows_no_detectable_effect_within_the_sets_s_m():
 
 def test_a_metric_of_the_sets_level_is_not_shown_to_respond_to_its_coupling():
     assert _g4(claim((0.3, 0.3), "mean_log_level")).status.value != "PASS"
+
+
+# --------------------------------------------------------------------------- #
+# the reference metric of a set's coordination by name (the owner's decision of 2026-11-07)
+# --------------------------------------------------------------------------- #
+def test_the_reference_set_metric_is_the_mean_of_norm_pearson_over_the_pairs_dense_and_sparse():
+    sp = pytest.importorskip("scipy.sparse")
+    d = set_data(rho=(0.5, 0.15), seed=2)
+    stored = SimpleData(sp.csr_matrix(d.X), d.obs, d.var_names)
+    for mouse in ("young0", "old3"):
+        mask = np.asarray(d.obs["mouse"]) == mouse
+        want = float(np.mean([metrics.norm_pearson(d[mask], gene_a=a, gene_b=b) for a, b in combinations(SET, 2)]))
+        assert metrics.set_norm_pearson(d[mask], genes=SET) == want  # exactly: the same arithmetic per pair
+        assert metrics.set_norm_pearson(stored[mask], genes=SET) == want
+        assert mean_norm_pearson(d[mask], genes=SET) == want  # no pair unmeasured here
+    assert metrics.kind("set_norm_pearson") == "set" and metrics.kind("norm_pearson") == "pair"
+    assert metrics.kind("spectral_entropy") == "matrix"
+
+
+def test_the_reference_set_metric_is_not_measured_where_a_pair_is_not():
+    d = set_data(seed=2)
+    X = np.array(d.X)
+    X[:, SET.index("S5")] = 0.0  # a gene never detected: its five pairs are not measured
+    silent = SimpleData(X, d.obs, d.var_names)
+    assert np.isnan(metrics.set_norm_pearson(silent, genes=SET))
+    assert np.isfinite(mean_norm_pearson(silent, genes=SET))  # a mean over the other ten pairs, another quantity
+    assert np.isfinite(metrics.set_norm_pearson(silent, genes=SET[:5]))
+    for bad in (["S0"], ["S0", "S0", "S1"]):
+        with pytest.raises(ValueError):
+            metrics.set_norm_pearson(d, genes=bad)
+
+
+def test_a_decrease_of_a_sets_coordination_is_supported_with_the_reference_metric():
+    a = claim((0.5, 0.15), "set_norm_pearson")
+    g4 = _g4(a)
+    assert g4.status.value == "PASS" and g4.detail["dose"]["kind"] == "coupling_set" and g4.detail["dose"]["n_pairs"] == 15
+    assert a.effect.detail["effect"] > 0 and decide(a).startswith("SUPPORTED")
+    assert not any(r.gate == 5 for r in a.results)

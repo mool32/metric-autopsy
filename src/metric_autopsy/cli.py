@@ -30,8 +30,15 @@ correlation of log expected expression over the pairs it couples) GATE 4 doses i
     metric-autopsy --h5ad data.h5ad --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 ... \
         --inject-signal coupling_set --set-genes Smad3 Col1a1 Tgfb1 Fn1 --sesoi 0.1
 
-``--metric`` names a function in ``metric_autopsy.metrics``. Bring-your-own metrics are
-supported from Python via ``metric_autopsy.run_autopsy``; the CLI covers the reference set.
+A claim about a set's coordination takes the reference metric of a set, ``set_norm_pearson`` (the mean of
+``norm_pearson`` over the set's pairs), with the set's probe over the same genes, which names the claim's genes
+(GATE 5's controls are pairs, so the probe is how the metric's response is shown):
+    metric-autopsy --h5ad data.h5ad --metric set_norm_pearson --set-genes Smad3 Col1a1 Tgfb1 Fn1 ... \
+        --inject-signal coupling_set --sesoi 0.1
+
+``--metric`` names a function in ``metric_autopsy.metrics``: a pair's metric (``--gene-a``, ``--gene-b``), a set's
+(``--set-genes``) or ``spectral_entropy`` (no genes). Bring-your-own metrics are supported from Python via
+``metric_autopsy.run_autopsy``; the CLI covers the reference set.
 A pre-registration can be given as JSON (``--prereg``); explicit flags override it. Every
 run with a pre-registration is appended to a JSON-lines run log (``--log``, default
 ``$METRIC_AUTOPSY_LOG`` or ``metric_autopsy_runs.jsonl``; ``--no-log`` disables) — the same
@@ -104,7 +111,9 @@ def build_parser() -> argparse.ArgumentParser:
                                 description="Run the metric-autopsy gates and print a report.")
     p.add_argument("--h5ad", help="path to an AnnData .h5ad")
     p.add_argument("--demo", action="store_true", help="use the bundled synthetic confound")
-    p.add_argument("--metric", default="mi_3bin", help="function name in metric_autopsy.metrics")
+    p.add_argument("--metric", default="mi_3bin",
+                   help="function name in metric_autopsy.metrics: a pair's metric (--gene-a, --gene-b), a set's "
+                        "(set_norm_pearson, --set-genes, with --inject-signal coupling_set) or spectral_entropy")
     p.add_argument("--gene-a"); p.add_argument("--gene-b")
     p.add_argument("--group-col", default="age")
     p.add_argument("--groups", nargs=2, default=("young", "old"))
@@ -138,7 +147,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--module-fold", type=float, default=2.0,
                    help="the module probe's fold (default 2; with --sesoi on the construct's scale GATE 4 doses it "
                         "to exp(SESOI))")
-    p.add_argument("--set-genes", nargs="+", help="the set's genes for --inject-signal coupling_set")
+    p.add_argument("--set-genes", nargs="+",
+                   help="the set's genes: of --inject-signal coupling_set, and of a set's metric (set_norm_pearson)")
     p.add_argument("--couple", choices=list(injected_signal.COUPLE), default="all",
                    help="what the set's probe couples: 'all' the set (default), or 'half' a new random half of it "
                         "at every injection, for a metric of what is relative within the set (a factor shared by "
@@ -164,6 +174,18 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def set_metric(name: str, fn, set_genes, inject_signal):
+    """A set's reference metric bound to the set's genes, for the CLI and the MCP tool. It is judged with the set's
+    probe over the same genes (``inject_signal="coupling_set"``): the probe names the claim's genes, and with GATE 5's
+    controls pairs it is how the metric's response is shown."""
+    if not set_genes:
+        raise ValueError(f"{name} is a set's metric: name the set's genes (--set-genes, set_genes)")
+    if inject_signal != "coupling_set":
+        raise ValueError(f"{name} is judged with the set's probe over its genes, which names the claim's genes: "
+                         "--inject-signal coupling_set (inject_signal='coupling_set'); GATE 5's controls are pairs")
+    return partial(fn, genes=list(set_genes))
+
+
 def build_prereg(args) -> dict:
     """JSON pre-registration (if any) overridden by explicit flags."""
     prereg = {}
@@ -184,7 +206,8 @@ def build_prereg(args) -> dict:
 def main(argv=None):
     args = build_parser().parse_args(argv)
 
-    is_pairwise = args.metric != "spectral_entropy"
+    kind = metrics.kind(args.metric)
+    is_pairwise = kind == "pair"
     if args.demo or not args.h5ad:
         data = demo_data()
         if is_pairwise:
@@ -204,6 +227,11 @@ def main(argv=None):
 
     gene_pair = (args.gene_a, args.gene_b) if (is_pairwise and args.gene_a and args.gene_b) else None
     metric = partial(metric_fn, gene_a=args.gene_a, gene_b=args.gene_b) if gene_pair else metric_fn
+    if kind == "set":
+        try:
+            metric = set_metric(args.metric, metric_fn, args.set_genes, args.inject_signal)
+        except ValueError as e:
+            sys.exit(str(e))
 
     data2 = _load_h5ad(args.data2) if args.data2 else None
     pairwise_controls = bool(is_pairwise and args.pos_pair and args.neg_pair)
@@ -232,6 +260,7 @@ def main(argv=None):
         seed=args.seed,
         log_path=log_path,
         composition=args.composition,
+        gene_metric=metric_fn if kind == "set" else None,
     )
     autopsy.metric_name = args.metric
     print(autopsy.to_markdown())

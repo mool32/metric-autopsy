@@ -75,7 +75,7 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 - **Test:** `pytest -q` must stay green. It collects `tests/` and the dev set `validation/probes/`. Known validator failures are `xfail(strict=True)`: a fix that makes one pass shows up as an XPASS error until its marker is removed. Add a regression test for any behavior change, and never edit a dev probe's expected verdict to make it pass.
 - **Contract:** the gates take a black-box `metric(data) -> float`; `data` is any object with `.X`, `.obs`, `.var_names`, and `data[mask]` — real `anndata.AnnData` or the bundled `SimpleData`. `X` may be dense or scipy.sparse: since v0.4.0.dev0 (change 10) a sparse X stays sparse and gets the dense X's report, draw for draw — keep every new path storage-aware (`core.row_sums`, `n_detected`, `column_block`, `with_columns`) and test it against the dense path. Keep gates metric-agnostic; keep optional deps lazily imported.
 - **One rule:** the verdict is `report.decide`, shared by the API, the CLI and MCP; never re-implement it in a front end. Numbers meant for the paper come only from scripts in this repo, with the hashes from the JSON report.
-- **Adding a reference metric:** add a keyword-only `fn(data, *, gene_a, gene_b) -> float` to `metrics.py`, then it's usable by name in the CLI and MCP tools.
+- **Adding a reference metric:** add a keyword-only `fn(data, *, gene_a, gene_b) -> float` to `metrics.py`, then it's usable by name in the CLI and MCP tools. A set's metric is `fn(data, *, genes) -> float`, listed in `metrics.SET_METRICS` (`set_norm_pearson`, v0.4); the front ends judge it with the set's probe over its genes.
 
 ## Don't
 

@@ -7,7 +7,7 @@ comparability.
 
 ## [0.4.0.dev0] — in development, not released
 
-The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-05):
+The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-07):
 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
 (the decisions of 2026-10-18, after the second diagnostics on the pilot's data,
 `validation/exploratory/real_pilot_4.log`, the second decisions of 2026-10-18, after the third,
@@ -196,9 +196,18 @@ Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated
   `--inject-signal coupling_set --set-genes G1 G2 … [--couple half]`, the MCP tool's
   `inject_signal="coupling_set"`, `set_genes`, `couple`, built by `injected_signal.named` with the module
   probe; with a SESOI on the construct's scale GATE 4 doses it to that change of the mean correlation over
-  the pairs it couples. As for the module, the front ends offer no reference metric of a set's coordination
-  by name: from them the probe tests a reference metric's response, and a set's metric goes through the
-  Python API. `tests/test_v04_frontends.py`.
+  the pairs it couples. With a pair's metric or `spectral_entropy` the probe tests that metric's response; a
+  set's reference metric is the next entry. `tests/test_v04_frontends.py`.
+- **A reference metric of a set's coordination by name (the owner's fourth decisions of 2026-11-07).**
+  `metrics.set_norm_pearson(data, *, genes)`: the mean of `norm_pearson` over the set's pairs, each pair's
+  value `norm_pearson`'s to the last bit (dense or sparse X), NaN where any pair is not measured. The CLI's
+  `--metric set_norm_pearson --set-genes …` and the MCP tool's `metric="set_norm_pearson"`, `set_genes` judge
+  it with the set's probe over the same genes (`--inject-signal coupling_set`; without it the claim is refused,
+  since the probe names the claim's genes and GATE 5's controls are pairs), and pass it as `gene_metric` for
+  the check of specificity among matched control sets. `metrics.kind` tells a pair's metric, a set's and a
+  whole-matrix one. No reference metric of a module's level. `tests/test_v04_set.py` (the mean, exactly;
+  not measured where a pair is not; a decrease of a set's coordination SUPPORTED with it),
+  `tests/test_v04_frontends.py` (the API's, the CLI's and the MCP tool's verdicts and checks of specificity).
 - **Composition (change 7, the decided minimum):** `run_autopsy(composition=[...])`, the CLI's
   `--composition` and the MCP tool's `composition` name obs columns of an annotation (cell type
   first): their shares per replicate are compared between the groups (the total variation

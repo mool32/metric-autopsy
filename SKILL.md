@@ -32,7 +32,8 @@ You need, from the user (elicit anything missing — do not guess):
   factor columns you will compare and stratify by — at minimum the grouping column
   (e.g. `age`) and the confounder axes (`sex`, `batch`, `tissue`, `cell_type`).
 - **Metric:** one of the reference metrics (`mi_3bin`, `pearson`, `codetected_spearman`,
-  `norm_pearson`, `spectral_entropy`) **or** a user callable `metric(data) -> float`.
+  `norm_pearson`, `spectral_entropy`; since v0.4 a set's `set_norm_pearson`, with `--set-genes` and the set's
+  probe) **or** a user callable `metric(data) -> float`.
 - **Genes / groups:** the gene pair (for pairwise metrics), the group column and the two
   levels to compare, and positive/negative control gene pairs.
 - **Replicates:** the `obs` column of the biological replicate (mouse, donor, plate). Without

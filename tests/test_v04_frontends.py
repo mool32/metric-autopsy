@@ -177,3 +177,66 @@ def test_the_mcp_tool_runs_the_sets_probe_with_the_clis_verdict(capsys, tmp_path
         assert g4["detail"]["dose"]["kind"] == "coupling_set" and g4["detail"]["dose"]["couple"] == "half"
     assert reports[0]["provenance"]["data_sha256"] == reports[1]["provenance"]["data_sha256"]
     assert _gate4(reports[0])["detail"]["dose"] == _gate4(reports[1])["detail"]["dose"]
+
+
+# --------------------------------------------------------------------------- #
+# a set's reference metric by name (the owner's decision of 2026-11-07)
+# --------------------------------------------------------------------------- #
+def _set_api_claim(data, couple="all", **kw):
+    return run_autopsy(partial(metrics.set_norm_pearson, genes=SET), data, group_col="age", groups=("young", "old"),
+                       within=["sex"], replicate_col="mouse", signal_test=injected_signal.coupling_set(SET, couple=couple),
+                       gene_metric=metrics.set_norm_pearson, prereg=dict(SET_PREREG), log_path="off", **kw)
+
+
+def test_the_cli_takes_a_set_claim_with_the_reference_metric_and_the_apis_verdict(capsys, tmp_path):
+    out = tmp_path / "cli.json"
+    cli.main(["--demo", "--metric", "set_norm_pearson", "--set-genes", *SET, "--inject-signal", "coupling_set",
+              "--sesoi", "0.1", "--direction", "decrease", "--no-log", "--json", str(out)])
+    md = capsys.readouterr().out
+    rep = json.loads(out.read_text())
+    assert rep["params"]["claim"]["genes"] == SET and rep["params"]["gene_metric"] == "set_norm_pearson"
+    assert not any(g["gate"] == 5 for g in rep["gates"])  # GATE 5's controls are pairs
+    dose = _gate4(rep)["detail"]["dose"]
+    assert dose["kind"] == "coupling_set" and dose["n_pairs"] == 6 and dose["construct_change"] == 0.1
+    assert "error" not in rep["specificity"] and rep["specificity"]["in_direction"]["n"] > 0  # matched control sets
+    api = _set_api_claim(cli.demo_data(), stop_on_first_fail=True)
+    assert _verdict_line(md) == rep["verdict"] == api.verdict
+    assert json.loads(api.to_json())["specificity"]["in_direction"] == rep["specificity"]["in_direction"]
+
+
+def test_the_cli_refuses_a_set_metric_without_its_genes_or_the_sets_probe(capsys):
+    with pytest.raises(SystemExit) as e:
+        cli.main(["--demo", "--metric", "set_norm_pearson", "--inject-signal", "coupling_set", "--no-log"])
+    assert "name the set's genes" in str(e.value)
+    for probe in ([], ["--inject-signal", "module", "--module-genes", *SET], ["--inject-signal", "coupling"]):
+        with pytest.raises(SystemExit) as e:
+            cli.main(["--demo", "--metric", "set_norm_pearson", "--set-genes", *SET, *probe, "--no-log"])
+        assert "--inject-signal coupling_set" in str(e.value)
+
+
+def test_the_mcp_tool_takes_a_set_claim_with_the_clis_verdict(capsys, tmp_path):
+    anndata = pytest.importorskip("anndata")
+    sparse = pytest.importorskip("scipy.sparse")
+    assert "`set_norm_pearson`" in mcp_server.list_metrics()
+    sd = cli.demo_data()
+    path = tmp_path / "demo.h5ad"
+    ad = anndata.AnnData(X=sparse.csr_matrix(sd.X), obs=sd.obs.copy(), var=pd.DataFrame(index=list(sd.var_names)))
+    ad.obs_names = [f"cell_{i}" for i in range(sd.n_obs)]
+    ad.write_h5ad(path)
+    cli.main(["--h5ad", str(path), "--metric", "set_norm_pearson", "--set-genes", *SET, "--group-col", "age",
+              "--groups", "young", "old", "--within", "sex", "--replicate-col", "mouse", "--estimand", "composition",
+              "--direction", "decrease", "--sesoi", "0.1", "--inject-signal", "coupling_set", "--couple", "half",
+              "--no-stop", "--no-log", "--json", str(tmp_path / "cli.json")])
+    cli_md = capsys.readouterr().out
+    mcp_md = mcp_server.autopsy_report(
+        str(path), metric="set_norm_pearson", group_col="age", groups=["young", "old"], within=["sex"],
+        replicate_col="mouse", estimand="composition", direction="decrease", sesoi=0.1, inject_signal="coupling_set",
+        set_genes=SET, couple="half", stop_on_first_fail=False, json_path=str(tmp_path / "mcp.json"), log_path="off")
+    assert _verdict_line(cli_md) == _verdict_line(mcp_md)
+    reports = [json.loads((tmp_path / f).read_text()) for f in ("cli.json", "mcp.json")]
+    for rep in reports:
+        assert rep["params"]["claim"]["genes"] == SET and _gate4(rep)["detail"]["dose"]["couple"] == "half"
+    assert reports[0]["specificity"]["in_direction"] == reports[1]["specificity"]["in_direction"]
+    with pytest.raises(ValueError):
+        mcp_server.autopsy_report(str(path), metric="set_norm_pearson", set_genes=SET, inject_signal="module",
+                                  module_genes=SET, log_path="off")
