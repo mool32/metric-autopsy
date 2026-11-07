@@ -297,3 +297,7 @@ never densifies the matrix there (the cells' totals of non-integer values are su
 `test_p12_never_densifies_a_large_sparse_matrix_silently` checks that GATE 1 neither densifies the matrix nor
 announces anything, and that a step which still densifies it, the whole-matrix metric `spectral_entropy`,
 warns first. Against the engine before change 10 (ac0bca4) the first check fails (`d10_p12_engines.log`).
+
+**The engine of the tag `v0.4.0.dev0` (96a1663, 2026-11-07)**, run in a worktree of 96a1663 with its own engine
+(`verdicts_v0.4_96a1663.log`, its stderr empty): against 1337ead's (`verdicts_v0.4_96a1663_compare.log`), 0 lines
+differ, the header aside. The commits after 96a1663 up to the tag add logs and documents only.

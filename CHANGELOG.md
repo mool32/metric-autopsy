@@ -5,7 +5,7 @@ All notable changes to `metric-autopsy` are documented here. Format follows
 [SemVer](https://semver.org/). Downstream papers should cite a fixed version for
 comparability.
 
-## [0.4.0.dev0] — in development, not released
+## [0.4.0.dev0] — tagged `v0.4.0.dev0` on 2026-11-07, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-07):
 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13 (as a line of the report), 14, 15, 16, 18 and 19, and the claim's domain
@@ -17,7 +17,10 @@ fourth run, `validation/exploratory/real_pilot_6_summary.md`, and after change 1
 change 17' was coded, failed its acceptance and was reverted by the owner on 2026-11-05. Change 9 was
 coded on the owner's decision of 2026-11-05, without its precondition of 2026-10-12 (GCL's definition
 checked against Levy et al. 2020; spec, section 9); changes 10 and 11 on the owner's second decisions of that
-day, before the tag.
+day, before the tag; the set's probe in the front ends on the third, and a set's reference metric on the
+fourth decisions (2026-11-07), which then tagged this version `v0.4.0.dev0` without a release. The dev set at
+96a1663, the engine of the tag: 1337ead's lines, the header aside (0 lines differ;
+`validation/probes/verdicts_v0.4_96a1663_compare.log`).
 Validation v1's scope stays the tag `v0.3.0-prereg`'s: nothing here is validated.
 
 ### Changed
