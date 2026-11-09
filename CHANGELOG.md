@@ -5,6 +5,23 @@ All notable changes to `metric-autopsy` are documented here. Format follows
 [SemVer](https://semver.org/). Downstream papers should cite a fixed version for
 comparability.
 
+## After the tag `v0.4.0.dev0` (not part of it)
+
+The engine is the tag's (`src/` unchanged since 5a89f98).
+
+### Added
+- `validation/prereg_v2/`: validation v2's pre-registration, `v2.md` (draft 2: the owner's decisions
+  D1–D10 of 2026-11-09, taken as recommended; nothing frozen or run), and the first step of its code
+  (its section 11, W1), which never imports the engine: `num.py` (Student's t, beta quantiles,
+  Clopper-Pearson), `exchange.py` (every analyzer's call, the scoring of the exchange, π\* with its
+  intervals over cards and gene pairs, the design effects by donor, by pair and by both) and
+  `comparators.py` (the metrics recomputed from per-cell vectors; (a) the test over cells; (b) the test
+  over donors with the engine's graded rule, TOST and EFFECT BELOW SESOI, coded apart).
+  `test_v2_w1.py` checks them against the engine number for number, with and without scipy, (b) end to
+  end against a `run_autopsy` report's raw replicate-level test, π\* against v1's numbers and its
+  script's bootstrap, and the design effects against v1's estimators. `pyproject.toml`: pytest collects
+  `validation/prereg_v2`.
+
 ## [0.4.0.dev0] — tagged `v0.4.0.dev0` on 2026-11-07, not released
 
 The decided changes of `validation/plans/v0.4_spec.md` (the owner, 2026-10-11 to 2026-11-07):

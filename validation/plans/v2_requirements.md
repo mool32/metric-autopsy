@@ -7,8 +7,8 @@ assistant on 2026-10-11; their texts are not archived.
 The engine v2 tests is v0.4 (`validation/plans/v0.4_spec.md`); each of its changes names its test
 here. Numbers come from the logs named, each from a script in this repository. v1's datasets are
 development data now (v1.md section 6), so v2's panel is drawn afresh, from backgrounds v1 did not
-use. The pre-registration built on it: `validation/prereg_v2/v2.md` (draft 1, 2026-11-09, for the
-owner's decisions).
+use. The pre-registration built on it: `validation/prereg_v2/v2.md` (draft 2, 2026-11-09: the owner's
+decisions D1–D10 taken as recommended).
 
 v2 is the simulation track. Whether the tool is needed at all is decided on real claims
 (`validation/plans/real_claims.md`, the main track, the owner's decision of 2026-10-11); v2 measures
