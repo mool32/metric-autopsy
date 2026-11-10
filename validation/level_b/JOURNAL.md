@@ -234,3 +234,19 @@ here, with the first fetch's text, and not again. The batches of S2's other reco
 their texts come. `plan_s3.md` has one list in the order of the records' numbers; here the order is in two groups.
 Nothing else changes: the same instructions, task text, batch size, the same batches for both passes, one session
 at a time, each pass's files out of the working tree while the other pass reads.
+
+## J14 — 2026-11-10: S3's first group read by both passes; one precision of the independence check
+
+**The four sessions** of J13's two batches ran one at a time (pass 1's two, then pass 2's two, pass 1's files out of
+the working tree meanwhile and back unchanged by `sha256sum -c`); each file passed `screening.py check-fulltext`.
+The decisions stay out of the repository until S3's last pass ends (`.git/info/exclude`), each pass's files out of
+the working tree while the other pass reads, as in S2.
+
+**The precision** (`independence.py --calls-only`, tested in `test_independence.py`): `plan_s3.md` forbids naming
+the plans; the two instructions every session reads cite the protocol (`screening.md` line 4,
+`screening_fulltext.md` line 3), so every transcript holds `level_b_protocol` twice. Counted over the whole
+transcript, as the other forbidden paths are, it flagged all four sessions; a session now fails on the protocol
+only where its own tool calls (the inputs of its requests) name it. Every other path is counted as before. On the
+four sessions: the protocol named twice in each transcript and 0 times in its own calls; every other count 0; no
+text named outside its own list; all four independent (the log goes into `amendment1/ft/independence.log` with
+S3's other sessions).

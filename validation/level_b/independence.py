@@ -9,13 +9,35 @@ path and no batch but its own.
 
 `agents.tsv`: one line per session, "pass<TAB>batch<TAB>session id"; the transcript is DIR/<id>.output.
 The transcripts are the agent sessions' own records (not in the repository).
+
+`--calls-only PATH ...`: paths the instructions themselves name (every session reads them, so its transcript
+holds them): a session fails only where its own tool calls (the inputs of its requests, from the JSONL
+transcript) name one. Added 2026-11-10 for S3, where the instructions cite the protocol (`JOURNAL.md`, J14).
 """
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
+
+
+def calls_text(s: str) -> str:
+    """The session's own requests: the inputs of its tool calls, one per line, from a JSONL transcript."""
+    out = []
+    for line in s.splitlines():
+        try:
+            d = json.loads(line)
+        except ValueError:
+            continue
+        m = d.get("message") if isinstance(d, dict) else None
+        if not isinstance(m, dict) or m.get("role") != "assistant" or not isinstance(m.get("content"), list):
+            continue
+        for b in m["content"]:
+            if isinstance(b, dict) and b.get("type") == "tool_use":
+                out.append(json.dumps(b.get("input"), ensure_ascii=False))
+    return "\n".join(out)
 
 
 def main(argv=None) -> int:
@@ -25,6 +47,8 @@ def main(argv=None) -> int:
     ap.add_argument("--pass1", required=True)
     ap.add_argument("--pass2", required=True)
     ap.add_argument("--forbid", nargs="*", default=[], help="paths no session may name (the other decisions)")
+    ap.add_argument("--calls-only", nargs="*", default=[],
+                    help="paths the instructions name: a session may not name them in its own tool calls")
     ap.add_argument("--lists", nargs=2, metavar=("DIR1", "DIR2"),
                     help="full texts: each pass's batch lists; a session may name no text file outside its own list")
     ap.add_argument("--batch-pattern", default=r"batches/batch_(\d+)",
@@ -48,6 +72,11 @@ def main(argv=None) -> int:
         batches = sorted(set(re.findall(a.batch_pattern, s)))
         ok = other == 0 and not any(forbidden.values()) and batches == [b]
         extra = "".join(f"; {x} named {k} times" for x, k in forbidden.items())
+        if a.calls_only:
+            calls = calls_text(s)
+            called = {x: calls.count(x) for x in a.calls_only}
+            ok = ok and not any(called.values())
+            extra += "".join(f"; {x} named {s.count(x)} times, in its own calls {k}" for x, k in called.items())
         if a.lists:
             own = {line.split("\t")[0] for line in (Path(a.lists[int(p) - 1]) / f"batch_{b}.list").read_text().splitlines()
                    if line.strip()}
