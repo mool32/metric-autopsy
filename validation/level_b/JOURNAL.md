@@ -125,3 +125,34 @@ of the publish step's split, joined before the check). The texts below are `scre
 
 With B (8 excluded) and D (R00222 and R01395 excluded; R00599 and R01382 to both passes in S3), the sheet's 23
 records are decided: 2 go on to S3, 21 are excluded.
+
+## J8 — 2026-11-10: the controls' selection (S6), and two points for the owner with the list
+
+**The run:** workflow run 42866887133 on c7a9ab6, one attempt; `results/level-b-controls` at 9e20beb, every file as
+its SHA256SUMS; the extractions in the run's artifact `level-b-controls-data` (90 days), their SHA256 and joinids
+on the branch. The Census's `stable` release was 2025-11-08 (v1's). Counted: 93,203,254 human and 18,384,205 mouse
+primary cells of tissues.
+
+**Negative controls:** 26 qualifying candidates, 14 of them SEA-AD's (excluded); 6 other collections, the first 3
+tried and chosen (each with raw counts and v1's pool of 8 pairs per level, 26 claims: 24 pairs and 2 sets; no
+donor's sex call differs between its two conditions):
+- **N1** — "A spatially resolved single cell genomic atlas of the adult human breast": breast fibroblasts, 10x 3'
+  v3 cells against nuclei, 8 donors, 6,400 cells extracted.
+- **N2** — "Early human lung immune cell development and its role in epithelial cell fate": lung, the cell type
+  the Census labels **"unknown"**, 10x 3' v2 against 10x 5', 7 donors, 5,600 cells.
+- **N3** — "Mapping the developing human immune system across organs": liver macrophages, 10x 3' v2 against 10x
+  5' v1, 7 donors, 5,600 cells.
+
+**The positive control (Kang et al. 2018):** its structure passes (29,065 cells, 24,679 singlets; counts integers;
+the 8 donors in both conditions with CD14+ monocytes; no label problem; no sex call in conflict, every donor
+female or unclear). All twelve genes are induced in all 8 donors, but **only 3 are detected in at least 10% of the
+control monocytes** (ISG15 26%, IFI6 23%, ISG20 23%; OAS1 9.8%, MX1 6.9%, the others 2% to 5%): the engine's
+domain rule leaves **one pair (ISG20–IFI6)** and no set (fewer than 4 genes).
+
+**For the owner with the list (not decided here):** (1) N2's cell type is the Census's "unknown", unannotated cells
+whose make-up may differ between the two chemistries (a difference of composition, not of technique); the rule
+chose it, and the ranked table holds the next qualifying collections (rank 4: "Molecular Signatures of Resilience
+to Alzheimer's Disease…", glutamatergic neurons, 10x 3' v3 nuclei against Drop-seq, 6 donors). (2) The positive
+control gives one claim: with one positive dataset and one claim, l and r₁ rest on one pair; more positive
+controls, or another cell type of Kang's with more basal expression of these genes, are the owner's to decide
+(`plan_s6.md`, section 2).
