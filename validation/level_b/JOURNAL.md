@@ -344,3 +344,21 @@ PMC's 44 other than R00220 (read in the first group) and the publishers' 10 — 
 a batch, the last 6; the texts' SHA256 in `texts_group2.sha256`), the same for both passes. Pass 1 reads them first,
 pass 2's files of the first group out of the working tree meanwhile. The records asked again follow as a third
 group, its batches numbered from 10.
+
+## J19 — 2026-11-10: S5's second batch (R00189, R01962)
+
+**The run** (workflow run 42903541582 on b737f50, the label `level-b-data-2`; `results/level-b-data-2` at 1a8c6e1,
+every file as its SHA256SUMS): both datasets read and checked.
+- **R00189** (GSE134809; 607 MB of Cell Ranger's raw matrices and Martin et al.'s Table S2): counts non-negative
+  integers; 90,894 ileal cells with at least 800 counts; **paired, 10 patients** in both groups (the table's pairs),
+  rule 4 passes; the pair the table does not name (samples 189 and 190: 5,129 and 5,227 cells) listed, not checked;
+  every patient one sex over both samples (7 male, 3 female; none split, none against a label — the deposit gives
+  none); the claims' genes present; **the source balanced** (10x chemistry V1 and V2, each in both groups).
+- **R01962** (GSE266919; the object exported by R: 21,035 genes by 56,180 cells, a dense matrix): counts
+  non-negative integers; **the paper's stated filter gives 10 patients and 17,461 cells** (10,647 before, 6,814
+  after; three patients left out for fewer than 30 cells in a group), **not the paper's 8 patients and 5,018 cells**
+  (2,215 before, 2,803 after): the authors' cells are not identifiable exactly from the deposit, and the checks are
+  made on the cells the stated filter gives (`plan_s5.md`, section 1). Paired, rule 4 passes; the Y genes are not
+  among the deposit's genes (Xist in 35–56% of each patient's cells), so the sex check cannot tell one individual
+  from two; the claims' genes present; **no source named** (the deposit names none beyond its samples). The filter
+  is not changed to meet the paper's numbers.
