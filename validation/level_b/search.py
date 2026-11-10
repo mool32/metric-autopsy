@@ -645,6 +645,14 @@ def _pmcid_of(core: dict) -> str:
     return str(core.get("pmcid") or (ids[0] if ids else ""))
 
 
+def outage(n_server_errors: int, n_fetched: int, n: int) -> bool:
+    """Europe PMC down, not some records' full texts missing: more than a quarter of the records answered with a
+    server error on every attempt **and** fewer than a quarter got a full text. Europe PMC answers HTTP 500 to some
+    full texts it does not hold, preprints' above all, so server errors alone do not tell an outage (S3's first run,
+    `JOURNAL.md` J11; the first fetch's rule was the server errors alone)."""
+    return n_server_errors > n // 4 and n_fetched < n // 4
+
+
 def fulltext(net, out: Out, items: list) -> dict:
     """Each listed record's open-access full text from Europe PMC, as it came; one row per record of what was
     tried and found (`fulltext_index.tsv`)."""
@@ -707,8 +715,9 @@ def fulltext(net, out: Out, items: list) -> dict:
     server_errors = list(dict.fromkeys(server_errors))
     if server_errors:
         out.log(f"  of which {len(server_errors)} answered with a server error on every attempt: {', '.join(server_errors)}")
-    if len(server_errors) > len(items) // 4:  # not one paper's problem but the server's: nothing is published
-        raise RuntimeError(f"{len(server_errors)} of {len(items)} records' full texts failed with server errors")
+    if outage(len(server_errors), counts["fetched"], len(items)):  # the server's problem: nothing is published
+        raise RuntimeError(f"{len(server_errors)} of {len(items)} records' full texts failed with server errors and "
+                           f"{counts['fetched']} were fetched")
     return dict(n=len(items), **counts, core_asked=len(keys), core_found=sum(k in cores for k in keys),
                 server_errors=server_errors)
 

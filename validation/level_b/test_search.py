@@ -315,3 +315,10 @@ def test_the_dry_run_of_the_preprints(tmp_path):
     assert summary["hit_count"] == summary["fetched"] == len(recs) == 100 and summary["pages"] > 1
     assert all(r["source"] == "PPR" for r in recs) and summary["languages"] == {"none": 100}
     assert summary["query"] == S.PREPRINT_QUERY
+
+
+def test_an_outage_is_server_errors_without_full_texts():
+    assert not S.outage(35, 45, 91)  # S3's first run (JOURNAL.md J11): many preprints refused, many texts fetched
+    assert S.outage(35, 3, 91) and S.outage(30, 0, 91)
+    assert not S.outage(20, 0, 91)  # a quarter or fewer refused: the records' own problem
+    assert not S.outage(1, 0, 4)

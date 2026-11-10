@@ -184,3 +184,23 @@ protocol after the sort gate: the fallopian tubes' 520 cells mostly `Split_FACS`
 - (J10, continued.) R01962's deposit (GSE266919) is described first (`plan_s5.md`, section 4): `rdescribe1.txt`
   names its myeloid cells' Seurat object, `r_export.R describe` writes its slots and its cells' metadata, by the
   label `level-b-rdescribe-1` (`level-b-data.yml`); its spec is written from that description.
+
+## J11 — 2026-11-10: S3's fetch failed technically; its rule of an outage changed; a second run
+
+**The first run** (workflow run 42878734705 on afd99bf, the label `level-b-fulltext2`) stopped before publishing
+anything: Europe PMC gave 45 of the 91 full texts, and answered HTTP 500 to all six attempts at 35 records (most of
+them preprints, by their PPR ids: R00242, R00272, R00289, R00740, R01963, R02036, R03132, R03468, R03474, R03475,
+R03510, R03515, R03520, R03557, R03569, R03573, R03583, R03593, R03627, R03633, R03635, R03642, R03644, R03733,
+R03739, R03742, R03760, R03794, R03857, R03866, R03874, R03915, R03916, R03952, R03953). The first fetch's rule
+(fb76f44) stops the run when more than a quarter of the records answer with server errors, taking that for an
+outage; here 45 full texts came, so it was not one: Europe PMC answers HTTP 500 to some full texts it does not hold,
+as it did to R00014, R00173 and R00394 (J7).
+
+**The fix** (`search.py`, `outage`): the run stops for an outage only where more than a quarter of the records
+answer with server errors **and** fewer than a quarter get a full text. A record refused on every attempt is
+recorded as without a full text and goes on to the one attempt at its publisher, as before. The job's time limits
+are longer (the first run took 75 of its 80 minutes, most of them in the six attempts at the 35). Nothing else
+changes: the same list, the same requests.
+
+**The second run**, by the label `level-b-fulltext2` removed and added again (a new run, its first attempt), on the
+commit that carries the fix; its results are S3's.

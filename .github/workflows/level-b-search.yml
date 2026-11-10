@@ -431,7 +431,7 @@ jobs:
   fulltext2:
     if: github.event.action == 'labeled' && github.event.label.name == 'level-b-fulltext2'
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - name: One run, one attempt; the branch results/level-b-fulltext2 must not exist
         run: |
@@ -446,7 +446,7 @@ jobs:
         with:
           python-version: "3.13.16"
       - name: The full texts of amendment1/fulltext_list.tsv (Europe PMC, open access)
-        timeout-minutes: 80
+        timeout-minutes: 180
         run: python -I validation/level_b/search.py fulltext --out out --list validation/level_b/amendment1/fulltext_list.tsv
       - name: One attempt at the publisher for the records without one that have a DOI
         timeout-minutes: 30
