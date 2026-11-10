@@ -90,7 +90,9 @@ the run:
 After `plan_s5.md` was committed (99be881) and before any of their counts was read, the GEO listings of the
 four papers kept on 2026-10-19 were read here to plan S5's loaders (file names and sizes), and the barcode list of
 GSE178265 (names only): GSE134809 (R00189) — per sample 10x MatrixMarket files, 31 samples, a 607 MB archive;
-GSE189955 (R01225) — a count matrix and a table of cells as CSV; GSE266919 (R01962) — Seurat objects per cell
+GSE189955 (R01225) — a count matrix and a table of cells as CSV (Smart-seq); GSE266919 (R01962) — Seurat objects per cell
 type (`Myeloid.rds.gz`, 244 MB), so R in Actions (`plan_s5.md`); GSE178265 (R02693) — one 4.7 GB MatrixMarket
 file of 434,340 nuclei from 97 libraries whose names carry the donors' numbers, read in a stream. Nothing about a
-claim's metric, groups or cells was read.
+claim's metric was read. GSE189955's table of cells (`RNA_meta_data.csv`, 5,329 cells) was read too: 22 patients
+(`orig.ident`), the sites (`location`: PT 3,148 cells, FT 741, and seven others) and the authors' cell types;
+whether a patient gives cells to both of the claim's groups is S5's check (`donors_check`), made in its run.
