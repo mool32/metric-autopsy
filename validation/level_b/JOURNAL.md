@@ -123,3 +123,5 @@ of the publish step's split, joined before the check). The texts below are `scre
 
 With B (8 excluded) and D (R00222 and R01395 excluded; R00599 and R01382 to both passes in S3), the sheet's 23
 records are decided: 2 go on to S3, 21 are excluded.
+- (Added the same day.) GSE134809's series matrix was read too (the samples' titles and characteristics: tissue,
+  "status: Involved" or "Uninvolved", "10x chemistry: V1" or "V2", a patient id for the later samples only).
