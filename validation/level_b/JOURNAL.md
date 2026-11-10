@@ -96,3 +96,30 @@ file of 434,340 nuclei from 97 libraries whose names carry the donors' numbers, 
 claim's metric was read. GSE189955's table of cells (`RNA_meta_data.csv`, 5,329 cells) was read too: 22 patients
 (`orig.ident`), the sites (`location`: PT 3,148 cells, FT 741, and seven others) and the authors' cell types;
 whether a patient gives cells to both of the claim's groups is S5's check (`donors_check`), made in its run.
+
+## J7 — 2026-11-10: the second fetch, judged by `plan_s1.md`'s rules
+
+**The run:** workflow run 42852476682 on fc6ee3b, one attempt; `results/level-b-fetch2` at 660d486. Every file
+matches SHA256SUMS (`raw/fetch2/R03285-supplementary.zip.gz`, 48,457,509 bytes, is on the branch in two parts
+of the publish step's split, joined before the check). The texts below are `screening.py publisher-text`'s.
+
+**A — no full text for any of the nine; all nine excluded (J1):**
+- R00014 (PMC8392141), R00173 (PMC7322959), R00394 (PMC8728743): Europe PMC answered HTTP 500 to all six
+  attempts again, as on 2026-10-19. (NCBI's own services hold PMC articles too; the owner's decision named
+  Europe PMC, so none was asked.)
+- R00438 (OUP) HTTP 403, R01062 (Wiley) HTTP 403, R01338 (Wiley's literatum) HTTP 403: each a 5.7 kB page
+  whose text is "Just a moment..." (a bot challenge). R00582 (Nature) and R02134 (Springer) HTTP 200: a 3.0 kB
+  page, "Client Challenge … A required part of this site couldn't load". R02068 (Elsevier) HTTP 200: a 2.7 kB
+  page, "Redirecting". None names a `citation_pdf_url`; none holds the paper's body.
+
+**C — no public counts for either; both excluded (J1):**
+- R03285: NCBI's links from PMID 42675628 to GEO: none. NGDC's page of PRJCA044651: "The data you are
+  retrieving is not released in BioProject: PRJCA044651". Europe PMC's supplementary files (28): tables of
+  83,900 cells' metadata (`s006.xlsx`: barcode, sample, group, counts per cell), of differential genes and
+  gene lists, a clinical table, figures and PDFs — no count matrix.
+- R03433: NCBI's links from PMID 42865737 to GEO: none. Europe PMC's supplementary files (10): `Table_1.xlsx`
+  (cell types' proportions, differential genes, mitochondrial pathways, gene pairs' correlations per cluster)
+  and figures — no count matrix.
+
+With B (8 excluded) and D (R00222 and R01395 excluded; R00599 and R01382 to both passes in S3), the sheet's 23
+records are decided: 2 go on to S3, 21 are excluded.
