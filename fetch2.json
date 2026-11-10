@@ -1,0 +1,18 @@
+{
+ "records": 11,
+ "requests": 14,
+ "by_action": {
+  "epmc": {
+   "500": 3
+  },
+  "publisher": {
+   "403": 3,
+   "200": 3
+  },
+  "counts": {
+   "200": 5
+  }
+ },
+ "ok": true,
+ "list": "/home/runner/work/metric-autopsy/metric-autopsy/validation/level_b/fetch2_list.tsv"
+}

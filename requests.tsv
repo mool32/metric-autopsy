@@ -1,0 +1,15 @@
+time	method	url	params	status	bytes	sha256	attempt
+2026-11-10T16:18:07+00:00	GET	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML	{}	500	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	6
+2026-11-10T16:22:23+00:00	GET	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML	{}	500	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	6
+2026-11-10T16:25:14+00:00	GET	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML	{}	500	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	6
+2026-11-10T16:25:14+00:00	GET	https://doi.org/10.1093/bib/bbab603	{}	403	5696	07962869aa2ff4b0c60811ec3de055722b64d9575e608b06dfedb16228d6662c	1
+2026-11-10T16:25:15+00:00	GET	https://doi.org/10.1038/s41417-022-00538-2	{}	200	3038	32ed63159c77e21ee19ca1b9aa3213ccf0218eb59539560b132a8e68ef0e18ea	1
+2026-11-10T16:25:15+00:00	GET	https://doi.org/10.1002/eji.202350739	{}	403	5712	c66d9e1ac275f9eadacee0bbb9811d5311c80d7475c870d767b0eed83bbc0ed9	1
+2026-11-10T16:25:15+00:00	GET	https://doi.org/10.1111/dom.15946	{}	403	5762	8520d531c51b029f211bb599e248c4510483c4e3e0268abcc7fb525fb80344c8	1
+2026-11-10T16:25:15+00:00	GET	https://doi.org/10.1016/j.freeradbiomed.2025.08.055	{}	200	2723	eee615c7774a0408c0ede081ea2687f55aae7613f53b580955015a839b5981d8	1
+2026-11-10T16:25:15+00:00	GET	https://doi.org/10.1007/s12026-025-09703-9	{}	200	3038	32ed63159c77e21ee19ca1b9aa3213ccf0218eb59539560b132a8e68ef0e18ea	1
+2026-11-10T16:25:15+00:00	GET	https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi	{"dbfrom": "pubmed", "db": "gds", "id": "42675628", "retmode": "json", "tool": "metric-autopsy-level-b"}	200	96	3154cf139b81da2194caa53ed71a0075dfbf1bbd3db201a952de163792ec858d	1
+2026-11-10T16:52:13+00:00	GET	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13530280/supplementaryFiles	{}	200	48446310	c69362744290d72110d182ad7bf8b57ae9a1606528062adc6c95dc509fdbd794	3
+2026-11-10T16:52:16+00:00	GET	https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA044651	{}	200	4794	88635333893230f4fc83e6f3cfadf80b32ecb8a695791c62f93f76185a42e1a9	1
+2026-11-10T16:52:16+00:00	GET	https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi	{"dbfrom": "pubmed", "db": "gds", "id": "42865737", "retmode": "json", "tool": "metric-autopsy-level-b"}	200	96	e0d0c5dc4072336a21c56cbfe326dc4cacd92bfdcab47ac8bc37fce9dcac0946	1
+2026-11-10T16:59:56+00:00	GET	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13655079/supplementaryFiles	{}	200	17073583	39a7c8dbc852d2d78ccb76e511f1779ba9dcb3051248ead339a71d9cf170eae9	1

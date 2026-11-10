@@ -1,0 +1,15 @@
+rid	action	asked	status	final	file	note
+R00014	epmc	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML	500	-	-	HTTP 500 on all 6 attempts
+R00173	epmc	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML	500	-	-	HTTP 500 on all 6 attempts
+R00394	epmc	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML	500	-	-	HTTP 500 on all 6 attempts
+R00438	publisher	https://doi.org/10.1093/bib/bbab603	403	https://academic.oup.com/bib/article/doi/10.1093/bib/bbab603/6519533	raw/fetch2/R00438-landing.gz	the DOI's page, one attempt
+R00582	publisher	https://doi.org/10.1038/s41417-022-00538-2	200	https://www.nature.com/articles/s41417-022-00538-2	raw/fetch2/R00582-landing.gz	the DOI's page, one attempt
+R01062	publisher	https://doi.org/10.1002/eji.202350739	403	https://onlinelibrary.wiley.com/doi/10.1002/eji.202350739	raw/fetch2/R01062-landing.gz	the DOI's page, one attempt
+R01338	publisher	https://doi.org/10.1111/dom.15946	403	https://dom-pubs.pericles-prod.literatumonline.com/doi/10.1111/dom.15946	raw/fetch2/R01338-landing.gz	the DOI's page, one attempt
+R02068	publisher	https://doi.org/10.1016/j.freeradbiomed.2025.08.055	200	https://linkinghub.elsevier.com/retrieve/pii/S0891584925009426	raw/fetch2/R02068-landing.gz	the DOI's page, one attempt
+R02134	publisher	https://doi.org/10.1007/s12026-025-09703-9	200	https://link.springer.com/10.1007/s12026-025-09703-9	raw/fetch2/R02134-landing.gz	the DOI's page, one attempt
+R03285	counts	https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&db=gds&id=42675628&retmode=json&tool=metric-autopsy-level-b	200	-	raw/fetch2/R03285-geo-links.json.gz	geo-links.json
+R03285	counts	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13530280/supplementaryFiles	200	-	raw/fetch2/R03285-supplementary.zip.gz	supplementary.zip
+R03285	counts	https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA044651	200	-	raw/fetch2/R03285-ngdc-PRJCA044651.html.gz	ngdc-PRJCA044651.html
+R03433	counts	https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&db=gds&id=42865737&retmode=json&tool=metric-autopsy-level-b	200	-	raw/fetch2/R03433-geo-links.json.gz	geo-links.json
+R03433	counts	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13655079/supplementaryFiles	200	-	raw/fetch2/R03433-supplementary.zip.gz	supplementary.zip

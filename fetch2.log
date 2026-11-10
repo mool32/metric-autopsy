@@ -1,0 +1,24 @@
+# Level B, the fetch2 — 2026-11-10T16:14:25+00:00
+python 3.13.16; the protocol validation/plans/level_b_protocol.md (approved 2026-10-19); this script validation/level_b/search.py
+
+## The second fetch (amendment 1): 11 records
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8392141/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7322959/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8728743/fullTextXML
+  retry 1 after TimeoutError: The read operation timed out: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13530280/supplementaryFiles
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13530280/supplementaryFiles
+epmc: status 500: 3
+publisher: status 200: 3, status 403: 3
+counts: status 200: 5
