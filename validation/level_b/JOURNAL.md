@@ -84,3 +84,13 @@ the run:
 - **Kang:** a lane's barcodes must all be in the authors' table and labelled with the lane's condition, and
   every name unique, else the structure check fails; the detection and the induction of the genes are
   measured on the kept cells (at most 400 per donor and condition), as the engine will see them.
+
+## J6 — 2026-11-10: the four kept papers' deposits looked at, for S5's loaders (after `plan_s5.md`)
+
+After `plan_s5.md` was committed (99be881) and before any of their counts was read, the GEO listings of the
+four papers kept on 2026-10-19 were read here to plan S5's loaders (file names and sizes), and the barcode list of
+GSE178265 (names only): GSE134809 (R00189) — per sample 10x MatrixMarket files, 31 samples, a 607 MB archive;
+GSE189955 (R01225) — a count matrix and a table of cells as CSV; GSE266919 (R01962) — Seurat objects per cell
+type (`Myeloid.rds.gz`, 244 MB), so R in Actions (`plan_s5.md`); GSE178265 (R02693) — one 4.7 GB MatrixMarket
+file of 434,340 nuclei from 97 libraries whose names carry the donors' numbers, read in a stream. Nothing about a
+claim's metric, groups or cells was read.
