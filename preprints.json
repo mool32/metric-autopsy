@@ -1,0 +1,13 @@
+{
+ "hit_count": 761,
+ "fetched": 761,
+ "pages": 1,
+ "by_source": {
+  "PPR": 761
+ },
+ "languages": {
+  "none": 761
+ },
+ "query": "(TITLE:\"single-cell\" OR ABSTRACT:\"single-cell\" OR TITLE:\"single cell\" OR ABSTRACT:\"single cell\" OR TITLE:\"single-nucleus\" OR ABSTRACT:\"single-nucleus\" OR TITLE:\"single nucleus\" OR ABSTRACT:\"single nucleus\" OR TITLE:\"scRNA-seq\" OR ABSTRACT:\"scRNA-seq\" OR TITLE:\"snRNA-seq\" OR ABSTRACT:\"snRNA-seq\") AND (TITLE:\"coexpression\" OR ABSTRACT:\"coexpression\" OR TITLE:\"co-expression\" OR ABSTRACT:\"co-expression\" OR TITLE:\"gene-gene correlation\" OR ABSTRACT:\"gene-gene correlation\" OR TITLE:\"gene-gene correlations\" OR ABSTRACT:\"gene-gene correlations\" OR TITLE:\"gene coordination\" OR ABSTRACT:\"gene coordination\" OR TITLE:\"transcriptional coordination\" OR ABSTRACT:\"transcriptional coordination\" OR TITLE:\"coordinated expression\" OR ABSTRACT:\"coordinated expression\" OR TITLE:\"decoupling\" OR ABSTRACT:\"decoupling\" OR TITLE:\"loss of coordination\" OR ABSTRACT:\"loss of coordination\" OR TITLE:\"network rewiring\" OR ABSTRACT:\"network rewiring\" OR TITLE:\"differential coexpression\" OR ABSTRACT:\"differential coexpression\" OR TITLE:\"co-regulation\" OR ABSTRACT:\"co-regulation\" OR TITLE:\"transcriptional coherence\" OR ABSTRACT:\"transcriptional coherence\" OR TITLE:\"differential correlation\" OR ABSTRACT:\"differential correlation\") AND SRC:PPR AND FIRST_PDATE:[2017-01-01 TO 2026-09-30]",
+ "ok": true
+}
