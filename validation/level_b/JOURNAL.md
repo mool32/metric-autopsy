@@ -96,6 +96,8 @@ file of 434,340 nuclei from 97 libraries whose names carry the donors' numbers, 
 claim's metric was read. GSE189955's table of cells (`RNA_meta_data.csv`, 5,329 cells) was read too: 22 patients
 (`orig.ident`), the sites (`location`: PT 3,148 cells, FT 741, and seven others) and the authors' cell types;
 whether a patient gives cells to both of the claim's groups is S5's check (`donors_check`), made in its run.
+GSE134809's series matrix was read too (the samples' titles and characteristics: tissue, "status: Involved" or
+"Uninvolved", "10x chemistry: V1" or "V2", a patient id for the later samples only).
 
 ## J7 — 2026-11-10: the second fetch, judged by `plan_s1.md`'s rules
 
@@ -123,5 +125,3 @@ of the publish step's split, joined before the check). The texts below are `scre
 
 With B (8 excluded) and D (R00222 and R01395 excluded; R00599 and R01382 to both passes in S3), the sheet's 23
 records are decided: 2 go on to S3, 21 are excluded.
-- (Added the same day.) GSE134809's series matrix was read too (the samples' titles and characteristics: tissue,
-  "status: Involved" or "Uninvolved", "10x chemistry: V1" or "V2", a patient id for the later samples only).
