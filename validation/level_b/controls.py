@@ -426,7 +426,7 @@ def select_negatives(census, out: Path, log) -> dict:
         cells = census.cells(org, ds_ids, ch["tissue"], ch["cell_type"])
         cells = cells.assign(condition=cells["assay"].astype(str) + " | " + cells["suspension_type"].astype(str),
                              donor_id=cells["donor_id"].astype(str))
-        keep = (cells["donor_id"].isin(meta) & cells["condition"].isin([ch["condition_a"], ch["condition_b"]])).to_numpy()
+        keep = (cells["donor_id"].isin(list(meta)) & cells["condition"].isin([ch["condition_a"], ch["condition_b"]])).to_numpy()
         keep = keep & np.array([meta.get(d) == (str(a), str(b), str(c)) for d, a, b, c in
                                 zip(cells["donor_id"], cells["disease"], cells["sex"], cells["development_stage"])],
                                dtype=bool)
