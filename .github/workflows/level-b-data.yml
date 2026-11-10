@@ -5,9 +5,11 @@
 #
 # A batch of datasets, once, by the label "level-b-data-<n>": every spec named in
 # validation/level_b/data_specs/run<n>.txt (each spec committed before the run) is read and checked in a job of its
-# own; the reports (report.json, report.md, files.tsv with each file's URL, size and SHA256, the log) go to the new
-# branch results/level-b-data-<n>. The deposits' files themselves are not kept (their SHA256 are). A second start
-# finds the branch and stops; a second run only after a technical failure, recorded in JOURNAL.md.
+# own (a spec whose loader is r_export: its R object fetched, then exported by validation/level_b/r_export.R with R
+# from Ubuntu's archive, before it is read); the reports (report.json, report.md, files.tsv with each file's URL,
+# size and SHA256, the log) go to the new branch results/level-b-data-<n>. The deposits' files themselves are not
+# kept (their SHA256 are). A second start finds the branch and stops; a second run only after a technical failure,
+# recorded in JOURNAL.md.
 #
 # A deposit held only in an R object is described first, once, by the label "level-b-rdescribe-<n>": every
 # "rid<TAB>url" of validation/level_b/data_specs/rdescribe<n>.txt is fetched, gunzipped and described by
@@ -104,11 +106,33 @@ jobs:
         run: |
           python -m pip install -q pip==26.2.1
           pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+      - name: An R object, fetched and exported by R first (a spec whose loader is r_export; plan_s5.md, section 4)
+        timeout-minutes: 120
+        run: |
+          spec=validation/level_b/data_specs/${{ matrix.rid }}.json
+          loader=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['loader'])" "$spec")
+          if [ "$loader" != r_export ]; then echo "the loader $loader: no R object"; exit 0; fi
+          sudo apt-get update -q
+          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite r-bioc-singlecellexperiment
+          sudo Rscript -e 'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))); install.packages(c("SeuratObject", "BiocManager"), repos = "https://p3m.dev/cran/__linux__/noble/2026-10-01")'
+          mkdir -p files out/${{ matrix.rid }}/fetch
+          Rscript -e 'cat(R.version.string, "\n"); for (p in c("Matrix", "SingleCellExperiment", "SeuratObject")) cat(p, as.character(packageVersion(p)), "\n")' | tee out/${{ matrix.rid }}/r_versions.txt
+          python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }}/fetch --files-to files --fetch-only
+          obj=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['files']['object'].rsplit('/', 1)[-1])" "$spec")
+          gunzip -c "files/$obj" > files/object.rds
+          set -o pipefail
+          Rscript validation/level_b/r_export.R export files/object.rds files/export 2>&1 | tee out/${{ matrix.rid }}/export.log
+          rm -f files/object.rds
       - name: Read and check
         timeout-minutes: 170
         run: |
+          spec=validation/level_b/data_specs/${{ matrix.rid }}.json
           mkdir -p files
-          python -I validation/level_b/data_run.py --spec validation/level_b/data_specs/${{ matrix.rid }}.json --out out/${{ matrix.rid }} --files-to files
+          if [ -d files/export ]; then  # an R object's export: its file was fetched in the step before
+            python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }} --files files
+          else
+            python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }} --files-to files
+          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: level-b-data-${{ matrix.rid }}
@@ -149,7 +173,7 @@ jobs:
             echo "# Level B, S5: the data checks, batch $n"
             echo
             echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-data.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/data_run.py (blob $blob) on each spec of run$n.txt; the plan validation/level_b/plan_s5.md (blob $plan), committed before the run. The data job: ${{ needs.data.result }}."
-            echo "- Per dataset: spec.json, report.json and report.md (the six checks), files.tsv (each file's URL, size and SHA256), data_run.log; a dataset without report.md failed (its log, if any, says where)."
+            echo "- Per dataset: spec.json, report.json and report.md (the six checks), files.tsv (each file's URL, size and SHA256), data_run.log; for an R object also fetch/ (its download), export.log (r_export.R export) and r_versions.txt; a dataset without report.md failed (its log, if any, says where)."
           } > README.md
           find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
           git init -q -b "results/level-b-data-$n"

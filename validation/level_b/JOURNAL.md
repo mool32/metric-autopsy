@@ -275,3 +275,30 @@ numbers (an inference, not the authors' statement); their cells are listed, not 
 an Excel sheet (standard library; the run's environment has no Excel reader) gives sheet 1 cell for cell as
 openpyxl does here. The spec was tried here on the real series matrix and Table S2 with fabricated matrices (no
 count of the deposit): the 10 pairs found, samples 189 and 190 listed, both chemistries in both groups.
+
+## J16 — 2026-11-10: R01962's object described again, in part; its spec (batch 2)
+
+**The description** (workflow run 42897274410 on 26c55b5, the label `level-b-rdescribe-2`; `results/level-b-rdescribe-2`
+at eccf6d8, every file as its SHA256SUMS): R read the object (`GSE266919_Myeloid.rds.gz`, 255,365,848 bytes, SHA256
+54b63e7a…7d54) and wrote its cells' metadata whole (`meta_summary.tsv`: 56,180 cells; Barcode, Sample (78), Patient
+(44), Group (Pre-treatment 32,995, Post-treatment 23,185), Tissue (breast, chest_wall, liver, lymph_node, lung),
+Treatment (4), Efficacy (PR, SD, PD), Response (R, NR), n_genes, n_counts, Subset (20), SubCluster (5),
+MajorCluster (Myeloid)), then stopped on its counts: the assay is a dense matrix, and `r_export.R` read a sparse
+one's values (`m@x`), so `describe.json` (class, slots, assays, dimensions) was not written. **Not run again:** the
+spec needs the metadata, which the description wrote; the dimensions and the counts' check come with the data run.
+**Fixed** in `r_export.R`: a dense matrix is described by its first 1,000 cells (said so) and exported sparse 5,000
+cells at a time; the export also writes a SingleCellExperiment's rowData and names its genes' first three in its
+log. The data job now exports an R object before `data_run.py` reads it.
+
+**The spec** (`data_specs/R01962.json`, batch 2 with R00189): the cells are the paper's own filter, read here in its
+text (the TNBC data set's paragraph): breast biopsies, nab-paclitaxel with or without atezolizumab, responders,
+patients with at least 30 myeloid cells before and after — 8 patients and 5,018 cells (2,215 before, 2,803 after)
+in the paper. The deposit's columns give each (Tissue, Treatment, Response, Group, Patient); the minimum of cells is
+`data_run.py`'s `min_cells_each_group`. No source is named: the deposit names no batch, platform or chemistry
+beyond its samples.
+
+**Tried here before the run:** R 4.3.3 with SingleCellExperiment 1.24.0 and Matrix 1.6.5, from Ubuntu's archive (the
+job's versions), installed in this environment; on a fabricated object with a dense matrix of 11,420 cells, the
+export in three blocks gives the dense values exactly, and `data_run.py` reads it, applies the cells' filter and the
+minimum (a patient with 20 cells after is left out and listed), and names the genes by a rowData column where the
+rownames are ids. Nothing of the deposit was read here beyond the description's metadata.

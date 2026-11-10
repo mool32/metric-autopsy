@@ -72,6 +72,14 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   sample's 10x chemistry (GEO). For it, `data_run.py` gains the threshold (`min_umis`), the paper's tables
   (`tables`: a CSV, or an Excel sheet read with the standard library) and, in every report, the cells no donor
   names; tested on fabricated deposits.
+  **R01962** (GSE266919) joins batch 2, its spec written from its object's description (`level-b-rdescribe-2`; J16):
+  the cells are the paper's own filter (breast biopsies; nab-paclitaxel with or without atezolizumab; responders;
+  patients with at least 30 myeloid cells before and after: 8 patients and 5,018 cells in the paper), the donors
+  its patients, no source named (the deposit names none beyond its samples). The data job exports an R object by
+  `r_export.R` first (R from Ubuntu's archive; a dense matrix made sparse 5,000 cells at a time), and `data_run.py`
+  gains the paper's minimum of cells per donor and group (`min_cells_each_group`, the donors under it listed) and an
+  export's genes named by a rowData column where its rownames are not symbols; tried here on a fabricated object
+  with R 4.3.3, SingleCellExperiment 1.24.0 and Matrix 1.6.5 (the versions of Ubuntu's archive the job installs).
 
 ## 5. The sets' genes (added 2026-11-10, before any set's list is fetched)
 

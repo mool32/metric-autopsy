@@ -5,8 +5,10 @@
 #       its class, slots, assays and dimensions, and its cells' metadata: each column's type, number of distinct
 #       values and its 30 commonest values with their counts (describe.json, meta_summary.tsv)
 #   Rscript validation/level_b/r_export.R export <object.rds> <out dir>
-#       the counts (the RNA assay's counts layer or slot; genes by cells) as counts.mtx.gz, the genes as
-#       genes.tsv.gz, the cells' metadata as cells.csv.gz in the counts' order (data_run.py's r_export loader)
+#       the counts (the RNA assay's counts layer or slot, or the "counts" assay; genes by cells; a dense matrix made
+#       sparse 5,000 cells at a time) as counts.mtx.gz, the genes as genes.tsv.gz (and a SingleCellExperiment's
+#       rowData as rowdata.csv.gz), the cells' metadata as cells.csv.gz in the counts' order (data_run.py's r_export
+#       loader)
 #
 # A gzip of an RDS file (GEO's .rds.gz) is read after one gunzip, which the caller does.
 
@@ -50,16 +52,41 @@ if (mode == "describe") {
                assays = if (inherits(obj, "Seurat")) names(obj@assays) else SummarizedExperiment::assayNames(obj))
   m <- tryCatch(counts_of(obj), error = function(e) NULL)
   info$counts_dim <- if (is.null(m)) "none" else dim(m)
-  info$counts_integer <- if (is.null(m)) NA else all(m@x == round(m@x)) && all(m@x >= 0)
+  info$counts_class <- if (is.null(m)) "none" else class(m)[1]
+  # non-negative integers: every stored value of a sparse matrix; a dense one's first 1,000 cells (said so)
+  info$counts_integer <- if (is.null(m)) NA else if (methods::is(m, "sparseMatrix")) {
+    all(m@x == round(m@x)) && all(m@x >= 0)
+  } else {
+    s <- m[, seq_len(min(ncol(m), 1000)), drop = FALSE]; all(s == round(s)) && all(s >= 0)
+  }
+  info$counts_integer_of <- if (!is.null(m) && !methods::is(m, "sparseMatrix")) "the first 1,000 cells" else "every value"
   writeLines(jsonlite::toJSON(info, auto_unbox = TRUE, pretty = TRUE), file.path(out, "describe.json"))
   cat(readLines(file.path(out, "describe.json")), sep = "\n")
 } else {
-  m <- as(counts_of(obj), "CsparseMatrix")
+  m <- counts_of(obj)
+  cn <- colnames(obj); rn <- rownames(obj)
+  rd <- if (inherits(obj, "SingleCellExperiment")) as.data.frame(SummarizedExperiment::rowData(obj)) else NULL
+  rm(obj); invisible(gc())
+  cat("counts:", class(m)[1], nrow(m), "genes by", ncol(m), "cells\n")
+  if (methods::is(m, "sparseMatrix")) {
+    m <- as(m, "CsparseMatrix")
+  } else {  # a dense matrix, made sparse 5,000 cells at a time (memory)
+    blocks <- split(seq_len(ncol(m)), ceiling(seq_len(ncol(m)) / 5000))
+    m <- do.call(cbind, lapply(blocks, function(j) as(m[, j, drop = FALSE], "CsparseMatrix")))
+    invisible(gc())
+  }
+  if (is.null(colnames(m))) colnames(m) <- cn
+  if (is.null(rownames(m))) rownames(m) <- rn
   stopifnot(identical(colnames(m), rownames(meta)))
   tmp <- file.path(out, "counts.mtx")
   Matrix::writeMM(m, tmp)
   system2("gzip", c("-n", tmp))
   gz <- gzfile(file.path(out, "genes.tsv.gz"), "w"); writeLines(rownames(m), gz); close(gz)
+  cat("genes, the first three:", head(rownames(m), 3), "\n")
+  if (!is.null(rd) && ncol(rd) > 0) {  # the genes' own table (a symbol beside an id, say), in the counts' order
+    cat("rowData's columns:", names(rd), "\n")
+    gz <- gzfile(file.path(out, "rowdata.csv.gz"), "w"); write.csv(cbind(gene = rownames(m), rd), gz, row.names = FALSE); close(gz)
+  }
   cells <- cbind(cell = rownames(meta), meta)
   gz <- gzfile(file.path(out, "cells.csv.gz"), "w"); write.csv(cells, gz, row.names = FALSE); close(gz)
   cat("exported", nrow(m), "genes by", ncol(m), "cells\n")

@@ -21,7 +21,9 @@ the cells' key, a column or a regular expression's first group on one), e.g. eac
      "tables": [{"as": "patient", "file": "pairs", "sheet": "Sheet1", "key": "Sample_ID", "value": "Patient.ID",
                  "on": {"column": "title", "regex": "(\\d+)$"}}]
 
-The cells of the two groups that no donor names are left out of the checks and listed (`without_donor`).
+The cells of the two groups that no donor names are left out of the checks and listed (`without_donor`). A paper
+that kept only the donors with at least n cells in each group (`"min_cells_each_group": n`) has the others left
+out and listed (`donors_left_out`), as the paper did.
 
 Loaders (`LOADERS`):
 * `csv_counts` — a counts table as CSV (genes by cells or cells by genes, found from the metadata's cell ids) and a
@@ -33,10 +35,13 @@ Loaders (`LOADERS`):
 * `mtx_libraries` — one large MatrixMarket file (genes by cells) read in a stream, its barcodes prefixed by their
   library's title, and the series matrices, whose per-library characteristics become the cells' metadata; only the
   X-inactivation and Y genes and the claims' genes are kept, with every cell's total;
-* `r_export` — the counts, genes and cells R wrote from the deposit's R object (`r_export.R`, run before this).
+* `r_export` — the counts, genes and cells R wrote from the deposit's R object (`r_export.R`, run before this);
+  with `loader_args` `{"symbol_column": c}` the genes are named by the object's rowData column c.
 
     python -I validation/level_b/data_run.py --spec validation/level_b/data_specs/R01225.json --out OUT
     python -I validation/level_b/data_run.py --spec ... --out OUT --files DIR   # the files already in DIR (no fetch)
+    python -I validation/level_b/data_run.py --spec ... --out OUT --files-to DIR --fetch-only   # an R object, fetched
+                                                                                  # before r_export.R exports it
 
 OUT gets report.json and report.md (the six checks of `plan_s5.md`), files.tsv (each file's URL, size and
 SHA256) and the log.
@@ -293,6 +298,11 @@ def load_r_export(files: dict, args: dict, log):
     d = Path(args["export_dir"])
     M = read_mtx((d / "counts.mtx.gz").read_bytes())
     genes = [ln for ln in gzip.decompress((d / "genes.tsv.gz").read_bytes()).decode().splitlines() if ln.strip()]
+    if args.get("symbol_column"):  # the genes' symbols from the object's rowData (`rowdata.csv.gz`), in the same order
+        rd = pd.read_csv(d / "rowdata.csv.gz", dtype=str)
+        if rd["gene"].tolist() != genes:
+            raise ValueError("rowdata.csv.gz's genes are not genes.tsv.gz's")
+        genes = rd[args["symbol_column"]].fillna("").tolist()
     obs = pd.read_csv(d / "cells.csv.gz")
     if M.shape == (len(genes), len(obs)):
         M = M.T
@@ -394,6 +404,19 @@ def assign(obs: pd.DataFrame, spec: dict) -> pd.DataFrame:
     return obs[keep & obs["donor"].notna().to_numpy()]
 
 
+def min_cells_filter(obs: pd.DataFrame, spec: dict):
+    """The spec's `min_cells_each_group`: the donors with at least that many cells in each of the two groups, and
+    the others (left out, with their cells per group)."""
+    n = spec.get("min_cells_each_group")
+    if not n:
+        return obs, {}
+    groups = [str(g) for g in spec["groups"]["values"]]
+    ct = obs.groupby(["donor", "group"]).size().unstack(fill_value=0).reindex(columns=groups, fill_value=0)
+    ok = set(ct.index[(ct >= n).all(axis=1)])
+    out = {str(d): {g: int(ct.loc[d, g]) for g in groups} for d in ct.index if d not in ok}
+    return obs[obs["donor"].isin(ok).to_numpy()], out
+
+
 def without_donor(obs: pd.DataFrame, spec: dict) -> dict:
     """The spec's cells that no donor names (left out of the checks), by sample (its title) where the metadata
     have one, and by group."""
@@ -430,7 +453,9 @@ def report_md(res: dict, spec: dict, files: list) -> str:
              f"1. Counts: non-negative integers {res['counts'].get('raw')}.",
              f"2. Donors: {dn['design']}, per group {dn['donors']}; ids naming several donors {dn['composite'] or 'none'}; "
              f"rule 4 {'passes' if dn['rule4'].get('passes') else 'fails'} (smallest p {dn['rule4'].get('min_p', '-')})"
-             + (f"; cells no donor names, left out: {res['without_donor']}" if res.get("without_donor") else "") + ".",
+             + (f"; cells no donor names, left out: {res['without_donor']}" if res.get("without_donor") else "")
+             + (f"; donors with fewer than {spec.get('min_cells_each_group')} cells in a group, left out as the paper did: "
+                f"{res['donors_left_out']}" if res.get("donors_left_out") else "") + ".",
              f"3. Each id one individual: both sexes among the donors {res['sex']['both_sexes']}; failing "
              f"{res['sex']['fails'] or 'none'}.",
              "4. The claims' genes: " + "; ".join(f"{k} {'present' if v['passes'] else 'missing ' + ', '.join(v['missing'])}"
@@ -448,6 +473,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--files", type=Path, help="the spec's files already in this directory, by their names")
     ap.add_argument("--files-to", type=Path, help="where to download the spec's files (default OUT/files)")
+    ap.add_argument("--fetch-only", action="store_true", help="download the files and stop (an R object before its export)")
     a = ap.parse_args(argv)
     spec = json.loads(a.spec.read_text())
     a.out.mkdir(parents=True, exist_ok=True)
@@ -472,13 +498,16 @@ def main(argv=None) -> int:
             ps.append(p)
         paths[key] = ps if isinstance(url, list) else ps[0]
     pd.DataFrame(got).to_csv(a.out / "files.tsv", sep="\t", index=False)
+    if a.fetch_only:
+        (a.out / "data_run.log").write_text("\n".join(lines) + "\n")
+        return 0
     claim_genes = sorted({g for c in spec["claims"] for g in c["genes"]})
     if spec["loader"] == "mtx_libraries":
         xg, yg = SEX_GENES[spec["organism"]]
         s = stream_mtx_libraries(paths, spec.get("loader_args") or {}, [xg, *yg, *claim_genes], log)
         add_tables(s["obs"], spec, paths, log)
         missing = without_donor(s["obs"], spec)
-        obs = assign(s["obs"], spec)
+        obs, left = min_cells_filter(assign(s["obs"], spec), spec)
         X = s["K"][obs.index.to_numpy()]
         res = checks(X, s["genes"], obs.reset_index(drop=True), spec, dict(raw=s["raw"]))
         res["genes"] = {c["id"]: D.genes_check(s["all_genes"], c["genes"]) for c in spec["claims"]}
@@ -486,10 +515,11 @@ def main(argv=None) -> int:
         X, genes, obs = LOADERS[spec["loader"]](paths, spec.get("loader_args") or {}, log)
         add_tables(obs, spec, paths, log)
         missing = without_donor(obs, spec)
-        obs = assign(obs, spec)
+        obs, left = min_cells_filter(assign(obs, spec), spec)
         X = X[obs.index.to_numpy()]
         res = checks(X, genes, obs.reset_index(drop=True), spec, D.counts_check(X))
     res["without_donor"] = missing
+    res["donors_left_out"] = left
     res["files"] = got
     (a.out / "report.json").write_text(json.dumps(res, indent=1, default=str) + "\n")
     md = report_md(res, spec, got)

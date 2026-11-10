@@ -239,3 +239,55 @@ def test_tenx_raw_barcodes_with_a_threshold_and_the_patients_from_the_paper_s_ta
     assert "cells no donor names, left out" in md and "Ileal Involved 112" in md
     log = (tmp_path / "out" / "data_run.log").read_text()
     assert "GSM100: 20 of 50 barcodes with at least 20 counts" in log and "table pairs: patient for 240 of 280 cells" in log
+
+
+def test_an_r_object_s_export_with_the_paper_s_filters_and_its_minimum_of_cells(tmp_path):
+    """r_export.R's files (counts genes by cells, genes, cells), the paper's cells (a tissue, treatments, responders)
+    and its rule of at least 30 cells before and after: a patient with fewer is left out and listed."""
+    rng = np.random.default_rng(4)
+    cells, blocks = [], []
+    for k in range(10):
+        for grp in ("Pre-treatment", "Post-treatment"):
+            n = 20 if (k == 9 and grp == "Post-treatment") else 40
+            blocks.append(_cells(rng, n, female=True))
+            cells += [dict(cell=f"C{len(cells) + i}", Patient=f"P{k:03d}", Group=grp,
+                           Tissue="liver" if k == 8 else "breast", Treatment="PTX" if k == 7 else "Nab-PTX",
+                           Response="R") for i in range(n)]
+    X = np.vstack(blocks)
+    exp = tmp_path / "export"
+    exp.mkdir()
+    (exp / "counts.mtx.gz").write_bytes(_mtx(X.T))
+    (exp / "genes.tsv.gz").write_bytes(gzip.compress(("\n".join(GENES) + "\n").encode(), mtime=0))
+    pd.DataFrame(cells).to_csv(exp / "cells.csv.gz", index=False)
+    (tmp_path / "object.rds.gz").write_bytes(b"FABRICATED")
+    spec = dict(rid="R00005", organism="homo_sapiens", loader="r_export",
+                files=dict(object="https://example.org/object.rds.gz"), loader_args=dict(export_dir=str(exp)),
+                cells=dict(Tissue=["breast"], Treatment=["Nab-PTX", "Nab-PTX+Anti-PD-L1"], Response=["R"]),
+                groups=dict(column="Group", values=["Post-treatment", "Pre-treatment"]), min_cells_each_group=30,
+                donor="Patient", source=None, sex_label=None, claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["donors"]["design"] == "paired" and res["donors"]["donors"] == {"Post-treatment": 7, "Pre-treatment": 7}
+    assert res["donors_left_out"] == {"P009": {"Post-treatment": 20, "Pre-treatment": 40}}
+    assert res["cells"] == 7 * 2 * 40 and res["donors"]["rule4"]["passes"]
+    assert "left out as the paper did" in (tmp_path / "out" / "report.md").read_text()
+    # --fetch-only: the files and their record, nothing read
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "f"), "--files", str(tmp_path),
+                   "--fetch-only"]) == 0
+    assert (tmp_path / "f" / "files.tsv").exists() and not (tmp_path / "f" / "report.json").exists()
+
+
+def test_an_r_export_named_by_its_symbol_column(tmp_path):
+    exp = tmp_path / "export"
+    exp.mkdir()
+    X = _cells(np.random.default_rng(5), 6, female=True)
+    ids = [f"ENSG{i:011d}" for i in range(len(GENES))]
+    (exp / "counts.mtx.gz").write_bytes(_mtx(X.T))
+    (exp / "genes.tsv.gz").write_bytes(gzip.compress(("\n".join(ids) + "\n").encode(), mtime=0))
+    pd.DataFrame(dict(gene=ids, Symbol=GENES)).to_csv(exp / "rowdata.csv.gz", index=False)
+    pd.DataFrame(dict(cell=[f"c{i}" for i in range(6)])).to_csv(exp / "cells.csv.gz", index=False)
+    _, genes, obs = R.load_r_export({}, dict(export_dir=str(exp), symbol_column="Symbol"), lambda s: None)
+    assert genes == GENES and len(obs) == 6
+    _, genes, _ = R.load_r_export({}, dict(export_dir=str(exp)), lambda s: None)
+    assert genes == ids
