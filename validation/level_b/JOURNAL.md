@@ -96,6 +96,9 @@ file of 434,340 nuclei from 97 libraries whose names carry the donors' numbers, 
 claim's metric was read. GSE189955's table of cells (`RNA_meta_data.csv`, 5,329 cells) was read too: 22 patients
 (`orig.ident`), the sites (`location`: PT 3,148 cells, FT 741, and seven others) and the authors' cell types;
 whether a patient gives cells to both of the claim's groups is S5's check (`donors_check`), made in its run.
+To write that dataset's line of S5, its sites were then tabulated against the authors' cell types and patients
+(metadata only): the primary tumours' epithelial cells are 1,940 (16 patients) and the fallopian tubes'
+secretory and epithelial cells 520 (6 other patients), the paper's two numbers; S5's run makes the checks.
 GSE134809's series matrix was read too (the samples' titles and characteristics: tissue, "status: Involved" or
 "Uninvolved", "10x chemistry: V1" or "V2", a patient id for the later samples only).
 GSE178265's series matrices (per platform) were read too: per library its title (with the donor's number),
