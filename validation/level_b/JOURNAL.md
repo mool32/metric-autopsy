@@ -219,7 +219,7 @@ commit that carries the fix; its results are S3's.
   deposit's `facs classification`) Negative 66% and Positive 34% in the disease, Negative 55%, Positive 42% and
   NeuN 3% in the controls.
 
-**R01962's description failed technically** (workflow run 42878734969, the label `level-b-rdescribe-1`;
+**R01962's description failed technically** (workflow run 42878734814, the label `level-b-rdescribe-1`;
 `results/level-b-rdescribe-1` at 834edbb holds its log): the object is a SingleCellExperiment, whose package was not
 installed, so R could not read it. Fixed: `r-bioc-singlecellexperiment` from Ubuntu's archive; the job now says
 when a description fails. Described again by the label `level-b-rdescribe-2` (`rdescribe2.txt`, the same object).
