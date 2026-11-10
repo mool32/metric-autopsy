@@ -36,3 +36,29 @@ authors' count matrices)"; `screening_fulltext.md`'s rule 3, which the passes of
 "raw reads or the authors' count matrices". Nothing is re-screened for it. S5 reads count matrices only (it
 has no alignment of reads); a kept claim whose data are raw reads alone is listed so for the owner, and C's
 check (`plan_s1.md`) records which of the two a repository holds.
+
+## J3 — 2026-11-10: the preprints' run, and the full texts read by both passes (a deviation)
+
+**The run** (S1, `plan_s1.md` section 2): workflow run 42852477112 on fc6ee3b, one attempt; `results/level-b-
+preprints` at f616d1a, every file as its SHA256SUMS. Europe PMC gave 761 preprints for the query (one page),
+all without a language. Merged with the corrected list here (`merge_preprints.py`;
+`amendment1/preprints/preprints_merge.log`): 299 already in the list, 7 the same paper as an earlier preprint,
+**455 new (R03507 to R03961)**; they are S2's, with the 210 sets' records (`plan_s2.md`).
+
+**A deviation, fixed before S2's passes** (`plan_s2.md`, section 5): every record either pass keeps or marks
+unclear at titles and abstracts is read at its full text by **both** passes. The protocol's section 5 has each
+pass read the full texts of the records it kept and sends a record the passes decide differently to the owner;
+under it, the first screening left 8 records read by one pass only and 4 read by none (the sheet's groups B and
+D). The owner wants one stop, the list (J1), and decided D's two records this way («R00599 и R01382 читают оба
+прохода»); a difference at titles and abstracts is settled by both passes reading the full text, and what stays
+undecided after it goes to the owner with the list. It reads more full texts, never fewer.
+
+## J4 — 2026-11-10: the positive control's files looked at before its loader was written
+
+After `plan_s6.md` was committed (e857481) and before any selection, GSE96583's listing on GEO (the series' and
+its two batch-2 samples' file names and sizes), the authors' table of cells for batch 2, its genes and the two
+barcode lists were read here (in the scratchpad, as untrusted files) to write the loader, nothing else of the
+data: the table has 29,065 cells (control 14,619, stimulated 14,446) with the columns `ind`, `stim`, `cluster`,
+`cell`, `multiplets`; a stimulated cell whose barcode is also a control cell's carries "1" appended (313
+cells), which maps every barcode of the two lists to the table. The counts were not fetched, and nothing in the
+plan changed after it. The run fetches every file again in Actions, with its SHA256.

@@ -1,0 +1,44 @@
+{
+ "records_sha256": "48709ef7af34992616a929f498b0326f0aca58721cdf9ed5735af9fae4b523ca",
+ "rids_file": "set_records.txt",
+ "rids_sha256": "074c2f21f61d58c87377b955cfeb44b52b84a98a8420e7e289e1463a2b1b62da",
+ "extra": "preprints_new.jsonl.gz",
+ "extra_sha256": "a2d44c6a761a445c4546a3a1d3998c17bd105d4a773f93db3f0712d5ad4c4c4d",
+ "n_list": 3506,
+ "n_screened": 665,
+ "batch_size": 167,
+ "batches": [
+  {
+   "name": "batch_01.jsonl",
+   "records": 167,
+   "first": "R00008",
+   "last": "R02780",
+   "sha256": "7f03118c807551331f2471c3ca8112532a33e2c4fc41d8cc33b3feddcf22e517",
+   "text_sha256": "ae01e2f2aac39d1611d4b9ff0acf752ce32b5f3faa34c0bd3eea56f02f159655"
+  },
+  {
+   "name": "batch_02.jsonl",
+   "records": 167,
+   "first": "R02799",
+   "last": "R03630",
+   "sha256": "e4335edc4bbaffae35cf2bcd60b42231c6a10cc3eef88119c96c563cf0e66102",
+   "text_sha256": "db90dd0925416ad6c9e715665fdb59d77955a79b9cab103946414cc86d5751d3"
+  },
+  {
+   "name": "batch_03.jsonl",
+   "records": 167,
+   "first": "R03631",
+   "last": "R03797",
+   "sha256": "595d8da3a54abd67e98214fab774a8e3930c54f1bf7bd4c2492ac6b908054816",
+   "text_sha256": "eb3c12374596ab6d619c17fb6baeeb005ca4fb632e85cd74c1605f8a2b6a2d77"
+  },
+  {
+   "name": "batch_04.jsonl",
+   "records": 164,
+   "first": "R03798",
+   "last": "R03961",
+   "sha256": "a59f69e6c07d96fd304065d1754520081f8e96e0441f6ea521770a908f622bde",
+   "text_sha256": "07b108c5a3513abf34c6e334d96df8bf38a0549ed7fb98714ea896741dbe5478"
+  }
+ ]
+}

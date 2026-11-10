@@ -333,3 +333,10 @@ def test_batches_of_some_records_and_the_new_ones(tmp_path):
     sums.write_text("0" * 64 + "  records.jsonl.gz\n")
     with pytest.raises(SystemExit):
         S.make_subset_batches(search, tmp_path / "rids.txt", tmp_path / "c", sums_file=sums)
+
+
+def test_the_set_records_are_the_screenings_x6_or_x7_in_either_pass():
+    rids = S.set_records(HERE / "screening" / "all.tsv")
+    assert len(rids) == 210 and rids == sorted(rids)
+    assert {"R00220", "R02780", "R02858"} <= set(rids)  # one pass kept each (the owner's group B)
+    assert (HERE / "amendment1" / "set_records.txt").read_text().split() == rids

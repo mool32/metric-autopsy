@@ -8,6 +8,7 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py carry --old-batches <dir> --pass1 <dir> --pass2 <dir> --batches <dir> --out <dir>
     python -I validation/level_b/screening.py combine --batches <dir> --carried <dir> --pass1 <dir> --pass2 <dir> --out <dir>
     python -I validation/level_b/screening.py claims --merge <dir> --ft-merge <dir> --ft1 <dir> --ft2 <dir> --out <dir>
+    python -I validation/level_b/screening.py set-records --all <screening/all.tsv> --out <txt>
     python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
@@ -378,6 +379,16 @@ def combine(batches: Path, carried: Path, pass1: Path, pass2: Path, out: Path) -
     return res
 
 
+def set_records(all_tsv: Path) -> list:
+    """Amendment 1, 12.1 (`plan_s2.md`): the records either pass excluded at titles and abstracts as a set's
+    claim or a global measure (X6 or X7), from `merge`'s `all.tsv`, in the order of their numbers."""
+    lines = all_tsv.read_text().splitlines()
+    head = lines[0].split("\t")
+    i1, i2 = head.index("code 1"), head.index("code 2")
+    rows = [line.split("\t") for line in lines[1:] if line.strip()]
+    return sorted(r[0] for r in rows if {r[i1], r[i2]} & {"X6", "X7"})
+
+
 def fulltext_list(search: Path, rids_file: Path, out: Path) -> int:
     """The ids `search.py fulltext` needs for the records named in `rids_file` (one rid a line)."""
     with gzip.open(search / "records.jsonl.gz", "rt") as f:
@@ -723,6 +734,9 @@ def main(argv=None) -> int:
     o = sub.add_parser("check-one")
     o.add_argument("--batch", type=Path, required=True, help="batch_NN.jsonl or batch_NN.txt")
     o.add_argument("--decisions", type=Path, required=True)
+    sr = sub.add_parser("set-records")
+    sr.add_argument("--all", dest="all_tsv", type=Path, required=True, help="merge's all.tsv")
+    sr.add_argument("--out", type=Path, required=True)
     fl = sub.add_parser("fulltext-list")
     fl.add_argument("--search", type=Path, required=True)
     fl.add_argument("--rids", type=Path, required=True)
@@ -785,6 +799,11 @@ def main(argv=None) -> int:
         man = make_batches(a.search, a.out, a.size)
         print(f"{man['n_screened']} of {man['n_list']} records in {len(man['batches'])} batches; records.jsonl.gz "
               f"{man['records_sha256']}")
+        return 0
+    if a.mode == "set-records":
+        rids = set_records(a.all_tsv)
+        a.out.write_text("\n".join(rids) + "\n")
+        print(f"{len(rids)} records X6 or X7 in either pass, listed in {a.out}")
         return 0
     if a.mode == "fulltext-list":
         print(f"{fulltext_list(a.search, a.rids, a.out)} records listed in {a.out}")
