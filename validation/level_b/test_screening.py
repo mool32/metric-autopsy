@@ -11,6 +11,8 @@ import math
 import sys
 from pathlib import Path
 
+import pytest
+
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
@@ -284,3 +286,50 @@ def test_the_owners_sheet_is_the_screening_files_own(capsys):
     groups = {g: [r for r in union if D.group_of(r, ta, ft) == g] for g, _, _ in D.GROUPS}
     assert {g: len(v) for g, v in groups.items()} == {"A": 9, "B": 8, "C": 2, "D": 4}
     assert sorted(r for v in groups.values() for r in v) == union and len(union) == 23
+
+
+# --------------------------------------------------------------------------- #
+# amendment 1 (plan_s1.md, plan_s2.md): the preprints merged with the list, and batches of some records
+# --------------------------------------------------------------------------- #
+def test_the_preprints_merge_by_id_doi_and_title_and_number_the_new_ones():
+    import merge_preprints as M
+    listing = [dict(rid="R00001", title="A coexpression study of single cells in disease", pmids=["111"], dois=["10.1/a"],
+                    epmc_ids=["MED:111", "PPR:PPR500"]),
+               dict(rid="R00002", title="Another record of the list with a long title", pmids=["222"], dois=["10.1/b"],
+                    epmc_ids=["MED:222"])]
+    pre = [dict(epmc_id="PPR:PPR500", title="whatever", doi="10.1101/x"),                         # in the list by id
+           dict(epmc_id="PPR:PPR900", title="Another record of the list, with a long title!", doi="10.1101/y"),  # by title
+           dict(epmc_id="PPR:PPR700", title="A new preprint about network rewiring in nuclei", doi="10.1101/z"),
+           dict(epmc_id="PPR:PPR800", title="A new preprint about network rewiring in nuclei", doi="10.1101/w"),  # its twin
+           dict(epmc_id="PPR:PPR600", title="Short", doi="10.1/B")]                                  # by DOI (case)
+    fresh, rows = M.merge_preprints(listing, pre, first_new=3507)
+    st = {r["epmc_id"]: (r["status"], r["rid"]) for r in rows}
+    assert st["PPR:PPR500"] == ("in list", "R00001") and st["PPR:PPR900"] == ("in list", "R00002")
+    assert st["PPR:PPR600"] == ("in list", "R00002")
+    assert st["PPR:PPR700"] == ("new", "R03507") and st["PPR:PPR800"] == ("duplicate", "R03507")
+    assert [r["rid"] for r in fresh] == ["R03507"] and fresh[0]["preprint"] and fresh[0]["found_by"] == ["preprints"]
+
+
+def test_batches_of_some_records_and_the_new_ones(tmp_path):
+    recs = [dict(rid=f"R{i:05d}", title=f"T{i}", abstract=f"A{i}", journal="J", year=2020, pub_types=[], pmid=str(i),
+                 doi=f"10.1/{i}", preprint=False) for i in range(1, 11)]
+    search = tmp_path / "list"
+    search.mkdir()
+    with gzip.open(search / "records.jsonl.gz", "wt") as f:
+        for r in recs:
+            f.write(json.dumps(r) + "\n")
+    sums = tmp_path / "sums"
+    sums.write_text(f"{hashlib.sha256((search / 'records.jsonl.gz').read_bytes()).hexdigest()}  records.jsonl.gz\n")
+    (tmp_path / "rids.txt").write_text("R00007\nR00002\nR00009\n")
+    extra = tmp_path / "new.jsonl.gz"
+    with gzip.open(extra, "wt") as f:
+        f.write(json.dumps(dict(rid="R03507", title="P", abstract="Q", journal="bioRxiv", year=2024, pub_types=["Preprint"],
+                                pmid="", doi="10.1101/p", preprint=True)) + "\n")
+    man = S.make_subset_batches(search, tmp_path / "rids.txt", tmp_path / "b", extra, size=2, prefix="sets", sums_file=sums)
+    assert man["n_screened"] == 4 and [b["name"] for b in man["batches"]] == ["sets_01.jsonl", "sets_02.jsonl"]
+    assert S.read_batch(tmp_path / "b" / "sets_01.jsonl") == ["R00002", "R00007"]
+    assert S.read_batch(tmp_path / "b" / "sets_02.jsonl") == ["R00009", "R03507"]
+    assert "PREPRINT: yes" in (tmp_path / "b" / "sets_02.txt").read_text()
+    sums.write_text("0" * 64 + "  records.jsonl.gz\n")
+    with pytest.raises(SystemExit):
+        S.make_subset_batches(search, tmp_path / "rids.txt", tmp_path / "c", sums_file=sums)

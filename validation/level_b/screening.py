@@ -55,6 +55,8 @@ import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
+
 BATCH = 200
 FIELDS = ("rid", "title", "abstract", "journal", "year", "pub_types", "pmid", "doi", "preprint")
 WIDTH = 110
@@ -142,6 +144,43 @@ def make_batches(search: Path, out: Path, size: int = BATCH) -> dict:
              for k in range(0, len(rids), size)]
     manifest = dict(records_sha256=sums["records.jsonl.gz"], sample_sha256=sums["sample.txt"], n_list=len(recs),
                     n_screened=len(rids), batch_size=size, batches=files)
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    return manifest
+
+
+def make_subset_batches(search: Path, rids_file: Path, out: Path, extra: Path | None = None, size: int = BATCH,
+                        prefix: str = "batch", sums_file: Path | None = None) -> dict:
+    """Amendment 1 (`plan_s2.md`): batches of some records of the corrected list (`rids_file`, one rid a line;
+    `search` holds its `records.jsonl.gz`, checked against its SHA256SUMS and `runs/remerge.SHA256SUMS`) and of
+    new records (`extra`, a jsonl.gz such as `merge_preprints.py`'s `preprints_new.jsonl.gz`), in the order of
+    their numbers, written as `make_batches` writes its batches."""
+    want = {}
+    for line in (sums_file or HERE / "runs" / "remerge.SHA256SUMS").read_text().splitlines():
+        digest, name = line.split(maxsplit=1)
+        want[name] = digest
+    got = sha256(search / "records.jsonl.gz")
+    if got != want["records.jsonl.gz"]:
+        raise SystemExit(f"records.jsonl.gz: SHA256 {got} is not the corrected list's {want['records.jsonl.gz']}")
+    with gzip.open(search / "records.jsonl.gz", "rt") as f:
+        recs = {r["rid"]: r for r in map(json.loads, f)}
+    rids = sorted({line.strip() for line in rids_file.read_text().splitlines() if line.strip()})
+    missing = [r for r in rids if r not in recs]
+    if missing:
+        raise SystemExit(f"{len(missing)} rids are not in the list: {missing[:5]}")
+    chosen = [{key: recs[rid].get(key) for key in FIELDS} for rid in rids]
+    if extra is not None:
+        with gzip.open(extra, "rt") as f:
+            new = sorted(map(json.loads, f), key=lambda r: r["rid"])
+        clash = [r["rid"] for r in new if r["rid"] in recs]
+        if clash:
+            raise SystemExit(f"new records reuse the list's numbers: {clash[:5]}")
+        chosen += [{key: r.get(key) for key in FIELDS} for r in new]
+    out.mkdir(parents=True, exist_ok=True)
+    files = [_write_batch(out, f"{prefix}_{k // size + 1:02d}.jsonl", chosen[k:k + size])
+             for k in range(0, len(chosen), size)]
+    manifest = dict(records_sha256=got, rids_file=rids_file.name, rids_sha256=sha256(rids_file),
+                    extra=extra.name if extra else None, extra_sha256=sha256(extra) if extra else None,
+                    n_list=len(recs), n_screened=len(chosen), batch_size=size, batches=files)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
     return manifest
 
@@ -671,6 +710,13 @@ def main(argv=None) -> int:
     b.add_argument("--search", type=Path, required=True)
     b.add_argument("--out", type=Path, required=True)
     b.add_argument("--size", type=int, default=BATCH)
+    bo = sub.add_parser("batches-of")
+    bo.add_argument("--search", type=Path, required=True, help="the corrected list's directory")
+    bo.add_argument("--rids", type=Path, required=True)
+    bo.add_argument("--extra", type=Path)
+    bo.add_argument("--out", type=Path, required=True)
+    bo.add_argument("--size", type=int, default=BATCH)
+    bo.add_argument("--prefix", default="batch")
     c = sub.add_parser("check")
     c.add_argument("--batches", type=Path, required=True)
     c.add_argument("--decisions", type=Path, required=True)
@@ -730,6 +776,10 @@ def main(argv=None) -> int:
         return 0
     if a.mode == "combine":
         print(json.dumps(combine(a.batches, a.carried, a.pass1, a.pass2, a.out), indent=1))
+        return 0
+    if a.mode == "batches-of":
+        man = make_subset_batches(a.search, a.rids, a.out, a.extra, a.size, a.prefix)
+        print(f"{man['n_screened']} records in {len(man['batches'])} batches; records.jsonl.gz {man['records_sha256']}")
         return 0
     if a.mode == "batches":
         man = make_batches(a.search, a.out, a.size)
