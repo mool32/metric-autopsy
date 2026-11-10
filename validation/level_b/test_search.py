@@ -322,3 +322,34 @@ def test_an_outage_is_server_errors_without_full_texts():
     assert S.outage(35, 3, 91) and S.outage(30, 0, 91)
     assert not S.outage(20, 0, 91)  # a quarter or fewer refused: the records' own problem
     assert not S.outage(1, 0, 4)
+
+
+def test_one_attempt_requests_are_paced(monkeypatch):
+    """J18: the publishers' one-attempt requests wait ONCE_PAUSE seconds after the one before."""
+    import urllib.request
+
+    class _R:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def geturl(self):
+            return "https://example.org/final"
+
+        def read(self):
+            return b"<html>FABRICATED</html>"
+
+    clock, slept = [1000.0], []
+    monkeypatch.setattr(urllib.request, "urlopen", lambda req, timeout: _R())
+    monkeypatch.setattr(S.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(S.time, "sleep", lambda s: (slept.append(s), clock.__setitem__(0, clock[0] + s)))
+    net = S.Net(lambda s: None)
+    assert net.get_once("https://doi.org/10.1/a")[0] == 200
+    clock[0] += 3.0
+    net.get_once("https://doi.org/10.1/b")
+    assert slept == [pytest.approx(S.ONCE_PAUSE - 3.0)]
+

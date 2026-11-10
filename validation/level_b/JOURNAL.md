@@ -314,3 +314,33 @@ missing in every column a spec names (the donor, the source, the sex label). **B
 expression's misses, as intended). From now on level B's tests also run here in v1's environment (pandas 2.3.3,
 numpy 2.5.3, as the jobs install it) before a push; batch 2's specs were tried again in it (R00189's on its real
 metadata with fabricated matrices: 10 pairs, samples 189 and 190 listed; R01962's chain on a fabricated object).
+
+## J18 — 2026-11-10: S3's fetch run again (J11) and judged; the second group's batches; bioRxiv's refusals asked again, paced
+
+**The run** (workflow run 42897268539 on 26c55b5, the label `level-b-fulltext2` removed and added again;
+`results/level-b-fulltext2` at 15c3c61, all 114 files as their SHA256SUMS): Europe PMC gave 45 of the 91 full texts
+(the first run's 45) and answered HTTP 500 on every attempt for the first run's 35 records; J11's rule did not stop
+it. Then one attempt at the publisher for the 45 records without a full text that have a DOI (R01281 has neither a
+PMCID nor a DOI).
+
+**Judged by `plan_s1.md`'s rule** (the texts by `screening.py publisher-text`):
+- **A full text, 10:** the PDFs of R02036, R03510, R03573, R03635, R03742, R03866 (bioRxiv), R03132 (PLOS Biology),
+  R03627, R03760 and R03916 (Research Square), each with its Results and Methods. Where the page holds the text too
+  (R03132, R03627, R03916), the PDF is read, as for the others: the paper as published, its pages in order.
+- **No full text, 15:** HTTP 403 with a 5.7 kB page, the bot challenge (R00242 and R00304, OUP; R00250, R00562 and
+  R02185, Wiley; R00740, science.org); Elsevier's 2.7 kB redirect page (R00289, R00846, R01426, R01787, R02150,
+  R02159, R03041); Nature's 3.0 kB "Client Challenge" (R00272, R01963). With R01281, these 16 go to the owner with
+  the list, marked so, excluded by default (J1's rule).
+- **Refused for the requests' rate, 20:** bioRxiv answered HTTP 429 (a 12 kB page) to 19 records' pages and to
+  R03583's PDF (its page answered 200): R03468, R03474, R03475, R03515, R03520, R03557, R03569, R03583, R03593,
+  R03633, R03642, R03644, R03733, R03739, R03794, R03857, R03874, R03915, R03952, R03953. **A deviation:** the
+  one-attempt requests went out unpaced, and a 429 refuses their rate, not what they ask (bioRxiv's preprints are
+  open). They are asked once more, by the label `level-b-publisher2` (`amendment1/publisher_again.tsv`), ten seconds
+  between one-attempt requests (`search.py`'s `ONCE_PAUSE`, tested); R03583's page is asked again with its PDF. A
+  record still without a full text then goes to the owner with the list, as the 16.
+
+**The second group** (`amendment1/ft_group2.txt`, as J13's first): the 54 records with a full text now — Europe
+PMC's 44 other than R00220 (read in the first group) and the publishers' 10 — in batches 03 to 09 (`ft/batches/`, 8
+a batch, the last 6; the texts' SHA256 in `texts_group2.sha256`), the same for both passes. Pass 1 reads them first,
+pass 2's files of the first group out of the working tree meanwhile. The records asked again follow as a third
+group, its batches numbered from 10.

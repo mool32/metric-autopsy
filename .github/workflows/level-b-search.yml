@@ -33,6 +33,9 @@
 #   publisher for those without one that have a DOI (the owner's rule for A's records), to results/level-b-fulltext2.
 # - by the label "level-b-verdicts" (S4, validation/level_b/plan_s4.md): the search for each kept claim's
 #   independent verdict (validation/level_b/verdicts.py on amendment1/kept_claims.json), to results/level-b-verdicts.
+# - by the label "level-b-publisher2" (S3; validation/level_b/JOURNAL.md, J18): the one attempt at the publisher
+#   again, paced, for the records bioRxiv refused for the requests' rate (HTTP 429) in the fetch of
+#   "level-b-fulltext2" (validation/level_b/amendment1/publisher_again.tsv), to results/level-b-publisher2.
 # - by the label "level-b-setgenes" (validation/level_b/plan_s5.md, section 5): Europe PMC's supplementary files of
 #   every kept paper with a set's claim (validation/level_b/set_genes.py fetch on amendment1/kept_claims.json), and
 #   each archive's members and tables' first rows (show), to results/level-b-setgenes.
@@ -508,6 +511,73 @@ jobs:
           for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-fulltext2 && break; sleep $((i * 10)); done
           test "$(git ls-remote "$remote" refs/heads/results/level-b-fulltext2 | cut -f1)" = "$(git rev-parse HEAD)"
           cat *.log publisher/*.log
+
+  publisher2:
+    if: github.event.action == 'labeled' && github.event.label.name == 'level-b-publisher2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: One run, one attempt; the branch results/level-b-publisher2 must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" refs/heads/results/level-b-publisher2 > /dev/null; then
+            echo "results/level-b-publisher2 exists: this step has run"; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The one attempt at the publisher again, paced (the records refused for the requests' rate)
+        timeout-minutes: 20
+        run: python -I validation/level_b/search.py fetch2 --out out --fetch2-list validation/level_b/amendment1/publisher_again.tsv
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-publisher2
+          path: out
+          if-no-files-found: error
+
+  publish-publisher2:
+    needs: publisher2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-publisher2
+          path: pub
+      - name: To results/level-b-publisher2, with SHA256SUMS (a second start finds the branch and stops)
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" refs/heads/results/level-b-publisher2 > /dev/null; then
+            echo "results/level-b-publisher2 exists: nothing is pushed"; exit 1
+          fi
+          cp repo/validation/level_b/amendment1/publisher_again.tsv pub/publisher_again.tsv
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/search.py)
+          cd pub
+          {
+            echo "# Level B, amendment 1, S3: the one attempt at the publisher again, paced"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/search.py (blob $blob) fetch2 on publisher_again.tsv: the records bioRxiv refused for the requests' rate (HTTP 429) in results/level-b-fulltext2, asked once more, ten seconds between requests (validation/level_b/JOURNAL.md, J18)."
+            echo "- fetch2.log, fetch2.json, fetch2_index.tsv, requests.tsv; raw/: every response as it came (gzip)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b results/level-b-publisher2
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B, amendment 1, S3: the publisher again, paced (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-publisher2 && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" refs/heads/results/level-b-publisher2 | cut -f1)" = "$(git rev-parse HEAD)"
+          cat fetch2.log
 
   setgenes:
     if: github.event.action == 'labeled' && github.event.label.name == 'level-b-setgenes'

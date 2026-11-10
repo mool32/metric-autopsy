@@ -71,6 +71,9 @@ EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 TOOL = "metric-autopsy-level-b"
 HEADERS = {"User-Agent": "metric-autopsy level B search (https://github.com/mool32/metric-autopsy)"}
 PAUSE = {"eutils.ncbi.nlm.nih.gov": 0.4, "www.ebi.ac.uk": 0.2}  # NCBI: 3 requests a second without a key
+# seconds between two one-attempt requests (the publishers' pages and PDFs): bioRxiv answered unpaced ones HTTP 429
+# (`JOURNAL.md`, J18), a refusal of their rate, not of what they asked
+ONCE_PAUSE = 10.0
 
 FIRST, LAST = date(2017, 1, 1), date(2026, 9, 30)
 WINDOW_LIMIT = 9999  # the most ids PubMed's esearch returns for one query
@@ -170,6 +173,10 @@ class Net:
     def get_once(self, url: str) -> tuple:
         """One GET, redirects followed, no retry (amendment 1's one attempt at a publisher): (status, the final
         URL, the body), an HTTP error answered with its status and body, a network failure with status 0."""
+        wait = ONCE_PAUSE - (time.monotonic() - self.last.get("one attempt", -ONCE_PAUSE))
+        if wait > 0:
+            time.sleep(wait)
+        self.last["one attempt"] = time.monotonic()
         req = urllib.request.Request(url, headers=dict(HEADERS, Accept="text/html,application/pdf;q=0.9,*/*;q=0.8"))
         try:
             with urllib.request.urlopen(req, timeout=180) as r:
