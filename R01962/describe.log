@@ -1,0 +1,8 @@
+Loading required package: SingleCellExperiment
+Error in .requirePackage(package) : 
+  unable to find required package ‘SingleCellExperiment’
+Calls: meta_of ... .extendsForS3 -> extends -> getClassDef -> .requirePackage
+In addition: Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘SingleCellExperiment’
+Execution halted
