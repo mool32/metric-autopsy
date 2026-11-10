@@ -1,0 +1,3 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_Count_matrix.csv.gz	GSE189955_RNA_Count_matrix.csv.gz	34493403	ff71d5589547cde643a250a8e03ddaea3783e4427d05f1489aa62aa64f5ec1e8	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_meta_data.csv.gz	GSE189955_RNA_meta_data.csv.gz	57585	dc74681915241668c20535ca6d20a3d22b74eede2c9e0fa31e9304e42fc7de3a	1

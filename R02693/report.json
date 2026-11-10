@@ -1,0 +1,343 @@
+{
+ "rid": "R02693",
+ "counts": {
+  "raw": true
+ },
+ "cells": 393873,
+ "cells_per_group": {
+  "Disease": 202810,
+  "Ctrl": 191063
+ },
+ "donors": {
+  "design": "nested",
+  "donors": {
+   "Disease": 10,
+   "Ctrl": 9
+  },
+  "composite": [],
+  "cells_per_donor": {
+   "('Ctrl', '3298')": 11579,
+   "('Ctrl', '3322')": 49759,
+   "('Ctrl', '3345')": 29230,
+   "('Ctrl', '3346')": 23747,
+   "('Ctrl', '3482')": 24856,
+   "('Ctrl', '4956')": 25277,
+   "('Ctrl', '5610')": 6970,
+   "('Ctrl', '5730')": 6315,
+   "('Ctrl', '6173')": 13330,
+   "('Disease', '1963')": 15030,
+   "('Disease', '2142')": 11459,
+   "('Disease', '2544')": 19432,
+   "('Disease', '2561')": 10769,
+   "('Disease', '2569')": 11726,
+   "('Disease', '3873')": 28521,
+   "('Disease', '3887')": 20374,
+   "('Disease', '4560')": 38335,
+   "('Disease', '4568')": 21625,
+   "('Disease', '4775')": 25539
+  },
+  "rule4": {
+   "design": "nested",
+   "relabelings": 92378,
+   "min_p": 2.165017644893806e-05,
+   "passes": true
+  }
+ },
+ "sex": {
+  "both_sexes": true,
+  "donors": [
+   {
+    "donor": "1963",
+    "cells": 15030,
+    "xist": 0.0031270791749833664,
+    "y": 0.9400532268795742,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "2142",
+    "cells": 11459,
+    "xist": 0.0019198882974081509,
+    "y": 0.8012915612182564,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "2544",
+    "cells": 19432,
+    "xist": 0.906751749691231,
+    "y": 0.014048991354466859,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "2561",
+    "cells": 10769,
+    "xist": 0.9266412851703965,
+    "y": 0.005107252298263534,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "2569",
+    "cells": 11726,
+    "xist": 0.0022172949002217295,
+    "y": 0.8610779464438001,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3298",
+    "cells": 11579,
+    "xist": 0.0027636238017099924,
+    "y": 0.754296571379221,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3322",
+    "cells": 49759,
+    "xist": 0.917522458248759,
+    "y": 0.017162724331276753,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3345",
+    "cells": 29230,
+    "xist": 0.9469038658912077,
+    "y": 0.01477933629832364,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3346",
+    "cells": 23747,
+    "xist": 0.9634480144860403,
+    "y": 0.019834084305385944,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3482",
+    "cells": 24856,
+    "xist": 0.97690698422916,
+    "y": 0.022730930157708402,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3873",
+    "cells": 28521,
+    "xist": 0.9743347007468182,
+    "y": 0.010167946425440904,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "3887",
+    "cells": 20374,
+    "xist": 0.0009816432708353784,
+    "y": 0.9503779326592716,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "4560",
+    "cells": 38335,
+    "xist": 0.9217686187557063,
+    "y": 0.012390765618886135,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "4568",
+    "cells": 21625,
+    "xist": 0.005410404624277457,
+    "y": 0.8433294797687861,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "4775",
+    "cells": 25539,
+    "xist": 0.002584282861505932,
+    "y": 0.9167547672187635,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "4956",
+    "cells": 25277,
+    "xist": 0.9220635360208885,
+    "y": 0.013767456581081616,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "5610",
+    "cells": 6970,
+    "xist": 0.9236728837876614,
+    "y": 0.03299856527977044,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "5730",
+    "cells": 6315,
+    "xist": 0.0022169437846397467,
+    "y": 0.9610451306413301,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "6173",
+    "cells": 13330,
+    "xist": 0.0015753938484621155,
+    "y": 0.9001500375093774,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   }
+  ],
+  "fails": []
+ },
+ "genes": {
+  "1": {
+   "present": [
+    "TMBIM6",
+    "HSPA5"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "2": {
+   "present": [
+    "TMBIM6",
+    "ERN1"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "3": {
+   "present": [
+    "TMBIM6",
+    "XBP1"
+   ],
+   "missing": [],
+   "passes": true
+  }
+ },
+ "source": {
+  "verdict": "partly",
+  "sources": [
+   "Negative",
+   "NeuN",
+   "Positive"
+  ],
+  "shared": [
+   "Negative",
+   "Positive"
+  ],
+  "shares": {
+   "Disease": {
+    "Negative": 0.6627779695281297,
+    "NeuN": 0.0,
+    "Positive": 0.3372220304718702
+   },
+   "Ctrl": {
+    "Negative": 0.5448726336339322,
+    "NeuN": 0.03305192528118998,
+    "Positive": 0.42207544108487777
+   }
+  }
+ },
+ "files": [
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_matrix.mtx.gz",
+   "file": "GSE178265_Homo_matrix.mtx.gz",
+   "bytes": 5089750754,
+   "sha256": "d39c5da8b7746e7c9e83db0f29a66e5d60a4e8131274f200e1ef4e9d9302aa9f",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_features.tsv.gz",
+   "file": "GSE178265_Homo_features.tsv.gz",
+   "bytes": 295300,
+   "sha256": "fa2b4e9cc742ef81747ccd9c348b5dc55095525f790e329168ff4f1daff8cbf9",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_bcd.tsv.gz",
+   "file": "GSE178265_Homo_bcd.tsv.gz",
+   "bytes": 2732185,
+   "sha256": "5e8ccf574fb1afcedd9d258b7432b1c2f4e88c8747406f901d70f0121623751c",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL20084_series_matrix.txt.gz",
+   "file": "GSE178265-GPL20084_series_matrix.txt.gz",
+   "bytes": 2888,
+   "sha256": "62e26b61c082ab2fd9d7856971d659851b02439b666e579f89e42bc29cd20f31",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL21120_series_matrix.txt.gz",
+   "file": "GSE178265-GPL21120_series_matrix.txt.gz",
+   "bytes": 3110,
+   "sha256": "346ae8c998c7a1929fc535d4666c995e2e299dd787317bb6cc19a61e86e2e217",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL24676_series_matrix.txt.gz",
+   "file": "GSE178265-GPL24676_series_matrix.txt.gz",
+   "bytes": 6717,
+   "sha256": "9f0f0d75e50b796709e5c10e961ee4167b75b2122c0fb0f56d776bc0f763c74a",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL30282_series_matrix.txt.gz",
+   "file": "GSE178265-GPL30282_series_matrix.txt.gz",
+   "bytes": 2893,
+   "sha256": "b9e9f9cece2c1e35b19f030affcf25772c607a1a9e68b9e43eea99eab3f1d087",
+   "attempts": 1
+  }
+ ]
+}

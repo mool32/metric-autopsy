@@ -1,0 +1,8 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_matrix.mtx.gz	GSE178265_Homo_matrix.mtx.gz	5089750754	d39c5da8b7746e7c9e83db0f29a66e5d60a4e8131274f200e1ef4e9d9302aa9f	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_features.tsv.gz	GSE178265_Homo_features.tsv.gz	295300	fa2b4e9cc742ef81747ccd9c348b5dc55095525f790e329168ff4f1daff8cbf9	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_bcd.tsv.gz	GSE178265_Homo_bcd.tsv.gz	2732185	5e8ccf574fb1afcedd9d258b7432b1c2f4e88c8747406f901d70f0121623751c	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL20084_series_matrix.txt.gz	GSE178265-GPL20084_series_matrix.txt.gz	2888	62e26b61c082ab2fd9d7856971d659851b02439b666e579f89e42bc29cd20f31	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL21120_series_matrix.txt.gz	GSE178265-GPL21120_series_matrix.txt.gz	3110	346ae8c998c7a1929fc535d4666c995e2e299dd787317bb6cc19a61e86e2e217	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL24676_series_matrix.txt.gz	GSE178265-GPL24676_series_matrix.txt.gz	6717	9f0f0d75e50b796709e5c10e961ee4167b75b2122c0fb0f56d776bc0f763c74a	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL30282_series_matrix.txt.gz	GSE178265-GPL30282_series_matrix.txt.gz	2893	b9e9f9cece2c1e35b19f030affcf25772c607a1a9e68b9e43eea99eab3f1d087	1

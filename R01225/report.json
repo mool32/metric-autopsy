@@ -1,0 +1,360 @@
+{
+ "rid": "R01225",
+ "counts": {
+  "nonnegative": true,
+  "integers": true,
+  "raw": true,
+  "max": 8589.0
+ },
+ "cells": 2460,
+ "cells_per_group": {
+  "tumour": 1940,
+  "normal": 520
+ },
+ "donors": {
+  "design": "nested",
+  "donors": {
+   "tumour": 16,
+   "normal": 5
+  },
+  "composite": [],
+  "cells_per_donor": {
+   "('normal', 'OC20')": 10,
+   "('normal', 'OC21')": 78,
+   "('normal', 'OC25')": 114,
+   "('normal', 'OC26')": 170,
+   "('normal', 'OC28')": 148,
+   "('tumour', 'OC01')": 125,
+   "('tumour', 'OC02')": 24,
+   "('tumour', 'OC03')": 73,
+   "('tumour', 'OC04')": 81,
+   "('tumour', 'OC05')": 139,
+   "('tumour', 'OC06')": 263,
+   "('tumour', 'OC07')": 62,
+   "('tumour', 'OC08')": 150,
+   "('tumour', 'OC09')": 225,
+   "('tumour', 'OC10')": 233,
+   "('tumour', 'OC11')": 77,
+   "('tumour', 'OC13')": 18,
+   "('tumour', 'OC14')": 238,
+   "('tumour', 'OC16')": 185,
+   "('tumour', 'OC17')": 14,
+   "('tumour', 'OC19')": 33
+  },
+  "rule4": {
+   "design": "nested",
+   "relabelings": 20349,
+   "min_p": 9.828492800629023e-05,
+   "passes": true
+  }
+ },
+ "sex": {
+  "both_sexes": false,
+  "donors": [
+   {
+    "donor": "OC01",
+    "cells": 125,
+    "xist": 0.6,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC02",
+    "cells": 24,
+    "xist": 0.9583333333333334,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC03",
+    "cells": 73,
+    "xist": 0.0410958904109589,
+    "y": 0.0,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC04",
+    "cells": 81,
+    "xist": 0.0,
+    "y": 0.0,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC05",
+    "cells": 139,
+    "xist": 0.05755395683453238,
+    "y": 0.014388489208633094,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC06",
+    "cells": 263,
+    "xist": 0.7034220532319392,
+    "y": 0.0038022813688212928,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC07",
+    "cells": 62,
+    "xist": 0.43548387096774194,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC08",
+    "cells": 150,
+    "xist": 0.46,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC09",
+    "cells": 225,
+    "xist": 0.27555555555555555,
+    "y": 0.013333333333333334,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC10",
+    "cells": 233,
+    "xist": 0.8197424892703863,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC11",
+    "cells": 77,
+    "xist": 0.36363636363636365,
+    "y": 0.45454545454545453,
+    "call": "unclear",
+    "label": "-",
+    "split": true,
+    "against_label": false
+   },
+   {
+    "donor": "OC13",
+    "cells": 18,
+    "xist": 0.2222222222222222,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC14",
+    "cells": 238,
+    "xist": 0.36134453781512604,
+    "y": 0.004201680672268907,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC16",
+    "cells": 185,
+    "xist": 0.005405405405405406,
+    "y": 0.0,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC17",
+    "cells": 14,
+    "xist": 0.21428571428571427,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC19",
+    "cells": 33,
+    "xist": 0.5757575757575758,
+    "y": 0.030303030303030304,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC20",
+    "cells": 10,
+    "xist": 0.5,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC21",
+    "cells": 78,
+    "xist": 0.2564102564102564,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC25",
+    "cells": 114,
+    "xist": 0.21929824561403508,
+    "y": 0.0,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC26",
+    "cells": 170,
+    "xist": 0.45294117647058824,
+    "y": 0.01764705882352941,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "OC28",
+    "cells": 148,
+    "xist": 0.28378378378378377,
+    "y": 0.006756756756756757,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   }
+  ],
+  "fails": []
+ },
+ "genes": {
+  "1": {
+   "present": [
+    "SERPINE2",
+    "TFF3"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "2": {
+   "present": [
+    "IFI44L",
+    "IFITM1"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "3": {
+   "present": [
+    "IFITM1",
+    "MX1"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "4": {
+   "present": [
+    "CSNK2B",
+    "HLA-C"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "5": {
+   "present": [
+    "COL1A2",
+    "SERPINE2"
+   ],
+   "missing": [],
+   "passes": true
+  }
+ },
+ "source": {
+  "verdict": "partly",
+  "sources": [
+   "Smart_flow",
+   "Smart_mouth",
+   "SplitCool",
+   "SplitIVMsnmC",
+   "Split_FACS",
+   "Split_mouth",
+   "unmatched"
+  ],
+  "shared": [
+   "Split_mouth"
+  ],
+  "shares": {
+   "tumour": {
+    "Smart_flow": 0.017010309278350514,
+    "Smart_mouth": 0.1670103092783505,
+    "SplitCool": 0.01752577319587629,
+    "SplitIVMsnmC": 0.006185567010309278,
+    "Split_FACS": 0.0,
+    "Split_mouth": 0.770618556701031,
+    "unmatched": 0.021649484536082474
+   },
+   "normal": {
+    "Smart_flow": 0.0,
+    "Smart_mouth": 0.0,
+    "SplitCool": 0.0,
+    "SplitIVMsnmC": 0.0,
+    "Split_FACS": 0.8307692307692308,
+    "Split_mouth": 0.16923076923076924,
+    "unmatched": 0.0
+   }
+  }
+ },
+ "files": [
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_Count_matrix.csv.gz",
+   "file": "GSE189955_RNA_Count_matrix.csv.gz",
+   "bytes": 34493403,
+   "sha256": "ff71d5589547cde643a250a8e03ddaea3783e4427d05f1489aa62aa64f5ec1e8",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_meta_data.csv.gz",
+   "file": "GSE189955_RNA_meta_data.csv.gz",
+   "bytes": 57585,
+   "sha256": "dc74681915241668c20535ca6d20a3d22b74eede2c9e0fa31e9304e42fc7de3a",
+   "attempts": 1
+  }
+ ]
+}
