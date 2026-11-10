@@ -1,0 +1,47 @@
+# Level B, S5: R00189 (GSE134809), loader tenx_samples
+tenx_samples: GSM3972009: 3141 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972010: 7089 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972011: 1525 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972012: 3172 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972013: 2913 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972014: 2419 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972015: 4466 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972016: 4158 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972017: 5054 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972018: 5470 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972019: 3426 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972020: 9200 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972021: 4539 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972022: 1166 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972023: 5129 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972024: 5227 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972025: 7649 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972026: 9169 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972027: 4809 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972028: 3765 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972029: 3422 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM3972030: 4342 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761136: 907 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761137: 2104 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761138: 1214 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761139: 1325 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761140: 3056 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761141: 4427 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761142: 5895 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761143: 13144 of 737280 barcodes with at least 800 counts
+tenx_samples: GSM4761144: 5116 of 737280 barcodes with at least 800 counts
+tenx_samples: 31 samples, 138438 cells, 33694 genes
+table pairs: patient for 90894 of 138438 cells
+# Level B, S5: R00189's data and their checks (data_run.py; plan_s5.md)
+
+Files: GSE134809_RAW.tar 607,467,520 bytes sha256 875d8232fcd6d489037b4d3bddf81c588fdfcedde3190bf6eb4522d0a040d84a; GSE134809_series_matrix.txt.gz 5,137 bytes sha256 b980b1d829ca680afddc924c72a3917d21ddbd935619bbdc8669ba9ac7eff198; 1-s2.0-S0092867419308967-mmc2.xlsx 7,540,057 bytes sha256 030e5057afa1ebdfb821a197607ad3e462d598e626ec9483fa9f4f7d0c32dec5
+
+1. Counts: non-negative integers True.
+2. Donors: paired, per group {'Involved': 10, 'Uninvolved': 10}; ids naming several donors none; rule 4 passes (smallest p 0.001953125); cells no donor names, left out: {'Ileal Involved 190 / Involved': 5227, 'Ileal Uninvolved 189 / Uninvolved': 5129}.
+3. Each id one individual: both sexes among the donors True; failing none.
+4. The claims' genes: 1 present; 2 present; 3 present; 4 present; 5 present.
+5. The source: balanced (sources ['V1', 'V2']).
+6. The paper's design (from the spec): the paper's: a Pearson correlation of the two genes over the absorptive enterocytes' cells pooled per condition (Fig 6G, 6I), inflamed against uninflamed ileum of 8 Crohn disease patients with both samples.
+
+Cells: 90894 ({'Uninvolved': 46461, 'Involved': 44433}).
+

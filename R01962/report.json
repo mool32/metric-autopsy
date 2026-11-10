@@ -1,0 +1,201 @@
+{
+ "rid": "R01962",
+ "counts": {
+  "nonnegative": true,
+  "integers": true,
+  "raw": true,
+  "max": 19164.0
+ },
+ "cells": 17461,
+ "cells_per_group": {
+  "Pre-treatment": 10647,
+  "Post-treatment": 6814
+ },
+ "donors": {
+  "design": "paired",
+  "donors": {
+   "Post-treatment": 10,
+   "Pre-treatment": 10
+  },
+  "composite": [],
+  "cells_per_donor": {
+   "('Post-treatment', 'P037')": 502,
+   "('Post-treatment', 'P038')": 554,
+   "('Post-treatment', 'P041')": 2422,
+   "('Post-treatment', 'P042')": 478,
+   "('Post-treatment', 'P049')": 477,
+   "('Post-treatment', 'P051')": 568,
+   "('Post-treatment', 'P052')": 166,
+   "('Post-treatment', 'P056')": 1127,
+   "('Post-treatment', 'P057')": 385,
+   "('Post-treatment', 'P058')": 135,
+   "('Pre-treatment', 'P037')": 62,
+   "('Pre-treatment', 'P038')": 1190,
+   "('Pre-treatment', 'P041')": 1784,
+   "('Pre-treatment', 'P042')": 1008,
+   "('Pre-treatment', 'P049')": 293,
+   "('Pre-treatment', 'P051')": 1735,
+   "('Pre-treatment', 'P052')": 779,
+   "('Pre-treatment', 'P056')": 3216,
+   "('Pre-treatment', 'P057')": 435,
+   "('Pre-treatment', 'P058')": 145
+  },
+  "rule4": {
+   "design": "paired",
+   "relabelings": 1024,
+   "min_p": 0.001953125,
+   "passes": true
+  }
+ },
+ "sex": {
+  "both_sexes": false,
+  "donors": [
+   {
+    "donor": "P037",
+    "cells": 564,
+    "xist": 0.4645390070921986,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P038",
+    "cells": 1744,
+    "xist": 0.5596330275229358,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P041",
+    "cells": 4206,
+    "xist": 0.5049928673323824,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P042",
+    "cells": 1486,
+    "xist": 0.46029609690444145,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P049",
+    "cells": 770,
+    "xist": 0.44025974025974024,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P051",
+    "cells": 2303,
+    "xist": 0.37516283108988274,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P052",
+    "cells": 945,
+    "xist": 0.35873015873015873,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P056",
+    "cells": 4343,
+    "xist": 0.3753166014275846,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P057",
+    "cells": 820,
+    "xist": 0.35365853658536583,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "P058",
+    "cells": 280,
+    "xist": 0.35714285714285715,
+    "y": NaN,
+    "call": "unclear",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   }
+  ],
+  "fails": []
+ },
+ "genes": {
+  "1": {
+   "present": [
+    "SRGN",
+    "RAB31"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "2": {
+   "present": [
+    "CXCL16",
+    "HEXB"
+   ],
+   "missing": [],
+   "passes": true
+  }
+ },
+ "source": {
+  "verdict": "no source named"
+ },
+ "without_donor": {},
+ "donors_left_out": {
+  "P031": {
+   "Post-treatment": 0,
+   "Pre-treatment": 132
+  },
+  "P039": {
+   "Post-treatment": 1090,
+   "Pre-treatment": 15
+  },
+  "P053": {
+   "Post-treatment": 17,
+   "Pre-treatment": 747
+  }
+ },
+ "files": [
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE266nnn/GSE266919/suppl/GSE266919_Myeloid.rds.gz",
+   "file": "GSE266919_Myeloid.rds.gz",
+   "bytes": 255365848,
+   "sha256": "54b63e7ae0a1d797d650e844be70780f9bd9c1b8d5e6c09bac2f35437ed57d54",
+   "attempts": 0
+  }
+ ]
+}

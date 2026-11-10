@@ -1,0 +1,247 @@
+{
+ "rid": "R00189",
+ "counts": {
+  "nonnegative": true,
+  "integers": true,
+  "raw": true,
+  "max": 23362.0
+ },
+ "cells": 90894,
+ "cells_per_group": {
+  "Uninvolved": 46461,
+  "Involved": 44433
+ },
+ "donors": {
+  "design": "paired",
+  "donors": {
+   "Involved": 10,
+   "Uninvolved": 10
+  },
+  "composite": [],
+  "cells_per_donor": {
+   "('Involved', 'pat. 10')": 5054,
+   "('Involved', 'pat. 11')": 9200,
+   "('Involved', 'pat. 12')": 1166,
+   "('Involved', 'pat. 14')": 9169,
+   "('Involved', 'pat. 15')": 3765,
+   "('Involved', 'pat. 16')": 4342,
+   "('Involved', 'pat. 5')": 3141,
+   "('Involved', 'pat. 6')": 1525,
+   "('Involved', 'pat. 7')": 2913,
+   "('Involved', 'pat. 8')": 4158,
+   "('Uninvolved', 'pat. 10')": 5470,
+   "('Uninvolved', 'pat. 11')": 3426,
+   "('Uninvolved', 'pat. 12')": 4539,
+   "('Uninvolved', 'pat. 14')": 7649,
+   "('Uninvolved', 'pat. 15')": 4809,
+   "('Uninvolved', 'pat. 16')": 3422,
+   "('Uninvolved', 'pat. 5')": 7089,
+   "('Uninvolved', 'pat. 6')": 3172,
+   "('Uninvolved', 'pat. 7')": 2419,
+   "('Uninvolved', 'pat. 8')": 4466
+  },
+  "rule4": {
+   "design": "paired",
+   "relabelings": 1024,
+   "min_p": 0.001953125,
+   "passes": true
+  }
+ },
+ "sex": {
+  "both_sexes": true,
+  "donors": [
+   {
+    "donor": "pat. 10",
+    "cells": 10524,
+    "xist": 0.0004751045229950589,
+    "y": 0.5811478525275561,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 11",
+    "cells": 12626,
+    "xist": 0.0001584032947885316,
+    "y": 0.746713131633138,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 12",
+    "cells": 5705,
+    "xist": 0.00035056967572304995,
+    "y": 0.5957931638913234,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 14",
+    "cells": 16818,
+    "xist": 0.5572006183850636,
+    "y": 0.0014865025567843977,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 15",
+    "cells": 8574,
+    "xist": 0.6218801026358759,
+    "y": 0.000583158385817588,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 16",
+    "cells": 7764,
+    "xist": 0.0018031942297784646,
+    "y": 0.7479392065945389,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 5",
+    "cells": 10230,
+    "xist": 0.0,
+    "y": 0.6213098729227762,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 6",
+    "cells": 4697,
+    "xist": 0.0,
+    "y": 0.42857142857142855,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 7",
+    "cells": 5332,
+    "xist": 0.0005626406601650412,
+    "y": 0.709489872468117,
+    "call": "male",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "pat. 8",
+    "cells": 8624,
+    "xist": 0.3799860853432282,
+    "y": 0.0012755102040816326,
+    "call": "female",
+    "label": "-",
+    "split": false,
+    "against_label": false
+   }
+  ],
+  "fails": []
+ },
+ "genes": {
+  "1": {
+   "present": [
+    "ACE2",
+    "TMPRSS2"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "2": {
+   "present": [
+    "ACE2",
+    "XIAP"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "3": {
+   "present": [
+    "ACE2",
+    "SMAD3"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "4": {
+   "present": [
+    "ACE2",
+    "DLG5"
+   ],
+   "missing": [],
+   "passes": true
+  },
+  "5": {
+   "present": [
+    "ACE2",
+    "SLC15A1"
+   ],
+   "missing": [],
+   "passes": true
+  }
+ },
+ "source": {
+  "verdict": "balanced",
+  "sources": [
+   "V1",
+   "V2"
+  ],
+  "shared": [
+   "V1",
+   "V2"
+  ],
+  "shares": {
+   "Involved": {
+    "V1": 0.07069070285598542,
+    "V2": 0.9293092971440146
+   },
+   "Uninvolved": {
+    "V1": 0.1525795828759605,
+    "V2": 0.8474204171240395
+   }
+  }
+ },
+ "without_donor": {
+  "Ileal Involved 190 / Involved": 5227,
+  "Ileal Uninvolved 189 / Uninvolved": 5129
+ },
+ "donors_left_out": {},
+ "files": [
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/suppl/GSE134809_RAW.tar",
+   "file": "GSE134809_RAW.tar",
+   "bytes": 607467520,
+   "sha256": "875d8232fcd6d489037b4d3bddf81c588fdfcedde3190bf6eb4522d0a040d84a",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/matrix/GSE134809_series_matrix.txt.gz",
+   "file": "GSE134809_series_matrix.txt.gz",
+   "bytes": 5137,
+   "sha256": "b980b1d829ca680afddc924c72a3917d21ddbd935619bbdc8669ba9ac7eff198",
+   "attempts": 1
+  },
+  {
+   "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0092867419308967-mmc2.xlsx",
+   "file": "1-s2.0-S0092867419308967-mmc2.xlsx",
+   "bytes": 7540057,
+   "sha256": "030e5057afa1ebdfb821a197607ad3e462d598e626ec9483fa9f4f7d0c32dec5",
+   "attempts": 1
+  }
+ ]
+}

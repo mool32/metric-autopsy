@@ -1,0 +1,4 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/suppl/GSE134809_RAW.tar	GSE134809_RAW.tar	607467520	875d8232fcd6d489037b4d3bddf81c588fdfcedde3190bf6eb4522d0a040d84a	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/matrix/GSE134809_series_matrix.txt.gz	GSE134809_series_matrix.txt.gz	5137	b980b1d829ca680afddc924c72a3917d21ddbd935619bbdc8669ba9ac7eff198	1
+https://ars.els-cdn.com/content/image/1-s2.0-S0092867419308967-mmc2.xlsx	1-s2.0-S0092867419308967-mmc2.xlsx	7540057	030e5057afa1ebdfb821a197607ad3e462d598e626ec9483fa9f4f7d0c32dec5	1
