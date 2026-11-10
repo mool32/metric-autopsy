@@ -377,3 +377,24 @@ here.
 
 **The third group** (`amendment1/ft_group3.txt`): R03874 alone, batch 10 (`ft/batches/batch_10.list`, its text's
 SHA256 in `texts_group3.sha256`), the same for both passes, read after batch 09 in each pass.
+
+## J21 — 2026-11-11: S3 complete — both passes, their comparison, the kept papers; one correction of kept.py
+
+**The passes** (`amendment1/ft/README.md`): the 67 records with a full text in 10 batches, read by both passes, 20
+sessions one at a time, every file passing its check, all 20 independent (`ft/independence.log`). Kappa 0.831
+(agreement 0.955); kept by both 4 (R00653, R00765, R01795, R02175, claims about sets only); to the owner 42 (7
+decided differently or unclear, 35 without a full text).
+
+**The kept papers** (`amendment1/kept_claims.json`): 8 — those 4 and the 4 of 2026-10-19 — with 34 claims, 15 pairs
+and 19 sets; 4 papers with pairs, fewer than the protocol's 20 (section 9: said so with the list).
+
+**A correction of `kept.py`, after its first output and before any use of it.** Its rule (`plan_s3.md`, section 4,
+0f3c508) matched the passes' claims by their genes as written; on the merge's claims it met forms it did not foresee:
+a gene with its alias in parentheses ("HSPA5 (BIP)", "ERN1 (IRE1A)": one claim made two, and a "gene" no matrix
+holds), a set's name followed by a description in parentheses ("Mitochondria NDCG (mitochondrial electron transport
+chain)"), a comma inside those parentheses cutting the name, and an MSigDB set named inside a longer name
+("HALLMARK_INTERFERON_GAMMA_RESPONSE weighted network"). Corrected (`kept.py`, tested): what parentheses hold is
+dropped from a gene and from a set's name, a set's name ends at the first comma outside parentheses, and a set whose
+name holds an MSigDB-style identifier is matched by it. The papers kept do not change, and no claim is dropped: 42
+claims (17 pairs, 25 sets; 15 by both passes) became 34 (15 pairs, 19 sets; 23 by both). The first rule's output is
+kept as `amendment1/kept_claims_first_rule.json`.

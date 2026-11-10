@@ -1,0 +1,55 @@
+{
+ "read_by_both": 67,
+ "kappa": 0.8313758389261744,
+ "agreement": 0.9552238805970149,
+ "crosstab": {
+  "EXCLUDE / EXCLUDE": 56,
+  "EXCLUDE / KEEP": 1,
+  "EXCLUDE / UNCLEAR": 1,
+  "KEEP / KEEP": 4,
+  "KEEP / UNCLEAR": 1,
+  "UNCLEAR / UNCLEAR": 4
+ },
+ "counts": {
+  "pass 1": {
+   "EXCLUDE": 58,
+   "UNCLEAR": 4,
+   "KEEP": 5,
+   "F1": 30,
+   "F2": 1,
+   "F3": 22,
+   "F4": 0,
+   "F5": 2,
+   "F6": 0,
+   "F7": 1,
+   "F8": 0,
+   "F9": 0,
+   "F10": 2,
+   "kept at titles and abstracts": 85,
+   "without a full text": 35
+  },
+  "pass 2": {
+   "EXCLUDE": 56,
+   "UNCLEAR": 6,
+   "KEEP": 5,
+   "F1": 31,
+   "F2": 1,
+   "F3": 21,
+   "F4": 0,
+   "F5": 1,
+   "F6": 0,
+   "F7": 0,
+   "F8": 0,
+   "F9": 0,
+   "F10": 2,
+   "kept at titles and abstracts": 84,
+   "without a full text": 35
+  }
+ },
+ "kept_by_both": 4,
+ "to_owner": 42,
+ "sets_or_global": {
+  "pass 1": 1,
+  "pass 2": 1
+ }
+}

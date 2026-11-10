@@ -1,0 +1,2 @@
+rid	decision	code	claim	genes	species	cells	conditions	direction	metric	where	quote	data	donors	rule4	verdict	note
+R03874	EXCLUDE	F3	0	-	-	-	-	-	-	-	-	-	-	-	-	Abstract: NEMF decouples from GCN2, PKR in sALS vs PN; measured as Hodge phi residual z (model-derived node score from donor-window correlation changes); NEMF-PKR co-collapse is a correlation of z-scores across 8 cell types. Pathway/global claims also phi.

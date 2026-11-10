@@ -93,3 +93,29 @@ def test_main_writes_the_json(tmp_path):
                    "--titles", str(tmp_path / "all.tsv"), "--out", str(out)]) == 0
     res = json.loads(out.read_text())
     assert res["counts"]["papers"] == 1 and res["papers"][0]["read"] == "amendment 1"
+
+
+def test_aliases_and_descriptions_in_parentheses_and_msigdb_names(tmp_path):
+    """J21: a gene's alias and a set's description in parentheses are dropped; an MSigDB identifier keys a set."""
+    assert K.pair_candidates("TMBIM6, HSPA5 (BIP)") == {frozenset({"TMBIM6", "HSPA5"})}
+    assert K.keys("SET: Mitochondria NDCG (mitochondrial electron transport chain), gene count not given, Data 2") == \
+        K.keys("SET: Mitochondria NDCG, gene count not given in text, Supplementary Data 2")
+    assert K.keys("SET: HALLMARK_INTERFERON_GAMMA_RESPONSE weighted network, hub IFITM3, MSigDB") == \
+        {("set", "hallmark_interferon_gamma_response")}
+    assert K.keys("SET: IFITM3 with its partners in the IFN-gamma gene set (HALLMARK_INTERFERON_GAMMA_RESPONSE), 118 genes") == \
+        {("set", "hallmark_interferon_gamma_response")}
+    assert K.set_parts("SET: UPR NDCG, gene count not given in text (671 genes over the 11 NDCGs), Data 2")["set_size"] is None
+    claims = K.paper_claims([dict(genes="TMBIM6, HSPA5")], [dict(genes="TMBIM6, HSPA5 (BIP)")])
+    assert len(claims) == 1 and claims[0]["passes"] == [1, 2] and claims[0]["genes"] == ["TMBIM6", "HSPA5"]
+    assert K.set_parts("SET: Proliferation NDCG (cell proliferation; includes PAX6, ISL1), gene count not given, Data 2")[
+        "set_name"] == "Proliferation NDCG (cell proliferation; includes PAX6, ISL1)"
+    assert K.keys("SET: Proliferation NDCG (cell proliferation; includes PAX6, ISL1), n, D") == K.keys("SET: Proliferation NDCG, n, D")
+
+
+def test_ft_record_counts_each_session_from_its_file(tmp_path):
+    import ft_record
+    _pass(tmp_path / "ft" / "pass1", {"R00010": ("KEEP", ["G1, G2", "G3, G4"]), "R00020": ("EXCLUDE", [])})
+    _pass(tmp_path / "ft" / "pass2", {"R00010": ("EXCLUDE", []), "R00020": ("EXCLUDE", [])})
+    assert ft_record.main(["--ft", str(tmp_path / "ft"), "--out", str(tmp_path / "s.tsv")]) == 0
+    lines = (tmp_path / "s.tsv").read_text().splitlines()
+    assert lines[1] == "1\t01\t2\t1\t0\t1\tF1 1\t2" and lines[2] == "2\t01\t2\t0\t0\t2\tF1 2\t0"

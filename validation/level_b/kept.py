@@ -13,6 +13,10 @@ lines in both passes, matched across the passes by their genes:
 * **a set** (`SET: <name>, <n> genes, <where listed>`) by its name, case and spacing ignored;
 * a field read neither way is matched only by the same text (letters and digits, case ignored).
 
+What parentheses hold is dropped first, from a gene ("HSPA5 (BIP)") and from a set's name ("Mitochondria NDCG
+(the electron transport chain)"); a set whose name holds an MSigDB-style identifier (capitals and underscores, as
+HALLMARK_INTERFERON_GAMMA_RESPONSE) is matched by it (J21: found on the merge's output, before any use of it).
+
 The claims both passes list come first, in pass 1's order, then those only pass 1 lists, then those only pass 2
 lists; each carries the passes that list it and both passes' lines. A pair whose two symbols cannot be told (its
 lines give several candidates and no other line settles them) is marked `ambiguous`, its genes empty. A set's
@@ -45,6 +49,17 @@ def _clean(field: str) -> str:
     return field.strip().strip("*`").strip()
 
 
+def _no_parens(text: str) -> str:
+    """The text without what parentheses hold (an alias, a description): 'HSPA5 (BIP)' -> 'HSPA5' (J21)."""
+    prev = None
+    while prev != text:
+        prev, text = text, re.sub(r"\s*\([^()]*\)", "", text)
+    return " ".join(text.split())
+
+
+_MSIGDB = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
+
+
 def is_set(field: str) -> bool:
     return _clean(field).upper().startswith("SET:")
 
@@ -52,15 +67,22 @@ def is_set(field: str) -> bool:
 def set_parts(field: str) -> dict:
     """A set's line: its name (before the first comma), its number of genes and where they are listed."""
     body = _clean(field)[4:].strip()
-    name, _, rest = body.partition(",")
-    m = re.search(r"(\d[\d,]*)\s+genes?", rest)
+    depth, cut = 0, len(body)
+    for i, ch in enumerate(body):  # the first comma outside parentheses ends the name
+        depth += (ch == "(") - (ch == ")")
+        if ch == "," and depth == 0:
+            cut = i
+            break
+    name, rest = body[:cut], body[cut + 1:]
+    m = re.search(r"(\d[\d,]*)\s+genes?", _no_parens(rest))
+    where = _no_parens(rest)
     return dict(set_name=name.strip(), set_size=int(m.group(1).replace(",", "")) if m else None,
-                set_where=rest[m.end():].strip(" ,;") if m else rest.strip(" ,;"))
+                set_where=(where[m.end():] if m else where).strip(" ,;"))
 
 
 def pair_candidates(field: str) -> set:
     """The unordered pairs of symbols a pair's `genes` field can name (upper case)."""
-    toks = [t.strip().upper() for t in _STRONG.split(_clean(field)) if t and t.strip()]
+    toks = [t.strip().upper() for t in _STRONG.split(_no_parens(_clean(field))) if t and t.strip()]
     if len(toks) == 2:
         return {frozenset(toks)} if toks[0] != toks[1] else set()
     if len(toks) != 1:
@@ -79,7 +101,9 @@ def pair_candidates(field: str) -> set:
 
 def keys(field: str) -> set:
     if is_set(field):
-        return {("set", " ".join(set_parts(field)["set_name"].lower().split()))}
+        name = set_parts(field)["set_name"]
+        ids = _MSIGDB.findall(_no_parens(name)) or _MSIGDB.findall(name)
+        return {("set", ids[0].lower() if ids else _no_parens(name).lower())}
     cands = pair_candidates(field)
     if cands:
         return {("pair", c) for c in cands}
@@ -88,7 +112,7 @@ def keys(field: str) -> set:
 
 def _ordered(field: str, pair: frozenset) -> list:
     """The pair's symbols in the order the line names them."""
-    up = _clean(field).upper()
+    up = _no_parens(_clean(field)).upper()
     return sorted(pair, key=lambda g: up.find(g) if up.find(g) >= 0 else len(up))
 
 
