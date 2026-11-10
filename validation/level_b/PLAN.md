@@ -15,6 +15,11 @@ anything that fetches from the network, or a pass of the screening); deviations 
 | S6 | The controls (`real_claims.md`, "Controls"): the rules of selection registered first, then the negative controls (the same donors in two technical conditions) and the positive ones (perturbations of known response, such as Kang et al. 2018), each with its structure checked as in S5 | `plan_s6.md` |
 | S7 | **The list with the controls to the owner** (the stop): the kept claims, pairs and sets apart, with the counts of section 1, their verdicts, their data's checks, 12.3's counts so far, the controls and the journal | — |
 
+**Progress (2026-11-10):** every step's plan is committed (`plan_s1.md` to `plan_s6.md`, before their runs); S1's
+preprints ran (J3), its second fetch is running; S2's passes run one session at a time; S6's selection script and
+workflow are ready for their one run (`controls.py`, `level-b-controls.yml`); S5's checks are coded
+(`data_checks.py`), its loaders follow the list.
+
 After the owner's approval of the list: the runs on the engine of the tag `v0.4.0.dev0` (commit 5a89f98), with
 (b) and (d) on every claim (`real_claims.md`, "The runs"), by a script and a plan committed before them.
 
