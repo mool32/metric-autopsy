@@ -388,10 +388,11 @@ def _labelled(obs: pd.DataFrame, spec: dict):
     else:
         obs["group"] = obs[g["column"]].astype(str).map(g.get("map") or (lambda x: x))
     keep &= obs["group"].isin(g["values"]).to_numpy()
-    def column(rule):  # a column, or {"column": ..., "regex": ...}: the first group of the pattern on it
-        if isinstance(rule, dict):
-            return obs[rule["column"]].astype(str).str.extract(rule["regex"], expand=False)
-        return obs[rule].astype(str)
+    def column(rule):  # a column, or {"column": ..., "regex": ...}: the first group of the pattern on it; a missing
+        # value stays missing (pandas 2's astype(str) would make it the string "nan")
+        c = obs[rule["column"] if isinstance(rule, dict) else rule]
+        c = c.astype(str).where(c.notna())
+        return c.str.extract(rule["regex"], expand=False) if isinstance(rule, dict) else c
     obs["donor"] = column(spec["donor"])
     obs["source"] = column(spec["source"]).fillna("unmatched") if spec.get("source") else "no source named"
     obs["sex_label"] = column(spec["sex_label"]).str.lower() if spec.get("sex_label") else "-"

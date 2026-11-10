@@ -302,3 +302,15 @@ job's versions), installed in this environment; on a fabricated object with a de
 export in three blocks gives the dense values exactly, and `data_run.py` reads it, applies the cells' filter and the
 minimum (a patient with 20 cells after is left out and listed), and names the genes by a rowData column where the
 rownames are ids. Nothing of the deposit was read here beyond the description's metadata.
+
+## J17 — 2026-11-10: a fault the dry run caught on 706f59e (pandas 2's missing values), fixed before any run used it
+
+The data checks' dry job (workflow run 42902907844 on 706f59e) failed one test: in v1's environment (pandas 2.3.3)
+`astype(str)` turns a missing value into the string "nan", so the cells of R00189's samples 189 and 190, which the
+paper's table names no patient for, would have been checked as the cells of a donor "nan" (this environment's pandas
+3.0.5, where the test had passed, keeps them missing). **Fixed** (`data_run.py`, `_labelled`): a missing value stays
+missing in every column a spec names (the donor, the source, the sex label). **Batch 1 is not affected:** its reports
+(`results/level-b-data-1` at 8b3a7c8) hold no value "nan" (R01225's sources include "unmatched", the regular
+expression's misses, as intended). From now on level B's tests also run here in v1's environment (pandas 2.3.3,
+numpy 2.5.3, as the jobs install it) before a push; batch 2's specs were tried again in it (R00189's on its real
+metadata with fabricated matrices: 10 pairs, samples 189 and 190 listed; R01962's chain on a fabricated object).
