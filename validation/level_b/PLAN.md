@@ -13,7 +13,7 @@ anything that fetches from the network, or a pass of the screening); deviations 
 | S4 | The independent verdicts (section 7): a search of its own per kept claim (forward citations of the claim's paper; the claim's genes with the terms of section 3 and of perturbation), then each verdict coded with its citation and quote | `plan_s4.md` |
 | S5 | The data of every kept claim, in Actions: counts raw integers; donor ids, each one individual (sex by Xist and the Y genes); the groups and their donors; the claim's genes present; the source of the cells shared or balanced between the groups (12.3's check of origin) | `plan_s5.md` |
 | S6 | The controls (`real_claims.md`, "Controls"): the rules of selection registered first, then the negative controls (the same donors in two technical conditions) and the positive ones (perturbations of known response, such as Kang et al. 2018), each with its structure checked as in S5 | `plan_s6.md` |
-| S7 | **The list with the controls to the owner** (the stop): the kept claims, pairs and sets apart, with the counts of section 1, their verdicts, their data's checks, 12.3's counts so far, the controls and the journal | — |
+| S7 | **The list with the controls to the owner** (the stop): the kept claims, pairs and sets apart, with the counts of section 1, their verdicts, their data's checks, 12.3's counts so far, the controls and the journal | `plan_s7.md` |
 
 **Progress (2026-11-10):** every step's plan is committed (`plan_s1.md` to `plan_s6.md`, before their runs); S1's
 preprints ran (J3), its second fetch is running; S2's passes run one session at a time; S6's selection script and
