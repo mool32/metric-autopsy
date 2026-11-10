@@ -146,10 +146,10 @@ def _col_index(ref: str) -> int:
     return n - 1
 
 
-def xlsx_sheet(path: Path, sheet: str | None = None) -> pd.DataFrame:
+def xlsx_rows(path: Path, sheet: str | None = None) -> list:
     """One sheet of an Excel workbook (.xlsx), read with the standard library (no Excel reader in the run's
-    environment): its first row the header, every value a string as the workbook stores it ("69", "pat. 5"),
-    rows without a value dropped."""
+    environment): its rows, each a list over every column the sheet uses (None where a cell is empty), every value
+    a string as the workbook stores it ("69", "pat. 5"); rows without a value dropped."""
     import xml.etree.ElementTree as ET
     import zipfile
     m = "{%s}" % _XL["m"]
@@ -182,11 +182,18 @@ def xlsx_sheet(path: Path, sheet: str | None = None) -> pd.DataFrame:
                 vals[j] = v.text
         if vals:
             rows.append(vals)
+    width = max((max(r) + 1 for r in rows), default=0)
+    return [[r.get(j) for j in range(width)] for r in rows]
+
+
+def xlsx_sheet(path: Path, sheet: str | None = None) -> pd.DataFrame:
+    """One sheet as a table: its first row the header (an unnamed column named by its place), every value a
+    string as the workbook stores it, rows without a value dropped."""
+    rows = xlsx_rows(path, sheet)
     if not rows:
         return pd.DataFrame()
-    header = rows[0]
-    cols = sorted(header)
-    return pd.DataFrame([[r.get(j) for j in cols] for r in rows[1:]], columns=[header[j] for j in cols])
+    header = [h if h is not None else f"column {j + 1}" for j, h in enumerate(rows[0])]
+    return pd.DataFrame(rows[1:], columns=header)
 
 
 def paper_table(path: Path, sheet: str | None = None) -> pd.DataFrame:
