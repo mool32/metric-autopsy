@@ -588,7 +588,7 @@ def publisher_text(fetch2: Path, out: Path) -> dict:
     return dict(converted=len(done), files=done)
 
 
-def fulltext_batches_all(rids: list, texts: Path, out: Path, size: int = FT_BATCH) -> dict:
+def fulltext_batches_all(rids: list, texts: Path, out: Path, size: int = FT_BATCH, start: int = 1) -> dict:
     """Amendment 1 (`plan_s3.md`, section 3): every listed record with a full text, `size` to a batch in the order
     of the records' numbers, the same batches for both passes (`batch_NN.list`: rid, text file); the others in
     `without_fulltext.txt`."""
@@ -598,7 +598,7 @@ def fulltext_batches_all(rids: list, texts: Path, out: Path, size: int = FT_BATC
     out.mkdir(parents=True, exist_ok=True)
     names = []
     for k in range(0, len(have), size):
-        name = f"batch_{k // size + 1:02d}.list"
+        name = f"batch_{k // size + start:02d}.list"
         (out / name).write_text("".join(f"{rid}\t{(texts / f'{rid}.txt').resolve()}\n" for rid in have[k:k + size]))
         names.append(name)
     (out / "without_fulltext.txt").write_text("".join(f"{rid}\n" for rid in without))
@@ -862,6 +862,7 @@ def main(argv=None) -> int:
     fa.add_argument("--texts", type=Path, required=True)
     fa.add_argument("--out", type=Path, required=True)
     fa.add_argument("--size", type=int, default=FT_BATCH)
+    fa.add_argument("--start", type=int, default=1, help="the first batch's number")
     ft = sub.add_parser("fulltext-text")
     ft.add_argument("--fulltext", type=Path, required=True)
     ft.add_argument("--out", type=Path, required=True)
@@ -937,7 +938,7 @@ def main(argv=None) -> int:
         return 0
     if a.mode == "fulltext-batches-all":
         rids = [r for r in a.rids.read_text().split() if r]
-        print(json.dumps(fulltext_batches_all(rids, a.texts, a.out, a.size), indent=1))
+        print(json.dumps(fulltext_batches_all(rids, a.texts, a.out, a.size, a.start), indent=1))
         return 0
     if a.mode == "fulltext-text":
         res = fulltext_text(a.fulltext, a.out)

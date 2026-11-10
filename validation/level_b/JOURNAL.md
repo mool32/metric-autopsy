@@ -223,3 +223,14 @@ commit that carries the fix; its results are S3's.
 `results/level-b-rdescribe-1` at 834edbb holds its log): the object is a SingleCellExperiment, whose package was not
 installed, so R could not read it. Fixed: `r-bioc-singlecellexperiment` from Ubuntu's archive; the job now says
 when a description fails. Described again by the label `level-b-rdescribe-2` (`rdescribe2.txt`, the same object).
+
+## J13 — 2026-11-10: S3's reading begins with the texts on hand (an order, not a rule)
+
+While S3's fetch runs again (J11), both passes begin with the 12 records whose full texts the first fetch holds
+(`results/level-b-fulltext` at e373c68, as text by `screening.py fulltext-text`): the ten F2 records and D's two
+(`amendment1/ft_group1.txt`), in 2 batches (`amendment1/ft/batches/batch_01.list`, `batch_02.list`, 8 and 4
+records; the texts' SHA256 in `texts_group1.sha256`). R00220, one of the ten, is also among S2's 91; it is read
+here, with the first fetch's text, and not again. The batches of S2's other records follow, numbered from 03, when
+their texts come. `plan_s3.md` has one list in the order of the records' numbers; here the order is in two groups.
+Nothing else changes: the same instructions, task text, batch size, the same batches for both passes, one session
+at a time, each pass's files out of the working tree while the other pass reads.
