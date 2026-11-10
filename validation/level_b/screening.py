@@ -12,6 +12,7 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv> [--extra <jsonl.gz>]
     python -I validation/level_b/screening.py publisher-list --index <fulltext_index.tsv> --list <tsv> --out <tsv>
     python -I validation/level_b/screening.py fulltext-batches-all --rids <txt> --texts <dir> --out <dir>
+    python -I validation/level_b/screening.py publisher-text --fetch2 <a fetch2 run> --out <dir>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
     python -I validation/level_b/screening.py check-fulltext --batch <batch_NN.list> --decisions <tsv>
@@ -518,6 +519,68 @@ def publisher_list(index_tsv: Path, list_tsv: Path, out: Path) -> int:
     return len(rows) - 1
 
 
+def html_text(raw: bytes) -> str:
+    """An HTML page's text: scripts and styles left out, a line break at each block, spaces collapsed."""
+    from html.parser import HTMLParser
+
+    class _P(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.out, self.skip = [], 0
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style", "noscript", "svg"):
+                self.skip += 1
+            if tag in ("p", "div", "br", "h1", "h2", "h3", "h4", "h5", "li", "section", "tr", "title"):
+                self.out.append("\n")
+
+        def handle_endtag(self, tag):
+            if tag in ("script", "style", "noscript", "svg") and self.skip:
+                self.skip -= 1
+
+        def handle_data(self, data):
+            if not self.skip:
+                self.out.append(data)
+
+    parser = _P()
+    parser.feed(raw.decode("utf-8", "replace"))
+    lines = (" ".join(line.split()) for line in "".join(parser.out).splitlines())
+    return "\n".join(line for line in lines if line) + "\n"
+
+
+def pdf_text(raw: bytes) -> str:
+    """A PDF's text by poppler's pdftotext, its pages in order (a file in a directory of its own)."""
+    import subprocess
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        pdf = Path(d) / "file.pdf"
+        pdf.write_bytes(raw)
+        r = subprocess.run(["pdftotext", "-enc", "UTF-8", str(pdf), "-"], capture_output=True, timeout=600)
+    return r.stdout.decode("utf-8", "replace")
+
+
+def publisher_text(fetch2: Path, out: Path) -> dict:
+    """The publishers' responses of a `search.py fetch2` run as text, for the journal's judgement (`plan_s1.md`:
+    a full text is the paper's body, a Results or a Methods section beyond the abstract) and, where one is
+    obtained, for the passes: a PDF by `pdf_text`, any other answer by `html_text`; one file per response,
+    `<rid>-pdf.txt` or `<rid>-landing.txt`, with its status and final URL in its first line."""
+    rows = [line.split("\t") for line in (fetch2 / "fetch2_index.tsv").read_text().splitlines()[1:] if line.strip()]
+    out.mkdir(parents=True, exist_ok=True)
+    done = []
+    for rid, action, asked, status, final, file, _note in rows:
+        if action != "publisher" or file == "-":
+            continue
+        with gzip.open(fetch2 / file, "rb") as f:
+            raw = f.read()
+        is_pdf = raw[:5] == b"%PDF-"
+        text = pdf_text(raw) if is_pdf else html_text(raw)
+        name = f"{rid}-{'pdf' if is_pdf else 'landing'}.txt"
+        (out / name).write_text(f"=== {rid} (HTTP {status}; {final}; {'PDF' if is_pdf else 'page'}; {len(raw):,} bytes) ===\n"
+                                + text)
+        done.append(dict(rid=rid, file=name, status=status, bytes=len(raw), pdf=is_pdf, lines=text.count("\n")))
+    return dict(converted=len(done), files=done)
+
+
 def fulltext_batches_all(rids: list, texts: Path, out: Path, size: int = FT_BATCH) -> dict:
     """Amendment 1 (`plan_s3.md`, section 3): every listed record with a full text, `size` to a batch in the order
     of the records' numbers, the same batches for both passes (`batch_NN.list`: rid, text file); the others in
@@ -784,6 +847,9 @@ def main(argv=None) -> int:
     pl.add_argument("--index", type=Path, required=True, help="a full-text fetch's fulltext_index.tsv")
     pl.add_argument("--list", dest="list_tsv", type=Path, required=True, help="its fulltext-list")
     pl.add_argument("--out", type=Path, required=True)
+    pt = sub.add_parser("publisher-text")
+    pt.add_argument("--fetch2", type=Path, required=True, help="a fetch2 run's directory (fetch2_index.tsv, raw/)")
+    pt.add_argument("--out", type=Path, required=True)
     fa = sub.add_parser("fulltext-batches-all")
     fa.add_argument("--rids", type=Path, required=True)
     fa.add_argument("--texts", type=Path, required=True)
@@ -858,6 +924,9 @@ def main(argv=None) -> int:
         return 0
     if a.mode == "publisher-list":
         print(f"{publisher_list(a.index, a.list_tsv, a.out)} records for one attempt at the publisher, in {a.out}")
+        return 0
+    if a.mode == "publisher-text":
+        print(json.dumps(publisher_text(a.fetch2, a.out), indent=1))
         return 0
     if a.mode == "fulltext-batches-all":
         rids = [r for r in a.rids.read_text().split() if r]

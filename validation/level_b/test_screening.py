@@ -371,3 +371,21 @@ def test_amendment_1s_full_texts_list_the_new_records_send_the_rest_to_the_publi
     assert res["with_fulltext"] == 3 and res["without"] == 1 and res["batches"] == ["batch_01.list", "batch_02.list"]
     assert [line.split("\t")[0] for line in (tmp_path / "b" / "batch_01.list").read_text().splitlines()] == ["R00001", "R00002"]
     assert (tmp_path / "b" / "without_fulltext.txt").read_text() == "R00009\n"
+
+
+def test_the_publishers_answers_as_text(tmp_path):
+    html = (b"<html><head><title>A paper</title><script>var x = 1;</script><style>p {}</style></head><body>"
+            b"<h2>Results</h2><p>The pair&nbsp;rose  in   disease.</p><div>Methods</div></body></html>")
+    assert S.html_text(html) == "A paper\nResults\nThe pair rose in disease.\nMethods\n"
+    run = tmp_path / "fetch2"
+    (run / "raw" / "fetch2").mkdir(parents=True)
+    with gzip.open(run / "raw" / "fetch2" / "R00001-landing.gz", "wb") as g:
+        g.write(html)
+    (run / "fetch2_index.tsv").write_text("rid\taction\tasked\tstatus\tfinal\tfile\tnote\n"
+                                          "R00001\tpublisher\thttps://doi.org/10.1/a\t200\thttps://pub.example/a\t"
+                                          "raw/fetch2/R00001-landing.gz\tthe DOI's page, one attempt\n"
+                                          "R00002\tpublisher\thttps://doi.org/10.1/b\t403\thttps://pub.example/b\t-\t-\n")
+    res = S.publisher_text(run, tmp_path / "text")
+    assert res["converted"] == 1 and res["files"][0]["file"] == "R00001-landing.txt" and not res["files"][0]["pdf"]
+    first = (tmp_path / "text" / "R00001-landing.txt").read_text().splitlines()[0]
+    assert first.startswith("=== R00001 (HTTP 200; https://pub.example/a; page;")
