@@ -1,0 +1,4 @@
+order	rank	collection_id	collection_name	organism	tissue	cell_type	condition_a	condition_b	donors	cells	outcome
+1	1	4195ab4c-20bd-4cd3-8b3d-65601277e731	A spatially resolved single cell genomic atlas of the adult human breast	homo_sapiens	breast	fibroblast	10x 3' v3 | cell	10x 3' v3 | nucleus	8	6400	chosen: N1
+2	2	ec329aed-22bc-4d6e-8935-8282dcb1acac	Early human lung immune cell development and its role in epithelial cell fate	homo_sapiens	lung	unknown	10x 3' v2 | cell	10x 5' transcription profiling | cell	7	5600	chosen: N2
+3	3	b1a879f6-5638-48d3-8f64-f6592c1b1561	Mapping the developing human immune system across organs	homo_sapiens	liver	macrophage	10x 3' v2 | cell	10x 5' v1 | cell	7	5600	chosen: N3

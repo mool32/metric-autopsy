@@ -1,0 +1,2039 @@
+{
+ "synthetic": false,
+ "release": "2025-11-08",
+ "negative": [
+  {
+   "id": "N1",
+   "order": 1,
+   "rank": 1,
+   "collection_id": "4195ab4c-20bd-4cd3-8b3d-65601277e731",
+   "collection_name": "A spatially resolved single cell genomic atlas of the adult human breast",
+   "organism": "homo_sapiens",
+   "tissue": "breast",
+   "cell_type": "fibroblast",
+   "condition_a": "10x 3' v3 | cell",
+   "condition_b": "10x 3' v3 | nucleus",
+   "donors": 8,
+   "cells": 6400,
+   "release": "2025-11-08",
+   "datasets": [
+    "170e9c52-5e8a-4ccf-99b6-d45b25b14614",
+    "2a7f90de-098a-4a6f-ac07-9e6462792412",
+    "2d3e3c41-3425-4450-9914-95ed7edf7752",
+    "31b49393-4485-4998-9ef4-33e03c4c1789",
+    "396a9124-fb20-4822-bf9c-e93fdf7c999a",
+    "3d0d6923-a2c4-476f-a53e-3b7bfa010d90",
+    "49108ba9-1b7a-4a8a-9859-3d32e6a83926",
+    "59f3a9d6-8bab-481d-8c42-766991595687",
+    "6e96d93c-de27-4cb2-9ac1-051111ce2aff",
+    "74520626-b0ba-4ee9-86b5-714649554def",
+    "7f08cbcc-5790-4576-8478-10e9a999b316",
+    "842c6f5d-4a94-4eef-8510-8c792d1124bc",
+    "87183784-5b2e-4de0-a960-cffdeb005a7d",
+    "a31525c0-a7ee-409e-a0ee-9bf4f507c7f1",
+    "a41202e6-173c-477c-8b4d-e0688ee1c4cb",
+    "a6388a6f-6076-401b-9b30-7d4306a20035",
+    "c45f05b3-aafc-4fce-a800-133a2364df64",
+    "c8d40d53-387b-48f2-9f89-72bfdb9c7c9f",
+    "e47c65a8-7d2f-48b8-908e-04ea6505fa26",
+    "fb09f8c3-cb71-480d-8919-d8afd2670b97"
+   ],
+   "npz_sha256": "431c343912875d6d0ca2cc61302014bd6dbc33f7c9525ac83f0a901830de1ee7",
+   "genes": 61497,
+   "joinids": "joinids/N1.txt",
+   "groups": {
+    "A": "10x 3' v3 | cell",
+    "B": "10x 3' v3 | nucleus"
+   },
+   "sex_conflicts": [],
+   "pool": {
+    "pairs_per_level": 8,
+    "fewer_pairs_because": [],
+    "levels": {
+     "high": {
+      "candidates": 143,
+      "median_r": 0.0075403438,
+      "eligible_genes": 143
+     },
+     "medium": {
+      "candidates": 136,
+      "median_r": 0.00984611145,
+      "eligible_genes": 136
+     },
+     "low": {
+      "candidates": 1000,
+      "median_r": 0.00366250395,
+      "eligible_genes": 2332
+     }
+    },
+    "positive_control": {
+     "pair": [
+      "S100A6",
+      "S100A10"
+     ],
+     "r": 0.2350080387,
+     "mean": [
+      12.36734375,
+      5.48078125
+     ]
+    }
+   },
+   "claims": [
+    {
+     "id": "N1p01",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "COL3A1",
+      "COL1A1"
+     ],
+     "pooled_r": 0.4820184277,
+     "gate5": {
+      "negative": [
+       "UBC",
+       "HMGB1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p02",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "FOS",
+      "JUN"
+     ],
+     "pooled_r": 0.4115263008,
+     "gate5": {
+      "negative": [
+       "NACA",
+       "ANXA1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p03",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "CFD",
+      "GSN"
+     ],
+     "pooled_r": 0.3683623993,
+     "gate5": {
+      "negative": [
+       "FTH1",
+       "NCL"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p04",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "DCN",
+      "CST3"
+     ],
+     "pooled_r": 0.2844959895,
+     "gate5": {
+      "negative": [
+       "MT2A",
+       "FAU"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p05",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "JUND",
+      "FOSB"
+     ],
+     "pooled_r": 0.2761385709,
+     "gate5": {
+      "negative": [
+       "HSP90AB1",
+       "CEBPD"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p06",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "MGP",
+      "CCDC80"
+     ],
+     "pooled_r": 0.2551981578,
+     "gate5": {
+      "negative": [
+       "TPT1",
+       "LMNA"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p07",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "NEGR1",
+      "CFH"
+     ],
+     "pooled_r": 0.249512046,
+     "gate5": {
+      "negative": [
+       "DNAJA1",
+       "LHFPL6"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p08",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "COL1A2",
+      "COL6A1"
+     ],
+     "pooled_r": 0.2454624863,
+     "gate5": {
+      "negative": [
+       "TMSB10",
+       "MMP2"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p09",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "ABCA6",
+      "ABCA9"
+     ],
+     "pooled_r": 0.2588546816,
+     "gate5": {
+      "negative": [
+       "IFI16",
+       "PCBP2"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p10",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "TNXB",
+      "ABLIM1"
+     ],
+     "pooled_r": 0.2107662495,
+     "gate5": {
+      "negative": [
+       "FGFR1",
+       "SDCBP"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p11",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "SRPX",
+      "COL4A2"
+     ],
+     "pooled_r": 0.1699831725,
+     "gate5": {
+      "negative": [
+       "SFPQ",
+       "UQCRB"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p12",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "ABCA8",
+      "TGFBR2"
+     ],
+     "pooled_r": 0.1580833825,
+     "gate5": {
+      "negative": [
+       "EIF3E",
+       "ELF1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p13",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "C1orf21",
+      "PBX1"
+     ],
+     "pooled_r": 0.1529692092,
+     "gate5": {
+      "negative": [
+       "KLF9",
+       "YWHAQ"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p14",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "RBPMS",
+      "LAMB1"
+     ],
+     "pooled_r": 0.1426605631,
+     "gate5": {
+      "negative": [
+       "NUCKS1",
+       "TCF25"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p15",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "USP53",
+      "SAMHD1"
+     ],
+     "pooled_r": 0.1317818336,
+     "gate5": {
+      "negative": [
+       "PRRC2C",
+       "RBM25"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p16",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "DST",
+      "TRIO"
+     ],
+     "pooled_r": 0.1216534143,
+     "gate5": {
+      "negative": [
+       "SLC25A3",
+       "HNRNPA3"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p17",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "JUNB",
+      "ZFP36"
+     ],
+     "pooled_r": 0.347949556,
+     "gate5": {
+      "negative": [
+       "MGST1",
+       "IGF1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p18",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "SELENOP",
+      "CXCL12"
+     ],
+     "pooled_r": 0.324407426,
+     "gate5": {
+      "negative": [
+       "TXNIP",
+       "FBXL7"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p19",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "C3",
+      "ADH1B"
+     ],
+     "pooled_r": 0.2618191213,
+     "gate5": {
+      "negative": [
+       "SPARC",
+       "SPARCL1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p20",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "GPC3",
+      "SVEP1"
+     ],
+     "pooled_r": 0.2550315826,
+     "gate5": {
+      "negative": [
+       "MAP1B",
+       "CCN1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p21",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "NFATC2",
+      "RFX2"
+     ],
+     "pooled_r": 0.2378452116,
+     "gate5": {
+      "negative": [
+       "CLU",
+       "CYSTM1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N1p22",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "TNFAIP6",
+      "GEM"
+     ],
+     "pooled_r": 0.2211919058,
+     "gate5": {
+      "negative": [
+       "EGR1",
+       "COL14A1"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p23",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "NR4A1",
+      "NR4A2"
+     ],
+     "pooled_r": 0.2065376905,
+     "gate5": {
+      "negative": [
+       "TSC22D1",
+       "UBA2"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1p24",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "PDE4DIP",
+      "ENSG00000274265"
+     ],
+     "pooled_r": 0.204504395,
+     "gate5": {
+      "negative": [
+       "MORF4L2",
+       "PDCD6IP"
+      ],
+      "positive": [
+       "S100A6",
+       "S100A10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N1sh",
+     "kind": "set",
+     "level": "high",
+     "genes": [
+      "COL3A1",
+      "COL1A1",
+      "FOS",
+      "JUN",
+      "CFD",
+      "GSN",
+      "DCN",
+      "CST3",
+      "JUND",
+      "FOSB",
+      "MGP",
+      "CCDC80",
+      "NEGR1",
+      "CFH",
+      "COL1A2",
+      "COL6A1"
+     ],
+     "higher_in": "A"
+    },
+    {
+     "id": "N1sm",
+     "kind": "set",
+     "level": "medium",
+     "genes": [
+      "ABCA6",
+      "ABCA9",
+      "TNXB",
+      "ABLIM1",
+      "SRPX",
+      "COL4A2",
+      "ABCA8",
+      "TGFBR2",
+      "C1orf21",
+      "PBX1",
+      "RBPMS",
+      "LAMB1",
+      "USP53",
+      "SAMHD1",
+      "DST",
+      "TRIO"
+     ],
+     "higher_in": "A"
+    }
+   ]
+  },
+  {
+   "id": "N2",
+   "order": 2,
+   "rank": 2,
+   "collection_id": "ec329aed-22bc-4d6e-8935-8282dcb1acac",
+   "collection_name": "Early human lung immune cell development and its role in epithelial cell fate",
+   "organism": "homo_sapiens",
+   "tissue": "lung",
+   "cell_type": "unknown",
+   "condition_a": "10x 3' v2 | cell",
+   "condition_b": "10x 5' transcription profiling | cell",
+   "donors": 7,
+   "cells": 5600,
+   "release": "2025-11-08",
+   "datasets": [
+    "350237e0-9f48-4cbd-9140-3b44495549f3",
+    "8dc858b0-b076-4326-94bb-7c2d1cd721a3",
+    "fcadb222-82e2-43eb-a3ab-6af0a22051fe"
+   ],
+   "npz_sha256": "3ab8a4f223ffffe28c616905afc24bad85be7af361af1cb895bcdefd790b1140",
+   "genes": 61497,
+   "joinids": "joinids/N2.txt",
+   "groups": {
+    "A": "10x 3' v2 | cell",
+    "B": "10x 5' transcription profiling | cell"
+   },
+   "sex_conflicts": [],
+   "pool": {
+    "pairs_per_level": 8,
+    "fewer_pairs_because": [],
+    "levels": {
+     "high": {
+      "candidates": 490,
+      "median_r": 0.0506407111,
+      "eligible_genes": 490
+     },
+     "medium": {
+      "candidates": 425,
+      "median_r": 0.030812592399999998,
+      "eligible_genes": 425
+     },
+     "low": {
+      "candidates": 1000,
+      "median_r": 0.009482115,
+      "eligible_genes": 6039
+     }
+    },
+    "positive_control": {
+     "pair": [
+      "TMSB4X",
+      "TMSB10"
+     ],
+     "r": 0.7409066903,
+     "mean": [
+      94.30357142857143,
+      41.83767857142857
+     ]
+    }
+   },
+   "claims": [
+    {
+     "id": "N2p01",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "CD74",
+      "HLA-DRA"
+     ],
+     "pooled_r": 0.906171845,
+     "gate5": {
+      "negative": [
+       "B2M",
+       "UBL5"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p02",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "TYROBP",
+      "FCER1G"
+     ],
+     "pooled_r": 0.8801425736,
+     "gate5": {
+      "negative": [
+       "PABPC1",
+       "SNX3"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p03",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "CTSB",
+      "FCGRT"
+     ],
+     "pooled_r": 0.8199140428,
+     "gate5": {
+      "negative": [
+       "SAT1",
+       "LSP1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p04",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "HLA-B",
+      "HLA-C"
+     ],
+     "pooled_r": 0.7961043041,
+     "gate5": {
+      "negative": [
+       "ATP5F1E",
+       "SON"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p05",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "S100A6",
+      "S100A4"
+     ],
+     "pooled_r": 0.7770436961,
+     "gate5": {
+      "negative": [
+       "HSPB1",
+       "UBE2I"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p06",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "CST3",
+      "NPC2"
+     ],
+     "pooled_r": 0.7682909118,
+     "gate5": {
+      "negative": [
+       "PFN1",
+       "PSAP"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p07",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "HSPA1A",
+      "HSPA1B"
+     ],
+     "pooled_r": 0.7552082965,
+     "gate5": {
+      "negative": [
+       "GAPDH",
+       "TOP1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p08",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "EEF1A1",
+      "RACK1"
+     ],
+     "pooled_r": 0.7513653754,
+     "gate5": {
+      "negative": [
+       "ACTB",
+       "STMN1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p09",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "PYCARD",
+      "GNAI2"
+     ],
+     "pooled_r": 0.3931882611,
+     "gate5": {
+      "negative": [
+       "SNRPC",
+       "MAP1LC3B"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p10",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "RAD21",
+      "BUB3"
+     ],
+     "pooled_r": 0.3344327944,
+     "gate5": {
+      "negative": [
+       "SELENOK",
+       "RPN1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p11",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "MRPL18",
+      "CHORDC1"
+     ],
+     "pooled_r": 0.3227421102,
+     "gate5": {
+      "negative": [
+       "PSMD8",
+       "MYDGF"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p12",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "SEPTIN6",
+      "SEPTIN9"
+     ],
+     "pooled_r": 0.3104940315,
+     "gate5": {
+      "negative": [
+       "HNRNPD",
+       "SUMO3"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p13",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "RNASEH2B",
+      "C12orf57"
+     ],
+     "pooled_r": 0.3068412001,
+     "gate5": {
+      "negative": [
+       "FKBP8",
+       "UQCRC2"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p14",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "HNRNPR",
+      "SRSF10"
+     ],
+     "pooled_r": 0.3049476386,
+     "gate5": {
+      "negative": [
+       "DAD1",
+       "PARP1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p15",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "SNX6",
+      "BST2"
+     ],
+     "pooled_r": 0.2811023255,
+     "gate5": {
+      "negative": [
+       "RTN4",
+       "PSMD7"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p16",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "IQGAP1",
+      "HCLS1"
+     ],
+     "pooled_r": 0.2631080774,
+     "gate5": {
+      "negative": [
+       "GPSM3",
+       "SRP72"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p17",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HBA2",
+      "HBA1"
+     ],
+     "pooled_r": 0.9720559203,
+     "gate5": {
+      "negative": [
+       "HBG2",
+       "SF3A1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p18",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "C1QC",
+      "C1QA"
+     ],
+     "pooled_r": 0.9710520703,
+     "gate5": {
+      "negative": [
+       "LYZ",
+       "CCL4L2"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p19",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "S100A8",
+      "S100A9"
+     ],
+     "pooled_r": 0.9221685437,
+     "gate5": {
+      "negative": [
+       "HMOX1",
+       "LY6E"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p20",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "C1QB",
+      "MS4A7"
+     ],
+     "pooled_r": 0.9121778283,
+     "gate5": {
+      "negative": [
+       "CCL4",
+       "NDUFA11"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p21",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HLA-DPA1",
+      "HLA-DPB1"
+     ],
+     "pooled_r": 0.9028304985,
+     "gate5": {
+      "negative": [
+       "SLC40A1",
+       "IL1B"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p22",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "LGMN",
+      "FOLR2"
+     ],
+     "pooled_r": 0.8711955716,
+     "gate5": {
+      "negative": [
+       "HSPA6",
+       "CREM"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2p23",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HLA-DRB1",
+      "HLA-DRB5"
+     ],
+     "pooled_r": 0.8535588953,
+     "gate5": {
+      "negative": [
+       "LIPA",
+       "SLC2A3"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N2p24",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "SELENOP",
+      "LILRB5"
+     ],
+     "pooled_r": 0.8505113709,
+     "gate5": {
+      "negative": [
+       "CCL3",
+       "ECHS1"
+      ],
+      "positive": [
+       "TMSB4X",
+       "TMSB10"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N2sh",
+     "kind": "set",
+     "level": "high",
+     "genes": [
+      "CD74",
+      "HLA-DRA",
+      "TYROBP",
+      "FCER1G",
+      "CTSB",
+      "FCGRT",
+      "HLA-B",
+      "HLA-C",
+      "S100A6",
+      "S100A4",
+      "CST3",
+      "NPC2",
+      "HSPA1A",
+      "HSPA1B",
+      "EEF1A1",
+      "RACK1"
+     ],
+     "higher_in": "A"
+    },
+    {
+     "id": "N2sm",
+     "kind": "set",
+     "level": "medium",
+     "genes": [
+      "PYCARD",
+      "GNAI2",
+      "RAD21",
+      "BUB3",
+      "MRPL18",
+      "CHORDC1",
+      "SEPTIN6",
+      "SEPTIN9",
+      "RNASEH2B",
+      "C12orf57",
+      "HNRNPR",
+      "SRSF10",
+      "SNX6",
+      "BST2",
+      "IQGAP1",
+      "HCLS1"
+     ],
+     "higher_in": "B"
+    }
+   ]
+  },
+  {
+   "id": "N3",
+   "order": 3,
+   "rank": 3,
+   "collection_id": "b1a879f6-5638-48d3-8f64-f6592c1b1561",
+   "collection_name": "Mapping the developing human immune system across organs",
+   "organism": "homo_sapiens",
+   "tissue": "liver",
+   "cell_type": "macrophage",
+   "condition_a": "10x 3' v2 | cell",
+   "condition_b": "10x 5' v1 | cell",
+   "donors": 7,
+   "cells": 5600,
+   "release": "2025-11-08",
+   "datasets": [
+    "001b01fe-5c70-4bda-a3aa-ee09b7899b14",
+    "2aa1c93c-4ef3-4e9a-98e7-0bd37933953c",
+    "3affa268-8a74-460a-ac9b-a984c0832469",
+    "41bc3efb-b4e1-4676-8cb9-3a128450d9e1",
+    "48101fa2-1a63-4514-b892-53ea1d3a8657",
+    "4ee03124-5782-4187-968a-c178f8b212e1",
+    "60608f13-0141-462c-acac-4556dc6b542b",
+    "6a30bf44-c490-41ac-965b-0bb58432b10a",
+    "804d9a85-665b-45c6-b204-13457fdcc7ac",
+    "83de2c2c-c102-4b18-9e7d-da36e8ad76ca",
+    "8d73847b-33e7-48f0-837f-e3e6579bf12d",
+    "aa633105-e8e5-4dcc-b72d-6da6c191b3e9",
+    "aede7ec2-a32a-418f-b8f9-3a5c9b26245a",
+    "c4e2bde2-3c51-4d10-9fd6-053e212b4824",
+    "d0c12af4-c0e4-4c7b-873a-70752b449689",
+    "dcc10fd8-23c1-4d3f-b07a-ab7cb120ad00",
+    "e21487a3-936c-4114-8cf2-cfcc60c7eb6d",
+    "f1e4a73c-33ab-4564-bf92-742f8b286da6",
+    "fd072bc3-2dfb-46f8-b4e3-467cb3223182"
+   ],
+   "npz_sha256": "c24663a96662d50a8fc1a6cfd7c305fbbb0068bdfa89252eb7bb5378a3b7c81c",
+   "genes": 61497,
+   "joinids": "joinids/N3.txt",
+   "groups": {
+    "A": "10x 3' v2 | cell",
+    "B": "10x 5' v1 | cell"
+   },
+   "sex_conflicts": [],
+   "pool": {
+    "pairs_per_level": 8,
+    "fewer_pairs_because": [],
+    "levels": {
+     "high": {
+      "candidates": 623,
+      "median_r": 0.0506959884,
+      "eligible_genes": 623
+     },
+     "medium": {
+      "candidates": 805,
+      "median_r": 0.02093438445,
+      "eligible_genes": 805
+     },
+     "low": {
+      "candidates": 1000,
+      "median_r": 0.00854581455,
+      "eligible_genes": 5168
+     }
+    },
+    "positive_control": {
+     "pair": [
+      "CST3",
+      "B2M"
+     ],
+     "r": 0.7177451375,
+     "mean": [
+      120.20196428571428,
+      116.43964285714286
+     ]
+    }
+   },
+   "claims": [
+    {
+     "id": "N3p01",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "HBA2",
+      "HBA1"
+     ],
+     "pooled_r": 0.9287440926,
+     "gate5": {
+      "negative": [
+       "HBG2",
+       "SKP1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p02",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "C1QB",
+      "C1QA"
+     ],
+     "pooled_r": 0.8825549314,
+     "gate5": {
+      "negative": [
+       "ACTB",
+       "HSPA1B"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p03",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "HLA-DRA",
+      "HLA-DRB1"
+     ],
+     "pooled_r": 0.843808647,
+     "gate5": {
+      "negative": [
+       "SAT1",
+       "IFITM2"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p04",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "HLA-DPA1",
+      "HLA-DPB1"
+     ],
+     "pooled_r": 0.8368670084,
+     "gate5": {
+      "negative": [
+       "HSP90AA1",
+       "SYNGR2"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p05",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "FTL",
+      "FTH1"
+     ],
+     "pooled_r": 0.7750100405,
+     "gate5": {
+      "negative": [
+       "MALAT1",
+       "TIMP1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p06",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "LGMN",
+      "LIPA"
+     ],
+     "pooled_r": 0.7413295683,
+     "gate5": {
+      "negative": [
+       "TPT1",
+       "HNRNPA3"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p07",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "C1QC",
+      "FCGRT"
+     ],
+     "pooled_r": 0.7402258031,
+     "gate5": {
+      "negative": [
+       "CD74",
+       "MCOLN1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p08",
+     "kind": "pair",
+     "level": "high",
+     "genes": [
+      "TMSB4X",
+      "TMSB10"
+     ],
+     "pooled_r": 0.7301204308,
+     "gate5": {
+      "negative": [
+       "EEF1A1",
+       "ASAH1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p09",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "APOA2",
+      "SERPINA1"
+     ],
+     "pooled_r": 0.3610751771,
+     "gate5": {
+      "negative": [
+       "NDUFB7",
+       "TLR4"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p10",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "RND3",
+      "EPAS1"
+     ],
+     "pooled_r": 0.3160970281,
+     "gate5": {
+      "negative": [
+       "PARP14",
+       "ANP32A"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p11",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "RNASE6",
+      "LDHB"
+     ],
+     "pooled_r": 0.2658021954,
+     "gate5": {
+      "negative": [
+       "EIF4B",
+       "LRRFIP1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p12",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "LRP1",
+      "SIGLEC1"
+     ],
+     "pooled_r": 0.2650893634,
+     "gate5": {
+      "negative": [
+       "TRIR",
+       "JUND"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p13",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "CEBPB",
+      "METRNL"
+     ],
+     "pooled_r": 0.2436934611,
+     "gate5": {
+      "negative": [
+       "THEMIS2",
+       "SIVA1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p14",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "ACTN1",
+      "CD82"
+     ],
+     "pooled_r": 0.2402561947,
+     "gate5": {
+      "negative": [
+       "CYCS",
+       "RBMS1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p15",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "SLC7A8",
+      "LPCAT1"
+     ],
+     "pooled_r": 0.2397304565,
+     "gate5": {
+      "negative": [
+       "PGAM1",
+       "TIMP2"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p16",
+     "kind": "pair",
+     "level": "medium",
+     "genes": [
+      "SCD",
+      "GPNMB"
+     ],
+     "pooled_r": 0.2317726083,
+     "gate5": {
+      "negative": [
+       "FIS1",
+       "AKR1B1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p17",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HBM",
+      "AHSP"
+     ],
+     "pooled_r": 0.8272340868,
+     "gate5": {
+      "negative": [
+       "CCL4",
+       "H1-0"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p18",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HBB",
+      "ALAS2"
+     ],
+     "pooled_r": 0.8174473249,
+     "gate5": {
+      "negative": [
+       "HBZ",
+       "STAB1"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p19",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "GYPA",
+      "HEMGN"
+     ],
+     "pooled_r": 0.77096184,
+     "gate5": {
+      "negative": [
+       "EGR1",
+       "RAB9A"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p20",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HBG1",
+      "SNCA"
+     ],
+     "pooled_r": 0.7403142453,
+     "gate5": {
+      "negative": [
+       "G0S2",
+       "MRPL18"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p21",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "SLC25A37",
+      "SLC4A1"
+     ],
+     "pooled_r": 0.7389819796,
+     "gate5": {
+      "negative": [
+       "NR4A2",
+       "MT1H"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p22",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HMBS",
+      "SLC2A1"
+     ],
+     "pooled_r": 0.6867441228,
+     "gate5": {
+      "negative": [
+       "ELL2",
+       "SLC66A3"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "A"
+    },
+    {
+     "id": "N3p23",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "TMCC2",
+      "PIM1"
+     ],
+     "pooled_r": 0.6620807466,
+     "gate5": {
+      "negative": [
+       "BHLHE40",
+       "AKNA"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3p24",
+     "kind": "pair",
+     "level": "low",
+     "genes": [
+      "HLA-DQA1",
+      "HLA-DQB1"
+     ],
+     "pooled_r": 0.6476981114,
+     "gate5": {
+      "negative": [
+       "IFI27",
+       "TFRC"
+      ],
+      "positive": [
+       "CST3",
+       "B2M"
+      ]
+     },
+     "higher_in": "B"
+    },
+    {
+     "id": "N3sh",
+     "kind": "set",
+     "level": "high",
+     "genes": [
+      "HBA2",
+      "HBA1",
+      "C1QB",
+      "C1QA",
+      "HLA-DRA",
+      "HLA-DRB1",
+      "HLA-DPA1",
+      "HLA-DPB1",
+      "FTL",
+      "FTH1",
+      "LGMN",
+      "LIPA",
+      "C1QC",
+      "FCGRT",
+      "TMSB4X",
+      "TMSB10"
+     ],
+     "higher_in": "A"
+    },
+    {
+     "id": "N3sm",
+     "kind": "set",
+     "level": "medium",
+     "genes": [
+      "APOA2",
+      "SERPINA1",
+      "RND3",
+      "EPAS1",
+      "RNASE6",
+      "LDHB",
+      "LRP1",
+      "SIGLEC1",
+      "CEBPB",
+      "METRNL",
+      "ACTN1",
+      "CD82",
+      "SLC7A8",
+      "LPCAT1",
+      "SCD",
+      "GPNMB"
+     ],
+     "higher_in": "A"
+    }
+   ]
+  }
+ ],
+ "positive": [
+  {
+   "source": "Kang et al. 2018, GEO GSE96583, batch 2 (GSM2560248 control, GSM2560249 stimulated)",
+   "cells": 29065,
+   "singlets": 24679,
+   "integers": true,
+   "label_problems": [],
+   "donors_in_both": [
+    "101",
+    "1015",
+    "1016",
+    "1039",
+    "107",
+    "1244",
+    "1256",
+    "1488"
+   ],
+   "sex_conflicts": [],
+   "type": "CD14+ Monocytes",
+   "passed": true,
+   "genes": [
+    {
+     "gene": "ISG15",
+     "present": true,
+     "detection_ctrl": 0.2639273081607802,
+     "detection_stim": 0.9924242424242424,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": true
+    },
+    {
+     "gene": "IFI6",
+     "present": true,
+     "detection_ctrl": 0.22507503254400654,
+     "detection_stim": 0.9743955440989069,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": true
+    },
+    {
+     "gene": "IFIT1",
+     "present": true,
+     "detection_ctrl": 0.02484495221145231,
+     "detection_stim": 0.9494666754599985,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "IFIT2",
+     "present": true,
+     "detection_ctrl": 0.027072629410579488,
+     "detection_stim": 0.935633700495081,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "IFIT3",
+     "present": true,
+     "detection_ctrl": 0.042682399759358954,
+     "detection_stim": 0.970249089341484,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "MX1",
+     "present": true,
+     "detection_ctrl": 0.06932028222270153,
+     "detection_stim": 0.9116779444761567,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "MX2",
+     "present": true,
+     "detection_ctrl": 0.04896006938138413,
+     "detection_stim": 0.673433068293597,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "OAS1",
+     "present": true,
+     "detection_ctrl": 0.09812459737381946,
+     "detection_stim": 0.885754012174546,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "OAS2",
+     "present": true,
+     "detection_ctrl": 0.02213749616912404,
+     "detection_stim": 0.44096579432796357,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "RSAD2",
+     "present": true,
+     "detection_ctrl": 0.031157738592632274,
+     "detection_stim": 0.9632276840970215,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "IFI44L",
+     "present": true,
+     "detection_ctrl": 0.030757793059571163,
+     "detection_stim": 0.6226288892221702,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": false
+    },
+    {
+     "gene": "ISG20",
+     "present": true,
+     "detection_ctrl": 0.228892831085647,
+     "detection_stim": 0.9897204806687565,
+     "induced_in": 8,
+     "donors": 8,
+     "eligible": true
+    }
+   ],
+   "eligible": [
+    "ISG15",
+    "IFI6",
+    "ISG20"
+   ],
+   "unmatched": [
+    "ISG15"
+   ],
+   "cells_kept": 4720,
+   "npz_sha256": "9265bfb66d0cda783e13a25bafebdd17f27407276adf89ea475aac68b4a51130",
+   "claims": [
+    {
+     "id": "K1p1",
+     "kind": "pair",
+     "genes": [
+      "ISG20",
+      "IFI6"
+     ],
+     "higher_in": "stim"
+    }
+   ],
+   "groups": {
+    "A": "stim",
+    "B": "ctrl"
+   }
+  }
+ ],
+ "positive_failed": []
+}

@@ -1,0 +1,891 @@
+{
+ "synthetic": false,
+ "release": "2025-11-08",
+ "plan": "validation/level_b/plan_s6.md",
+ "rules": {
+  "min_donors": 6,
+  "min_cells": 200,
+  "max_donors": 200,
+  "max_cells": 400,
+  "max_tried": 10,
+  "n_negative": 3,
+  "seeds": [
+   20261110,
+   20261111,
+   20261112
+  ],
+  "base_filter": "is_primary_data == True and tissue_type == 'tissue'",
+  "excluded_datasets": {
+   "37a17b78-4864-4a42-b67b-31c00962795a": "v1's background B1",
+   "49e4ffcc-5444-406d-bdee-577127404ba8": "v1's background B2"
+  },
+  "excluded_names": {
+   "tabula muris": "Tabula Muris (Senis): the real pilot",
+   "sea-ad": "SEA-AD: the real pilot",
+   "multiplexed droplet single-cell rna-sequencing using natural genetic variation": "Kang et al. 2018: the positive control"
+  },
+  "excluded_dois": {
+   "10.1038/s41586-020-2496-1": "Tabula Muris Senis: the real pilot",
+   "10.1038/s41593-024-01774-5": "SEA-AD: the real pilot",
+   "10.1038/s41593-022-01022-8": "Marsh et al. 2022: the real pilot",
+   "10.1038/nbt.4042": "Kang et al. 2018: the positive control"
+  },
+  "isgs": [
+   "ISG15",
+   "IFI6",
+   "IFIT1",
+   "IFIT2",
+   "IFIT3",
+   "MX1",
+   "MX2",
+   "OAS1",
+   "OAS2",
+   "RSAD2",
+   "IFI44L",
+   "ISG20"
+  ],
+  "domain_detection": 0.1
+ },
+ "negative": {
+  "candidates": 26,
+  "excluded": 14,
+  "collections": 6,
+  "tried": 3,
+  "chosen": [
+   {
+    "id": "N1",
+    "order": 1,
+    "rank": 1,
+    "collection_id": "4195ab4c-20bd-4cd3-8b3d-65601277e731",
+    "collection_name": "A spatially resolved single cell genomic atlas of the adult human breast",
+    "organism": "homo_sapiens",
+    "tissue": "breast",
+    "cell_type": "fibroblast",
+    "condition_a": "10x 3' v3 | cell",
+    "condition_b": "10x 3' v3 | nucleus",
+    "donors": 8,
+    "cells": 6400,
+    "release": "2025-11-08",
+    "datasets": [
+     "170e9c52-5e8a-4ccf-99b6-d45b25b14614",
+     "2a7f90de-098a-4a6f-ac07-9e6462792412",
+     "2d3e3c41-3425-4450-9914-95ed7edf7752",
+     "31b49393-4485-4998-9ef4-33e03c4c1789",
+     "396a9124-fb20-4822-bf9c-e93fdf7c999a",
+     "3d0d6923-a2c4-476f-a53e-3b7bfa010d90",
+     "49108ba9-1b7a-4a8a-9859-3d32e6a83926",
+     "59f3a9d6-8bab-481d-8c42-766991595687",
+     "6e96d93c-de27-4cb2-9ac1-051111ce2aff",
+     "74520626-b0ba-4ee9-86b5-714649554def",
+     "7f08cbcc-5790-4576-8478-10e9a999b316",
+     "842c6f5d-4a94-4eef-8510-8c792d1124bc",
+     "87183784-5b2e-4de0-a960-cffdeb005a7d",
+     "a31525c0-a7ee-409e-a0ee-9bf4f507c7f1",
+     "a41202e6-173c-477c-8b4d-e0688ee1c4cb",
+     "a6388a6f-6076-401b-9b30-7d4306a20035",
+     "c45f05b3-aafc-4fce-a800-133a2364df64",
+     "c8d40d53-387b-48f2-9f89-72bfdb9c7c9f",
+     "e47c65a8-7d2f-48b8-908e-04ea6505fa26",
+     "fb09f8c3-cb71-480d-8919-d8afd2670b97"
+    ],
+    "npz_sha256": "431c343912875d6d0ca2cc61302014bd6dbc33f7c9525ac83f0a901830de1ee7",
+    "genes": 61497,
+    "joinids": "joinids/N1.txt",
+    "groups": {
+     "A": "10x 3' v3 | cell",
+     "B": "10x 3' v3 | nucleus"
+    },
+    "donor_meta": {
+     "P20": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "prime adult stage"
+     },
+     "P23": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "prime adult stage"
+     },
+     "P24": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "adult stage"
+     },
+     "P38": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "adult stage"
+     },
+     "P39": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "prime adult stage"
+     },
+     "P40": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "prime adult stage"
+     },
+     "P41": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "prime adult stage"
+     },
+     "P59": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "adult stage"
+     }
+    },
+    "units": [
+     {
+      "unit": "P20 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.955,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P20 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.9725,
+      "y": 0.0125,
+      "call": "female"
+     },
+     {
+      "unit": "P23 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.9175,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P23 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.85,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P24 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.785,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P24 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7775,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P38 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.9175,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P38 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.65,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P39 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.93,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P39 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.605,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P40 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.9175,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P40 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.72,
+      "y": 0.005,
+      "call": "female"
+     },
+     {
+      "unit": "P41 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.8775,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P41 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.6075,
+      "y": 0.0025,
+      "call": "female"
+     },
+     {
+      "unit": "P59 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.9625,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "P59 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7375,
+      "y": 0.015,
+      "call": "female"
+     }
+    ],
+    "sex_conflicts": [],
+    "pool": {
+     "pairs_per_level": 8,
+     "fewer_pairs_because": [],
+     "levels": {
+      "high": {
+       "candidates": 143,
+       "median_r": 0.0075403438,
+       "eligible_genes": 143
+      },
+      "medium": {
+       "candidates": 136,
+       "median_r": 0.00984611145,
+       "eligible_genes": 136
+      },
+      "low": {
+       "candidates": 1000,
+       "median_r": 0.00366250395,
+       "eligible_genes": 2332
+      }
+     },
+     "positive_control": {
+      "pair": [
+       "S100A6",
+       "S100A10"
+      ],
+      "r": 0.2350080387,
+      "mean": [
+       12.36734375,
+       5.48078125
+      ]
+     }
+    },
+    "claims": 26
+   },
+   {
+    "id": "N2",
+    "order": 2,
+    "rank": 2,
+    "collection_id": "ec329aed-22bc-4d6e-8935-8282dcb1acac",
+    "collection_name": "Early human lung immune cell development and its role in epithelial cell fate",
+    "organism": "homo_sapiens",
+    "tissue": "lung",
+    "cell_type": "unknown",
+    "condition_a": "10x 3' v2 | cell",
+    "condition_b": "10x 5' transcription profiling | cell",
+    "donors": 7,
+    "cells": 5600,
+    "release": "2025-11-08",
+    "datasets": [
+     "350237e0-9f48-4cbd-9140-3b44495549f3",
+     "8dc858b0-b076-4326-94bb-7c2d1cd721a3",
+     "fcadb222-82e2-43eb-a3ab-6af0a22051fe"
+    ],
+    "npz_sha256": "3ab8a4f223ffffe28c616905afc24bad85be7af361af1cb895bcdefd790b1140",
+    "genes": 61497,
+    "joinids": "joinids/N2.txt",
+    "groups": {
+     "A": "10x 3' v2 | cell",
+     "B": "10x 5' transcription profiling | cell"
+    },
+    "donor_meta": {
+     "F29": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "17th week post-fertilization stage"
+     },
+     "F30": {
+      "disease": "normal",
+      "sex": "male",
+      "development_stage": "15th week post-fertilization stage"
+     },
+     "F32": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "Carnegie stage 19"
+     },
+     "F34": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "Carnegie stage 23"
+     },
+     "F38": {
+      "disease": "normal",
+      "sex": "male",
+      "development_stage": "14th week post-fertilization stage"
+     },
+     "F41": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "17th week post-fertilization stage"
+     },
+     "F45": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "13th week post-fertilization stage"
+     }
+    },
+    "units": [
+     {
+      "unit": "F29 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7525,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F29 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.615,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F30 | A",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.9425,
+      "call": "male"
+     },
+     {
+      "unit": "F30 | B",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.9675,
+      "call": "male"
+     },
+     {
+      "unit": "F32 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.755,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F32 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.775,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F34 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7475,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F34 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.66,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F38 | A",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.945,
+      "call": "male"
+     },
+     {
+      "unit": "F38 | B",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.94,
+      "call": "male"
+     },
+     {
+      "unit": "F41 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7675,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F41 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.65,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F45 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.755,
+      "y": 0.0025,
+      "call": "female"
+     },
+     {
+      "unit": "F45 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.595,
+      "y": 0.0,
+      "call": "female"
+     }
+    ],
+    "sex_conflicts": [],
+    "pool": {
+     "pairs_per_level": 8,
+     "fewer_pairs_because": [],
+     "levels": {
+      "high": {
+       "candidates": 490,
+       "median_r": 0.0506407111,
+       "eligible_genes": 490
+      },
+      "medium": {
+       "candidates": 425,
+       "median_r": 0.030812592399999998,
+       "eligible_genes": 425
+      },
+      "low": {
+       "candidates": 1000,
+       "median_r": 0.009482115,
+       "eligible_genes": 6039
+      }
+     },
+     "positive_control": {
+      "pair": [
+       "TMSB4X",
+       "TMSB10"
+      ],
+      "r": 0.7409066903,
+      "mean": [
+       94.30357142857143,
+       41.83767857142857
+      ]
+     }
+    },
+    "claims": 26
+   },
+   {
+    "id": "N3",
+    "order": 3,
+    "rank": 3,
+    "collection_id": "b1a879f6-5638-48d3-8f64-f6592c1b1561",
+    "collection_name": "Mapping the developing human immune system across organs",
+    "organism": "homo_sapiens",
+    "tissue": "liver",
+    "cell_type": "macrophage",
+    "condition_a": "10x 3' v2 | cell",
+    "condition_b": "10x 5' v1 | cell",
+    "donors": 7,
+    "cells": 5600,
+    "release": "2025-11-08",
+    "datasets": [
+     "001b01fe-5c70-4bda-a3aa-ee09b7899b14",
+     "2aa1c93c-4ef3-4e9a-98e7-0bd37933953c",
+     "3affa268-8a74-460a-ac9b-a984c0832469",
+     "41bc3efb-b4e1-4676-8cb9-3a128450d9e1",
+     "48101fa2-1a63-4514-b892-53ea1d3a8657",
+     "4ee03124-5782-4187-968a-c178f8b212e1",
+     "60608f13-0141-462c-acac-4556dc6b542b",
+     "6a30bf44-c490-41ac-965b-0bb58432b10a",
+     "804d9a85-665b-45c6-b204-13457fdcc7ac",
+     "83de2c2c-c102-4b18-9e7d-da36e8ad76ca",
+     "8d73847b-33e7-48f0-837f-e3e6579bf12d",
+     "aa633105-e8e5-4dcc-b72d-6da6c191b3e9",
+     "aede7ec2-a32a-418f-b8f9-3a5c9b26245a",
+     "c4e2bde2-3c51-4d10-9fd6-053e212b4824",
+     "d0c12af4-c0e4-4c7b-873a-70752b449689",
+     "dcc10fd8-23c1-4d3f-b07a-ab7cb120ad00",
+     "e21487a3-936c-4114-8cf2-cfcc60c7eb6d",
+     "f1e4a73c-33ab-4564-bf92-742f8b286da6",
+     "fd072bc3-2dfb-46f8-b4e3-467cb3223182"
+    ],
+    "npz_sha256": "c24663a96662d50a8fc1a6cfd7c305fbbb0068bdfa89252eb7bb5378a3b7c81c",
+    "genes": 61497,
+    "joinids": "joinids/N3.txt",
+    "groups": {
+     "A": "10x 3' v2 | cell",
+     "B": "10x 5' v1 | cell"
+    },
+    "donor_meta": {
+     "F29": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "17th week post-fertilization stage"
+     },
+     "F30": {
+      "disease": "normal",
+      "sex": "male",
+      "development_stage": "15th week post-fertilization stage"
+     },
+     "F32": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "Carnegie stage 19"
+     },
+     "F34": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "Carnegie stage 23"
+     },
+     "F38": {
+      "disease": "normal",
+      "sex": "male",
+      "development_stage": "14th week post-fertilization stage"
+     },
+     "F41": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "17th week post-fertilization stage"
+     },
+     "F45": {
+      "disease": "normal",
+      "sex": "female",
+      "development_stage": "13th week post-fertilization stage"
+     }
+    },
+    "units": [
+     {
+      "unit": "F29 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.91,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F29 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.8525,
+      "y": 0.0025,
+      "call": "female"
+     },
+     {
+      "unit": "F30 | A",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.97,
+      "call": "male"
+     },
+     {
+      "unit": "F30 | B",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.9575,
+      "call": "male"
+     },
+     {
+      "unit": "F32 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.84,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F32 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.8075,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F34 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.8325,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F34 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7625,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F38 | A",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.9275,
+      "call": "male"
+     },
+     {
+      "unit": "F38 | B",
+      "cells": 400,
+      "label": "male",
+      "xist": 0.0,
+      "y": 0.9725,
+      "call": "male"
+     },
+     {
+      "unit": "F41 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.8875,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F41 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7875,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F45 | A",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.84,
+      "y": 0.0,
+      "call": "female"
+     },
+     {
+      "unit": "F45 | B",
+      "cells": 400,
+      "label": "female",
+      "xist": 0.7375,
+      "y": 0.0,
+      "call": "female"
+     }
+    ],
+    "sex_conflicts": [],
+    "pool": {
+     "pairs_per_level": 8,
+     "fewer_pairs_because": [],
+     "levels": {
+      "high": {
+       "candidates": 623,
+       "median_r": 0.0506959884,
+       "eligible_genes": 623
+      },
+      "medium": {
+       "candidates": 805,
+       "median_r": 0.02093438445,
+       "eligible_genes": 805
+      },
+      "low": {
+       "candidates": 1000,
+       "median_r": 0.00854581455,
+       "eligible_genes": 5168
+      }
+     },
+     "positive_control": {
+      "pair": [
+       "CST3",
+       "B2M"
+      ],
+      "r": 0.7177451375,
+      "mean": [
+       120.20196428571428,
+       116.43964285714286
+      ]
+     }
+    },
+    "claims": 26
+   }
+  ]
+ },
+ "positive": {
+  "source": "Kang et al. 2018, GEO GSE96583, batch 2 (GSM2560248 control, GSM2560249 stimulated)",
+  "cells": 29065,
+  "singlets": 24679,
+  "integers": true,
+  "label_problems": [],
+  "donors_in_both": [
+   "101",
+   "1015",
+   "1016",
+   "1039",
+   "107",
+   "1244",
+   "1256",
+   "1488"
+  ],
+  "sex_conflicts": [],
+  "type": "CD14+ Monocytes",
+  "passed": true,
+  "genes": [
+   {
+    "gene": "ISG15",
+    "present": true,
+    "detection_ctrl": 0.2639273081607802,
+    "detection_stim": 0.9924242424242424,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": true
+   },
+   {
+    "gene": "IFI6",
+    "present": true,
+    "detection_ctrl": 0.22507503254400654,
+    "detection_stim": 0.9743955440989069,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": true
+   },
+   {
+    "gene": "IFIT1",
+    "present": true,
+    "detection_ctrl": 0.02484495221145231,
+    "detection_stim": 0.9494666754599985,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "IFIT2",
+    "present": true,
+    "detection_ctrl": 0.027072629410579488,
+    "detection_stim": 0.935633700495081,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "IFIT3",
+    "present": true,
+    "detection_ctrl": 0.042682399759358954,
+    "detection_stim": 0.970249089341484,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "MX1",
+    "present": true,
+    "detection_ctrl": 0.06932028222270153,
+    "detection_stim": 0.9116779444761567,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "MX2",
+    "present": true,
+    "detection_ctrl": 0.04896006938138413,
+    "detection_stim": 0.673433068293597,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "OAS1",
+    "present": true,
+    "detection_ctrl": 0.09812459737381946,
+    "detection_stim": 0.885754012174546,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "OAS2",
+    "present": true,
+    "detection_ctrl": 0.02213749616912404,
+    "detection_stim": 0.44096579432796357,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "RSAD2",
+    "present": true,
+    "detection_ctrl": 0.031157738592632274,
+    "detection_stim": 0.9632276840970215,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "IFI44L",
+    "present": true,
+    "detection_ctrl": 0.030757793059571163,
+    "detection_stim": 0.6226288892221702,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": false
+   },
+   {
+    "gene": "ISG20",
+    "present": true,
+    "detection_ctrl": 0.228892831085647,
+    "detection_stim": 0.9897204806687565,
+    "induced_in": 8,
+    "donors": 8,
+    "eligible": true
+   }
+  ],
+  "eligible": [
+   "ISG15",
+   "IFI6",
+   "ISG20"
+  ],
+  "unmatched": [
+   "ISG15"
+  ],
+  "cells_kept": 4720,
+  "npz_sha256": "9265bfb66d0cda783e13a25bafebdd17f27407276adf89ea475aac68b4a51130",
+  "groups": {
+   "A": "stim",
+   "B": "ctrl"
+  }
+ }
+}

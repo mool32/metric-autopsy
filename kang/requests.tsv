@@ -1,0 +1,8 @@
+url	status	bytes	sha256	attempt
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE96nnn/GSE96583/suppl/filelist.txt	200	693	a2c580e6f7e929654f3118ad036db545e35dd7666153fa37ecd842226d27dc27	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE96nnn/GSE96583/suppl/GSE96583_batch2.genes.tsv.gz	200	277054	93aa4e9b530ef9d6411ca129b416324c5cc1cc5a01a1fa6ed4f4a845480ed3ca	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE96nnn/GSE96583/suppl/GSE96583_batch2.total.tsne.df.tsv.gz	200	756342	1d57e72e92ca8695250e88cc0f1c3fa8c0be1175d974f8b427c58f1274dc6c09	1
+https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2560nnn/GSM2560248/suppl/GSM2560248_2.1.mtx.gz	200	28545918	32add28a0b3397d9ef3f220b7a6a55e98e60fe7b66fe48d0986d634df8ca0013	1
+https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2560nnn/GSM2560248/suppl/GSM2560248_barcodes.tsv.gz	200	52904	d58d8d55cbe4a12757207784b3bc9227bf200c9100ca15131176e9f8159c955e	1
+https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2560nnn/GSM2560249/suppl/GSM2560249_2.2.mtx.gz	200	29050932	8aecc98a7ac4957bbc2570f87ebe8ce97332a5bcdbf557d40bd5aabfd287bdc5	1
+https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2560nnn/GSM2560249/suppl/GSM2560249_barcodes.tsv.gz	200	52366	9bb38e080dfae81036fbcd9902c6c6254a4466aa85f70705479be3b2d6679d55	1
