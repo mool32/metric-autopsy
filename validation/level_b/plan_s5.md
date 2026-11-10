@@ -72,3 +72,19 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   sample's 10x chemistry (GEO). For it, `data_run.py` gains the threshold (`min_umis`), the paper's tables
   (`tables`: a CSV, or an Excel sheet read with the standard library) and, in every report, the cells no donor
   names; tested on fabricated deposits.
+
+## 5. The sets' genes (added 2026-11-10, before any set's list is fetched)
+
+A kept set's claim names where the paper lists its genes (`SET: <name>, <n> genes, <where>`; `plan_s3.md`,
+section 4). Its genes are needed by S4's filter (a record that names two of them) and by S5's check 4, so they
+are taken before both, the same way for every set:
+- **The files:** for each kept paper with a set's claim, Europe PMC's supplementary files (its archive of the
+  open-access paper's supplement, by the PMCID), fetched in Actions once, by the label `level-b-setgenes` (the
+  branch `results/level-b-setgenes`), every file with its SHA256. A paper Europe PMC holds no supplement of is
+  listed so, with what its text says of where the list is.
+- **Which list is the set's:** per set, a line of `set_specs.json` naming the file, its sheet and column, and the
+  rows (a module's label in another column, say) that give its genes — written after the files' names and first
+  rows are looked at (as J6 looked at the deposits), committed before the genes are extracted; the extraction is a
+  script's, its output each set's genes and their number against the number the paper states.
+- A set whose list is not found or cannot be read is said so: its claim stays in the list without its genes, S4
+  searches it by its name only, and S5 reports its genes as not listed.
