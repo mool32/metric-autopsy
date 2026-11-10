@@ -49,3 +49,18 @@ deviation goes into `JOURNAL.md`.
 Per claim: its data (where, which files, their SHA256), the six checks with their numbers, and the two counts
 of 12.3 so far (the claims that fail the check of origin; the claims whose test over donors cannot run, by rule
 4 or an unmeasured metric — whether it supports a claim is known only after the runs).
+
+## 4. How the runs go (added 2026-11-10, before any run of S5)
+
+- **In batches:** the specs of a batch are named in `data_specs/run<n>.txt`, each spec committed before the
+  batch's run; the label `level-b-data-<n>` runs every one of them once, each in a job of its own
+  (`.github/workflows/level-b-data.yml`), and their reports go to `results/level-b-data-<n>`. The deposits' files
+  are not kept; their URLs, sizes and SHA256 are.
+- **A deposit held only in an R object** (a Seurat or SingleCellExperiment object) is first described by a run of
+  its own (its slots, the names and values of its cells' metadata), and its spec is written from that
+  description; no check is made in that run.
+- **Batch 1** (the four papers kept on 2026-10-19, as far as their deposits allow without R): R01225 (GSE189955,
+  a counts table and a table of cells) and R02693 (GSE178265, a 4.7 GB MatrixMarket file read in a stream, the
+  libraries' characteristics from GEO's series matrices). R01962's deposit is Seurat objects (GSE266919): it is
+  described first. R00189's deposit (GSE134809) names no patient for its ileal samples (`JOURNAL.md`, J6): its
+  spec waits for where the pairing of the samples is published, and the list says so if it is nowhere public.

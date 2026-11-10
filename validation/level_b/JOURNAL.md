@@ -172,3 +172,12 @@ either; **91 records to the full texts** (`amendment1/ta/fulltext.txt`). No devi
 S3's records (`plan_s3.md`, section 1): (a) the 91; (b) the ten F2 records; (c) R00599 and R01382; (d) none of A's
 (J7). The fetch's list (`amendment1/fulltext_list.tsv`, `screening.py fulltext-list` with the new preprints) holds
 (a); (b) and (c) are read from the first fetch's texts (`results/level-b-fulltext` at e373c68), where they are.
+
+## J10 — 2026-11-10: S5's first batch, its specs before the run
+
+`data_specs/R01225.json` and `R02693.json`, and `run1.txt`, written before the run (`plan_s5.md`, section 4). To
+write them, besides what J6 records, the names of GSE189955's cells were tabulated against the sites (their
+protocol after the sort gate: the fallopian tubes' 520 cells mostly `Split_FACS`, the tumours' 1,940 mostly
+`Split_mouth` or `Smart_mouth`), which is why the spec takes that protocol as the cells' source; and GSE178265's
+97 library names (each with its donor's number) and its series' columns (`disease`, `sex`, `facs classification`,
+`10x version`, `status`). No count was read.

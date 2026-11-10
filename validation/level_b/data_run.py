@@ -275,14 +275,14 @@ def assign(obs: pd.DataFrame, spec: dict) -> pd.DataFrame:
     else:
         obs["group"] = obs[g["column"]].astype(str).map(g.get("map") or (lambda x: x))
     keep &= obs["group"].isin(g["values"]).to_numpy()
-    d = spec["donor"]
-    if isinstance(d, dict):
-        obs["donor"] = obs[d["column"]].astype(str).str.extract(d["regex"], expand=False)
-    else:
-        obs["donor"] = obs[d].astype(str)
+    def column(rule):  # a column, or {"column": ..., "regex": ...}: the first group of the pattern on it
+        if isinstance(rule, dict):
+            return obs[rule["column"]].astype(str).str.extract(rule["regex"], expand=False)
+        return obs[rule].astype(str)
+    obs["donor"] = column(spec["donor"])
     keep &= obs["donor"].notna().to_numpy()
-    obs["source"] = obs[spec["source"]].astype(str) if spec.get("source") else "no source named"
-    obs["sex_label"] = obs[spec["sex_label"]].astype(str).str.lower() if spec.get("sex_label") else "-"
+    obs["source"] = column(spec["source"]).fillna("unmatched") if spec.get("source") else "no source named"
+    obs["sex_label"] = column(spec["sex_label"]).str.lower() if spec.get("sex_label") else "-"
     return obs[keep]
 
 
@@ -322,6 +322,7 @@ def main(argv=None) -> int:
     ap.add_argument("--spec", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--files", type=Path, help="the spec's files already in this directory, by their names")
+    ap.add_argument("--files-to", type=Path, help="where to download the spec's files (default OUT/files)")
     a = ap.parse_args(argv)
     spec = json.loads(a.spec.read_text())
     a.out.mkdir(parents=True, exist_ok=True)
@@ -332,7 +333,7 @@ def main(argv=None) -> int:
         lines.append(s)
 
     log(f"# Level B, S5: {spec['rid']} ({spec.get('accession', '-')}), loader {spec['loader']}")
-    fdir = a.files or (a.out / "files")
+    fdir = a.files or a.files_to or (a.out / "files")
     fdir.mkdir(parents=True, exist_ok=True)
     got, paths = [], {}
     for key, url in spec["files"].items():
