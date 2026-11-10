@@ -33,12 +33,14 @@ deviation goes into `JOURNAL.md`.
    its own in at least 10 times that share and 5%) is one and agrees with the metadata where it gives one; a
    donor whose cells split between the two calls, or whose call contradicts its label, fails.
 4. **The claim's genes** present in the matrix (by symbol, or by the deposit's ids mapped by its own table).
-5. **The source of the cells (12.3):** the condition is not confounded with the data's source. From the
-   deposit's metadata and the paper's methods: the batches, runs, lanes, platforms or studies the cells come
-   from, per group; **fails** where every cell of one group comes from a source that no cell of the other
-   group comes from (the lesson of Tabula Muris Senis), **balanced** where every source holds both groups,
-   and **partly** otherwise (listed with the sources' shares). A comparison of the same donors in two
-   conditions processed together passes by construction.
+5. **The source of the cells (12.3):** the condition is not confounded with the data's source. A source is a
+   study, a platform or chemistry (10x 3' v2 against v3, cells against nuclei), or a processing or sequencing
+   batch, as the deposit's metadata or the paper's methods name it — not a sample or a library, which holds one
+   donor in one condition by design. Per group: **fails** where every cell of one group comes from a source
+   that no cell of the other group comes from (the lesson of Tabula Muris Senis), **balanced** where every
+   source holds both groups, and **partly** otherwise (listed with the sources' shares); where the deposit and
+   the methods name no source beyond the samples, "no source named" (not a pass). A comparison of the same
+   donors in two conditions processed together passes by construction.
 6. **The design as the paper ran it**, recorded beside the checks: cells or pooled cells, its normalization,
    its statistic (the analysis (a) of `real_claims.md`).
 
