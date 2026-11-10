@@ -560,7 +560,8 @@ def pdf_text(raw: bytes) -> str:
 
 
 def publisher_text(fetch2: Path, out: Path) -> dict:
-    """The publishers' responses of a `search.py fetch2` run as text, for the journal's judgement (`plan_s1.md`:
+    """The full texts asked of Europe PMC again (JATS XML, by `jats_text`: `<rid>.txt`) and the publishers'
+    responses of a `search.py fetch2` run as text, for the journal's judgement (`plan_s1.md`:
     a full text is the paper's body, a Results or a Methods section beyond the abstract) and, where one is
     obtained, for the passes: a PDF by `pdf_text`, any other answer by `html_text`; one file per response,
     `<rid>-pdf.txt` or `<rid>-landing.txt`, with its status and final URL in its first line."""
@@ -568,10 +569,16 @@ def publisher_text(fetch2: Path, out: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     done = []
     for rid, action, asked, status, final, file, _note in rows:
-        if action != "publisher" or file == "-":
+        if action not in ("publisher", "epmc") or file == "-":
             continue
         with gzip.open(fetch2 / file, "rb") as f:
             raw = f.read()
+        if action == "epmc":  # Europe PMC asked again: its JATS XML, as the first fetch's texts
+            text = jats_text(raw)
+            (out / f"{rid}.txt").write_text(f"=== {rid} (Europe PMC, {asked}) ===\n" + text)
+            done.append(dict(rid=rid, file=f"{rid}.txt", status=status, bytes=len(raw), pdf=False,
+                             lines=text.count("\n")))
+            continue
         is_pdf = raw[:5] == b"%PDF-"
         text = pdf_text(raw) if is_pdf else html_text(raw)
         name = f"{rid}-{'pdf' if is_pdf else 'landing'}.txt"
