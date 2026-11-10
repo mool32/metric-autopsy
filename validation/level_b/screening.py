@@ -9,7 +9,9 @@ batches the screeners read, the check of what each pass wrote, and the compariso
     python -I validation/level_b/screening.py combine --batches <dir> --carried <dir> --pass1 <dir> --pass2 <dir> --out <dir>
     python -I validation/level_b/screening.py claims --merge <dir> --ft-merge <dir> --ft1 <dir> --ft2 <dir> --out <dir>
     python -I validation/level_b/screening.py set-records --all <screening/all.tsv> --out <txt>
-    python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv>
+    python -I validation/level_b/screening.py fulltext-list --search <dir> --rids <fulltext.txt> --out <tsv> [--extra <jsonl.gz>]
+    python -I validation/level_b/screening.py publisher-list --index <fulltext_index.tsv> --list <tsv> --out <tsv>
+    python -I validation/level_b/screening.py fulltext-batches-all --rids <txt> --texts <dir> --out <dir>
     python -I validation/level_b/screening.py fulltext-text --fulltext <results/level-b-fulltext> --out <dir>
     python -I validation/level_b/screening.py fulltext-batches --merge <dir> --pass 1 --texts <dir> --out <dir>
     python -I validation/level_b/screening.py check-fulltext --batch <batch_NN.list> --decisions <tsv>
@@ -389,10 +391,14 @@ def set_records(all_tsv: Path) -> list:
     return sorted(r[0] for r in rows if {r[i1], r[i2]} & {"X6", "X7"})
 
 
-def fulltext_list(search: Path, rids_file: Path, out: Path) -> int:
-    """The ids `search.py fulltext` needs for the records named in `rids_file` (one rid a line)."""
+def fulltext_list(search: Path, rids_file: Path, out: Path, extra: Path | None = None) -> int:
+    """The ids `search.py fulltext` needs for the records named in `rids_file` (one rid a line), from the list
+    and, after amendment 1, from new records (`extra`, such as `preprints_new.jsonl.gz`)."""
     with gzip.open(search / "records.jsonl.gz", "rt") as f:
         recs = {r["rid"]: r for r in map(json.loads, f)}
+    if extra is not None:
+        with gzip.open(extra, "rt") as f:
+            recs.update({r["rid"]: r for r in map(json.loads, f)})
     rids = [r for r in rids_file.read_text().split() if r]
     rows = ["rid\tpmid\tpmcid\tdoi\tepmc_ids"]
     for rid in rids:
@@ -495,6 +501,38 @@ def fulltext_batches(merge_dir: Path, which: int, texts: Path, out: Path, size: 
         names.append(name)
     (out / "without_fulltext.txt").write_text("".join(f"{rid}\n" for rid in without))
     return dict(kept=len(kept), with_fulltext=len(have), without=len(without), batches=names)
+
+
+def publisher_list(index_tsv: Path, list_tsv: Path, out: Path) -> int:
+    """Amendment 1 (`plan_s3.md`, section 2): the records a full-text fetch left without one that have a DOI, as
+    `search.py fetch2`'s list with the action `publisher` (one attempt at the publisher, J1's rule for A)."""
+    got = {r[0]: r[2] for r in (line.split("\t") for line in index_tsv.read_text().splitlines()[1:] if line.strip())}
+    rows = ["rid\tpmid\tpmcid\tdoi\taction\trepository"]
+    for line in list_tsv.read_text().splitlines()[1:]:
+        if not line.strip():
+            continue
+        rid, pmid, pmcid, doi = (line.split("\t") + ["", "", "", ""])[:4]
+        if got.get(rid, "-") == "-" and doi:
+            rows.append("\t".join([rid, pmid, pmcid, doi, "publisher", "-"]))
+    out.write_text("\n".join(rows) + "\n")
+    return len(rows) - 1
+
+
+def fulltext_batches_all(rids: list, texts: Path, out: Path, size: int = FT_BATCH) -> dict:
+    """Amendment 1 (`plan_s3.md`, section 3): every listed record with a full text, `size` to a batch in the order
+    of the records' numbers, the same batches for both passes (`batch_NN.list`: rid, text file); the others in
+    `without_fulltext.txt`."""
+    rids = sorted(dict.fromkeys(rids))
+    have = [rid for rid in rids if (texts / f"{rid}.txt").exists()]
+    without = [rid for rid in rids if rid not in set(have)]
+    out.mkdir(parents=True, exist_ok=True)
+    names = []
+    for k in range(0, len(have), size):
+        name = f"batch_{k // size + 1:02d}.list"
+        (out / name).write_text("".join(f"{rid}\t{(texts / f'{rid}.txt').resolve()}\n" for rid in have[k:k + size]))
+        names.append(name)
+    (out / "without_fulltext.txt").write_text("".join(f"{rid}\n" for rid in without))
+    return dict(listed=len(rids), with_fulltext=len(have), without=len(without), batches=names)
 
 
 def check_fulltext(batch: Path, decisions: Path) -> list:
@@ -741,6 +779,16 @@ def main(argv=None) -> int:
     fl.add_argument("--search", type=Path, required=True)
     fl.add_argument("--rids", type=Path, required=True)
     fl.add_argument("--out", type=Path, required=True)
+    fl.add_argument("--extra", type=Path, help="new records (amendment 1), e.g. preprints_new.jsonl.gz")
+    pl = sub.add_parser("publisher-list")
+    pl.add_argument("--index", type=Path, required=True, help="a full-text fetch's fulltext_index.tsv")
+    pl.add_argument("--list", dest="list_tsv", type=Path, required=True, help="its fulltext-list")
+    pl.add_argument("--out", type=Path, required=True)
+    fa = sub.add_parser("fulltext-batches-all")
+    fa.add_argument("--rids", type=Path, required=True)
+    fa.add_argument("--texts", type=Path, required=True)
+    fa.add_argument("--out", type=Path, required=True)
+    fa.add_argument("--size", type=int, default=FT_BATCH)
     ft = sub.add_parser("fulltext-text")
     ft.add_argument("--fulltext", type=Path, required=True)
     ft.add_argument("--out", type=Path, required=True)
@@ -806,7 +854,14 @@ def main(argv=None) -> int:
         print(f"{len(rids)} records X6 or X7 in either pass, listed in {a.out}")
         return 0
     if a.mode == "fulltext-list":
-        print(f"{fulltext_list(a.search, a.rids, a.out)} records listed in {a.out}")
+        print(f"{fulltext_list(a.search, a.rids, a.out, a.extra)} records listed in {a.out}")
+        return 0
+    if a.mode == "publisher-list":
+        print(f"{publisher_list(a.index, a.list_tsv, a.out)} records for one attempt at the publisher, in {a.out}")
+        return 0
+    if a.mode == "fulltext-batches-all":
+        rids = [r for r in a.rids.read_text().split() if r]
+        print(json.dumps(fulltext_batches_all(rids, a.texts, a.out, a.size), indent=1))
         return 0
     if a.mode == "fulltext-text":
         res = fulltext_text(a.fulltext, a.out)

@@ -340,3 +340,34 @@ def test_the_set_records_are_the_screenings_x6_or_x7_in_either_pass():
     assert len(rids) == 210 and rids == sorted(rids)
     assert {"R00220", "R02780", "R02858"} <= set(rids)  # one pass kept each (the owner's group B)
     assert (HERE / "amendment1" / "set_records.txt").read_text().split() == rids
+
+
+def test_amendment_1s_full_texts_list_the_new_records_send_the_rest_to_the_publisher_and_batch_all(tmp_path):
+    recs = [dict(rid="R00001", pmid="1", pmids=["1"], pmcid="PMC1", doi="10.1/a", epmc_ids=["MED:1"]),
+            dict(rid="R00002", pmid="2", pmids=["2"], pmcid="", doi="10.1/b", epmc_ids=["MED:2"])]
+    search = tmp_path / "list"
+    search.mkdir()
+    with gzip.open(search / "records.jsonl.gz", "wt") as f:
+        for r in recs:
+            f.write(json.dumps(r) + "\n")
+    extra = tmp_path / "new.jsonl.gz"
+    with gzip.open(extra, "wt") as f:
+        f.write(json.dumps(dict(rid="R03507", pmid="", pmids=[], pmcid="", doi="10.1101/p", epmc_ids=["PPR:PPR9"])) + "\n")
+    (tmp_path / "rids.txt").write_text("R00001\nR00002\nR03507\n")
+    assert S.fulltext_list(search, tmp_path / "rids.txt", tmp_path / "list.tsv", extra) == 3
+    lines = (tmp_path / "list.tsv").read_text().splitlines()
+    assert lines[3].split("\t") == ["R03507", "", "", "10.1101/p", "PPR:PPR9"]
+    (tmp_path / "index.tsv").write_text("rid\ttried\tfulltext\tfile\tnote\nR00001\tPMC1\tPMC1\tf\t-\n"
+                                        "R00002\t-\t-\t-\tno core record\nR03507\tPPR9\t-\t-\tPPR9: HTTP 404\n")
+    assert S.publisher_list(tmp_path / "index.tsv", tmp_path / "list.tsv", tmp_path / "pub.tsv") == 2
+    pub = [line.split("\t") for line in (tmp_path / "pub.tsv").read_text().splitlines()]
+    assert pub[0] == ["rid", "pmid", "pmcid", "doi", "action", "repository"]
+    assert [r[0] for r in pub[1:]] == ["R00002", "R03507"] and {r[4] for r in pub[1:]} == {"publisher"}
+    texts = tmp_path / "texts"
+    texts.mkdir()
+    for rid in ("R00002", "R00001", "R03507"):
+        (texts / f"{rid}.txt").write_text("x")
+    res = S.fulltext_batches_all(["R03507", "R00001", "R00009", "R00002"], texts, tmp_path / "b", size=2)
+    assert res["with_fulltext"] == 3 and res["without"] == 1 and res["batches"] == ["batch_01.list", "batch_02.list"]
+    assert [line.split("\t")[0] for line in (tmp_path / "b" / "batch_01.list").read_text().splitlines()] == ["R00001", "R00002"]
+    assert (tmp_path / "b" / "without_fulltext.txt").read_text() == "R00009\n"

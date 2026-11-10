@@ -28,6 +28,9 @@
 #   (validation/level_b/fetch2_list.tsv), every response as it came, to results/level-b-fetch2;
 # - by the label "level-b-preprints": Europe PMC's preprints for the section 3 terms and window without the
 #   language filter, every page as it came and the parsed records, to results/level-b-preprints.
+# - by the label "level-b-fulltext2" (S3, validation/level_b/plan_s3.md): the full texts of
+#   validation/level_b/amendment1/fulltext_list.tsv from Europe PMC as the first fetch, then one attempt at the
+#   publisher for those without one that have a DOI (the owner's rule for A's records), to results/level-b-fulltext2.
 name: Level B's search for claims
 
 on:
@@ -80,6 +83,11 @@ jobs:
         run: |
           python -I validation/level_b/search.py fetch2 --out dry/fetch2 --fabricated
           python -I validation/level_b/search.py preprints --out dry/preprints --fabricated
+      - name: S3's full texts on fabricated responses, then one attempt at the publisher for those without (FABRICATED)
+        run: |
+          python -I validation/level_b/screening.py publisher-list --index dry/fulltext/fulltext_index.tsv --list dry/fulltext_list.tsv --out dry/publisher_list.tsv
+          python -I validation/level_b/search.py fetch2 --out dry/fulltext/publisher --fabricated --fetch2-list dry/publisher_list.tsv
+          tail -4 dry/fulltext/publisher/fetch2.log
 
   lookup:
     if: github.event.action == 'labeled' && github.event.label.name == 'level-b-lookup'
@@ -413,3 +421,77 @@ jobs:
           for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-preprints && break; sleep $((i * 10)); done
           test "$(git ls-remote "$remote" refs/heads/results/level-b-preprints | cut -f1)" = "$(git rev-parse HEAD)"
           cat *.log
+
+  fulltext2:
+    if: github.event.action == 'labeled' && github.event.label.name == 'level-b-fulltext2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: One run, one attempt; the branch results/level-b-fulltext2 must not exist
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" refs/heads/results/level-b-fulltext2 > /dev/null; then
+            echo "results/level-b-fulltext2 exists: this step has run"; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: The full texts of amendment1/fulltext_list.tsv (Europe PMC, open access)
+        timeout-minutes: 80
+        run: python -I validation/level_b/search.py fulltext --out out --list validation/level_b/amendment1/fulltext_list.tsv
+      - name: One attempt at the publisher for the records without one that have a DOI
+        timeout-minutes: 30
+        run: |
+          python -I validation/level_b/screening.py publisher-list --index out/fulltext_index.tsv --list validation/level_b/amendment1/fulltext_list.tsv --out out/publisher_list.tsv
+          python -I validation/level_b/search.py fetch2 --out out/publisher --fetch2-list out/publisher_list.tsv
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-fulltext2
+          path: out
+          if-no-files-found: error
+
+  publish-fulltext2:
+    needs: fulltext2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-fulltext2
+          path: pub
+      - name: To results/level-b-fulltext2, with SHA256SUMS (a second start finds the branch and stops)
+        run: |
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" refs/heads/results/level-b-fulltext2 > /dev/null; then
+            echo "results/level-b-fulltext2 exists: nothing is pushed"; exit 1
+          fi
+          cp repo/validation/level_b/amendment1/fulltext_list.tsv pub/fulltext_list.tsv
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/search.py)
+          plan=$(git -C repo rev-parse HEAD:validation/level_b/plan_s3.md)
+          cd pub
+          {
+            echo "# Level B, amendment 1, S3: the full texts"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/search.py (blob $blob) fulltext on fulltext_list.tsv, then fetch2 on publisher_list.tsv (one attempt at the publisher); the plan validation/level_b/plan_s3.md (blob $plan), committed before the run."
+            echo "- fulltext.log, fulltext.json, fulltext_index.tsv: Europe PMC; publisher/: the attempts at the publishers (fetch2.log, fetch2_index.tsv); requests.tsv in each: every request."
+            echo "- raw/: every response as it came (gzip)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b results/level-b-fulltext2
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B, amendment 1, S3: the full texts (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-fulltext2 && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" refs/heads/results/level-b-fulltext2 | cut -f1)" = "$(git rev-parse HEAD)"
+          cat *.log publisher/*.log
