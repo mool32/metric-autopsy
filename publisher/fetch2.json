@@ -1,0 +1,13 @@
+{
+ "records": 45,
+ "requests": 56,
+ "by_action": {
+  "publisher": {
+   "403": 6,
+   "200": 30,
+   "429": 20
+  }
+ },
+ "ok": true,
+ "list": "out/publisher_list.tsv"
+}

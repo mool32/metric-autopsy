@@ -1,0 +1,57 @@
+rid	action	asked	status	final	file	note
+R00242	publisher	https://doi.org/10.1093/bib/bbaa360	403	https://academic.oup.com/bib/article/doi/10.1093/bib/bbaa360/6056019	raw/fetch2/R00242-landing.gz	the DOI's page, one attempt
+R00250	publisher	https://doi.org/10.1002/dvdy.295	403	https://anatomypubs.onlinelibrary.wiley.com/doi/10.1002/dvdy.295	raw/fetch2/R00250-landing.gz	the DOI's page, one attempt
+R00272	publisher	https://doi.org/10.1038/s41422-021-00486-w	200	https://www.nature.com/articles/s41422-021-00486-w	raw/fetch2/R00272-landing.gz	the DOI's page, one attempt
+R00289	publisher	https://doi.org/10.1016/j.ygeno.2021.04.020	200	https://linkinghub.elsevier.com/retrieve/pii/S0888754321001476	raw/fetch2/R00289-landing.gz	the DOI's page, one attempt
+R00304	publisher	https://doi.org/10.1093/bib/bbab086	403	https://academic.oup.com/bib/article/doi/10.1093/bib/bbab086/6272792	raw/fetch2/R00304-landing.gz	the DOI's page, one attempt
+R00562	publisher	https://doi.org/10.1111/rda.14231	403	https://onlinelibrary.wiley.com/doi/10.1111/rda.14231	raw/fetch2/R00562-landing.gz	the DOI's page, one attempt
+R00740	publisher	https://doi.org/10.1016/j.csbj.2023.03.036	403	https://spj.science.org/doi/10.1016/j.csbj.2023.03.036	raw/fetch2/R00740-landing.gz	the DOI's page, one attempt
+R00846	publisher	https://doi.org/10.1016/j.kint.2023.07.007	200	https://linkinghub.elsevier.com/retrieve/pii/S0085253823005379	raw/fetch2/R00846-landing.gz	the DOI's page, one attempt
+R01426	publisher	https://doi.org/10.1016/j.compbiomed.2024.109395	200	https://linkinghub.elsevier.com/retrieve/pii/S001048252401480X	raw/fetch2/R01426-landing.gz	the DOI's page, one attempt
+R01787	publisher	https://doi.org/10.1016/j.canlet.2025.217809	200	https://linkinghub.elsevier.com/retrieve/pii/S0304383525003763	raw/fetch2/R01787-landing.gz	the DOI's page, one attempt
+R01963	publisher	https://doi.org/10.1038/s41588-025-02285-0	200	https://www.nature.com/articles/s41588-025-02285-0	raw/fetch2/R01963-landing.gz	the DOI's page, one attempt
+R02036	publisher	https://doi.org/10.1101/2024.11.07.622449	200	https://www.biorxiv.org/content/10.1101/2024.11.07.622449v3	raw/fetch2/R02036-landing.gz	the DOI's page, one attempt
+R02036	publisher	https://www.biorxiv.org/content/biorxiv/early/2026/09/30/2024.11.07.622449.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2026/09/30/2024.11.07.622449.full.pdf	raw/fetch2/R02036-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R02150	publisher	https://doi.org/10.1016/j.ard.2025.09.003	200	https://linkinghub.elsevier.com/retrieve/pii/S0003496725043845	raw/fetch2/R02150-landing.gz	the DOI's page, one attempt
+R02159	publisher	https://doi.org/10.1016/j.devcel.2025.09.018	200	https://linkinghub.elsevier.com/retrieve/pii/S1534580725006033	raw/fetch2/R02159-landing.gz	the DOI's page, one attempt
+R02185	publisher	https://doi.org/10.1111/nph.70678	403	https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70678	raw/fetch2/R02185-landing.gz	the DOI's page, one attempt
+R03041	publisher	https://doi.org/10.1016/j.jid.2026.05.036	200	https://linkinghub.elsevier.com/retrieve/pii/S0022202X26026254	raw/fetch2/R03041-landing.gz	the DOI's page, one attempt
+R03132	publisher	https://doi.org/10.1371/journal.pbio.3003869	200	https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3003869	raw/fetch2/R03132-landing.gz	the DOI's page, one attempt
+R03132	publisher	https://journals.plos.org/plosbiology/article/file?id=10.1371/journal.pbio.3003869&type=printable	200	https://journals.plos.org/plosbiology/article/file?id=10.1371/journal.pbio.3003869&type=printable	raw/fetch2/R03132-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03468	publisher	https://doi.org/10.1101/2024.11.29.624642	429	https://www.biorxiv.org/lookup/doi/10.1101/2024.11.29.624642	raw/fetch2/R03468-landing.gz	the DOI's page, one attempt
+R03474	publisher	https://doi.org/10.1101/2025.06.06.658161	429	https://www.biorxiv.org/content/10.1101/2025.06.06.658161v1	raw/fetch2/R03474-landing.gz	the DOI's page, one attempt
+R03475	publisher	https://doi.org/10.1101/2025.06.13.659489	429	https://www.biorxiv.org/lookup/doi/10.1101/2025.06.13.659489	raw/fetch2/R03475-landing.gz	the DOI's page, one attempt
+R03510	publisher	https://doi.org/10.1101/384479	200	https://www.biorxiv.org/content/10.1101/384479v3	raw/fetch2/R03510-landing.gz	the DOI's page, one attempt
+R03510	publisher	https://www.biorxiv.org/content/biorxiv/early/2019/03/15/384479.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2019/03/15/384479.full.pdf	raw/fetch2/R03510-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03515	publisher	https://doi.org/10.1101/554626	429	https://www.biorxiv.org/lookup/doi/10.1101/554626	raw/fetch2/R03515-landing.gz	the DOI's page, one attempt
+R03520	publisher	https://doi.org/10.1101/771402	429	https://www.biorxiv.org/lookup/doi/10.1101/771402	raw/fetch2/R03520-landing.gz	the DOI's page, one attempt
+R03557	publisher	https://doi.org/10.1101/2020.09.24.311662	429	https://www.biorxiv.org/lookup/doi/10.1101/2020.09.24.311662	raw/fetch2/R03557-landing.gz	the DOI's page, one attempt
+R03569	publisher	https://doi.org/10.1101/2020.12.30.424790	429	https://www.biorxiv.org/content/10.1101/2020.12.30.424790v1	raw/fetch2/R03569-landing.gz	the DOI's page, one attempt
+R03573	publisher	https://doi.org/10.1101/2021.02.13.431104	200	https://www.biorxiv.org/content/10.1101/2021.02.13.431104v3	raw/fetch2/R03573-landing.gz	the DOI's page, one attempt
+R03573	publisher	https://www.biorxiv.org/content/biorxiv/early/2021/06/23/2021.02.13.431104.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2021/06/23/2021.02.13.431104.full.pdf	raw/fetch2/R03573-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03583	publisher	https://doi.org/10.1101/2021.06.04.447088	200	https://www.biorxiv.org/content/10.1101/2021.06.04.447088v1	raw/fetch2/R03583-landing.gz	the DOI's page, one attempt
+R03583	publisher	https://www.biorxiv.org/content/biorxiv/early/2021/06/06/2021.06.04.447088.full.pdf	429	https://www.biorxiv.org/content/biorxiv/early/2021/06/06/2021.06.04.447088.full.pdf	raw/fetch2/R03583-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03593	publisher	https://doi.org/10.1101/2021.09.13.460168	429	https://www.biorxiv.org/content/10.1101/2021.09.13.460168v1	raw/fetch2/R03593-landing.gz	the DOI's page, one attempt
+R03627	publisher	https://doi.org/10.21203/rs.3.rs-1941910/v1	200	https://www.researchsquare.com/article/rs-1941910/v1	raw/fetch2/R03627-landing.gz	the DOI's page, one attempt
+R03627	publisher	https://www.researchsquare.com/article/rs-1941910/latest.pdf	200	https://assets-eu.researchsquare.com/files/rs-1941910/v1/2d984f0f-bfb8-4787-aabf-2275351b4f02.pdf?c=1661943186	raw/fetch2/R03627-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03633	publisher	https://doi.org/10.1101/2022.09.20.508736	429	https://www.biorxiv.org/content/10.1101/2022.09.20.508736v1	raw/fetch2/R03633-landing.gz	the DOI's page, one attempt
+R03635	publisher	https://doi.org/10.1101/2022.10.07.511255	200	https://www.biorxiv.org/content/10.1101/2022.10.07.511255v1	raw/fetch2/R03635-landing.gz	the DOI's page, one attempt
+R03635	publisher	https://www.biorxiv.org/content/biorxiv/early/2022/10/07/2022.10.07.511255.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2022/10/07/2022.10.07.511255.full.pdf	raw/fetch2/R03635-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03642	publisher	https://doi.org/10.1101/2022.12.13.514863	429	https://www.biorxiv.org/content/10.1101/2022.12.13.514863v1	raw/fetch2/R03642-landing.gz	the DOI's page, one attempt
+R03644	publisher	https://doi.org/10.1101/2023.03.12.532317	429	https://www.biorxiv.org/lookup/doi/10.1101/2023.03.12.532317	raw/fetch2/R03644-landing.gz	the DOI's page, one attempt
+R03733	publisher	https://doi.org/10.1101/2024.09.26.614712	429	https://www.biorxiv.org/content/10.1101/2024.09.26.614712v1	raw/fetch2/R03733-landing.gz	the DOI's page, one attempt
+R03739	publisher	https://doi.org/10.1101/2024.10.18.618987	429	https://www.biorxiv.org/content/10.1101/2024.10.18.618987v2	raw/fetch2/R03739-landing.gz	the DOI's page, one attempt
+R03742	publisher	https://doi.org/10.1101/2024.10.28.620557	200	https://www.biorxiv.org/content/10.1101/2024.10.28.620557v1	raw/fetch2/R03742-landing.gz	the DOI's page, one attempt
+R03742	publisher	https://www.biorxiv.org/content/biorxiv/early/2024/10/29/2024.10.28.620557.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2024/10/29/2024.10.28.620557.full.pdf	raw/fetch2/R03742-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03760	publisher	https://doi.org/10.21203/rs.3.rs-6303023/v1	200	https://www.researchsquare.com/article/rs-6303023/v1	raw/fetch2/R03760-landing.gz	the DOI's page, one attempt
+R03760	publisher	https://www.researchsquare.com/article/rs-6303023/latest.pdf	200	https://assets-eu.researchsquare.com/files/rs-6303023/v1_covered_cde5c960-3098-4ff8-b81c-6ff8005e9bc2.pdf?c=1749484835	raw/fetch2/R03760-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03794	publisher	https://doi.org/10.1101/2025.09.06.674678	429	https://www.biorxiv.org/lookup/doi/10.1101/2025.09.06.674678	raw/fetch2/R03794-landing.gz	the DOI's page, one attempt
+R03857	publisher	https://doi.org/10.64898/2026.03.25.714176	429	https://www.biorxiv.org/lookup/doi/10.64898/2026.03.25.714176	raw/fetch2/R03857-landing.gz	the DOI's page, one attempt
+R03866	publisher	https://doi.org/10.64898/2026.02.15.704933	200	https://www.biorxiv.org/content/10.64898/2026.02.15.704933v1	raw/fetch2/R03866-landing.gz	the DOI's page, one attempt
+R03866	publisher	https://www.biorxiv.org/content/biorxiv/early/2026/02/15/2026.02.15.704933.full.pdf	200	https://www.biorxiv.org/content/biorxiv/early/2026/02/15/2026.02.15.704933.full.pdf	raw/fetch2/R03866-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03874	publisher	https://doi.org/10.64898/2026.05.16.716261	429	https://www.biorxiv.org/content/10.64898/2026.05.16.716261v2	raw/fetch2/R03874-landing.gz	the DOI's page, one attempt
+R03915	publisher	https://doi.org/10.64898/2026.07.23.738870	429	https://www.biorxiv.org/lookup/doi/10.64898/2026.07.23.738870	raw/fetch2/R03915-landing.gz	the DOI's page, one attempt
+R03916	publisher	https://doi.org/10.21203/rs.3.rs-10395576/v1	200	https://www.researchsquare.com/article/rs-10395576/v1	raw/fetch2/R03916-landing.gz	the DOI's page, one attempt
+R03916	publisher	https://www.researchsquare.com/article/rs-10395576/latest.pdf	200	https://assets-eu.researchsquare.com/files/rs-10395576/v1/63e03892-f1f7-44ea-9efe-44e90bf7fd4a.pdf?c=1789555619	raw/fetch2/R03916-pdf.gz	the PDF the page names (citation_pdf_url), one attempt
+R03952	publisher	https://doi.org/10.64898/2026.09.17.752415	429	https://www.biorxiv.org/lookup/doi/10.64898/2026.09.17.752415	raw/fetch2/R03952-landing.gz	the DOI's page, one attempt
+R03953	publisher	https://doi.org/10.64898/2026.09.15.751910	429	https://www.biorxiv.org/lookup/doi/10.64898/2026.09.15.751910	raw/fetch2/R03953-landing.gz	the DOI's page, one attempt

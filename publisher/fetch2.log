@@ -1,0 +1,7 @@
+# Level B, the fetch2 — 2026-11-10T21:43:32+00:00
+python 3.13.16; the protocol validation/plans/level_b_protocol.md (approved 2026-10-19); this script validation/level_b/search.py
+
+## The second fetch (amendment 1): 45 records
+epmc: 
+publisher: status 200: 30, status 403: 6, status 429: 20
+counts: 
