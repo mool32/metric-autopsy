@@ -37,8 +37,9 @@ reads a claim's metric. Committed before any of S3's kept papers, S4's verdicts 
    graded rule needs, or the metric not measured on the data). Whether the test supports a claim is known only
    after the runs, and is not guessed here.
 8. **For the owner** (the owner decides; nothing here): the records the passes decide differently or mark unclear
-   at the full texts, and those without a full text (the default, J1's rule: excluded); the verdicts the passes
-   code differently; the journal's open points (J7: the three records Europe PMC refuses, which NCBI may hold; J8:
+   at the full texts, and those without a full text (the default, J1's rule: excluded); the claims one pass lists
+   alone, and the pairs whose two symbols cannot be told (`plan_s3.md`, section 4); the verdicts the passes code
+   differently; the journal's open points (J7: the three records Europe PMC refuses, which NCBI may hold; J8:
    the disease 'unknown' of the second negative control, and the one pair of the positive control; J15: R00189's
    samples 189 and 190); and every deviation the journal records since the owner's last decisions.
 

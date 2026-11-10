@@ -73,6 +73,15 @@ committed; the fetch is a run in Actions, once, by a label of its own.
   together, in order of appearance: section 8); with the four papers of 2026-10-19 and their claims.
 - **To the owner, with the list:** the records the passes decide differently, those unclear in either, those
   without a full text.
+- **The claims of a kept paper** (added 2026-11-10, before the merge; `kept.py`, tested on fabricated decisions):
+  its claim lines in both passes, matched by their genes — a pair by its two symbols, order and case ignored (the
+  field split at a comma, semicolon, slash, "&", "+", "and", a dash, or a hyphen between spaces; with none of
+  these, at a space or at one of its hyphens), a set by its name. The claims both passes list come first, in pass
+  1's order, then those of one pass only; each carries the passes that list it and both lines. All of them go to
+  S4's search and S5's checks; a claim one pass lists alone, and a pair whose two symbols cannot be told (its
+  genes left empty), go to the owner with the list. A set's genes are taken from where the paper lists them, by a
+  plan of their own committed before their fetch. The result is `amendment1/kept_claims.json`, with section 9's
+  draw where more than 30 papers are kept.
 - **The list** (S7's): the kept papers, pairs and sets apart (each set's result printed with 12.1's two
   caveats), section 1's counts, section 9's draw of 30 papers by the protocol's seed if more than 30 are kept,
   the designs with fewer donors than the graded rule needs listed apart.
