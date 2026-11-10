@@ -98,6 +98,9 @@ claim's metric was read. GSE189955's table of cells (`RNA_meta_data.csv`, 5,329 
 whether a patient gives cells to both of the claim's groups is S5's check (`donors_check`), made in its run.
 GSE134809's series matrix was read too (the samples' titles and characteristics: tissue, "status: Involved" or
 "Uninvolved", "10x chemistry: V1" or "V2", a patient id for the later samples only).
+GSE178265's series matrices (per platform) were read too: per library its title (with the donor's number),
+the tissue (substantia nigra pars compacta or caudate nucleus), sex, age, post-mortem interval and disease
+("Ctrl" or "Disease").
 
 ## J7 — 2026-11-10: the second fetch, judged by `plan_s1.md`'s rules
 
