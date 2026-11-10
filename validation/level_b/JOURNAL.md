@@ -181,3 +181,6 @@ protocol after the sort gate: the fallopian tubes' 520 cells mostly `Split_FACS`
 `Split_mouth` or `Smart_mouth`), which is why the spec takes that protocol as the cells' source; and GSE178265's
 97 library names (each with its donor's number) and its series' columns (`disease`, `sex`, `facs classification`,
 `10x version`, `status`). No count was read.
+- (J10, continued.) R01962's deposit (GSE266919) is described first (`plan_s5.md`, section 4): `rdescribe1.txt`
+  names its myeloid cells' Seurat object, `r_export.R describe` writes its slots and its cells' metadata, by the
+  label `level-b-rdescribe-1` (`level-b-data.yml`); its spec is written from that description.

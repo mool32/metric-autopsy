@@ -8,6 +8,11 @@
 # own; the reports (report.json, report.md, files.tsv with each file's URL, size and SHA256, the log) go to the new
 # branch results/level-b-data-<n>. The deposits' files themselves are not kept (their SHA256 are). A second start
 # finds the branch and stops; a second run only after a technical failure, recorded in JOURNAL.md.
+#
+# A deposit held only in an R object is described first, once, by the label "level-b-rdescribe-<n>": every
+# "rid<TAB>url" of validation/level_b/data_specs/rdescribe<n>.txt is fetched, gunzipped and described by
+# validation/level_b/r_export.R (R from Ubuntu's archive, SeuratObject from Posit's dated snapshot of CRAN), its
+# description to results/level-b-rdescribe-<n>; no check is made.
 name: Level B's data checks
 
 on:
@@ -155,3 +160,66 @@ jobs:
           for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/results/level-b-data-$n" && break; sleep $((i * 10)); done
           test "$(git ls-remote "$remote" "refs/heads/results/level-b-data-$n" | cut -f1)" = "$(git rev-parse HEAD)"
           cat */report.md || true
+
+  rdescribe:
+    if: github.event.action == 'labeled' && startsWith(github.event.label.name, 'level-b-rdescribe-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - name: One run, one attempt; the branch must not exist
+        id: n
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          n="${{ github.event.label.name }}"; n="${n#level-b-rdescribe-}"
+          case "$n" in ''|*[!0-9]*) echo "the label must end in a number"; exit 1;; esac
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/results/level-b-rdescribe-$n" > /dev/null; then
+            echo "results/level-b-rdescribe-$n exists: this step has run"; exit 1
+          fi
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - name: R and SeuratObject
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite
+          sudo Rscript -e 'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))); install.packages(c("SeuratObject", "BiocManager"), repos = "https://p3m.dev/cran/__linux__/noble/2026-10-01")'
+          Rscript -e 'cat(R.version.string, "\n"); cat("SeuratObject", as.character(packageVersion("SeuratObject")), "\n")'
+      - name: Fetch and describe
+        run: |
+          n="${{ steps.n.outputs.n }}"
+          mkdir -p pub dl
+          cp "repo/validation/level_b/data_specs/rdescribe$n.txt" pub/
+          while IFS=$'\t' read -r rid url; do
+            [ -n "$rid" ] || continue
+            mkdir -p "pub/$rid"
+            curl -sS -L --retry 3 -o "dl/$rid.rds.gz" "$url"
+            sha=$(sha256sum "dl/$rid.rds.gz" | cut -d' ' -f1); size=$(stat -c %s "dl/$rid.rds.gz")
+            printf 'url\tbytes\tsha256\n%s\t%s\t%s\n' "$url" "$size" "$sha" > "pub/$rid/files.tsv"
+            gunzip -c "dl/$rid.rds.gz" > "dl/$rid.rds"
+            Rscript repo/validation/level_b/r_export.R describe "dl/$rid.rds" "pub/$rid" 2>&1 | tee "pub/$rid/describe.log"
+            rm -f "dl/$rid.rds"
+          done < "repo/validation/level_b/data_specs/rdescribe$n.txt"
+      - name: To results/level-b-rdescribe-<n>, with SHA256SUMS
+        run: |
+          n="${{ steps.n.outputs.n }}"
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/r_export.R)
+          cd pub
+          {
+            echo "# Level B, S5: R objects described, batch $n"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-data.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/r_export.R (blob $blob) describe, per line of rdescribe$n.txt; no check is made (plan_s5.md, section 4)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          git init -q -b "results/level-b-rdescribe-$n"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B, S5: R objects described, batch $n (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/results/level-b-rdescribe-$n" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/results/level-b-rdescribe-$n" | cut -f1)" = "$(git rev-parse HEAD)"
+          cat */describe.json || true
