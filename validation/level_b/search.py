@@ -59,6 +59,12 @@ HERE = Path(__file__).resolve().parent
 PAPERS = HERE / "method_papers.json"
 FULLTEXT_LIST = HERE / "fulltext_list.tsv"
 FULLTEXT_COLUMNS = ["rid", "pmid", "pmcid", "doi", "epmc_ids"]
+# amendment 1 (the protocol's section 12; plan_s1.md): the second fetch and the preprints' search
+FETCH2_LIST = HERE / "fetch2_list.tsv"
+FETCH2_COLUMNS = ["rid", "pmid", "pmcid", "doi", "action", "repository"]
+FETCH2_ACTIONS = ("epmc", "publisher", "counts")
+DOI_RESOLVER = "https://doi.org"
+NGDC = "https://ngdc.cncb.ac.cn"
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
@@ -97,6 +103,10 @@ def _epmc_block(terms) -> str:
 
 EUROPEPMC_QUERY = (f'{_epmc_block(SINGLE_CELL)} AND {_epmc_block(COORDINATION)} AND LANG:"eng" '
                    f"AND FIRST_PDATE:[{FIRST.isoformat()} TO {LAST.isoformat()}]")
+# amendment 1, 12.2: Europe PMC gives a preprint no language, so the preprints are searched for by the same
+# two blocks and window without LANG:"eng" (the language moves to the screening)
+PREPRINT_QUERY = (f'{_epmc_block(SINGLE_CELL)} AND {_epmc_block(COORDINATION)} AND SRC:PPR '
+                  f"AND FIRST_PDATE:[{FIRST.isoformat()} TO {LAST.isoformat()}]")
 
 
 # --------------------------------------------------------------------------- #
@@ -156,6 +166,25 @@ class Net:
         if last_status is not None:  # the server's answer to the last attempt, recorded
             self._record(url, params, post, last_status, b"", 5)
         raise Unavailable(f"the request failed six times ({last_error}): {url}", last_status)
+
+    def get_once(self, url: str) -> tuple:
+        """One GET, redirects followed, no retry (amendment 1's one attempt at a publisher): (status, the final
+        URL, the body), an HTTP error answered with its status and body, a network failure with status 0."""
+        req = urllib.request.Request(url, headers=dict(HEADERS, Accept="text/html,application/pdf;q=0.9,*/*;q=0.8"))
+        try:
+            with urllib.request.urlopen(req, timeout=180) as r:
+                status, final, body = r.status, r.geturl(), r.read()
+        except urllib.error.HTTPError as e:
+            status, final = e.code, e.geturl() or url
+            try:
+                body = e.read()
+            except Exception:  # noqa: BLE001 - an error's body is what the server sent, or nothing
+                body = b""
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+            self.log(f"  one attempt failed: {type(e).__name__}: {e}: {url}")
+            status, final, body = 0, url, b""
+        self._record(url, {}, False, status, body, 0)
+        return status, final, body
 
     def _record(self, url, params, post, status, body, attempt):
         self.rows.append(dict(time=datetime.now(timezone.utc).isoformat(timespec="seconds"), method="POST" if post else "GET",
@@ -685,17 +714,156 @@ def fulltext(net, out: Out, items: list) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# amendment 1 (the protocol's section 12; plan_s1.md): the second fetch and the preprints
+# --------------------------------------------------------------------------- #
+def read_fetch2_list(path: Path) -> list:
+    lines = [line.split("\t") for line in path.read_text().splitlines() if line.strip()]
+    if not lines or lines[0] != FETCH2_COLUMNS:
+        raise SystemExit(f"{path}: the header must be {FETCH2_COLUMNS}")
+    items = [dict(zip(FETCH2_COLUMNS, row + [""] * (len(FETCH2_COLUMNS) - len(row)))) for row in lines[1:]]
+    for it in items:
+        if it["action"] not in FETCH2_ACTIONS:
+            raise SystemExit(f"{path}: {it['rid']}: unknown action {it['action']!r}")
+    return items
+
+
+_PDF_META = (re.compile(rb'<meta[^>]+name=["\']citation_pdf_url["\'][^>]*content=["\']([^"\']+)["\']', re.I),
+             re.compile(rb'<meta[^>]+content=["\']([^"\']+)["\'][^>]*name=["\']citation_pdf_url["\']', re.I))
+
+
+def _pdf_url(body: bytes, base: str) -> str | None:
+    for rx in _PDF_META:
+        m = rx.search(body)
+        if m:
+            return urllib.parse.urljoin(base, m.group(1).decode("utf-8", "replace").strip())
+    return None
+
+
+def fetch2(net, out: Out, items: list) -> dict:
+    """The owner's decisions of 2026-11-10 on the undecided records (`JOURNAL.md`, J1): `epmc` asks Europe PMC
+    again for an open full text (its usual six attempts); `publisher` makes one attempt at an open full text at
+    the publisher — one GET of the DOI's page, redirects followed, and one of the PDF the page names as its
+    `citation_pdf_url`, if it names one, neither retried; `counts` asks where a record's counts could be public
+    (NCBI's links from the paper to GEO, Europe PMC's supplementary files, a repository the paper names). Every
+    response is kept as it came; what each holds is judged after the run (`plan_s1.md`)."""
+    out.log(f"## The second fetch (amendment 1): {len(items)} records")
+    rows = []
+
+    def row(rid, act, asked, status, final, path, note):
+        rows.append(dict(rid=rid, action=act, asked=asked, status=str(status), final=final or "-", file=path or "-",
+                         note=note or "-"))
+
+    for it in items:
+        rid, act = it["rid"], it["action"]
+        if act == "epmc":
+            url = f"{EPMC}/{it['pmcid']}/fullTextXML"
+            try:
+                body = net.get(url, {})
+            except urllib.error.HTTPError as e:
+                if e.code not in (400, 404):
+                    raise
+                row(rid, act, url, e.code, None, None, f"HTTP {e.code}")
+                continue
+            except Unavailable as e:
+                if e.status is None:  # the network failed, not the server: the run fails
+                    raise
+                row(rid, act, url, e.status, None, None, f"HTTP {e.status} on all 6 attempts")
+                continue
+            path = out.raw(f"fetch2/{rid}.xml", body) if body.strip() else None
+            row(rid, act, url, 200, None, path, "the full text" if path else "an empty answer")
+        elif act == "publisher":
+            url = f"{DOI_RESOLVER}/{it['doi']}"
+            status, final, body = net.get_once(url)
+            row(rid, act, url, status, final, out.raw(f"fetch2/{rid}-landing", body) if body else None,
+                "the DOI's page, one attempt")
+            pdf = _pdf_url(body, final) if status == 200 and body else None
+            if pdf:
+                st2, fin2, b2 = net.get_once(pdf)
+                row(rid, act, pdf, st2, fin2, out.raw(f"fetch2/{rid}-pdf", b2) if b2 else None,
+                    "the PDF the page names (citation_pdf_url), one attempt")
+        else:
+            asks = [(f"{EUTILS}/elink.fcgi", dict(dbfrom="pubmed", db="gds", id=it["pmid"], retmode="json", tool=TOOL),
+                     "geo-links.json")]
+            if it["pmcid"]:
+                asks.append((f"{EPMC}/{it['pmcid']}/supplementaryFiles", {}, "supplementary.zip"))
+            for repo in [r for r in it["repository"].split(",") if r and r != "-"]:
+                kind, _, acc = repo.partition(":")
+                if kind != "ngdc" or not acc:
+                    raise SystemExit(f"{rid}: unknown repository {repo!r}")
+                asks.append((f"{NGDC}/bioproject/browse/{acc}", {}, f"ngdc-{acc}.html"))
+            for url, params, name in asks:
+                shown = url + ("?" + urllib.parse.urlencode(params) if params else "")
+                try:
+                    body = net.get(url, params)
+                except urllib.error.HTTPError as e:
+                    row(rid, act, shown, e.code, None, None, f"HTTP {e.code}")
+                    continue
+                except Unavailable as e:  # a repository unreachable from here is recorded, not a failed run
+                    row(rid, act, shown, e.status or 0, None, None, str(e))
+                    continue
+                row(rid, act, shown, 200, None, out.raw(f"fetch2/{rid}-{name}", body) if body else None, name)
+    cols = ["rid", "action", "asked", "status", "final", "file", "note"]
+    with (out.root / "fetch2_index.tsv").open("w") as f:
+        f.write("\t".join(cols) + "\n")
+        for r in rows:
+            f.write("\t".join(r[c].replace("\t", " ") for c in cols) + "\n")
+    by = {}
+    for r in rows:
+        by.setdefault(r["action"], {}).setdefault(r["status"], 0)
+        by[r["action"]][r["status"]] += 1
+    for act in FETCH2_ACTIONS:
+        out.log(f"{act}: " + ", ".join(f"status {k}: {v}" for k, v in sorted(by.get(act, {}).items())))
+    return dict(records=len(items), requests=len(rows), by_action=by)
+
+
+def preprints(net, out: Out) -> dict:
+    """Amendment 1, 12.2: Europe PMC's preprints for the protocol's two blocks and window, without a language,
+    cursor pages of 1,000 core records, each page as it came; the parsed records in the order fetched
+    (`preprints.jsonl.gz`). Merging them with the list is a later, local step (`plan_s1.md`)."""
+    cursor, page, records, hit = "*", 0, [], None
+    while True:
+        body = net.get(f"{EPMC}/search", dict(query=PREPRINT_QUERY, resultType="core", format="json", pageSize=1000,
+                                              cursorMark=cursor))
+        out.raw(f"preprints/search-{page:04d}.json", body)
+        d = json.loads(body)
+        hit = int(d.get("hitCount", 0)) if hit is None else hit
+        res = (d.get("resultList") or {}).get("result", [])
+        records += [parse_epmc_record(r) for r in res]
+        nxt = d.get("nextCursorMark")
+        page += 1
+        if not res or not nxt or nxt == cursor:
+            break
+        cursor = nxt
+    by_src, langs = {}, {}
+    for r in records:
+        by_src[r["source"]] = by_src.get(r["source"], 0) + 1
+        lang = r["languages"][0] or "none"
+        langs[lang] = langs.get(lang, 0) + 1
+    with gzip.GzipFile(filename="", mode="wb", fileobj=(out.root / "preprints.jsonl.gz").open("wb"), mtime=0) as g:
+        for r in records:
+            g.write((json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n").encode())
+    out.log(f"Europe PMC's preprints: {hit} records for the query; {len(records)} fetched over {page} pages; by source "
+            + ", ".join(f"{k} {v}" for k, v in sorted(by_src.items())) + "; by language "
+            + ", ".join(f"{k} {v}" for k, v in sorted(langs.items())))
+    if len(records) != hit:
+        out.log(f"  the pages hold {len(records)} records, the count {hit}")
+    return dict(hit_count=hit, fetched=len(records), pages=page, by_source=by_src, languages=langs,
+                query=PREPRINT_QUERY)
+
+
+# --------------------------------------------------------------------------- #
 # the command line
 # --------------------------------------------------------------------------- #
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("mode", choices=("lookup", "search", "fulltext", "remerge"))
+    ap.add_argument("mode", choices=("lookup", "search", "fulltext", "remerge", "fetch2", "preprints"))
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--papers", type=Path, default=PAPERS)
     ap.add_argument("--fabricated", action="store_true", help="fabricated responses: the dry run, nothing fetched")
     ap.add_argument("--window-limit", type=int, default=WINDOW_LIMIT, help=argparse.SUPPRESS)
     ap.add_argument("--list", type=Path, default=FULLTEXT_LIST, help="fulltext: the records whose full texts are fetched")
     ap.add_argument("--search", type=Path, help="remerge: the finished search's directory (raw/, requests.tsv)")
+    ap.add_argument("--fetch2-list", type=Path, default=FETCH2_LIST, help="fetch2: the records and their actions")
     a = ap.parse_args(argv)
     if a.mode == "remerge":
         if a.search is None:
@@ -726,6 +894,14 @@ def main(argv=None) -> int:
         net = Fabricated(out.log, papers)
     else:
         net = Net(out.log)
+    if a.mode == "fetch2":
+        res = fetch2(net, out, read_fetch2_list(a.fetch2_list))
+        out.finish("fetch2", net, dict(res, ok=True, list=str(a.fetch2_list)))
+        return 0
+    if a.mode == "preprints":
+        res = preprints(net, out)
+        out.finish("preprints", net, dict(res, ok=True))
+        return 0
     if a.mode == "fulltext":
         items = read_fulltext_list(a.list)
         res = fulltext(net, out, items)

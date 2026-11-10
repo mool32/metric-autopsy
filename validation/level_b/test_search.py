@@ -256,3 +256,62 @@ def test_the_script_run_as_a_command_records_a_refused_full_text(dry, tmp_path):
                           "--fabricated", "--list", str(tmp_path / "list.tsv")], capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
     assert "answered with a server error on every attempt" in (tmp_path / "ft" / "fulltext.log").read_text()
+
+
+# --------------------------------------------------------------------------- #
+# amendment 1 (the protocol's section 12; plan_s1.md): the second fetch and the preprints
+# --------------------------------------------------------------------------- #
+def test_the_preprints_query_is_the_searchs_without_its_language():
+    """12.2: the same two blocks and window as section 3's Europe PMC query, preprints only, no language."""
+    assert S.PREPRINT_QUERY == S.EUROPEPMC_QUERY.replace('LANG:"eng" ', "SRC:PPR ")
+    assert "LANG" not in S.PREPRINT_QUERY and S.PREPRINT_QUERY.count("SRC:PPR") == 1
+
+
+def test_the_second_fetchs_list_is_the_owners_decision():
+    """JOURNAL.md, J1: Europe PMC again for A's three, one publisher attempt for A's six, C's two checked for
+    counts (R03285's text names NGDC's PRJCA044651)."""
+    items = S.read_fetch2_list(S.FETCH2_LIST)
+    by = {}
+    for it in items:
+        by.setdefault(it["action"], []).append(it["rid"])
+    assert by == {"epmc": ["R00014", "R00173", "R00394"],
+                  "publisher": ["R00438", "R00582", "R01062", "R01338", "R02068", "R02134"],
+                  "counts": ["R03285", "R03433"]}
+    full = {r["rid"]: r for r in (dict(zip(S.FULLTEXT_COLUMNS, line.split("\t")))
+                                  for line in S.FULLTEXT_LIST.read_text().splitlines()[1:])}
+    for it in items:  # the ids are the full-text list's
+        assert (it["pmid"], it["pmcid"], it["doi"]) == (full[it["rid"]]["pmid"], full[it["rid"]]["pmcid"], full[it["rid"]]["doi"])
+        assert it["action"] != "epmc" or it["pmcid"].startswith("PMC")
+    assert next(it for it in items if it["rid"] == "R03285")["repository"] == "ngdc:PRJCA044651"
+
+
+def test_the_dry_run_of_the_second_fetch(tmp_path):
+    assert S.main(["fetch2", "--out", str(tmp_path / "f2"), "--fabricated"]) == 0
+    rows = [dict(zip(["rid", "action", "asked", "status", "final", "file", "note"], line.split("\t")))
+            for line in (tmp_path / "f2" / "fetch2_index.tsv").read_text().splitlines()[1:]]
+    pub = [r for r in rows if r["action"] == "publisher"]
+    # one attempt: one request of the DOI's page each, and one of its PDF only where the page names one
+    landing = [r for r in pub if r["asked"].startswith("https://doi.org/")]
+    assert sorted(r["rid"] for r in landing) == ["R00438", "R00582", "R01062", "R01338", "R02068", "R02134"]
+    pdfs = [r for r in pub if not r["asked"].startswith("https://doi.org/")]
+    opened = {r["rid"] for r in landing if r["status"] == "200"}
+    assert {r["rid"] for r in pdfs} == opened and len(pdfs) == len(opened)
+    requests = (tmp_path / "f2" / "requests.tsv").read_text().splitlines()[1:]
+    assert sum("doi.org" in line for line in requests) == 6 and all(line.split("\t")[-1] == "1" for line in requests
+                                                                     if "doi.org" in line or "publisher.example" in line)
+    counts = [r for r in rows if r["action"] == "counts"]
+    assert {r["rid"] for r in counts} == {"R03285", "R03433"}
+    assert any("elink.fcgi" in r["asked"] for r in counts) and any("supplementaryFiles" in r["asked"] for r in counts)
+    assert sum("ngdc.cncb.ac.cn/bioproject/browse/PRJCA044651" in r["asked"] for r in counts) == 1
+    assert [r["rid"] for r in rows if r["action"] == "epmc"] == ["R00014", "R00173", "R00394"]
+    assert all(r["file"] != "-" for r in counts if r["status"] == "200")
+
+
+def test_the_dry_run_of_the_preprints(tmp_path):
+    assert S.main(["preprints", "--out", str(tmp_path / "pp"), "--fabricated"]) == 0
+    with gzip.open(tmp_path / "pp" / "preprints.jsonl.gz", "rt") as f:
+        recs = [json.loads(line) for line in f]
+    summary = json.loads((tmp_path / "pp" / "preprints.json").read_text())
+    assert summary["hit_count"] == summary["fetched"] == len(recs) == 100 and summary["pages"] > 1
+    assert all(r["source"] == "PPR" for r in recs) and summary["languages"] == {"none": 100}
+    assert summary["query"] == S.PREPRINT_QUERY

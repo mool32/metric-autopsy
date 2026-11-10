@@ -95,3 +95,22 @@ python3 -I validation/level_b/screening.py check-fulltext --batch <your batch_NN
 ```
 
 and correct what it reports.
+
+## Amendment 1 (the owner, 2026-11-10): sets kept — for the passes after that date
+
+From the protocol's section 12, before any pass over the full texts of sets. Every rule above holds but these:
+- **Rule 1, for a set:** a claim about the coordination of a named set of genes (a module, a pathway, a
+  program, a regulon's genes, a network's genes, one gene with many named partners) with its direction
+  between two conditions, in the abstract or the results, **and the set's genes listed** in the paper or its
+  supplement (name the table or file).
+- **Rule 2, for a set:** the set's coordination computed from the cells' counts as associations among its
+  genes across cells — a mean or median pairwise correlation, a module's connectivity, coherence or density
+  computed from gene–gene correlations. Not: a module score or an eigengene's level, a regulon's activity
+  (AUCell), a network inferred by a model without the genes' correlations, a correlation across samples or
+  pseudobulk profiles.
+- **F2 now means GLOBAL only:** the paper's claims of coordination are about global measures only (GCL, a mean
+  correlation over the transcriptome, a network's density or entropy over many genes). A paper with claims
+  about pairs and sets keeps both kinds (at most 5 claims in all, in order of appearance).
+- **A set's claim line:** `genes` is `SET:` followed by the set's name as the paper gives it, the number of its
+  genes and where they are listed (for example `SET: M3 module, 87 genes, Table S4`); every other field as for a
+  pair.

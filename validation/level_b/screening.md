@@ -150,3 +150,21 @@ and correct what it reports.
 (the search's PubMed parser took the references' ids, and 112 papers were hidden in false merges). The
 corrected list holds 3,506 records (18 batches); the decisions on the 3,394 unchanged texts carry over, and
 the 112 new records were screened by two new passes under this text. The record: `screening/README.md`.
+
+## Amendment 1 (the owner, 2026-11-10): sets kept, and the language — for the passes after that date
+
+From the protocol's section 12, before any pass over the records of sets and the preprints. Every rule above
+holds but these:
+- **A claim about a named set is kept.** Between two conditions, the coordination of a named set of genes —
+  a module (WGCNA, hdWGCNA), a pathway, a program, a regulon's genes, a network or its hubs in aggregate, one
+  gene with many named partners — changes in a stated direction (rises, falls, appears, disappears, rewires).
+  Coordination is the same as for a pair: an association across cells among the set's genes (their
+  correlations, a module's connectivity or coherence computed from them). Decide such a record `KEEP`, with
+  `kinds` `set`, where its title and abstract state or allow such a claim; whether the set's genes are listed
+  (in the paper or its supplement) is decided on the full text. **X6 is no longer used.**
+- **Still excluded:** a set's level — a module score, an eigengene's expression, a regulon's activity
+  (AUCell), a pathway score — is a claim on expression levels (X4); a global measure of coordination over many
+  genes (GCL, a mean correlation over the transcriptome, a network's density or entropy) stays **X7**, counted,
+  not kept.
+- **X11 — not in English:** the title or the abstract is not in English (the language left the query for the
+  preprints, protocol 12.2). It comes after X10 in the order.

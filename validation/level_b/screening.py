@@ -60,7 +60,7 @@ FIELDS = ("rid", "title", "abstract", "journal", "year", "pub_types", "pmid", "d
 WIDTH = 110
 HEADER = ["rid", "decision", "code", "kinds", "note"]
 DECISIONS = ("KEEP", "EXCLUDE", "UNCLEAR")
-CODES = tuple(f"X{i}" for i in range(1, 11))
+CODES = tuple(f"X{i}" for i in range(1, 12))  # X11 (not in English): amendment 1, the passes after 2026-11-10
 KINDS = ("pair", "set", "global")
 FT_BATCH = 8
 FT_HEADER = ["rid", "decision", "code", "claim", "genes", "species", "cells", "conditions", "direction", "metric",
@@ -71,10 +71,10 @@ CODE_NAMES = {
     "X3": "development data or a control", "X4": "no changed coordination between conditions",
     "X5": "cell states within donors", "X6": "SET: a set's coordination", "X7": "GLOBAL: a global measure",
     "X8": "too few donors (the abstract shows it)", "X9": "data not public or not counts",
-    "X10": "duplicate",
+    "X10": "duplicate", "X11": "not in English",
 }
 FT_CODE_NAMES = {
-    "F1": "no claim about a named pair with a direction", "F2": "SET or GLOBAL only", "F3": "a metric v0.4 cannot check",
+    "F1": "no claim about a named pair with a direction", "F2": "SET or GLOBAL only (GLOBAL only after amendment 1)", "F3": "a metric v0.4 cannot check",
     "F4": "not single-cell RNA counts", "F5": "cell states within donors", "F6": "development data or a control",
     "F7": "data not public as counts", "F8": "no donor ids", "F9": "too few donors", "F10": "duplicate",
 }

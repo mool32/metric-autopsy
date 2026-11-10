@@ -12,18 +12,25 @@ of every other such PMCID is open (PubMed gives these PMCIDs too), but one answe
 attempt; the even preprints' full texts are open.
 Every fifth PubMed record lists its references with their ids, as PubMed does: the next record's DOI and PMID
 and a PMCID of their own (a parser that took them for the record's own would merge the two). Each response
-is recorded as `search.Net` records it, with its SHA256, so that a dry run can be replayed (`remerge`)."""
+is recorded as `search.Net` records it, with its SHA256, so that a dry run can be replayed (`remerge`).
+Amendment 1's second fetch and preprints (`plan_s1.md`): a DOI whose last character is an even digit opens
+on a page that names its PDF (open), any other DOI is refused (HTTP 403); NCBI's links from a paper to GEO
+are none for an odd PMID and one data set for an even one; the supplementary files of a PMCID are a small
+zip; NGDC's BioProject page names its accession; the preprints' query answers with the fabricated
+preprints, without a language (as Europe PMC gives them)."""
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import re
+import zipfile
 import urllib.error
 import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import date, timedelta
 
-from search import EUROPEPMC_QUERY, PAPERS, PUBMED_TERM, Unavailable, shown_params
+from search import EUROPEPMC_QUERY, PAPERS, PREPRINT_QUERY, PUBMED_TERM, Unavailable, shown_params
 
 N_PUBMED, N_BOTH, N_EPMC_ONLY, N_PREPRINT, N_PREPRINT_TWIN, N_CITING = 5600, 5200, 500, 100, 30, 40
 MISSING_PMID = "31000077"
@@ -107,8 +114,39 @@ class Fabricated:
         self.rows[-1].update(bytes=len(body), sha256=hashlib.sha256(body).hexdigest())
         return body
 
+    def get_once(self, url: str) -> tuple:
+        """`search.Net.get_once`: one GET, (status, final URL, body), an error answered, not raised."""
+        status, final, body = self._once(url)
+        self.rows.append(dict(time="fabricated", method="GET", url=url, params=shown_params({}), status=status,
+                              bytes=len(body), sha256=hashlib.sha256(body).hexdigest(), attempt=1))
+        return status, final, body
+
+    @staticmethod
+    def _once(url):
+        parts = urllib.parse.urlsplit(url)
+        if parts.hostname == "doi.org":
+            doi = parts.path.lstrip("/")
+            if doi[-1:].isdigit() and int(doi[-1]) % 2 == 0:
+                final = f"https://publisher.example/article/{doi}"
+                return 200, final, (f'<html><head><meta name="citation_pdf_url" content="/pdf/{doi}.pdf">'
+                                    f"</head><body><h1>Fabricated article {doi}</h1><h2>Results</h2></body></html>").encode()
+            return 403, f"https://publisher.example/article/{doi}", b"<html>Access denied</html>"
+        if parts.hostname == "publisher.example" and parts.path.startswith("/pdf/"):
+            return 200, url, b"%PDF-1.4 fabricated"
+        raise AssertionError(f"no fabricated one-attempt response for {url}")
+
     def _respond(self, url, params, post):
         path = urllib.parse.urlsplit(url).path
+        if path.endswith("/elink.fcgi"):
+            return self._elink(params)
+        if path.endswith("/supplementaryFiles"):
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w") as z:
+                z.writestr("Table1.docx", "fabricated supplementary table")
+            return buf.getvalue()
+        if urllib.parse.urlsplit(url).hostname == "ngdc.cncb.ac.cn":
+            acc = path.rsplit("/", 1)[-1]
+            return f"<html><body>BioProject {acc}: fabricated page, no data released</body></html>".encode()
         if path.endswith("/esearch.fcgi"):
             return self._esearch(params)
         if path.endswith("/efetch.fcgi"):
@@ -202,9 +240,23 @@ class Fabricated:
                     ET.SubElement(ril, "ArticleId", IdType="pmc").text = f"PMC{5000000 + 10 * i + k}"
         return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
+    @staticmethod
+    def _elink(params):
+        assert params["dbfrom"] == "pubmed" and params["db"] == "gds" and "email" not in params
+        pmid = params["id"]
+        dbs = [dict(dbto="gds", linkname="pubmed_gds", links=[str(200000000 + int(pmid) % 1000)])] if int(pmid) % 2 == 0 else []
+        return json.dumps(dict(header=dict(type="elink"), linksets=[dict(dbfrom="pubmed", ids=[pmid], linksetdbs=dbs)])).encode()
+
     def _epmc_search(self, params):
         q = params["query"]
         size = int(params.get("pageSize", 25))
+        if q == PREPRINT_QUERY:
+            pre = [dict(r, language=None) for r in self.epmc if r.get("source") == "PPR"]
+            start = 0 if params.get("cursorMark") == "*" else int(params["cursorMark"])
+            size = min(size, 40)  # pages smaller than asked, so that the paging runs
+            page = pre[start:start + size]
+            nxt = str(start + size) if start + size < len(pre) else params.get("cursorMark")
+            return json.dumps(dict(hitCount=len(pre), nextCursorMark=nxt, resultList=dict(result=page))).encode()
         if q == EUROPEPMC_QUERY:
             start = 0 if params.get("cursorMark") == "*" else int(params["cursorMark"])
             page = self.epmc[start:start + size]
