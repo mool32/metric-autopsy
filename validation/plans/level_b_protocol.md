@@ -1,7 +1,8 @@
 # Level B: the protocol for finding the claims
 
 **Status: approved by the owner on 2026-10-19 (the second decisions of that day), with the edits recorded
-in section 10.** The draft (2360cc0, a04216d) went to the owner before any search. At this version nothing
+in section 10; amended by the owner on 2026-11-10, before any run (section 12: claims about sets and
+preprints are kept).** The draft (2360cc0, a04216d) went to the owner before any search. At this version nothing
 of level B has been searched or run: the order is section 11's, and the engine is not run on level B
 (`real_claims.md`: nothing of the confirmatory set runs before the tag of v0.4).
 
@@ -15,7 +16,8 @@ before it runs.
 
 A **claim** is a finding the authors state in the abstract or the results: between two conditions
 (ages, disease and control, treated and untreated, genotypes), the coordination of genes changes in a
-stated direction. **The claims kept are about pairs**: the correlation or coexpression of a named pair.
+stated direction. **The claims kept are about pairs**: the correlation or coexpression of a named pair
+(amended 2026-11-10: and about named sets, section 12).
 Claims about the coordination of a named set, or a global measure of coordination (Levy et al. 2020's
 GCL), are **listed and counted at screening, not kept**: they need v0.4's change 9 (the set probe),
 which is not coded, and the owner decides about it from those counts alone (section 9). Claims on a
@@ -119,7 +121,8 @@ two passes (Cohen's kappa, at each step) is in the report. A paper is kept where
 
 - No claim with a direction; a claim about composition, expression levels alone, noise or variability;
   bulk or pseudobulk data only; spatial or imaging data only.
-- A claim about a set's coordination or a global measure: listed and counted, not kept (section 1).
+- A claim about a set's coordination or a global measure: listed and counted, not kept (section 1;
+  amended 2026-11-10: a set's claim is kept, a global measure's stays counted, section 12).
 - Data not public, not as counts, or without donor ids; fewer donors than section 5.4 allows.
 - The development data (Tabula Muris Senis as used in level A, SEA-AD's MTG, Marsh et al. 2022) and the
   positive and negative controls of the second question (Kang et al. 2018 and those registered later).
@@ -168,7 +171,8 @@ weigh more). The cap and the order are fixed before screening.
   their records, and the others are listed.
 - **Too few:** if fewer than 20 papers with pairs are kept, the report says so; if the papers with claims
   about sets (counted, section 1) would reach the target, the owner decides about change 9 from those
-  counts alone. The search is not widened after the screening started.
+  counts alone. The search is not widened after the screening started (amended 2026-11-10, section 12:
+  the owner widened it to sets and to preprints, before any run, for the reasons recorded there).
 
 ## 10. The owner's decisions on the draft (2026-10-19, the second decisions)
 
@@ -208,3 +212,95 @@ not the engine; such papers are listed apart for the owner.
 5. The list of claims to the owner, each with the reason it is kept or left out, the counts of
    section 1 and the verdicts found (section 7).
 6. After the owner's approval of the list: data and structure checks; the runs, after the tag of v0.4.
+
+## 12. Amendment 1 (the owner, 2026-11-10), before any run
+
+The owner's decision of 2026-11-10: «Уровень B: беру утверждения о наборах и препринты, оформи как
+поправку к протоколу до прогонов». It is made before any run of the engine on level B, before the search
+of section 7 and before any data of a kept claim is read; the screening done so far and its records stay
+as they are (`validation/level_b/claims.md`, `screening/`, `fulltext_screening/`).
+
+**Why, and what it overrides.** Section 9 says the search is not widened after the screening started.
+It is widened twice, for reasons that come from the screening's counts and from a defect of the query,
+not from any output of the engine:
+- **Sets.** The screening kept 4 papers with pairs, fewer than the 20 of section 9, which then leaves the
+  decision about sets to the owner "from those counts alone". The counts (`claims.md`): at titles and
+  abstracts both passes excluded 135 records as a set's claim (X6; 179 and 161 by each pass), and 210
+  records were X6 or X7 in either pass; at the full texts 9 records in each pass were sets or global
+  measures only (F2). The set's probe and a set's reference metric have been coded since 2026-11-05 and
+  2026-11-07 (`v0.4_spec.md`, change 9).
+- **Preprints.** Europe PMC gives a preprint no language, so the query's `LANG:"eng"` left every preprint
+  out: its five pages held none, while the forward citations' 246 records held 73, each without a
+  language (`validation/level_b/runs/search_checks.log`, section 1).
+
+### 12.1 Claims about sets are kept
+
+- **A set's claim:** between two conditions, the coordination of a named set of genes changes in a stated
+  direction (a module, a pathway, a program, a network's genes: `screening.md`'s X6), and the set's genes
+  are listed in the paper or its supplement. A claim about a set's level (a module score, a regulon's
+  activity) stays excluded (section 1: metrics of level are not searched for).
+- **Rule 2 of section 5, for a set:** the set's coordination computed from the cells' counts, which v0.4
+  checks with the set's probe (`injected_signal.coupling_set`, change 9) and its reference metric
+  `set_norm_pearson` (the mean of `norm_pearson` over the set's pairs). The paper's own metric is run
+  beside it where it can be computed from the counts of a donor's cells.
+- **Global measures** (X7: GCL and the like) stay counted, not kept: the decision names sets only.
+- **Rules 3 to 5, the exclusions of section 6, the cap of section 8** (5 claims a paper, pairs and sets
+  together, in order of appearance) **and section 9's draw** (at most 30 papers, the kept papers of both
+  kinds together) hold as written.
+- **Two caveats, printed with every result on a set** (the owner, 2026-11-10):
+  1. **The path is not covered by validation v1.** v1's scope is `norm_pearson` of a gene pair
+     (README, Status); the set's probe, `set_norm_pearson`, GATE 4 on a set and GATE 5's SKIP for a set
+     (its controls are pairs) were never part of a confirmatory test, and validation v2 is paused after
+     its first step (`validation/prereg_v2/v2.md`, status).
+  2. **The definition's check against Levy et al. 2020 is not done.** Change 9's precondition of
+     2026-10-12 (GCL's definition checked against Levy et al. 2020, and its data shown to pass the real
+     track's rules) is not met; the probe and the reference metric were coded without it
+     (`v0.4_spec.md`, section 9).
+- **The limits of the set's path are reported as they occur, not decided now:** `set_norm_pearson` is NaN
+  where any of its pairs has fewer than 20 cells carrying both genes, so a large set of sparse genes is
+  unmeasured (UNIDENTIFIABLE, `unmeasured`); its cost grows with the square of the set's size.
+- **The screening of sets:** the 210 records that were X6 or X7 in either pass at titles and abstracts,
+  and the records excluded as F2 at the full texts, are screened again by sections 5 and 6 with this
+  section's rule, by two new independent passes (each by its own session, the second not seeing the
+  first's decisions), then their full texts as in section 5. A set's rules are added to `screening.md`
+  and `screening_fulltext.md` before the passes begin, and the kept papers with pairs keep their
+  claims.
+
+### 12.2 Preprints are searched for
+
+- **A supplementary search** of Europe PMC's preprints (source `PPR`), with the terms and the window of
+  section 3 and without `LANG:"eng"`, run once in Actions by a script committed before it runs, its raw
+  responses committed with their SHA256 before any screening (section 2's rules; a second run only after
+  a technical failure, said in the report).
+- **Merged by section 5's rule** with the list; a record already in it is not screened again. A preprint
+  and its journal version are one paper (section 6: the first published counts). The language moves from
+  the query to the screening: a record whose abstract is not in English is excluded.
+- **Screened by section 5** (two passes, with 12.1's rule for sets), then its full texts.
+
+### 12.3 Two counts in the report of the runs, independent of the engine
+
+For every kept claim, before and apart from the engine's verdict (the owner, 2026-11-10;
+`real_claims.md`, "The runs"):
+- **The test over donors:** whether (b), the donor-level test of `real_claims.md` (a permutation over
+  donors, the TOST at the SESOI, EFFECT BELOW SESOI), supports the claim in its direction on the paper's
+  data: it supports it; it does not (not detected, an absence, an effect below the SESOI, or against
+  the claimed direction); or it cannot be run (fewer donors than the graded rule needs, or the metric
+  not measured).
+- **The check of the data's origin**, by code independent of the engine, before the runs: every donor id
+  names one individual (one sex, by Xist and the Y genes, where both sexes are present); the groups'
+  cells come from one source, or the source is balanced between the groups (the lesson of Tabula Muris
+  Senis: `real_claims.md`, "The source in Tabula Muris Senis FACS"); the counts are raw integers. A claim
+  whose comparison confounds its condition with the data's source fails the check.
+
+Each count is given as claims and as papers, with the reasons. A claim that fails either check is still
+run through the engine and reported; the first question counts it as `real_claims.md` says.
+
+### 12.4 The order, after this amendment
+
+1. The rules of 12.1 added to the screening instructions; the preprints' search script with its dry run.
+2. The preprints' search, once (a label of its own).
+3. The two passes over the 210 records and the F2 records, and over the new preprints, then the full texts.
+4. The list of claims to the owner, pairs and sets apart, with section 1's counts and the owner's sheet of
+   undecided records (`validation/level_b/decision_sheet.md`).
+5. Then section 11's steps 5 and 6: the verdicts' search (section 7), the data and structure checks with
+   12.3's check of origin, and the runs on the engine of the tag `v0.4.0.dev0` (commit 5a89f98).

@@ -270,3 +270,17 @@ def test_the_claims_list_draws_30_lists_small_designs_and_the_papers_verdicts(tm
     md = (tmp_path / "out" / "claims.md").read_text()
     assert "Kept, not drawn: " in md and "- R00001, pass 1, claim 1: **A, B**" in md
     assert "R00002, pass 2, claim 1: eight per group" in md and "smFISH: the correlation falls too" in md
+
+
+def test_the_owners_sheet_is_the_screening_files_own(capsys):
+    """`decision_sheet.md` is what `decision_sheet.py` prints from the screening's files (the owner, 2026-11-10):
+    the 12 and the 19 records sent to the owner, 23 in all, in four groups that hold every one of them once."""
+    import decision_sheet as D
+    assert D.main() == 0
+    printed = capsys.readouterr().out
+    assert printed == (HERE / "decision_sheet.md").read_text()
+    ta, ft, index, allrows = D.read_lists()
+    union = sorted(set(ta) | set(ft))
+    groups = {g: [r for r in union if D.group_of(r, ta, ft) == g] for g, _, _ in D.GROUPS}
+    assert {g: len(v) for g, v in groups.items()} == {"A": 9, "B": 8, "C": 2, "D": 4}
+    assert sorted(r for v in groups.values() for r in v) == union and len(union) == 23

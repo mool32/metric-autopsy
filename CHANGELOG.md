@@ -20,7 +20,16 @@ The engine is the tag's (`src/` unchanged since 5a89f98).
   `test_v2_w1.py` checks them against the engine number for number, with and without scipy, (b) end to
   end against a `run_autopsy` report's raw replicate-level test, π\* against v1's numbers and its
   script's bootstrap, and the design effects against v1's estimators. `pyproject.toml`: pytest collects
-  `validation/prereg_v2`.
+  `validation/prereg_v2`. **Paused after this first step** by the owner's decision of 2026-11-10, until
+  the answer to the real track's first question.
+- Level B (`validation/plans/level_b_protocol.md`, section 12, the owner's amendment of 2026-11-10, before
+  any run): claims about named sets are kept, judged with the set's probe and `set_norm_pearson`, each
+  result printed with two caveats (the path is not covered by validation v1; the definition's check
+  against Levy et al. 2020 is not done); preprints, which the query's language filter left out, are
+  searched for; the report of the runs counts, independently of the engine, the claims the test over
+  donors does not support and those that fail the check of the data's origin.
+  `validation/level_b/decision_sheet.py` puts the 23 records undecided by the screening on one sheet for
+  the owner (`decision_sheet.md`, checked by `test_screening.py`).
 
 ## [0.4.0.dev0] — tagged `v0.4.0.dev0` on 2026-11-07, not released
 

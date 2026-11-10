@@ -119,7 +119,11 @@ search, the screening and their samples: `level_b_protocol.md`, approved the sam
   correlation. A claim about the coordination of a gene set, or a global measure, needs the set
   coupling probe (change 9, not coded): such claims are listed and counted at screening, not kept,
   and the owner decides about change 9 from those counts. Claims on a metric of level (a marker's mean
-  expression) are not searched for;
+  expression) are not searched for. **Amended by the owner on 2026-11-10, before any run**
+  (`level_b_protocol.md`, section 12): claims about a named set are kept, judged with the set's probe and
+  `set_norm_pearson` (change 9, coded), each result printed with two caveats — the path is not covered by
+  validation v1, and the definition's check against Levy et al. 2020 is not done; global measures stay
+  counted; preprints, which the query's language filter left out, are searched for;
 - the data are public, with donor (or animal) ids, and enough donors for an exact two-sided
   permutation test to reach p < 0.05 (4 against 4 or 3 against 5; 6 pairs; not 3 against 3 or 3
   against 4);
@@ -244,7 +248,13 @@ that it passes when (d) is right in a share p of the disagreements):
 | 20 | 15 | 0.804 | 0.933 | 0.989 |
 
 **Separately:** the claims that fail already at (b). That is pseudoreplication, a known problem, and
-no merit of the tool.
+no merit of the tool. **Two counts independent of the engine** (the owner, 2026-11-10;
+`level_b_protocol.md`, section 12.3), as claims and as papers with the reasons: the claims that (b), the
+test over donors, does not support (not detected, an absence, below the SESOI, against the claimed
+direction) or cannot run (too few donors, the metric not measured); and the claims that fail the check of
+the data's origin, made by code independent of the engine before the runs (a donor id that is not one
+individual, the condition confounded with the data's source, counts that are not raw integers). A claim
+that fails either is still run through the engine and reported.
 
 **Secondary:** π\*_real against v2's π\* in the same stratum (whether the simulation predicts the
 real exchange), and π against v2's π\*. The decision rests on the frequency and on π against
