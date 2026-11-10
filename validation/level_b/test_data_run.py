@@ -131,3 +131,111 @@ def test_a_large_matrix_in_a_stream_with_libraries_from_the_series(tmp_path):
     assert res["donors"]["design"] == "nested" and res["donors"]["donors"] == {"Disease": 2, "Ctrl": 2}
     assert not res["donors"]["rule4"]["passes"] and res["sex"]["both_sexes"] and res["sex"]["fails"] == []
     assert "2. Donors: nested" in (tmp_path / "out" / "report.md").read_text()
+
+
+def _xlsx(path: Path, sheets: dict):
+    """A minimal Excel workbook (numbers as numbers, text as shared strings), written with the standard library."""
+    import zipfile
+    from xml.sax.saxutils import escape
+    M = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    Rn = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    P = "http://schemas.openxmlformats.org/package/2006/relationships"
+    shared, idx, xml = [], {}, {}
+
+    def col(j):
+        s, j = "", j + 1
+        while j:
+            j, r = divmod(j - 1, 26)
+            s = chr(65 + r) + s
+        return s
+
+    for k, rows in enumerate(sheets.values(), start=1):
+        out = []
+        for i, row in enumerate(rows, start=1):
+            cells = []
+            for j, v in enumerate(row):
+                if v is None:
+                    continue
+                if isinstance(v, (int, float)):
+                    cells.append(f'<c r="{col(j)}{i}"><v>{v}</v></c>')
+                else:
+                    idx.setdefault(v, len(shared))
+                    if idx[v] == len(shared):
+                        shared.append(v)
+                    cells.append(f'<c r="{col(j)}{i}" t="s"><v>{idx[v]}</v></c>')
+            out.append(f'<row r="{i}">{"".join(cells)}</row>')
+        xml[k] = f'<worksheet xmlns="{M}"><sheetData>{"".join(out)}</sheetData></worksheet>'
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("xl/workbook.xml", f'<workbook xmlns="{M}" xmlns:r="{Rn}"><sheets>' + "".join(
+            f'<sheet name="{escape(n)}" sheetId="{k}" r:id="rId{k}"/>' for k, n in enumerate(sheets, start=1)) + "</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels", f'<Relationships xmlns="{P}">' + "".join(
+            f'<Relationship Id="rId{k}" Type="{Rn}/worksheet" Target="worksheets/sheet{k}.xml"/>' for k in xml) + "</Relationships>")
+        z.writestr("xl/sharedStrings.xml", f'<sst xmlns="{M}">' + "".join(f"<si><t>{escape(v)}</t></si>" for v in shared) + "</sst>")
+        for k, x in xml.items():
+            z.writestr(f"xl/worksheets/sheet{k}.xml", x)
+
+
+def test_xlsx_sheet_reads_the_named_sheet_as_strings(tmp_path):
+    _xlsx(tmp_path / "t.xlsx", {"Other": [["a"], [1]],
+                                "Sheet1": [["Sample_ID", "status", "Patient.ID"], [69, "Involved", "pat. 5"],
+                                           [68, "Uninvolved", "pat. 5"], [None], ["Column Legend:"],
+                                           ["Sample_ID", "Sample Identifier"]]})
+    t = R.xlsx_sheet(tmp_path / "t.xlsx", "Sheet1")
+    assert list(t.columns) == ["Sample_ID", "status", "Patient.ID"]
+    assert t["Sample_ID"].tolist() == ["69", "68", "Column Legend:", "Sample_ID"]
+    assert t["Patient.ID"].tolist()[:2] == ["pat. 5", "pat. 5"]
+    assert R.xlsx_sheet(tmp_path / "t.xlsx")["a"].tolist() == ["1"]  # no name: the first sheet
+
+
+def test_tenx_raw_barcodes_with_a_threshold_and_the_patients_from_the_paper_s_table(tmp_path):
+    """Cell Ranger's raw matrices (cells and near-empty barcodes), each sample's patient from the paper's table, one
+    pair of samples the table does not name: its cells are listed, not checked."""
+    rng = np.random.default_rng(3)
+    gsms, titles, status, chem, table = [], [], [], [], [["Sample_ID", "tissue", "status", "Patient.ID"]]
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        for k in range(7):
+            for s, st in enumerate(("Involved", "Uninvolved")):
+                num = 100 + 2 * k + s
+                gsm = f"GSM{num}"
+                gsms.append(gsm)
+                titles.append(f"Ileal {st} {num}")
+                status.append(st)
+                chem.append("V1" if k == 0 else "V2")
+                if k < 6:
+                    table.append([num, "ILEUM", st, f"pat. {k}"])
+                cells = _cells(rng, 20, female=k % 2 == 0) * 10
+                empty = rng.poisson(0.1, size=(30, len(GENES))).astype(float)
+                X = np.vstack([cells, empty])
+                files = {f"{gsm}_{num}_barcodes.tsv.gz": gzip.compress("".join(f"B{i}-1\n" for i in range(50)).encode()),
+                         f"{gsm}_{num}_genes.tsv.gz": gzip.compress("".join(f"E{i}\t{g}\n" for i, g in enumerate(GENES)).encode()),
+                         f"{gsm}_{num}_matrix.mtx.gz": _mtx(X.T)}
+                for name, data in files.items():
+                    info = tarfile.TarInfo(name)
+                    info.size = len(data)
+                    tar.addfile(info, io.BytesIO(data))
+    (tmp_path / "raw.tar").write_bytes(buf.getvalue())
+    _series(tmp_path / "series.txt.gz", gsms, titles, {"tissue": ["ileal"] * len(gsms), "status": status,
+                                                       "10x chemistry": chem})
+    _xlsx(tmp_path / "pairs.xlsx", {"Sheet1": table})
+    spec = dict(rid="R00004", organism="homo_sapiens", loader="tenx_samples",
+                files=dict(raw="https://example.org/raw.tar", series="https://example.org/series.txt.gz",
+                           pairs="https://example.org/pairs.xlsx"),
+                loader_args=dict(min_umis=20),
+                tables=[dict({"as": "patient"}, file="pairs", sheet="Sheet1", key="Sample_ID", value="Patient.ID",
+                             on=dict(column="title", regex=r"(\d+)$"))],
+                cells=dict(tissue=["ileal"]), groups=dict(column="status", values=["Involved", "Uninvolved"]),
+                donor="patient", source="10x chemistry", sex_label=None,
+                claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["cells"] == 6 * 2 * 20  # the near-empty barcodes and the unnamed pair left out
+    assert res["without_donor"] == {"Ileal Involved 112 / Involved": 20, "Ileal Uninvolved 113 / Uninvolved": 20}
+    assert res["donors"]["design"] == "paired" and res["donors"]["donors"] == {"Involved": 6, "Uninvolved": 6}
+    assert res["donors"]["rule4"]["passes"] and res["source"]["verdict"] == "balanced"
+    assert res["sex"]["both_sexes"] and res["sex"]["fails"] == []
+    md = (tmp_path / "out" / "report.md").read_text()
+    assert "cells no donor names, left out" in md and "Ileal Involved 112" in md
+    log = (tmp_path / "out" / "data_run.log").read_text()
+    assert "GSM100: 20 of 50 barcodes with at least 20 counts" in log and "table pairs: patient for 240 of 280 cells" in log

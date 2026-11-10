@@ -14,11 +14,22 @@ which metadata give each cell's group, donor, source and sex label:
      "donor": "orig.ident", "source": null, "sex_label": null,
      "claims": [{"id": "1", "genes": ["SERPINE2", "TFF3"]}, ...]}
 
+A spec may add columns to the cells' metadata from a table the paper publishes beside its deposit (`tables`: the
+table's file among `files`, a CSV or an Excel sheet read with the standard library, its key and value columns, and
+the cells' key, a column or a regular expression's first group on one), e.g. each sample's patient:
+
+     "tables": [{"as": "patient", "file": "pairs", "sheet": "Sheet1", "key": "Sample_ID", "value": "Patient.ID",
+                 "on": {"column": "title", "regex": "(\\d+)$"}}]
+
+The cells of the two groups that no donor names are left out of the checks and listed (`without_donor`).
+
 Loaders (`LOADERS`):
 * `csv_counts` — a counts table as CSV (genes by cells or cells by genes, found from the metadata's cell ids) and a
   table of cells as CSV (the cell ids in its first column);
 * `tenx_samples` — a GEO archive of per-sample 10x files (barcodes, genes, matrix) and the series matrix, whose
-  per-sample titles and characteristics become every cell's metadata;
+  per-sample titles and characteristics become every cell's metadata; with `loader_args` `{"min_umis": n}` (a
+  deposit of Cell Ranger's raw matrices, every barcode) a cell is a barcode with at least n counts, the authors'
+  own threshold;
 * `mtx_libraries` — one large MatrixMarket file (genes by cells) read in a stream, its barcodes prefixed by their
   library's title, and the series matrices, whose per-library characteristics become the cells' metadata; only the
   X-inactivation and Y genes and the claims' genes are kept, with every cell's total;
@@ -121,6 +132,85 @@ def series_samples(path: Path) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
+# a table the paper publishes (its samples' patients, say): CSV, TSV or an Excel sheet
+# --------------------------------------------------------------------------- #
+_XL = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+       "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+       "p": "http://schemas.openxmlformats.org/package/2006/relationships"}
+
+
+def _col_index(ref: str) -> int:
+    n = 0
+    for ch in re.match(r"[A-Z]+", ref).group(0):
+        n = n * 26 + ord(ch) - 64
+    return n - 1
+
+
+def xlsx_sheet(path: Path, sheet: str | None = None) -> pd.DataFrame:
+    """One sheet of an Excel workbook (.xlsx), read with the standard library (no Excel reader in the run's
+    environment): its first row the header, every value a string as the workbook stores it ("69", "pat. 5"),
+    rows without a value dropped."""
+    import xml.etree.ElementTree as ET
+    import zipfile
+    m = "{%s}" % _XL["m"]
+    with zipfile.ZipFile(path) as z:
+        wb = ET.fromstring(z.read("xl/workbook.xml"))
+        sheets = [(e.get("name"), e.get("{%s}id" % _XL["r"])) for e in wb.iter(m + "sheet")]
+        rid = next((r for n, r in sheets if sheet is None or n == sheet), None)
+        if rid is None:
+            raise ValueError(f"{path.name}: no sheet {sheet!r} (it has {[n for n, _ in sheets]})")
+        rels = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
+        target = next(e.get("Target") for e in rels.iter("{%s}Relationship" % _XL["p"]) if e.get("Id") == rid)
+        target = target.lstrip("/")
+        target = target if target.startswith("xl/") else "xl/" + target
+        shared = []
+        if "xl/sharedStrings.xml" in z.namelist():
+            for si in ET.fromstring(z.read("xl/sharedStrings.xml")).iter(m + "si"):
+                shared.append("".join(t.text or "" for t in si.iter(m + "t")))
+        root = ET.fromstring(z.read(target))
+    rows = []
+    for row in root.iter(m + "row"):
+        vals = {}
+        for i, c in enumerate(row.iter(m + "c")):
+            j = _col_index(c.get("r")) if c.get("r") else i
+            v = c.find(m + "v")
+            if c.get("t") == "s" and v is not None:
+                vals[j] = shared[int(v.text)]
+            elif c.get("t") == "inlineStr":
+                vals[j] = "".join(t.text or "" for t in c.iter(m + "t"))
+            elif v is not None and v.text is not None:
+                vals[j] = v.text
+        if vals:
+            rows.append(vals)
+    if not rows:
+        return pd.DataFrame()
+    header = rows[0]
+    cols = sorted(header)
+    return pd.DataFrame([[r.get(j) for j in cols] for r in rows[1:]], columns=[header[j] for j in cols])
+
+
+def paper_table(path: Path, sheet: str | None = None) -> pd.DataFrame:
+    if path.suffix.lower() == ".xlsx":
+        return xlsx_sheet(path, sheet)
+    return pd.read_csv(path, sep=None, engine="python", dtype=str)
+
+
+def table_column(obs: pd.DataFrame, path: Path, rule: dict) -> pd.Series:
+    """Each cell's value from the paper's table: the cell's key (a column, or a regular expression's first group on
+    one) looked up in the table's key column; a key the table does not hold gives no value."""
+    t = paper_table(path, rule.get("sheet")).dropna(subset=[rule["key"], rule["value"]])
+    t = t.assign(_k=t[rule["key"]].astype(str).str.strip(), _v=t[rule["value"]].astype(str).str.strip())
+    clash = t.groupby("_k")["_v"].nunique()
+    if (clash > 1).any():
+        raise ValueError(f"{path.name}: keys with two values {sorted(clash[clash > 1].index)}")
+    lut = dict(zip(t["_k"], t["_v"]))
+    on = rule["on"]
+    keys = (obs[on["column"]].astype(str).str.extract(on["regex"], expand=False) if isinstance(on, dict)
+            else obs[on].astype(str))
+    return keys.map(lut)
+
+
+# --------------------------------------------------------------------------- #
 # loaders: (X cells x genes CSR, gene symbols, obs) or, for the streamed one, a summary of the kept genes
 # --------------------------------------------------------------------------- #
 def load_csv_counts(files: dict, args: dict, log):
@@ -157,6 +247,7 @@ def load_tenx_samples(files: dict, args: dict, log):
     sample's (`series`)."""
     from scipy import sparse
     samples = series_samples(files["series"])
+    min_umis = int(args.get("min_umis", 0))
     by_gsm = {}
     with tarfile.open(files["raw"]) as tar:
         for m in tar.getmembers():
@@ -171,6 +262,11 @@ def load_tenx_samples(files: dict, args: dict, log):
             log(f"tenx_samples: {gsm} lacks {sorted({'barcodes', 'genes', 'matrix'} - set(parts))}")
             continue
         X, g, bc = _read_tenx(parts["barcodes"], parts["genes"], parts["matrix"])
+        if min_umis:
+            tot = np.asarray(X.sum(axis=1)).ravel()
+            keep = np.flatnonzero(tot >= min_umis)
+            log(f"tenx_samples: {gsm}: {len(keep)} of {len(bc)} barcodes with at least {min_umis} counts")
+            X, bc = X[keep], [bc[i] for i in keep]
         if genes is None:
             genes = g
         elif g != genes:
@@ -260,9 +356,9 @@ def _match(obs: pd.DataFrame, when: dict) -> np.ndarray:
     return m
 
 
-def assign(obs: pd.DataFrame, spec: dict) -> pd.DataFrame:
-    """The spec's cells, each with its group (a column, or rules in order), donor (a column, or a regular
-    expression's first group on a column) and source."""
+def _labelled(obs: pd.DataFrame, spec: dict):
+    """Every cell with its group (a column, or rules in order), donor (a column, or a regular expression's first
+    group on a column), source and sex label; and which cells are the spec's (its cells, in one of its groups)."""
     obs = obs.copy()
     keep = _match(obs, spec.get("cells") or {})
     g = spec["groups"]
@@ -280,10 +376,24 @@ def assign(obs: pd.DataFrame, spec: dict) -> pd.DataFrame:
             return obs[rule["column"]].astype(str).str.extract(rule["regex"], expand=False)
         return obs[rule].astype(str)
     obs["donor"] = column(spec["donor"])
-    keep &= obs["donor"].notna().to_numpy()
     obs["source"] = column(spec["source"]).fillna("unmatched") if spec.get("source") else "no source named"
     obs["sex_label"] = column(spec["sex_label"]).str.lower() if spec.get("sex_label") else "-"
-    return obs[keep]
+    return obs, keep
+
+
+def assign(obs: pd.DataFrame, spec: dict) -> pd.DataFrame:
+    """The spec's cells whose donor is named, each with its group, donor and source."""
+    obs, keep = _labelled(obs, spec)
+    return obs[keep & obs["donor"].notna().to_numpy()]
+
+
+def without_donor(obs: pd.DataFrame, spec: dict) -> dict:
+    """The spec's cells that no donor names (left out of the checks), by sample (its title) where the metadata
+    have one, and by group."""
+    obs, keep = _labelled(obs, spec)
+    o = obs[keep & obs["donor"].isna().to_numpy()]
+    by = ["title", "group"] if "title" in o.columns else ["group"]
+    return {" / ".join(map(str, k if isinstance(k, tuple) else (k,))): int(v) for k, v in o.groupby(by).size().items()}
 
 
 def checks(X, genes: list, obs: pd.DataFrame, spec: dict, raw: dict) -> dict:
@@ -299,13 +409,21 @@ def checks(X, genes: list, obs: pd.DataFrame, spec: dict, raw: dict) -> dict:
     return res
 
 
+def add_tables(obs: pd.DataFrame, spec: dict, paths: dict, log) -> None:
+    """The spec's `tables`: each adds a column to the cells' metadata from a table the paper publishes."""
+    for t in spec.get("tables") or []:
+        obs[t["as"]] = table_column(obs, paths[t["file"]], t).to_numpy()
+        log(f"table {t['file']}: {t['as']} for {int(obs[t['as']].notna().sum())} of {len(obs)} cells")
+
+
 def report_md(res: dict, spec: dict, files: list) -> str:
     dn = res["donors"]
     lines = [f"# Level B, S5: {spec['rid']}'s data and their checks (data_run.py; plan_s5.md)", "",
              "Files: " + "; ".join(f"{f['file']} {f['bytes']:,} bytes sha256 {f['sha256']}" for f in files), "",
              f"1. Counts: non-negative integers {res['counts'].get('raw')}.",
              f"2. Donors: {dn['design']}, per group {dn['donors']}; ids naming several donors {dn['composite'] or 'none'}; "
-             f"rule 4 {'passes' if dn['rule4'].get('passes') else 'fails'} (smallest p {dn['rule4'].get('min_p', '-')}).",
+             f"rule 4 {'passes' if dn['rule4'].get('passes') else 'fails'} (smallest p {dn['rule4'].get('min_p', '-')})"
+             + (f"; cells no donor names, left out: {res['without_donor']}" if res.get("without_donor") else "") + ".",
              f"3. Each id one individual: both sexes among the donors {res['sex']['both_sexes']}; failing "
              f"{res['sex']['fails'] or 'none'}.",
              "4. The claims' genes: " + "; ".join(f"{k} {'present' if v['passes'] else 'missing ' + ', '.join(v['missing'])}"
@@ -351,15 +469,20 @@ def main(argv=None) -> int:
     if spec["loader"] == "mtx_libraries":
         xg, yg = SEX_GENES[spec["organism"]]
         s = stream_mtx_libraries(paths, spec.get("loader_args") or {}, [xg, *yg, *claim_genes], log)
+        add_tables(s["obs"], spec, paths, log)
+        missing = without_donor(s["obs"], spec)
         obs = assign(s["obs"], spec)
         X = s["K"][obs.index.to_numpy()]
         res = checks(X, s["genes"], obs.reset_index(drop=True), spec, dict(raw=s["raw"]))
         res["genes"] = {c["id"]: D.genes_check(s["all_genes"], c["genes"]) for c in spec["claims"]}
     else:
         X, genes, obs = LOADERS[spec["loader"]](paths, spec.get("loader_args") or {}, log)
+        add_tables(obs, spec, paths, log)
+        missing = without_donor(obs, spec)
         obs = assign(obs, spec)
         X = X[obs.index.to_numpy()]
         res = checks(X, genes, obs.reset_index(drop=True), spec, D.counts_check(X))
+    res["without_donor"] = missing
     res["files"] = got
     (a.out / "report.json").write_text(json.dumps(res, indent=1, default=str) + "\n")
     md = report_md(res, spec, got)

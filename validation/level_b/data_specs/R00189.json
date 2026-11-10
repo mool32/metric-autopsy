@@ -1,0 +1,81 @@
+{
+ "rid": "R00189",
+ "accession": "GSE134809",
+ "organism": "homo_sapiens",
+ "loader": "tenx_samples",
+ "files": {
+  "raw": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/suppl/GSE134809_RAW.tar",
+  "series": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE134nnn/GSE134809/matrix/GSE134809_series_matrix.txt.gz",
+  "pairs": "https://ars.els-cdn.com/content/image/1-s2.0-S0092867419308967-mmc2.xlsx"
+ },
+ "loader_args": {
+  "min_umis": 800
+ },
+ "tables": [
+  {
+   "as": "patient",
+   "file": "pairs",
+   "sheet": "Sheet1",
+   "key": "Sample_ID",
+   "value": "Patient.ID",
+   "on": {
+    "column": "title",
+    "regex": "(\\d+)$"
+   }
+  }
+ ],
+ "cells": {
+  "tissue": [
+   "ileal"
+  ]
+ },
+ "groups": {
+  "column": "status",
+  "values": [
+   "Involved",
+   "Uninvolved"
+  ]
+ },
+ "donor": "patient",
+ "source": "10x chemistry",
+ "sex_label": null,
+ "claims": [
+  {
+   "id": "1",
+   "genes": [
+    "ACE2",
+    "TMPRSS2"
+   ]
+  },
+  {
+   "id": "2",
+   "genes": [
+    "ACE2",
+    "XIAP"
+   ]
+  },
+  {
+   "id": "3",
+   "genes": [
+    "ACE2",
+    "SMAD3"
+   ]
+  },
+  {
+   "id": "4",
+   "genes": [
+    "ACE2",
+    "DLG5"
+   ]
+  },
+  {
+   "id": "5",
+   "genes": [
+    "ACE2",
+    "SLC15A1"
+   ]
+  }
+ ],
+ "design": "the paper's: a Pearson correlation of the two genes over the absorptive enterocytes' cells pooled per condition (Fig 6G, 6I), inflamed against uninflamed ileum of 8 Crohn disease patients with both samples",
+ "notes": "the deposit (Martin et al. 2019) holds Cell Ranger's raw matrices, every barcode: a cell is a barcode with at least 800 counts, Martin et al.'s first filter (STAR Methods, 'Filtering low-quality cells and contaminating cells'); their other filters (mitochondrial, epithelial and hemoglobin shares) are not applied, since the claim's cells are absorptive enterocytes, which their epithelial filter removes; the claim's own cells (Zhou et al.'s clusters) are not in the deposit, so the checks are made on every ileal cell. Each sample's patient is Martin et al.'s Table S2, sheet 1 (Sample_ID to Patient.ID; the sample's number ends its GEO title): it names 10 of the 11 pairs; samples 189 and 190 are not in it, so their cells have no donor and are listed, not checked. The groups are GEO's 'status' (Involved = inflamed, Uninvolved = uninflamed); the source is the 10x chemistry (V1 for patient 5's two samples, V2 for the others)."
+}

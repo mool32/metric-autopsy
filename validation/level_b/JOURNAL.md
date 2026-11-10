@@ -250,3 +250,28 @@ only where its own tool calls (the inputs of its requests) name it. Every other 
 four sessions: the protocol named twice in each transcript and 0 times in its own calls; every other count 0; no
 text named outside its own list; all four independent (the log goes into `amendment1/ft/independence.log` with
 S3's other sessions).
+
+## J15 — 2026-11-10: where R00189's pairs are published (for S5's spec; metadata only)
+
+`plan_s5.md` (section 4) left R00189's spec waiting for where the pairing of GSE134809's ileal samples is published.
+It was looked for here, before the spec, in the deposit's paper, Martin et al. 2019 (Cell 178:1493, PMID 31474370).
+Europe PMC holds it as not open access (its full text answered HTTP 500, its supplementary files "not open
+access"); PMC's page of the author manuscript was read once (it names Tables S1 and S2, and holds the methods);
+PMC's download of the supplementary files asks the browser for a proof of work, which was not attempted; the
+publisher's two files were fetched once each (`https://ars.els-cdn.com/content/image/1-s2.0-S0092867419308967-mmc1.pdf`,
+SHA256 b20e5171ba5e36dbe08e680e84cd7c2b4bd4c48e460b08825d3b471204136792, and `…-mmc2.xlsx`, SHA256
+030e5057afa1ebdfb821a197607ad3e462d598e626ec9483fa9f4f7d0c32dec5).
+- **Table S1** gives the 14 patients' characteristics as a whole (no sample).
+- **Table S2, sheet 1** gives each sample's number (`Sample_ID`, the number that ends its GEO title), tissue,
+  status, patient (`Patient.ID`) and chemistry: 10 of the 11 pairs of ileal samples with their patient (pat. 5, 6, 7,
+  8, 10, 11, 12, 14, 15, 16), and 9 PBMC samples. Samples 189 and 190 (GSM3972023, GSM3972024) are in no row; they
+  appear in sheet 2 (each cluster's cells per sample) without a patient.
+- Read: sheet 1; every sheet's name and first row; every sheet's first three columns, for 189 and 190; and the
+  methods' text on how cells were called (barcodes with at least 800 counts from Cell Ranger's raw matrices, then
+  mitochondrial, epithelial and hemoglobin filters). Nothing of the counts was read.
+
+The spec (`data_specs/R00189.json`, batch 2 of `plan_s5.md`) follows: samples 189 and 190 are not paired by their
+numbers (an inference, not the authors' statement); their cells are listed, not checked. `data_run.py`'s reader of
+an Excel sheet (standard library; the run's environment has no Excel reader) gives sheet 1 cell for cell as
+openpyxl does here. The spec was tried here on the real series matrix and Table S2 with fabricated matrices (no
+count of the deposit): the 10 pairs found, samples 189 and 190 listed, both chemistries in both groups.

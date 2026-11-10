@@ -64,3 +64,11 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   libraries' characteristics from GEO's series matrices). R01962's deposit is Seurat objects (GSE266919): it is
   described first. R00189's deposit (GSE134809) names no patient for its ileal samples (`JOURNAL.md`, J6): its
   spec waits for where the pairing of the samples is published, and the list says so if it is nowhere public.
+- **Batch 2** (added 2026-11-10, before its run): R00189 (GSE134809). The pairing is published in the deposit's
+  paper, Martin et al. 2019, Table S2, sheet 1 (each sample's patient; `JOURNAL.md`, J15), the publisher's file read
+  in the run with its SHA256: it names 10 of the 11 pairs; the cells of the pair it does not name (samples 189 and
+  190) are listed, not checked, and not paired by their numbers. The deposit holds Cell Ranger's raw matrices (every
+  barcode): a cell is a barcode with at least 800 counts, the deposit's authors' first filter. The source: each
+  sample's 10x chemistry (GEO). For it, `data_run.py` gains the threshold (`min_umis`), the paper's tables
+  (`tables`: a CSV, or an Excel sheet read with the standard library) and, in every report, the cells no donor
+  names; tested on fabricated deposits.
