@@ -1,0 +1,168 @@
+rid	decision	code	kinds	note
+R00008	EXCLUDE	X8	set	Introduced miRNAs induce correlated expression of their targets (set) in Dgcr8-knockout mouse ES cells; a single cell line per condition, no donors.
+R00076	EXCLUDE	X4	-	miRNA–mRNA interaction modules (AGO2-CLIP, coexpression) match cell types and shift during development; no directional across-cell coordination change between donor groups.
+R00081	KEEP	-	set	scdNet compares gene-gene correlations between states, differential networks; prostate cancer CTCs, anti-androgen resistant vs not; changed pairs possible in results.
+R00216	KEEP	-	set	Co-expression gene network changes between ECs of diabetic and healthy donors (scRNA-seq of H+T-treated ECs); pairs linked by RNA-chromatin interactions possible.
+R00220	KEEP	-	set	miRNAs induce covariation of their targets in mouse ES cells, likely against miRNA-deficient cells; thousands of covarying pairs; replication decided on full text.
+R00223	EXCLUDE	X7	global	Global coordination level of gene-to-gene coordination decreases with age across organisms and cell types: a global measure.
+R00228	EXCLUDE	X2	-	Co-expression modules (NAct, NSupp) from bulk tissue and purified microglia RNA; single-cell data only validate; no across-cell coordination change.
+R00234	EXCLUDE	X4	-	Megakaryocyte- and erythroid-derived co-expression modules predict fatal COVID-19 (module levels); otherwise expression and composition; no coordination change.
+R00242	KEEP	-	set	GWNet networks from lung scRNA-seq: ageing changes the network influence of pathways and master regulators (young vs old); network rewiring, pairs possible.
+R00250	UNCLEAR	-	set	Monkey embryo WGCNA networks share more hub genes with human than with mouse embryos: the rules do not say whether species count as conditions.
+R00251	EXCLUDE	X4	-	WGCNA hub mRNAs in modules of pig oocyte maturation (GV vs MII); expression changes only; no coordination change between conditions.
+R00265	EXCLUDE	X4	-	ICAnet: co-expression modules for clustering and batch integration; modules activated in AML are levels; no coordination change between conditions.
+R00272	UNCLEAR	-	set	Mainly progenitor states; human vs mouse differ in lineage regulatory networks: the rules do not say whether species count as conditions; network type open.
+R00289	KEEP	-	set	Coordinated expression of RPL11 with mitochondrial genes lost in all RPL11-variant carriers (Diamond-Blackfan family); single-cell or bulk decided on full text.
+R00304	KEEP	-	set	WDNE differential networks (hub genes): ovarian drug resistance, differentiation, breast tumor heterogeneity; which data are single-cell and between donor groups is open.
+R00309	KEEP	-	set	Prenatal alcohol exposure disrupted gene co-expression networks in fetal mouse cortex scRNA-seq; six timed pregnancies, donors per group decided on full text.
+R00312	EXCLUDE	X4	-	Cluster-specific coexpression networks describe processes affected by cocaine in fly brain; no directional coordination change; duplicate samples only.
+R00323	KEEP	-	set	Co-expression modules' make-up, density and connectivity maintained or turned over across developmental stages and chicken vs mouse limb scRNA-seq.
+R00337	EXCLUDE	X4	-	snATAC and snRNA of AD: cis-regulatory links, trajectories, consensus WGCNA introduced; no stated coordination change between AD and controls.
+R00346	KEEP	-	set	Co-expression gene communities partially conserved after serum stimulation in glioblastoma scRNA-seq (treated vs untreated): set rewiring; line count decided on full text.
+R00378	EXCLUDE	X4	-	Co-expression networks with OAS1 and interferon genes upregulated with age, AD and COVID-19 in myeloid scRNA-seq: a network's level, not coordination.
+R00402	KEEP	-	set	WJSDM differential networks: prostate cancer CTC scRNA-seq, anti-androgen resistance; ovarian platinum resistance (bulk); network rewiring between conditions.
+R00406	KEEP	-	set	locCSN cell-specific co-expression networks compared between ASD case and control subjects in fetal brain cells; differential network genes (set); pairs possible.
+R00418	EXCLUDE	X4	-	WGCNA on bulk microarray pathway scores; SCENIC TF activity and pseudotime in scRNA-seq under hypoxia vs normoxia; no coordination change between conditions.
+R00430	EXCLUDE	X4	-	HCC prognostic model: WGCNA module correlated with tumour, risk score; no change of coordination between conditions.
+R00462	KEEP	-	set	Single-cell microglial networks disrupted in culture vs freshly isolated microglia; modules and key drivers rewired from homeostatic to activated; pairs possible.
+R00487	EXCLUDE	X4	-	Purkinje snRNA-seq: learning gene module (WGCNA) with FGFR2 signalling, a module's expression; no coordination change between conditions.
+R00498	EXCLUDE	X4	-	Monocytes, exercise vs AD: differential expression, SCENIC TF clusters, a signature cluster for AD (activity); no coordination change between conditions.
+R00509	EXCLUDE	X4	-	LUAD prognostic signature: WGCNA module relevant to LUAD, subtypes, risk model; no coordination change; two tumour and two normal samples.
+R00522	KEEP	-	set	B-cell co-expression network (Boolean implications, scRNA-seq) present in normal lung B cells, missing in NSCLC tumor B cells: a set disappears; pairs possible.
+R00524	EXCLUDE	X4	-	scDisProcema: cell-type gene modules along COVID-19 progression, hubs by expression and connectivity; no stated change of a module's coordination between conditions.
+R00525	EXCLUDE	X4	-	LUAD prognostic 5-gene signature from a WGCNA module and NK cells; no change of coordination between conditions.
+R00533	EXCLUDE	X7	global	Association entropy of ribosomal protein genes with all other genes, per person, associated with health vs disease: an entropy over the transcriptome, not among named genes.
+R00551	EXCLUDE	X4	-	AML vs healthy donors: regulatory network modules (SCENIC) dysregulated, TFs activated in subtypes: regulon activity (levels); no coordination change stated.
+R00562	KEEP	-	set	Separate WGCNA networks of IVF and parthenogenetic pig embryos (scRNA-seq) with different modules and hub genes: network rewiring between embryo types; modules track stages.
+R00580	UNCLEAR	-	set	Co-expression networks (Gaussian graphical model) of three Babesia species with conserved and species-specific nodes: the rules do not say whether species count as conditions.
+R00581	EXCLUDE	X4	-	AD microglia GRN (WGCNA and SCENIC, snRNA and bulk): central TFs identified; no coordination change between conditions stated.
+R00621	KEEP	-	set	scHumanNet cell-type networks: differential hubness between disease and healthy, defects of autism genes in inhibitory neurons; one gene with many partners (set).
+R00735	EXCLUDE	X4	-	DKD in ZSF1 rats, sGC treatment; sGC co-expression modules stratify human kidney samples (module levels); no coordination change between conditions.
+R00739	EXCLUDE	X7	global	Neural organoids vs primary brain: preservation of co-expression over many genes (meta-analysis), a global fidelity measure; no named pair or set change.
+R00740	KEEP	-	set	Network centrality of genes differs between 7 primary and 9 metastatic breast cancer cell lines (imputed scRNA-seq); CCT2 identified; one gene's partners (set).
+R00742	EXCLUDE	X4	-	Ligand-receptor communication (CellphoneDB, CellChat); a WGCNA monocyte subnetwork related to BMD via deconvolution and CSN; no directional coordination change between donor groups.
+R00753	EXCLUDE	X4	-	SSc severity biomarkers (LASSO) in 24 patients; correlation networks of the biomarkers' co-correlates; no stated change of coordination between severity groups.
+R00765	EXCLUDE	X10	set	Preprint of R00793 (Dozer, Genome Res 2023), the same paper: AD vs control oligodendrocyte innate-immune modules with different co-expression levels.
+R00793	KEEP	-	set	Dozer debiased personalized networks: oligodendrocyte innate immune response co-expression modules with distinct co-expression levels between Alzheimer's disease and controls (snRNA-seq).
+R00821	EXCLUDE	X4	-	hdWGCNA method; disease-relevant modules in ASD and AD samples; no stated change of a module's coordination between conditions.
+R00846	KEEP	-	set	Kidney scRNA-seq (10 T2D on SGLT2i, 6 T2D, 6 controls): endothelin-1 a key regulator of the EGF co-expression network in untreated T2D; between-group network change possible.
+R00874	UNCLEAR	-	set	Genes (NHEJ1, GTF2H2, C2, BBS5) with conserved co-expression in non-human animals diverge in humans: the rules do not say whether species count as conditions.
+R00893	KEEP	-	set	MuDCoD personalized dynamic networks: gene communities varying across time in CD4+ T cell activation and iPSC differentiation (multi-subject scRNA-seq); module rewiring between conditions.
+R00896	EXCLUDE	X4	-	Meta-modules of developing cortex cell types; manipulations change meta-module activity (levels); no coordination change between conditions.
+R00904	EXCLUDE	X4	-	dup15q organoids and postmortem neurons: co-expression modules enriched with autism genes; no stated change of coordination between dup15q and controls.
+R00915	EXCLUDE	X4	-	SCANet: trait or cell-type co-expression modules, drivers, GRNs; applications describe drivers; no stated coordination change between conditions.
+R00959	EXCLUDE	X4	-	Alcohol-dependent mouse mPFC snRNA-seq: Cpa6 module downregulated, Gpc5 module upregulated (module expression levels); no coordination change stated.
+R00987	EXCLUDE	X4	-	Consensus scHPF factors for drug responses in glioma slices: programs' levels; no coordination change between conditions.
+R01011	EXCLUDE	X7	global	Brooklyn plots: share of co-expressed adjacent genes in 10 MB windows altered in dilated cardiomyopathy cardiomyocytes: a global regional co-expression measure.
+R01038	EXCLUDE	X4	-	PAK2 in pancreatic cancer liver metastasis: hdWGCNA genes associated with metastasis, expression and pathways; no coordination change.
+R01046	EXCLUDE	X4	-	PTC macrophage-differentiation classifier: co-expression and regulatory networks define subtypes; no coordination change between conditions.
+R01053	EXCLUDE	X4	-	HNSCC keratinocytes: hdWGCNA modules associated with progression, prognostic model; no coordination change between conditions.
+R01091	EXCLUDE	X4	-	ASFV and PRRSV infected alveolar macrophages: DE, WGCNA and PPI interactions shared by both datasets; no coordination change between conditions.
+R01093	EXCLUDE	X4	-	scBC biclustering: perturbed gene modules across cell groups in AD snRNA-seq; no stated change of a module's coordination between conditions.
+R01096	EXCLUDE	X4	-	AD snRNA-seq (MTG, SFG, EC): pathway activity and co-expression modules, glial modules downregulated (levels), hub DEGs; no stated coordination change.
+R01097	EXCLUDE	X4	-	MS lesion snRNA and ATAC: oligodendrocyte signatures, B-cell coexpression networks defining subsets; no coordination change between conditions; 3 lesions per type.
+R01144	EXCLUDE	X4	-	Epigenetic aging: co-regulated and stochastic DNA methylation changes, scRNA-seq corroborates; co-regulation of CpGs, no gene coordination change across cells.
+R01146	EXCLUDE	X4	-	T-ALL diagnosis vs relapse (3 paired patients): hdWGCNA relapse-associated hub genes and expression; no stated coordination change.
+R01148	EXCLUDE	X4	-	HCC portal vein tumor thrombus: hdWGCNA genes associated with PVTT, ceRNA axis; no coordination change between conditions.
+R01171	EXCLUDE	X4	-	Goat oocyte scRNA-seq: WGCNA modules correlated with litter size, RPL4 hub; no coordination change between conditions.
+R01178	EXCLUDE	X4	-	AML scRNA-seq: WGCNA modules of respiration and translation deregulated (levels), CellChat; no coordination change between conditions.
+R01186	KEEP	-	set	WGCNA modules non-preserved between early (pT1) and late CRC stages and right vs left colon; gene connectivity differs (low rho); set rewiring between patient groups.
+R01190	EXCLUDE	X4	-	Correlation between cytotoxic and exhausted T-cell signatures (program scores) across patients; DETACH finds low-correlation patients; coordination of states, not of two genes.
+R01215	KEEP	-	set	Inpp5d knockout collapses a conserved co-expression module centered on Inpp5d in female mouse brain scRNA-seq (KO vs WT): a set disappears.
+R01247	EXCLUDE	X4	-	Mouse NASH vs chow scRNA-seq: Kupffer cells, communication, hdWGCNA key modules and core genes; no coordination change between conditions.
+R01281	KEEP	-	set	scDiffCoAM: differential co-expression modules and hub genes from ESCC scRNA-seq (conditions presumably tumor vs normal); set rewiring; pairs possible.
+R01287	EXCLUDE	X4	-	AMD NK cells: hdWGCNA module associated with AMD, SCENIC TFs, machine learning; levels, no coordination change.
+R01305	EXCLUDE	X4	-	AUD snRNA-seq (36 vs 37 donors): DE and co-expression modules linked to AUD in glial subtypes (module levels); no stated coordination change.
+R01324	EXCLUDE	X4	-	PCOS and RSA scRNA-seq: WGCNA module eigengenes associated with phenotypes (levels), PI3K-AKT; no coordination change.
+R01355	KEEP	-	set	Dynamic network biomarker modules (rising within-module correlation) mark transition from androgen-dependent to castration-resistant state in prostate epithelial scRNA-seq; states vs donor groups open.
+R01362	KEEP	-	set	Smoke-exposed vs control mouse lung scRNA-seq: context-specific co-expression modules, reduced network complexity, epithelial transcriptional rewiring (GSN); set-level change.
+R01364	KEEP	-	set,global	Co-expression organization and modularity decline with age, better kept in women (macroautophagy, sarcomere organization); single-cell or bulk data not stated.
+R01408	EXCLUDE	X4	-	HOXD13 polyalanine-expansion mouse limb bud scRNA-seq: WGCNA links the mutation to pathways and key genes (expression); no coordination change stated.
+R01426	KEEP	-	set	Glial co-expression networks of PTEN wild-type vs PTEN-null GBM patients (single-cell and bulk): PTEN status influences network modules; set rewiring between genotypes.
+R01446	EXCLUDE	X4	-	Ovarian cortex snRNA-seq across BMI: hdWGCNA obesity-related modules, HSP genes negatively correlated with BMI (expression); no coordination change.
+R01451	EXCLUDE	X4	-	Microglia senescence in AD (ROSMAP, SEA-AD): cholesterol-related co-expression modules as signatures and their activation (levels); no coordination change.
+R01456	EXCLUDE	X7	global	Published version of R00739: organoids vs primary brain, gene-level preservation of co-expression aggregated over many genes; a global fidelity measure.
+R01460	EXCLUDE	X4	-	Parental vs methotrexate-resistant PCNSL cell lines: WGCNA consensus modules and hub genes; no coordination change between conditions stated.
+R01510	EXCLUDE	X4	-	Arabidopsis ABA time-series scRNA-seq: miRNA responses; feed-forward loops have higher co-expression than other network parts (not conditions); no coordination change.
+R01514	EXCLUDE	X4	-	Melanoma scRNA-seq: hdWGCNA modules enriched in NRAS vs BRAF tumors (levels), CellChat ligand-receptor; no coordination change.
+R01536	EXCLUDE	X4	-	Conserved anterior co-expression module across sea urchin, amphioxus and zebrafish; Wnt regulates it (expression); no coordination change between conditions.
+R01585	EXCLUDE	X4	-	ROSMAP DLPFC snRNA-seq (424 donors): modules per cell type, connectivity altered across cell types and vs bulk; module-trait associations (levels); no change between conditions.
+R01602	EXCLUDE	X4	-	Sub-cell-type co-expression modules (gene cliques) from AD and PD snRNA-seq compared: similarities between diseases; no stated coordination change vs controls.
+R01606	EXCLUDE	X7	global	Co-expression network density and average neighbors of epithelial and T cells higher in tumors than in normal tissues: global network topology measures.
+R01613	EXCLUDE	X4	-	Social status loss in mice: WGCNA modules linked to forced loss in PFC interneurons (levels); no coordination change.
+R01642	EXCLUDE	X4	-	HCC tumor endothelial cells (3 MVI vs 2 non-MVI patients): co-expression modules associated with MVI, TM4SF1 expression; no coordination change.
+R01660	EXCLUDE	X4	-	Schizophrenia snRNA-seq (43 vs 42): DE, co-regulation programs enriched for risk; no stated change of coordination between cases and controls.
+R01671	EXCLUDE	X4	-	Nicotine vs saline VTA: co-expression probability of nAChR subunits (co-expressing cells), hdWGCNA modules correlated with nicotine (levels); no coordination change.
+R01703	EXCLUDE	X4	global	TAD-linked gene co-regulation by embedding similarity (not co-expression) declines with aging, shifts with chemotherapy; an aggregate over TADs, not an association across cells.
+R01704	EXCLUDE	X4	-	Reln haploinsufficiency and adolescent THC: a co-expression network influenced by genotype and THC in neuroblasts (module level); no stated coordination change.
+R01707	EXCLUDE	X4	-	Chronic ethanol mouse striatum snRNA-seq: a module down-regulated in SPNs (module expression), hub gene perturbations; no coordination change.
+R01719	EXCLUDE	X4	-	Published version of R00896: meta-modules with cell subtype specificity in developing cortex, module activity; no coordination change between conditions.
+R01723	EXCLUDE	X4	-	Induced MDSC scRNA-seq: a co-expression module specific to resistant MDSCs separates MDSCs from controls (module expression); no coordination change.
+R01731	EXCLUDE	X4	-	Spermatogonial stem cells (microarray and scRNA-seq): DEGs vs fibroblasts, WGCNA modules related to aging (module-trait levels); no coordination change.
+R01753	EXCLUDE	X4	-	Testicular seminoma scRNA-seq: hdWGCNA modules linked to progression, M6 enriched in Epi1 cells, SPTBN4 expression; no coordination change.
+R01771	EXCLUDE	X4	-	PAH endothelial cells: expression, pseudotime and hdWGCNA networks of autophagy genes, DDIT4 biomarker; no coordination change between conditions.
+R01777	EXCLUDE	X4	-	Gastric cancer: WGCNA tumor differentiation grade module (module-trait), prognostic signature; no coordination change.
+R01787	KEEP	-	set	GPH treatment decreases collagen and Fn1 pathway co-expression in mouse PDAC tumors vs sham; whether across-cell co-expression or ligand-receptor communication is open.
+R01795	KEEP	-	set	GSNCASCR (CS-CORE correlations) finds differentially co-expressed pathways: CD4+ T cells in severe COVID-19, TNF pathways, IFN-gamma set hub IFITM3; set change between conditions.
+R01824	EXCLUDE	X4	-	AD prefrontal snRNA-seq (437 samples): NMF co-expression programs, coordinated neuronal changes and neuro-glial coordination (program levels, cell types); no gene coordination change.
+R01835	EXCLUDE	X4	-	Sex differences in CRC scRNA-seq: GZMB-EOMES co-expression by multiplex IHC (double-positive), EOMES network expression; no coordination change across cells.
+R01851	EXCLUDE	X4	-	Sheep embryos (in vivo, in vitro) Smart-seq2: WGCNA module correlated with developmental progression, STRING communities; no coordination change between conditions.
+R01857	KEEP	-	set	RECODR: changes in genes' co-expression context (graph embedding of scRNA-seq co-expression networks) during cancer treatment reveal resistance genes; one gene's partners (set).
+R01860	EXCLUDE	X4	-	Female mice chronic social defeat: Sox6+ interneurons, communication, WGCNA modules associated with behaviors (levels); no coordination change.
+R01862	EXCLUDE	X4	-	Prostate cancer scRNA-seq (four patients): hdWGCNA modules and genes, Mendelian randomization, TMEM59; no coordination change.
+R01906	UNCLEAR	-	set	Co-expression network divergence between D. melanogaster and D. simulans germline cell types (snRNA-seq): the rules do not say whether species count as conditions.
+R01925	EXCLUDE	X4	-	Myeloid cells in 14 autoimmune diseases: dysregulated co-expression modules, an activation module upregulated (levels); no coordination change.
+R01941	EXCLUDE	X4	-	KIRC scRNA-seq: hdWGCNA immune-escape module associated with progression, CTSS biomarker; no coordination change.
+R01963	KEEP	-	set	CellSpectra quantifies per-patient changes in coordination of pathway gene expression vs reference (kidney disease, lung cancer single-cell data); set change; measure decided on full text.
+R01971	EXCLUDE	X4	-	Published version of R01451: microglial senescence in AD (ROSMAP, SEA-AD), cholesterol-related co-expression modules as signatures (levels); no coordination change.
+R01979	EXCLUDE	X4	-	Temporal lobe epilepsy microglia: ferroptosis scores, GRN TFs, a TLE-related co-expression module correlated with microglia (levels); no coordination change.
+R02036	KEEP	-	set	Social status (dominant vs subordinate males) changes gene co-expression networks across neuronal populations and neuropeptide networks in cichlid hypothalamus and POA snRNA-seq.
+R02037	EXCLUDE	X4	-	Influenza: integrated single-cell co-expression network and key driver analysis nominate CLEC4E in mDCs; no stated coordination change between conditions.
+R02078	EXCLUDE	X4	-	AD plasma cells: hdWGCNA AD-related modules (levels), RGS1 by Mendelian randomization; no coordination change.
+R02090	EXCLUDE	X4	-	ICH mouse time course snRNA-seq: an inflammation module active throughout (module level), Mif-Cd44/Cd74 ligand-receptor; no coordination change.
+R02099	KEEP	-	set	mcRigor metacell partitioning; on real data it improves discovery of differential gene co-expression modules; conditions and modules decided on full text.
+R02103	EXCLUDE	X4	-	Grapevine powdery mildew snRNA-seq: coordinated immune response across cell types, hdWGCNA hubs for defense (levels); no gene coordination change.
+R02109	EXCLUDE	X4	-	Pancreatic cancer: ubiquitination scores, WGCNA TRIM9-co-expressed modules linked to prognosis (levels), HNRNPU experiments; no coordination change.
+R02127	EXCLUDE	X4	-	PND vs sham aged mouse hippocampus: astrocyte cluster, modules peaking in a cluster (levels), TF activity; no coordination change.
+R02150	KEEP	-	set	Tophaceous vs intercritical gout synovium scRNA-seq: differential causal inference of gene regulatory networks between disease states; S100A4-COL6A2 co-expression is marker co-expression.
+R02159	KEEP	-	set	Pancreatic lineage co-expression networks: standard stem-cell protocols fail to reproduce human networks, a new protocol reconstructs them; human vs mouse differences in robustness.
+R02177	EXCLUDE	X4	-	PCOS granulosa cells: NMF metaprograms, DE and WGCNA, GPX3 upregulated (levels); no coordination change.
+R02181	EXCLUDE	X4	-	HCC cabozantinib-nivolumab: hdWGCNA resistance-associated modules, APOA2 and SPINK1 hubs, expression correlations; no coordination change across cells.
+R02185	UNCLEAR	-	set	Guard cells of five plant species: shared and species-specific co-expression modules assessed: the rules do not say whether species count as conditions.
+R02208	EXCLUDE	X4	-	pSS labial glands (3 patients, 3 controls): hdWGCNA modules restricted to cell types, B-cell targets (levels); no coordination change.
+R02218	EXCLUDE	X4	-	Checkpoint inhibitor colitis: CD8 T cell subset, hdWGCNA CIC-related modules (levels), prognostic model; no coordination change.
+R02232	EXCLUDE	X4	-	LUAD sodium death genes: scores, WGCNA modules associated with LUAD (levels), prognostic model; no coordination change.
+R02241	EXCLUDE	X4	-	Glomerulonephritis T cells: subtypes, a co-expression module centered on RGS1 correlated with proteinuria (module level); no coordination change.
+R02250	EXCLUDE	X4	-	NTG chronic migraine mouse TNC: GABA_Nox4 neurons reduced, hdWGCNA module enriched in them (level), ligand-receptor rewiring; no gene coordination change.
+R02264	EXCLUDE	X4	-	HIV LTNPs vs progressors vs healthy (4 each): composition, expression scores, hdWGCNA module eigengene expression (levels); no coordination change.
+R02272	EXCLUDE	X4	-	CRC normal, primary and liver metastasis: co-expression modules enriched in epithelial states (levels), TF activation, SCAND1; no gene coordination change.
+R02333	EXCLUDE	X4	-	One IKZF1-haploinsufficient lupus patient vs lupus and controls: lupus-linked WGCNA module (IKZF1, DUSP1, JUN, FOS), inferred networks; no stated coordination change; single patient.
+R02340	KEEP	-	set	DiCoLo: differential gene co-localization (coordinated expression in cell neighborhoods) between conditions; hair follicle data with perturbed morphogen signaling reveal differential gene programs.
+R02386	EXCLUDE	X4	-	Lupus nephritis longitudinal PBMC scRNA-seq (n=10): WGCNA modules associated with treatment response, persistent IFN-I expression (levels); no coordination change.
+R02394	EXCLUDE	X4	-	Synovial fibroblasts after joint injury: regulon activity, co-expression of Sox9, Runx2 and Scx in the same cells (co-expressing cells); no coordination change.
+R02421	EXCLUDE	X4	-	zQ175 Huntington mouse snRNA-seq at two stages: co-expression modules with stage-specific shifts in programs (levels), regulators; no stated coordination change.
+R02467	EXCLUDE	X4	-	Retinal detachment scRNA-seq: single-cell graphical Gaussian model modules up- or down-regulated by cell type (module levels); no stated coordination change.
+R02474	EXCLUDE	X4	-	T-DXd gastric cancer: hdWGCNA modules correlated with primary and acquired resistance (levels), MUC3A, CellChat; no coordination change.
+R02477	EXCLUDE	X4	-	NMOSD NK cells: reduction, dysfunction, IFN-gamma signaling, WGCNA NK modules associated with severity (levels); no coordination change.
+R02490	EXCLUDE	X4	-	HCC hepatocyte trajectories: hdWGCNA stage-associated module with BSG hub (levels), CellChat; no coordination change between conditions.
+R02498	UNCLEAR	-	set	Turtle vs mouse and chicken gonads: co-expression analyses show lineage-specific TFs (Twist1, Runx1) recruited into clade programs: the rules do not say whether species count as conditions.
+R02505	EXCLUDE	X4	-	MCD vs FSGS proximal tubule snRNA-seq: TF activity, ligand-receptor pairs, GCNs flag SLC7A8 expression elevated in MCD; no coordination change.
+R02512	KEEP	-	set	PBMC scRNA-seq of 98 patients (influenza, HIV, SARS-CoV-2): co-expression networks of transposable elements and TFs in naive CD8 T cells, virus-specific; network change possible.
+R02534	EXCLUDE	X4	-	PDAC multi-omics: hdWGCNA modules associated with tumorigenesis (levels), UNC93B1 expression and function; no coordination change.
+R02542	KEEP	-	set	MOSAIC differential connectivity: features' network rewiring across conditions; proliferation programs rewired in activated T cells of a vaccination cohort (population single-cell multi-omics).
+R02545	EXCLUDE	X4	-	Prostate cancer Tregs: pathway activation, PPIA-BSG ligand-receptor, hdWGCNA modules with differential module eigengene changes (levels); no coordination change.
+R02557	EXCLUDE	X4	-	NSCLC scRNA-seq: hdWGCNA modules correlated with clinical stage (levels), three-gene prognostic signature; no coordination change.
+R02573	KEEP	-	set	Divergent-edge framework on 77,155 malignant PDAC cells from 42 tumors: rewired gene-gene coordination forms four adaptive modules; between which conditions edges diverge is open.
+R02586	EXCLUDE	X4	-	Human zygotes, PNEB failure vs 3PN controls: DEGs, WGCNA module associated with failure (level), PPI MT-ND1-RPL10A; no coordination change.
+R02607	EXCLUDE	X4	-	RA synovium neutrophils (8 patients): phenotypes, hdWGCNA modules M3/M4 activation (levels), communication, NF-kB/STAT3; no coordination change.
+R02626	EXCLUDE	X4	-	Shrimp gills under low salinity: pillar cell expansion, WGCNA coordinated up-regulation of pH hub genes (levels); no coordination change across cells.
+R02630	EXCLUDE	X4	-	Mouse microglia atlas across AD models: states and trajectories, Fabp5 hub of a DAM lipid module (cell-state module); no coordination change.
+R02660	EXCLUDE	X4	-	Mexican adipose snRNA-seq (n=49): sex-associated adipocyte subtype and co-expression network genes DE by sex (levels), eQTLs; no coordination change.
+R02722	KEEP	-	set	scDNS: divergence between condition-specific gene interaction networks (rewiring) on real data: immunodeficiency mutations, stimulus responses, viral infection, pancreatic cancer (TIMM44); one gene's partners.
+R02728	EXCLUDE	X8	set	NK cells of six CML patients (2 early relapse, 2 late relapse, 2 remission): outcome-specific regulons, network rewiring stated; at most 2 donors per group.
+R02730	UNCLEAR	-	set	Nine-species ovary atlas: species-specific gene co-expression patterns in oviparous vs viviparous granulosa cells: the rules do not say whether species count as conditions; co-expression sense open.
+R02743	KEEP	-	set	PTPRG's WGCNA network context differs between AD and control microglia (ROSMAP, SEA-AD); pseudobulk framework, whether networks are across cells is decided on full text.
+R02763	EXCLUDE	X4	-	PCNSL vs systemic DLBCL: malignant subtypes, immune landscape, co-expression modules enriched by subtype (levels); no coordination change.
+R02764	EXCLUDE	X4	-	Human glial progenitors in vitro and after transplant: co-expression, motifs, trajectories; activation of distinct regulatory networks (activity); no coordination change.
+R02770	EXCLUDE	X4	-	ccRCC scRNA-seq (six patients): hdWGCNA stage-related modules enriched in advanced disease (levels), Mendelian randomization, PRDX2; no coordination change.
+R02780	KEEP	-	set	Regulon atlas of 687 individuals (control, resilient, AD dementia): FLI1/IKZF1 network expansion in AD, IRF8/STAT1 program erosion; regulon rewiring vs activity decided on full text.

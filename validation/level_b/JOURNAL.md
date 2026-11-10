@@ -162,3 +162,13 @@ to Alzheimer's Disease…", glutamatergic neurons, 10x 3' v3 nuclei against Drop
 control gives one claim: with one positive dataset and one claim, l and r₁ rest on one pair; more positive
 controls, or another cell type of Kang's with more basal expression of these genes, are the owner's to decide
 (`plan_s6.md`, section 2).
+
+## J9 — 2026-11-10: S2 done; S3's records
+
+S2 ran as `plan_s2.md` says (`amendment1/ta/README.md`): 8 sessions, one at a time, all independent by their
+transcripts; Cohen's kappa 0.861 over the 665 records; kept by both 68; 23 decided differently or unclear in
+either; **91 records to the full texts** (`amendment1/ta/fulltext.txt`). No deviation.
+
+S3's records (`plan_s3.md`, section 1): (a) the 91; (b) the ten F2 records; (c) R00599 and R01382; (d) none of A's
+(J7). The fetch's list (`amendment1/fulltext_list.tsv`, `screening.py fulltext-list` with the new preprints) holds
+(a); (b) and (c) are read from the first fetch's texts (`results/level-b-fulltext` at e373c68), where they are.
