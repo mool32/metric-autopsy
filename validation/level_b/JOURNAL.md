@@ -62,3 +62,25 @@ data: the table has 29,065 cells (control 14,619, stimulated 14,446) with the co
 `cell`, `multiplets`; a stimulated cell whose barcode is also a control cell's carries "1" appended (313
 cells), which maps every barcode of the two lists to the table. The counts were not fetched, and nothing in the
 plan changed after it. The run fetches every file again in Actions, with its SHA256.
+
+## J5 — 2026-11-10: the controls' script against its plan, before its run
+
+`controls.py` implements `plan_s6.md` (e857481) with these precisions and one restriction, each fixed before
+the run:
+- **Primary tissue only** (`tissue_type == 'tissue'`, as the real pilot's case 3): an organoid or a culture
+  of one "donor" measured in two conditions may be two differentiations or two passages, a difference of
+  biology, which a negative control must not hold. The plan did not say it.
+- **"tabula muris"** in a collection's name excludes Tabula Muris (2018) with Tabula Muris Senis: the 3-month
+  mice of TMS are Tabula Muris's (`real_pilot_6_summary.md`), development data.
+- **The directions' coin** is keyed by the seed 20261111 and the control's number, so that the three
+  controls do not share one sequence; **the donors' sample** (only where more than 200 qualify) and the
+  cells' sample use one generator with the seed 20261110, donors first (the plan said "the public seed, as
+  v1" for the donors).
+- **A donor's unit** in a condition is its cells of their commonest disease, sex and stage taken together
+  (a donor's cells of another stage are another time point); the candidate's donors are those whose two
+  units have at least 200 such cells and the same three values.
+- **Reported, not rules:** each negative control's units' sex by the X-inactivation and Y genes (as Kang's),
+  and the donors whose call differs between the two conditions.
+- **Kang:** a lane's barcodes must all be in the authors' table and labelled with the lane's condition, and
+  every name unique, else the structure check fails; the detection and the induction of the genes are
+  measured on the kept cells (at most 400 per donor and condition), as the engine will see them.
