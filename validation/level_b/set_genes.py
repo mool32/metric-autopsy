@@ -233,11 +233,11 @@ def dry(out_dir: Path) -> dict:
     res = extract([dict(rid="R09001", claim="1", member="supp/Table_S4.csv", column="gene", rows=dict(module=["M3"]))],
                   out_dir, kept)
     fill(kept, res)
-    out.finish("setgenes", net, dict(fabricated=True, rows=rows, sets=res))
     assert [r["note"] for r in rows] == ["-", "Article with id PMC101 is not open access one", "no PMCID"], rows
     assert "supp/Table_S4.csv" in text and res[0]["genes"] == ["GENE1", "GENE2", "GENE3"] and res[0]["n"] == 3
     assert kept["papers"][0]["claims"][0]["genes"] == ["GENE1", "GENE2", "GENE3"]
     out.log("the dry run's checks pass")
+    out.finish("setgenes", net, dict(fabricated=True, rows=rows, sets=res))
     return dict(rows=rows, sets=res)
 
 
