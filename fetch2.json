@@ -1,0 +1,12 @@
+{
+ "records": 20,
+ "requests": 28,
+ "by_action": {
+  "publisher": {
+   "429": 19,
+   "200": 9
+  }
+ },
+ "ok": true,
+ "list": "validation/level_b/amendment1/publisher_again.tsv"
+}
