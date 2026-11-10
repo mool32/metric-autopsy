@@ -204,3 +204,22 @@ changes: the same list, the same requests.
 
 **The second run**, by the label `level-b-fulltext2` removed and added again (a new run, its first attempt), on the
 commit that carries the fix; its results are S3's.
+
+## J12 — 2026-11-10: S5's first batch, and R01962's object described again
+
+**The batch** (workflow run 42878735292 on afd99bf, the label `level-b-data-1`; `results/level-b-data-1` at
+8b3a7c8, every file as its SHA256SUMS): both datasets read and checked.
+- **R01225** (GSE189955): counts non-negative integers; nested, 16 patients' tumour cells (1,940) against 5
+  patients' fallopian-tube cells (520), rule 4 passes; every patient female or unclear by the X and Y genes (no
+  conflict); the claims' genes present; **the source partly**: the tumours' cells mostly by the protocol
+  `Split_mouth` (77%) or `Smart_mouth` (17%), the tubes' mostly `Split_FACS` (83%), only `Split_mouth` shared.
+- **R02693** (GSE178265): counts non-negative integers (5.1 GB read in a stream); nested, 10 donors with disease
+  against 9 controls (393,873 nuclei of the substantia nigra), rule 4 passes; every donor's sex by the X and Y
+  genes the one its library gives; the claims' genes present; **the source partly**: the nuclei's sort (the
+  deposit's `facs classification`) Negative 66% and Positive 34% in the disease, Negative 55%, Positive 42% and
+  NeuN 3% in the controls.
+
+**R01962's description failed technically** (workflow run 42878734969, the label `level-b-rdescribe-1`;
+`results/level-b-rdescribe-1` at 834edbb holds its log): the object is a SingleCellExperiment, whose package was not
+installed, so R could not read it. Fixed: `r-bioc-singlecellexperiment` from Ubuntu's archive; the job now says
+when a description fails. Described again by the label `level-b-rdescribe-2` (`rdescribe2.txt`, the same object).

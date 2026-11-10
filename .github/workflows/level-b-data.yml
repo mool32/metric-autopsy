@@ -11,7 +11,7 @@
 #
 # A deposit held only in an R object is described first, once, by the label "level-b-rdescribe-<n>": every
 # "rid<TAB>url" of validation/level_b/data_specs/rdescribe<n>.txt is fetched, gunzipped and described by
-# validation/level_b/r_export.R (R from Ubuntu's archive, SeuratObject from Posit's dated snapshot of CRAN), its
+# validation/level_b/r_export.R (R and SingleCellExperiment from Ubuntu's archive, SeuratObject from Posit's dated snapshot of CRAN), its
 # description to results/level-b-rdescribe-<n>; no check is made.
 name: Level B's data checks
 
@@ -185,7 +185,7 @@ jobs:
       - name: R and SeuratObject
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite
+          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite r-bioc-singlecellexperiment
           sudo Rscript -e 'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))); install.packages(c("SeuratObject", "BiocManager"), repos = "https://p3m.dev/cran/__linux__/noble/2026-10-01")'
           Rscript -e 'cat(R.version.string, "\n"); cat("SeuratObject", as.character(packageVersion("SeuratObject")), "\n")'
       - name: Fetch and describe
@@ -200,7 +200,8 @@ jobs:
             sha=$(sha256sum "dl/$rid.rds.gz" | cut -d' ' -f1); size=$(stat -c %s "dl/$rid.rds.gz")
             printf 'url\tbytes\tsha256\n%s\t%s\t%s\n' "$url" "$size" "$sha" > "pub/$rid/files.tsv"
             gunzip -c "dl/$rid.rds.gz" > "dl/$rid.rds"
-            Rscript repo/validation/level_b/r_export.R describe "dl/$rid.rds" "pub/$rid" 2>&1 | tee "pub/$rid/describe.log"
+            set -o pipefail
+            Rscript repo/validation/level_b/r_export.R describe "dl/$rid.rds" "pub/$rid" 2>&1 | tee "pub/$rid/describe.log" || echo "$rid: the description failed (its log)"
             rm -f "dl/$rid.rds"
           done < "repo/validation/level_b/data_specs/rdescribe$n.txt"
       - name: To results/level-b-rdescribe-<n>, with SHA256SUMS
