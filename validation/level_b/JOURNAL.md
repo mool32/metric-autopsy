@@ -362,3 +362,18 @@ every file as its SHA256SUMS): both datasets read and checked.
   among the deposit's genes (Xist in 35–56% of each patient's cells), so the sex check cannot tell one individual
   from two; the claims' genes present; **no source named** (the deposit names none beyond its samples). The filter
   is not changed to meet the paper's numbers.
+
+## J20 — 2026-11-10: bioRxiv's refusals asked again, paced (J18): one full text; the third group
+
+**The run** (workflow run 42913339645 on fe1f6f8, the label `level-b-publisher2`; `results/level-b-publisher2` at
+a450cca, all 34 files as their SHA256SUMS): ten seconds between one-attempt requests, bioRxiv still answered HTTP
+429 to 19 of the 20 records — 11 pages, and the PDFs of the 8 whose pages it answered (R03474, R03583, R03593,
+R03644, R03733, R03739, R03857 and, with its PDF, R03874). **A full text, 1:** R03874's PDF (10,580 words, its Results
+and Methods). bioRxiv refuses GitHub's runners whatever their pace, so **no third attempt**: the 19 (R03468, R03474,
+R03475, R03515, R03520, R03557, R03569, R03583, R03593, R03633, R03642, R03644, R03733, R03739, R03794, R03857, R03915,
+R03952, R03953) go to the owner with the list, marked "refused twice for the requests' rate", excluded by default as
+the 16 of J18; another way to their texts (bioRxiv's own API, another network) is the owner's to decide, not taken
+here.
+
+**The third group** (`amendment1/ft_group3.txt`): R03874 alone, batch 10 (`ft/batches/batch_10.list`, its text's
+SHA256 in `texts_group3.sha256`), the same for both passes, read after batch 09 in each pass.
