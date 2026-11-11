@@ -53,3 +53,13 @@ def test_the_dry_run(tmp_path):
     assert [f["claim"] for f in found] == ["c1", "c2"]
     assert (tmp_path / "out" / "fulltext_index.tsv").read_text().startswith("epmc_id\ttried\tfulltext")
     assert "FABRICATED" in (tmp_path / "out" / "verdicts.log").read_text()
+
+
+def test_every_version_a_record_joins_has_its_citations_asked():
+    """2026-11-11: a record that joins a preprint and its journal article is cited under both PMIDs."""
+    keys = V.paper_keys(dict(pmid="32676577", pmcid="PMC7728249", epmc_ids=["MED:33156843"]))
+    assert keys == [dict(source="MED", id="32676577"), dict(source="MED", id="33156843")]
+    assert V.paper_keys(dict(pmid="1", epmc_ids=["MED:1", "PPR:PPR9"])) == [dict(source="MED", id="1")]
+    assert V.paper_keys(dict(pmid="", pmcid="PMC2", epmc_ids=[])) == [dict(source="PMC", id="PMC2")]
+    assert V.paper_keys(dict(pmid="", pmcid="", epmc_ids=[])) == []
+

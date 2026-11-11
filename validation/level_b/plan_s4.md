@@ -23,6 +23,9 @@ no window of dates, every raw response kept with its SHA256:
   program, a named module), with the same terms; a set without such a name is searched by its forward
   citations only (said so).
 - The claim's own paper is left out of its records.
+- **Precised on 2026-11-11, before the run:** a kept record can join a preprint and its journal article under one
+  number (R00189: PMIDs 32676577 and 33156843; R00653: 36561173 and 37563115); the forward citations of every PMID
+  it holds are asked, their records joined (`verdicts.py`, `paper_keys`).
 
 ## 2. Which records are read
 

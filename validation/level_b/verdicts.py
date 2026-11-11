@@ -77,6 +77,18 @@ def paper_key(paper: dict) -> dict | None:
     return dict(source="PPR", id=ppr[0]) if ppr else None
 
 
+def paper_keys(paper: dict) -> list:
+    """Every version a kept record joins: its PMID and each PMID Europe PMC gives it (a preprint and its journal
+    article, say), else its PMCID, else its preprint's id (`plan_s4.md`, section 1, as precised on 2026-11-11)."""
+    pmids = list(dict.fromkeys([paper.get("pmid") or ""] + [e.split(":", 1)[1] for e in paper.get("epmc_ids") or []
+                                                            if e.startswith("MED:")]))
+    keys = [dict(source="MED", id=x) for x in pmids if x]
+    if keys:
+        return keys
+    key = paper_key(paper)
+    return [key] if key else []
+
+
 def search_records(net, out, query: str, tag: str) -> list:
     cursor, page, records = "*", 0, []
     while True:
@@ -122,11 +134,13 @@ def fulltexts(net, out, recs: list) -> list:
 def run(net, out, kept: dict) -> dict:
     found, summary, to_read = [], [], {}
     for paper in kept["papers"]:
-        key = paper_key(paper)
-        citing = []
-        if key:
-            recs, _ = S.citations(net, out, dict(papers=[dict(key=paper["rid"], verified=key)]))
-            citing = recs
+        citing, have = [], set()
+        for n, key in enumerate(paper_keys(paper)):
+            recs, _ = S.citations(net, out, dict(papers=[dict(key=paper["rid"] + (f"-{n}" if n else ""), verified=key)]))
+            for r in recs:
+                if r["epmc_id"] not in have:
+                    have.add(r["epmc_id"])
+                    citing.append(r)
         for claim in paper["claims"]:
             q = claim_query(claim)
             by_terms = search_records(net, out, q, f"{paper['rid']}-{claim['id']}") if q else []
