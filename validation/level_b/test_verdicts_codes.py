@@ -43,7 +43,7 @@ def test_the_batches_from_the_search_s_dry_run(tmp_path):
     by = {c["claim"]: c for c in m["claims"]}
     assert by["R00189:1"]["kept"] == 2 and by["R00189:2"]["kept"] == 2 and by["R09999:1"]["kept"] >= 1
     # R00189's four lines exceed the size: batches of their own; R09999's lines open the next batch
-    assert m["batches"][:2] == ["batch_01", "batch_02"] and m["lines"] == sum(c["kept"] for c in m["claims"])
+    assert m["batches"][:2] == ["batch_01", "batch_02"] and m["lines"] == sum(c["read"] for c in m["claims"])
     first = C.read_list(tmp_path / "b" / "batch_01.list")
     assert len(first) == 3 and first[0][0] == "R00189:1"
     assert all(k[0].startswith("R09999") for k in C.read_list(tmp_path / "b" / f"{m['batches'][-1]}.list"))
@@ -111,3 +111,16 @@ def test_the_comparison_of_the_passes(tmp_path):
         assert "fail their check" in str(e)
     else:
         raise AssertionError("no stop")
+
+
+def test_a_claim_over_its_cap_is_read_by_its_paper_s_terms(tmp_path):
+    """plan_s4, section 2, as precised before the search: more than `cap` records kept, only those naming a term."""
+    res, claims = _searched(tmp_path)
+    terms = tmp_path / "terms.json"
+    terms.write_text(json.dumps(dict(cap=1, terms={"R00189": ["knockdown"]})))
+    m = C.batches(res, claims, tmp_path / "texts", tmp_path / "b", size=20, terms=terms)
+    by = {c["claim"]: c for c in m["claims"]}
+    assert by["R00189:1"]["kept"] == 2 and by["R00189:1"]["terms_applied"] and by["R00189:1"]["read"] == 1
+    assert not by["R09999:1"]["terms_applied"] and by["R09999:1"]["read"] == by["R09999:1"]["kept"]  # at or under its cap
+    rows = [k for n in m["batches"] for k in C.read_list(tmp_path / "b" / f"{n}.list")]
+    assert m["lines"] == len(rows) == sum(c["read"] for c in m["claims"]) and m["cap"] == 1 and m["terms_sha256"]

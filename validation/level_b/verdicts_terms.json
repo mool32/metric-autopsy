@@ -1,0 +1,14 @@
+{
+ "_note": "plan_s4.md, section 2, as precised on 2026-11-11 before the search runs: a claim whose filter keeps more than `cap` records has read only those whose title or abstract also names one of its paper's terms of cell or condition (each a word or phrase, case ignored), taken from the claims' lines (cells, conditions); the others are counted, not read.",
+ "cap": 100,
+ "terms": {
+  "R00189": ["ileum", "ileal", "Crohn", "Crohn's", "inflammatory bowel", "IBD", "enterocyte", "enterocytes", "intestinal", "intestine", "gut", "colitis", "colon", "colonic"],
+  "R00653": ["COVID-19", "COVID", "SARS-CoV-2", "monocyte", "monocytes"],
+  "R00765": ["Alzheimer", "Alzheimer's", "oligodendrocyte", "oligodendrocytes", "dopaminergic", "iPSC", "floor plate", "neuronal differentiation"],
+  "R01225": ["ovarian", "ovary", "fallopian", "serous", "HGSC", "tubal"],
+  "R01795": ["COVID-19", "COVID", "SARS-CoV-2", "CD4", "T cell", "T cells", "B cell", "B cells"],
+  "R01962": ["breast", "TNBC", "triple-negative", "paclitaxel", "atezolizumab", "myeloid", "macrophage", "macrophages"],
+  "R02175": ["diabetes", "diabetic", "T2D", "beta cell", "beta cells", "β cell", "β cells", "β-cell", "beta-cell", "islet", "islets"],
+  "R02693": ["Parkinson", "Parkinson's", "substantia nigra", "dopaminergic", "nigral"]
+ }
+}

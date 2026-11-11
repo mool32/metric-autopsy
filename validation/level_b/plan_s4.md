@@ -51,6 +51,11 @@ no window of dates, every raw response kept with its SHA256:
     repository, its SHA256 in `verdicts/batches/texts.sha256`; each batch's `batch_NN.md` (the claims as S3's
     lowest pass wrote them, and under each its records' titles, abstracts and the paths of their texts) and
     `batch_NN.list` (for the check), committed before the passes.
+  - *A claim over its cap* (`verdicts_terms.json`, fixed before the search runs, when no claim's count is known):
+    where the filter keeps more than 100 records for one claim, only those whose title or abstract also names one of
+    its paper's terms of cell or condition (taken from the claims' lines: R00189's ileum, Crohn, enterocyte...) are
+    read; the others are counted, not read — a limit of the rule (a verdict that names the claim's tissue only in its
+    full text is missed), said with the counts.
   - *The instructions:* `verdicts_coding.md` (committed before any record is read); a coder's file is checked by
     `verdicts_codes.py check-codes`.
   - *The task each session gets*, word for word, with `<P>`, `<NN>`, `<MD>` and `<LIST>` its only variables:

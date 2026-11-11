@@ -143,9 +143,10 @@ def markdown(L: dict) -> str:
                    f"of the full codes {mg['kappa_code']:.3f}; agreed verdicts {mg['verdicts_agreed']}; to the owner "
                    f"{mg['to_owner']}")
         for c in v["claims"]:
+            capped = f", read by its paper's terms {c.get('read')} (over the cap)" if c.get("terms_applied") else ""
             out.append(f"- {c['claim']} ({c['kind']}): found {c['records']} (by citations {c['by_citations']}, by the "
-                       f"terms {c['by_terms']}), kept by the filter {c['kept']}, coded {c['coded']}; agreed verdicts "
-                       f"{c['verdicts_agreed']} {c['agreed_codes'] or ''}; to the owner {c['to_owner']}")
+                       f"terms {c['by_terms']}), kept by the filter {c['kept']}{capped}, coded {c['coded']}; agreed "
+                       f"verdicts {c['verdicts_agreed']} {c['agreed_codes'] or ''}; to the owner {c['to_owner']}")
             for a in [x for x in v["agreed"] if x["claim"] == c["claim"]]:
                 out.append(f"  - {a['record']}: {a['kind']}, {a['code']} — \"{a['quote_1']}\" ({a['where_1']}); "
                            f"pass 2: \"{a['quote_2']}\" ({a['where_2']})")

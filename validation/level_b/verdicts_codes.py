@@ -14,7 +14,9 @@ their SHA256 in BATCHES/texts.sha256). A batch holds at most SIZE lines; a paper
 batch's other papers where they fit, else open the next; a paper with more than SIZE lines fills batches of its own.
 Per batch: `batch_NN.list` (one line per claim and record: the text's key or `-`, the claim, the record, the text's
 path or `-`) and `batch_NN.md` (the claims and, under each, its records' titles and abstracts); and manifest.json
-(per claim: the records found, by source, the records the filter keeps, the lines in the batches).
+(per claim: the records found, by source, the records the filter keeps, the lines in the batches). With `--terms`
+(`verdicts_terms.json`), a claim whose filter keeps more than its cap is read only by the records whose title or
+abstract also names one of its paper's terms of cell or condition; the others are counted, not read.
 """
 from __future__ import annotations
 
@@ -22,6 +24,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -38,6 +41,10 @@ KINDS = ("causal", "reanalysis", "replication")
 CODES = ("holds", "does_not_hold", "undecided")
 MAX_WORDS = 40
 STATEMENT = ("species", "cells", "conditions", "direction", "metric", "where", "quote")
+
+
+def _word(text: str, word: str) -> bool:
+    return re.search(rf"(?<![A-Za-z0-9]){re.escape(word)}(?![A-Za-z0-9])", text, flags=re.IGNORECASE) is not None
 
 
 def _sha256(path: Path) -> str:
@@ -103,8 +110,14 @@ def _claim_md(paper: dict, claim: dict) -> list:
             f"- its words: \"{s['quote']}\" ({s['where']})", ""]
 
 
-def batches(results: Path, claims: Path, texts: Path, out: Path, size: int = SIZE) -> dict:
+def names_a_term(rec: dict, terms: list) -> bool:
+    text = f"{rec.get('title') or ''} {rec.get('abstract') or ''}"
+    return any(_word(text, t) for t in terms)
+
+
+def batches(results: Path, claims: Path, texts: Path, out: Path, size: int = SIZE, terms: Path | None = None) -> dict:
     kept, found, ft = json.loads(claims.read_text()), _found(results), _fulltexts(results)
+    rule = json.loads(terms.read_text()) if terms else dict(cap=None, terms={})
     texts.mkdir(parents=True, exist_ok=True)
     out.mkdir(parents=True, exist_ok=True)
     keys, unreadable, per_claim, by_paper, claim_of = {}, {}, [], [], {}
@@ -137,14 +150,17 @@ def batches(results: Path, claims: Path, texts: Path, out: Path, size: int = SIZ
                 raise SystemExit(f"{ck}: not in the search's found.jsonl.gz")
             recs = f["records"]
             kept_recs = [r for r in recs if r["kept"]]
-            for r in kept_recs:
+            capped = rule["cap"] is not None and len(kept_recs) > rule["cap"]
+            read = [r for r in kept_recs if names_a_term(r, rule["terms"].get(paper["rid"], []))] if capped else kept_recs
+            for r in read:
                 key, path = text_of(r["epmc_id"])
                 lines.append(dict(key=key, claim=ck, record=r["epmc_id"], path=path, rec=r))
             claim_of[ck] = (paper, claim)
             per_claim.append(dict(claim=ck, kind=claim["kind"], query=f.get("query"), records=len(recs),
                                   by_citations=sum("citations" in r["found_by"] for r in recs),
                                   by_terms=sum("terms" in r["found_by"] for r in recs),
-                                  kept=len(kept_recs), kept_with_fulltext=sum(1 for r in kept_recs if r["epmc_id"] in keys)))
+                                  kept=len(kept_recs), terms_applied=capped, read=len(read),
+                                  read_with_fulltext=sum(1 for r in read if r["epmc_id"] in keys)))
         by_paper.append((paper["rid"], lines))
     names = []
     for n, lines in enumerate(_pack(by_paper, size), start=1):
@@ -168,6 +184,7 @@ def batches(results: Path, claims: Path, texts: Path, out: Path, size: int = SIZ
         (out / f"{name}.md").write_text("\n".join(md) + "\n")
     (out / "texts.sha256").write_text("".join(f"{_sha256(Path(p))}  {Path(p).name}\n" for _k, (_key, p) in sorted(keys.items(), key=lambda kv: kv[1][0])))
     manifest = dict(size=size, batches=names, lines=sum(len(ln) for _r, ln in by_paper), texts=len(keys),
+                    cap=rule["cap"], terms_sha256=_sha256(terms) if terms else None,
                     unreadable=unreadable, claims=per_claim,
                     results_found_sha256=_sha256(results / "found.jsonl.gz"), claims_sha256=_sha256(claims))
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
@@ -298,6 +315,7 @@ def main(argv=None) -> int:
     b.add_argument("--texts", type=Path, required=True)
     b.add_argument("--out", type=Path, required=True)
     b.add_argument("--size", type=int, default=SIZE)
+    b.add_argument("--terms", type=Path, help="verdicts_terms.json: a claim of more than its cap read by its paper's terms")
     c = sub.add_parser("check-codes")
     c.add_argument("--batch", type=Path, required=True)
     c.add_argument("--codes", type=Path, required=True)
@@ -308,7 +326,7 @@ def main(argv=None) -> int:
     m.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
     if a.mode == "batches":
-        res = batches(a.results, a.claims, a.texts, a.out, a.size)
+        res = batches(a.results, a.claims, a.texts, a.out, a.size, a.terms)
         print(json.dumps({k: v for k, v in res.items() if k != "claims"}, indent=1))
         return 0
     if a.mode == "check-codes":
