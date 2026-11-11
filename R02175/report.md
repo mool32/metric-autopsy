@@ -1,0 +1,12 @@
+# Level B, S5: R02175's data and their checks (data_run.py; plan_s5.md)
+
+Files: GSE153855_RAW.tar 218,132,480 bytes sha256 a4f21ca4eceb9f80ad862cb25e9e2313291ba1291bd64d40c2ae1e149d4271fe; GSE153855_series_matrix.txt.gz 3,573 bytes sha256 3f29c249632db6d961a056fc7d6785f4bf10fc662039fd8e450e29531a5f4d49
+
+1. Counts: non-negative integers True.
+2. Donors: nested, per group {'T2D': 5, 'non-T2D': 6}; ids naming several donors none; rule 4 passes (smallest p 0.004329004329004329).
+3. Each id one individual: both sexes among the donors True; failing none.
+4. The claims' genes: 1 present; 2 present; 3 present; 4 present; 5 present; 6 present.
+5. The source: no source named.
+6. The paper's design (from the spec): the paper's: dGCNA over the beta cells of its merged datasets (Conos clusters; 8,511 cells of 32 donors), T2D against non-T2D donors; dataset 1 is GSE153855 (3,645 cells after the paper's filter).
+
+Cells: 4224 ({'non-T2D': 2304, 'T2D': 1920}).

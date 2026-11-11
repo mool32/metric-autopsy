@@ -1,0 +1,3 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_filtered_feature_bc_matrix.h5	GSE174367_snRNA-seq_filtered_feature_bc_matrix.h5	273975534	6ba98a1af8772af08c8cdd5e5e63eebb0890daed48cac2e1b8961dcc67069b77	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_cell_meta.csv.gz	GSE174367_snRNA-seq_cell_meta.csv.gz	435170	ab1a029deb43196e2bb1fea5907d838885750cfff3850c600c07588c7c7cdb2b	1

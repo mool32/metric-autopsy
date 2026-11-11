@@ -1,0 +1,3 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE214nnn/GSE214517/suppl/GSE214517_rpkms.txt.gz	GSE214517_rpkms.txt.gz	159093458	85a56c2d4bb0e52c3d9127204666b3fcb86412c4a20e2fcda1bc39f36949ca69	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE214nnn/GSE214517/matrix/GSE214517_series_matrix.txt.gz	GSE214517_series_matrix.txt.gz	71578	f8116a105b02bf5bfd2e8c8636c20f7926e9b51f0f88d6dc90fa45dccee499a7	1

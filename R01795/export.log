@@ -1,0 +1,4 @@
+counts: dgCMatrix 34548 genes by 174753 cells
+kept by orig.ident, cell.type.coarse : 5773 of 174753 cells
+genes, the first three: 5S-rRNA 7SK A1BG 
+exported 34548 genes by 5773 cells

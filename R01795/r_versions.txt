@@ -1,0 +1,4 @@
+R version 4.3.3 (2024-02-29) 
+Matrix 1.6.5 
+SingleCellExperiment 1.24.0 
+SeuratObject 5.4.0 

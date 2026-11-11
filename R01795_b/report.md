@@ -1,0 +1,12 @@
+# Level B, S5: R01795's data and their checks (data_run.py; plan_s5.md)
+
+Files: blish_awilk_covid_seurat.rds 5,985,045,048 bytes sha256 e81600242a5a3070740c158907704daf98c952eb06b5e0e6542a7c8da5ffa889
+
+1. Counts: non-negative integers True.
+2. Donors: nested, per group {'COVID': 6, 'Healthy': 6}; ids naming several donors none; rule 4 passes (smallest p 0.0021645021645021645).
+3. Each id one individual: both sexes among the donors True; failing none.
+4. The claims' genes: 2 missing WARS1, MARCHF1; 6 missing WARS1, MARCHF1.
+5. The source: balanced (sources ['PBMC']).
+6. The paper's design (from the spec): the paper's, as for R01795, in the B cells.
+
+Cells: 4742 ({'Healthy': 2466, 'COVID': 2276}).

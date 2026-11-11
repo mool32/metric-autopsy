@@ -1,0 +1,278 @@
+{
+ "rid": "R00765",
+ "counts": {
+  "nonnegative": true,
+  "integers": true,
+  "raw": true,
+  "max": 2731.0
+ },
+ "cells": 37052,
+ "cells_per_group": {
+  "AD": 22059,
+  "Control": 14993
+ },
+ "donors": {
+  "design": "nested",
+  "donors": {
+   "AD": 11,
+   "Control": 7
+  },
+  "composite": [],
+  "cells_per_donor": {
+   "('AD', 'Sample-17')": 2736,
+   "('AD', 'Sample-19')": 1404,
+   "('AD', 'Sample-22')": 2215,
+   "('AD', 'Sample-27')": 1571,
+   "('AD', 'Sample-33')": 1092,
+   "('AD', 'Sample-37')": 1390,
+   "('AD', 'Sample-43')": 2946,
+   "('AD', 'Sample-45')": 3739,
+   "('AD', 'Sample-46')": 2359,
+   "('AD', 'Sample-47')": 1330,
+   "('AD', 'Sample-50')": 1277,
+   "('Control', 'Sample-100')": 2816,
+   "('Control', 'Sample-52')": 2469,
+   "('Control', 'Sample-58')": 2165,
+   "('Control', 'Sample-66')": 1846,
+   "('Control', 'Sample-82')": 1370,
+   "('Control', 'Sample-90')": 1641,
+   "('Control', 'Sample-96')": 2686
+  },
+  "rule4": {
+   "design": "nested",
+   "relabelings": 31824,
+   "min_p": 6.284565108094519e-05,
+   "passes": true
+  }
+ },
+ "sex": {
+  "both_sexes": true,
+  "donors": [
+   {
+    "donor": "Sample-100",
+    "cells": 2816,
+    "xist": 0.0,
+    "y": 0.9211647727272727,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-17",
+    "cells": 2736,
+    "xist": 0.9970760233918129,
+    "y": 0.00804093567251462,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-19",
+    "cells": 1404,
+    "xist": 0.99002849002849,
+    "y": 0.002849002849002849,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-22",
+    "cells": 2215,
+    "xist": 0.0013544018058690745,
+    "y": 0.9521444695259593,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-27",
+    "cells": 1571,
+    "xist": 0.0006365372374283895,
+    "y": 0.9191597708465945,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-33",
+    "cells": 1092,
+    "xist": 0.0,
+    "y": 0.9294871794871795,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-37",
+    "cells": 1390,
+    "xist": 0.983453237410072,
+    "y": 0.0057553956834532375,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-43",
+    "cells": 2946,
+    "xist": 0.9640190088255262,
+    "y": 0.0047522063815342835,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-45",
+    "cells": 3739,
+    "xist": 0.9946509761968441,
+    "y": 0.0034768654720513507,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-46",
+    "cells": 2359,
+    "xist": 0.001271725307333616,
+    "y": 0.9325985587113184,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-47",
+    "cells": 1330,
+    "xist": 0.0,
+    "y": 0.8195488721804511,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-50",
+    "cells": 1277,
+    "xist": 0.985121378230227,
+    "y": 0.0015661707126076742,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-52",
+    "cells": 2469,
+    "xist": 0.0004050222762251924,
+    "y": 0.8011340623734305,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-58",
+    "cells": 2165,
+    "xist": 0.0013856812933025404,
+    "y": 0.8993071593533487,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-66",
+    "cells": 1846,
+    "xist": 0.9864572047670639,
+    "y": 0.0016251354279523294,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-82",
+    "cells": 1370,
+    "xist": 0.008759124087591242,
+    "y": 0.927007299270073,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-90",
+    "cells": 1641,
+    "xist": 0.9884216940889702,
+    "y": 0.006093845216331505,
+    "call": "female",
+    "label": "female",
+    "split": false,
+    "against_label": false
+   },
+   {
+    "donor": "Sample-96",
+    "cells": 2686,
+    "xist": 0.0007446016381236039,
+    "y": 0.95867460908414,
+    "call": "male",
+    "label": "male",
+    "split": false,
+    "against_label": false
+   }
+  ],
+  "fails": []
+ },
+ "genes": {},
+ "source": {
+  "verdict": "balanced",
+  "sources": [
+   "1.0",
+   "2.0",
+   "3.0"
+  ],
+  "shared": [
+   "1.0",
+   "2.0",
+   "3.0"
+  ],
+  "shares": {
+   "AD": {
+    "1.0": 0.3030509089260619,
+    "2.0": 0.3364613083095335,
+    "3.0": 0.3604877827644046
+   },
+   "Control": {
+    "1.0": 0.36697125325151736,
+    "2.0": 0.21450010004668846,
+    "3.0": 0.4185286467017942
+   }
+  }
+ },
+ "without_donor": {},
+ "donors_left_out": {},
+ "files": [
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_filtered_feature_bc_matrix.h5",
+   "file": "GSE174367_snRNA-seq_filtered_feature_bc_matrix.h5",
+   "bytes": 273975534,
+   "sha256": "6ba98a1af8772af08c8cdd5e5e63eebb0890daed48cac2e1b8961dcc67069b77",
+   "attempts": 1
+  },
+  {
+   "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_cell_meta.csv.gz",
+   "file": "GSE174367_snRNA-seq_cell_meta.csv.gz",
+   "bytes": 435170,
+   "sha256": "ab1a029deb43196e2bb1fea5907d838885750cfff3850c600c07588c7c7cdb2b",
+   "attempts": 1
+  }
+ ]
+}

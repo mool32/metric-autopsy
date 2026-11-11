@@ -1,0 +1,12 @@
+# Level B, S5: R02175's data and their checks (data_run.py; plan_s5.md)
+
+Files: pancreas_refseq_rpkms_counts_3514sc.txt 722,957,491 bytes sha256 e51b72df9bbb4a5a6aed46ffb3345783dbce5b03d4718ca35b3ac45ce54e38c3; E-MTAB-5061.sdrf.txt 2,665,069 bytes sha256 65161475631723b384fcacdb2bbcdfbcfcb93fcdfe25c58fa23f474e95e5572b
+
+1. Counts: non-negative integers True.
+2. Donors: nested, per group {'type II diabetes mellitus': 4, 'normal': 6}; ids naming several donors none; rule 4 passes (smallest p 0.009523809523809525).
+3. Each id one individual: both sexes among the donors True; failing none.
+4. The claims' genes: 1 present; 2 present; 3 present; 4 present; 5 present; 6 present.
+5. The source: no source named.
+6. The paper's design (from the spec): the paper's, as for R02175; E-MTAB-5061 (Segerstolpe et al. 2016) holds dataset 2's published donors (6 non-T2D, 4 T2D).
+
+Cells: 270 ({'normal': 171, 'type II diabetes mellitus': 99}).

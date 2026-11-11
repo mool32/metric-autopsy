@@ -1,0 +1,3 @@
+url	file	bytes	sha256	attempts
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE153nnn/GSE153855/suppl/GSE153855_RAW.tar	GSE153855_RAW.tar	218132480	a4f21ca4eceb9f80ad862cb25e9e2313291ba1291bd64d40c2ae1e149d4271fe	1
+https://ftp.ncbi.nlm.nih.gov/geo/series/GSE153nnn/GSE153855/matrix/GSE153855_series_matrix.txt.gz	GSE153855_series_matrix.txt.gz	3573	3f29c249632db6d961a056fc7d6785f4bf10fc662039fd8e450e29531a5f4d49	1

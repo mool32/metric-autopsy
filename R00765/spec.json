@@ -1,0 +1,37 @@
+{
+ "rid": "R00765",
+ "accession": "GSE174367",
+ "organism": "homo_sapiens",
+ "loader": "tenx_h5",
+ "files": {
+  "matrix": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_filtered_feature_bc_matrix.h5",
+  "meta": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174367/suppl/GSE174367_snRNA-seq_cell_meta.csv.gz"
+ },
+ "loader_args": {
+  "barcode_column": "Barcode"
+ },
+ "cells": {
+  "Cell.Type": [
+   "ODC"
+  ]
+ },
+ "groups": {
+  "column": "Diagnosis",
+  "values": [
+   "AD",
+   "Control"
+  ]
+ },
+ "donor": "SampleID",
+ "source": "Batch",
+ "sex_label": {
+  "column": "Sex",
+  "map": {
+   "M": "male",
+   "F": "female"
+  }
+ },
+ "claims": [],
+ "design": "the paper's: Dozer's donor-level co-expression networks of the oligodendrocytes of Morabito et al. 2021 (snRNA-seq, prefrontal cortex), module density compared between late-stage AD and control donors by a t-test",
+ "notes": "claim 1's module Dozer-A3 is shown in figures only (not listed; set_genes), so no gene is checked; the nuclei the deposit's table calls ODC; the groups its diagnosis, the donors its samples (one a donor), the source its batch (3, each holding both groups), the sex its label; claim 2's dataset (Jerber et al. 2021) has no public counts (J23): listed, not checked"
+}
