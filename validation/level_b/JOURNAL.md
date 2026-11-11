@@ -471,3 +471,21 @@ cell"; 6 donors without diabetes and 4 with) and the first 256 kB of the table (
 each gene's RefSeq id, its 3,514 RPKM and its 3,514 counts: 7,030 fields a row). `data_run.py` gains its loader
 (`rpkm_counts_table`: the counts read in a stream, the RPKM skipped, the SDRF joined on the cell's name), tested on a
 fabricated table.
+
+## J25 — 2026-11-11: the Wilk et al. object's description failed (a technical failure); the second attempt
+
+**The run** (label `level-b-rdescribe-3`, workflow run 42931279929 at a71b961; `results/level-b-rdescribe-3` at
+71fc1be, its 4 SHA256 checked here): the object was fetched whole (5,985,045,048 bytes; its md5 the one its host
+names, 52794c83…3d73d4c05), read by R, then `r_export.R` stopped before describing anything: "unable to find required
+package 'Seurat'". The object is of Seurat's old form, its classes defined by the package Seurat, which the job does
+not install (it installs SeuratObject); `inherits()` on it asks for that definition. Nothing of the object was
+described or read beyond its class.
+
+**The fix** (`r_export.R`): a Seurat object is told by its class's name and read by its slots as attributes
+(`attr`), which need no class definition; its counts are its RNA assay's `counts` (Seurat 5: the layer, named by the
+assay's features and cells). Tried here (R 4.3.3) on a fabricated object of the old form whose classes' package is
+"Seurat": the script as it was stops with the same message; as fixed, it describes and exports it. A
+SingleCellExperiment is read as before (tried again).
+
+**The second attempt** (the one a technical failure allows): the same object by the same line
+(`data_specs/rdescribe4.txt`, label `level-b-rdescribe-4`), the branch of the first kept.

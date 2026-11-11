@@ -20,17 +20,25 @@ suppressPackageStartupMessages(library(Matrix))
 obj <- readRDS(path)
 cls <- class(obj)[1]
 
+# A Seurat object is read by its slots as attributes (attr), by its class's name: an old object's class belongs to
+# the package Seurat (not installed), whose definition inherits(), `@` and slotNames() would need (2026-11-11, J25).
+is_seurat <- function(o) class(o)[1] == "Seurat"
 meta_of <- function(o) {
-  if (inherits(o, "Seurat")) return(o@meta.data)
+  if (is_seurat(o)) return(attr(o, "meta.data", exact = TRUE))
   if (inherits(o, "SingleCellExperiment")) return(as.data.frame(SummarizedExperiment::colData(o)))
   stop("not a Seurat or SingleCellExperiment object: ", class(o)[1])
 }
 counts_of <- function(o) {
-  if (inherits(o, "Seurat")) {
-    suppressPackageStartupMessages(library(SeuratObject))
-    a <- o[["RNA"]]
-    if (inherits(a, "Assay5")) return(SeuratObject::LayerData(a, layer = "counts"))
-    return(SeuratObject::GetAssayData(a, slot = "counts"))
+  if (is_seurat(o)) {
+    a <- attr(o, "assays", exact = TRUE)[["RNA"]]
+    if (is.null(a)) stop("no RNA assay")
+    if (class(a)[1] == "Assay5") {  # Seurat 5: the layer, named by the assay's features and cells
+      m <- attr(a, "layers", exact = TRUE)[["counts"]]
+      if (is.null(rownames(m))) rownames(m) <- rownames(attr(a, "features", exact = TRUE))
+      if (is.null(colnames(m))) colnames(m) <- rownames(attr(a, "cells", exact = TRUE))
+      return(m)
+    }
+    return(attr(a, "counts", exact = TRUE))
   }
   return(SummarizedExperiment::assay(o, "counts"))
 }
@@ -48,8 +56,8 @@ if (mode == "describe") {
   summary <- do.call(rbind, rows)
   write.table(summary, file.path(out, "meta_summary.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
   info <- list(class = cls, cells = nrow(meta), meta_columns = names(meta),
-               slots = methods::slotNames(obj),
-               assays = if (inherits(obj, "Seurat")) names(obj@assays) else SummarizedExperiment::assayNames(obj))
+               slots = if (is_seurat(obj)) setdiff(names(attributes(obj)), "class") else methods::slotNames(obj),
+               assays = if (is_seurat(obj)) names(attr(obj, "assays", exact = TRUE)) else SummarizedExperiment::assayNames(obj))
   m <- tryCatch(counts_of(obj), error = function(e) NULL)
   info$counts_dim <- if (is.null(m)) "none" else dim(m)
   info$counts_class <- if (is.null(m)) "none" else class(m)[1]
@@ -64,8 +72,9 @@ if (mode == "describe") {
   cat(readLines(file.path(out, "describe.json")), sep = "\n")
 } else {
   m <- counts_of(obj)
-  cn <- colnames(obj); rn <- rownames(obj)
-  rd <- if (inherits(obj, "SingleCellExperiment")) as.data.frame(SummarizedExperiment::rowData(obj)) else NULL
+  cn <- if (is_seurat(obj)) rownames(meta) else colnames(obj)
+  rn <- if (is_seurat(obj)) rownames(m) else rownames(obj)
+  rd <- if (!is_seurat(obj) && inherits(obj, "SingleCellExperiment")) as.data.frame(SummarizedExperiment::rowData(obj)) else NULL
   rm(obj); invisible(gc())
   cat("counts:", class(m)[1], nrow(m), "genes by", ncol(m), "cells\n")
   if (methods::is(m, "sparseMatrix")) {
