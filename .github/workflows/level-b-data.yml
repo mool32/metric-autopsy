@@ -54,7 +54,7 @@ jobs:
           for p in sorted(pathlib.Path('validation/level_b/data_specs').glob('R*.json')):
               s = json.loads(p.read_text())
               assert {'rid', 'organism', 'loader', 'files', 'groups', 'donor', 'claims'} <= set(s), p
-              assert s['rid'] == p.stem, p
+              assert p.stem == s['rid'] or p.stem.startswith(s['rid'] + '_'), p  # a paper's second dataset: <rid>_<x>
               print(p.name, s['loader'], len(s['claims']), 'claims')
           "
 
