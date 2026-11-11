@@ -106,5 +106,63 @@
   "list_from": "(",
   "list_to": ")",
   "split": ","
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "1",
+  "rows": {
+   "FCN": [
+    "Interferon signalling"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "2",
+  "rows": {
+   "FCN": [
+    "Interferon signalling",
+    "Antigen Presentation"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "3",
+  "rows": {
+   "FCN": [
+    "Interferon signalling"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "4",
+  "rows": {
+   "FCN": [
+    "Interferon signalling",
+    "Antigen Presentation"
+   ]
+  }
  }
 ]
