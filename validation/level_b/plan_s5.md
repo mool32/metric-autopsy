@@ -94,6 +94,12 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   to be beta cells (the SDRF's "inferred cell type"), the nearest the deposits come to the paper's. R00765's claim 1
   on GSE174367 (`tenx_h5`; the oligodendrocytes, its table's "ODC"; groups its diagnosis, donors its samples, source
   its batch, sex its label); claim 2's dataset (Jerber et al. 2021) has no public counts (J23): listed, not checked.
+  **Precised on 2026-11-11, after the object's description (J27) and before its specs:** R01795's and R00653's cells
+  are those of GSE150728's 13 samples (Wilk et al. 2020's deposit) in the object covid19cellatlas.org hosts, by its
+  `orig.ident`; the donors its `record_id`, the groups its `Status` (COVID, Healthy), the sex its `Sex`, the source its
+  `Array.type`; the cell types its `cell.type.coarse` — R01795 "CD4 T" (spec `R01795`) and "B" (`R01795_b`, its
+  claims 2 and 6), R00653 "CD14 mono" and "CD16 mono" (the paper's "monocytes"). The export keeps a spec's cells
+  only (`r_export.R`, `keep.json`).
 
 ## 5. The sets' genes (added 2026-11-10, before any set's list is fetched)
 

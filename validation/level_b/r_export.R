@@ -4,17 +4,19 @@
 #   Rscript validation/level_b/r_export.R describe <object.rds> <out dir>
 #       its class, slots, assays and dimensions, and its cells' metadata: each column's type, number of distinct
 #       values and its 30 commonest values with their counts (describe.json, meta_summary.tsv)
-#   Rscript validation/level_b/r_export.R export <object.rds> <out dir>
+#   Rscript validation/level_b/r_export.R export <object.rds> <out dir> [<keep.json>]
 #       the counts (the RNA assay's counts layer or slot, or the "counts" assay; genes by cells; a dense matrix made
 #       sparse 5,000 cells at a time) as counts.mtx.gz, the genes as genes.tsv.gz (and a SingleCellExperiment's
 #       rowData as rowdata.csv.gz), the cells' metadata as cells.csv.gz in the counts' order (data_run.py's r_export
-#       loader)
+#       loader); with keep.json ({"column": [values], ...}: the spec's `cells`), only the cells whose metadata have
+#       those values in every column named (2026-11-11, J27: an object of 174,753 cells whose claim's are fewer)
 #
 # A gzip of an RDS file (GEO's .rds.gz) is read after one gunzip, which the caller does.
 
 args <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(args) == 3, args[1] %in% c("describe", "export"))
+stopifnot(length(args) %in% c(3, 4), args[1] %in% c("describe", "export"))
 mode <- args[1]; path <- args[2]; out <- args[3]
+keep <- if (length(args) == 4) jsonlite::fromJSON(args[4], simplifyVector = TRUE) else list()
 dir.create(out, showWarnings = FALSE, recursive = TRUE)
 suppressPackageStartupMessages(library(Matrix))
 obj <- readRDS(path)
@@ -87,6 +89,16 @@ if (mode == "describe") {
   if (is.null(colnames(m))) colnames(m) <- cn
   if (is.null(rownames(m))) rownames(m) <- rn
   stopifnot(identical(colnames(m), rownames(meta)))
+  if (length(keep) > 0) {  # the spec's cells only: every column named, one of its values
+    sel <- rep(TRUE, nrow(meta))
+    for (col in names(keep)) {
+      if (!col %in% names(meta)) stop("the cells' metadata have no column ", col)
+      sel <- sel & as.character(meta[[col]]) %in% as.character(keep[[col]])
+    }
+    cat("kept by", paste(names(keep), collapse = ", "), ":", sum(sel), "of", length(sel), "cells\n")
+    m <- m[, sel, drop = FALSE]; meta <- meta[sel, , drop = FALSE]
+    invisible(gc())
+  }
   tmp <- file.path(out, "counts.mtx")
   Matrix::writeMM(m, tmp)
   system2("gzip", c("-n", tmp))

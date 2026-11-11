@@ -122,7 +122,9 @@ jobs:
           obj=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['files']['object'].rsplit('/', 1)[-1])" "$spec")
           if [ "$(head -c 2 "files/$obj" | od -An -tx1 | tr -d ' \n')" = "1f8b" ]; then gunzip -c "files/$obj" > files/object.rds; else cp "files/$obj" files/object.rds; fi
           set -o pipefail
-          Rscript validation/level_b/r_export.R export files/object.rds files/export 2>&1 | tee out/${{ matrix.rid }}/export.log
+          # the spec's cells only (2026-11-11, J27): its `cells`, every column named, one of its values
+          python -I -c "import json, sys; json.dump(json.load(open(sys.argv[1])).get('cells') or {}, open(sys.argv[2], 'w'))" "$spec" files/keep.json
+          Rscript validation/level_b/r_export.R export files/object.rds files/export files/keep.json 2>&1 | tee out/${{ matrix.rid }}/export.log
           rm -f files/object.rds
       - name: Read and check
         timeout-minutes: 170

@@ -498,3 +498,27 @@ could not open as a workbook (`BadZipFile`), before the job's upload: nothing wa
 nothing of the archive was read here. **The fix:** `show` says which member it cannot read (a workbook, an archive
 inside the archive) and goes on; tested on fabricated members. **The second attempt** (the one a technical failure
 allows): the same list (`amendment1/setgenes3.tsv`, a copy of `setgenes2.tsv`), label `level-b-setgenes-3`.
+
+## J27 — 2026-11-11: the Wilk et al. object described: a later, larger cohort holding the 2020 donors
+
+**The second attempt** (label `level-b-rdescribe-4`, workflow run 42935150754 at b0d1133; `results/level-b-rdescribe-4`
+at 140339a, its 6 SHA256 checked here): the same object (5,985,045,048 bytes, the same SHA256 and md5 as J25's), read
+and described: a Seurat object of **174,753 cells and 41 donors** (`Donor`; 39 `record_id`s), 55 samples
+(`orig.ident`), COVID 112,589 cells and Healthy 62,164 (`Status`), PBMC 127,614 and whole blood 47,139
+(`Array.type`), its counts the RNA assay's (34,548 genes; every stored value a non-negative integer), its cell types
+`cell.type.coarse` (14: CD4 T 18,167, B 12,909, CD14 mono 33,416, CD16 mono 3,637...) and finer ones. Nothing of any
+count was read beyond that check.
+
+**What it means for the claims:** the object covid19cellatlas.org hosts now is not Wilk et al. 2020's (seven
+hospitalized patients and six healthy donors, the cohort R01795 and R00653 describe) but the Blish lab's later
+cohort, which holds the 2020 donors among others: the 2020 study's samples are GSE150728's 13 (`555_1`, `555_2`,
+`556`, `557`, `558`, `559`, `561`, and `HIP002`, `HIP015`, `HIP023`, `HIP043`, `HIP044`, `HIP045`), named so in
+the object's `orig.ident` (later samples of the same healthy donors carry suffixes: `HIP002_ACK`, `HIP015_PBMC_2`).
+The claims' cells are taken as those 13 samples' (`plan_s5.md`, section 4, precised before the specs); whether the
+papers used the whole object or the 2020 cohort cannot be told from their texts beyond their own description (seven
+and six), which the run's donor counts are set beside. GEO's deposit holds seven COVID-19 samples, not the eight a
+patient sampled twice would make: the run's counts will show what the object holds.
+
+**The export keeps a spec's cells only** (`r_export.R`, its optional `keep.json`: the spec's `cells`; the data job
+writes it from the spec): 174,753 cells exported whole would be read for nothing. Tried here on the fabricated
+object of J25 (a filter on two columns; an unknown column stops it; without a filter, as before).
