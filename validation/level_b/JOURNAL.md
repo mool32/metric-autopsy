@@ -630,3 +630,23 @@ chance agreement 1; `merge.json` writes `NaN`, the list says "undefined"); no ve
 Both passes call PPR:PPR182850 the claim's own paper (a ChemRxiv preprint of R00189's). `merge/sessions.tsv` (each
 session's counts, from its file) was added to the comparison's outputs after its first run, changing no other output,
 and the comparison run again (`merge/merge.log`); `list_s7.py` shows the agreement with the kappa.
+
+## J32 — 2026-11-11: S7's list assembled — the one stop
+
+**The list** (`amendment1/list/list.md`, the owner's page; `list.json`; `list.log`; `heads.tsv`): `list_s7.py` at
+69c5362 over the five results branches (`results/level-b-data-1` to `-4`, `results/level-b-controls`), each taken by
+`git archive` of the commit in `heads.tsv` and checked against its SHA256SUMS (all files as listed). The assembler,
+begun with `plan_s7.md` (046275b), was completed at 69c5362 to show the plan's eight parts; it was written after S3 to
+S6's results were known, follows the plan's parts, and reads no claim's metric. No input of π is computed (the share
+of claims with a verdict waits for the owner's approval, `plan_s4.md` section 3).
+
+**What its part 7 counts** (the list's numbers, from `list.log`): (i) no claim fails the check of origin on every
+dataset that checks it; R02175's six fail on one of their three (GSE214517: RPKM, not counts). (ii) No design fails
+rule 4; R01795's seven claims miss genes on every dataset that checks them (symbols of MSigDB 2022 that the object
+names otherwise: WARS1, MARCHF1, CCN1, PLPP3, TENT5A, RBSN), so their metric cannot be measured on the genes as
+listed; R00765:1's genes are not listed by its paper; R00765:2's data (Jerber et al. 2021) are not public. The
+source is not named for R01962's and R02175's eight claims (not a pass), and partly shared for R01225's and R02693's
+eight (listed with its shares).
+
+**The runs on the engine of 5a89f98 wait for the owner's approval of the list** (J1); their plan (`real_claims.md`,
+"The runs") is written after it.

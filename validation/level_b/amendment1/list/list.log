@@ -1,0 +1,85 @@
+# python3 -I validation/level_b/list_s7.py --results <the five results branches, git archive of each head in heads.tsv> --out validation/level_b/amendment1/list --heads validation/level_b/amendment1/list/heads.tsv --commit 69c536290c64b5ae93269431af2a2bc6e5bcd7c4
+{
+ "papers": 8,
+ "claims": 34,
+ "branches_not_as_listed": {},
+ "origin_fails": {
+  "every": [],
+  "some": [
+   "R02175:1",
+   "R02175:2",
+   "R02175:3",
+   "R02175:4",
+   "R02175:5",
+   "R02175:6"
+  ],
+  "papers_every": [],
+  "papers": [],
+  "claims": 0
+ },
+ "donors_cannot_run": {
+  "every": [],
+  "some": [],
+  "papers_every": [],
+  "papers": [],
+  "claims": 0
+ },
+ "genes_missing": {
+  "every": [
+   "R01795:1",
+   "R01795:2",
+   "R01795:3",
+   "R01795:4",
+   "R01795:5",
+   "R01795:6",
+   "R01795:7"
+  ],
+  "some": [],
+  "papers_every": [
+   "R01795"
+  ],
+  "papers": [
+   "R01795"
+  ],
+  "claims": 7
+ },
+ "source_not_named": {
+  "every": [
+   "R01962:1",
+   "R01962:2",
+   "R02175:1",
+   "R02175:2",
+   "R02175:3",
+   "R02175:4",
+   "R02175:5",
+   "R02175:6"
+  ],
+  "some": [],
+  "papers_every": [
+   "R01962",
+   "R02175"
+  ],
+  "papers": [
+   "R01962",
+   "R02175"
+  ],
+  "claims": 8
+ },
+ "data_not_checked": {
+  "claims_list": [
+   "R00765:1",
+   "R00765:2"
+  ],
+  "claims": 2,
+  "papers": [
+   "R00765"
+  ],
+  "genes_not_listed": [
+   "R00765:1"
+  ],
+  "datasets_without_claim": [
+   "R00765 (GSE174367)"
+  ]
+ }
+}
+exit 0
