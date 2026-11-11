@@ -28,6 +28,7 @@ import gzip
 import json
 import re
 import sys
+import time
 import urllib.error
 from pathlib import Path
 
@@ -104,30 +105,45 @@ def search_records(net, out, query: str, tag: str) -> list:
         cursor = nxt
 
 
-def fulltexts(net, out, recs: list) -> list:
-    rows = []
+FT_ATTEMPTS, FT_TIMEOUT, FT_BUDGET = 2, 60, 100 * 60  # 2026-11-11 (J30): a full text's requests, and the phase's time
+
+
+def fulltexts(net, out, recs: list, budget: float = FT_BUDGET, clock=time.monotonic) -> list:
+    """Each kept record's full text (its PMCID, else its preprint's id): two attempts of at most a minute each; a
+    record that fails (a server's error, a timeout) is recorded so and the next one asked; the records left when the
+    phase's time is spent are recorded "not fetched: the run's time budget". Every record failing while more than a
+    quarter fail and fewer than a quarter are fetched is an outage: the run stops (S3's rule, J11)."""
+    rows, start, failed = [], clock(), 0
     for r in recs:
         ids = [r["pmcid"]] if r.get("pmcid") else []
         ids += [r["epmc_id"].split(":", 1)[1]] if r.get("epmc_id", "").startswith("PPR:") else []
         got, note = None, ""
+        if ids and clock() - start > budget:
+            rows.append(dict(epmc_id=r["epmc_id"], tried=",".join(ids), fulltext="-", file="-",
+                             note="not fetched: the run's time budget"))
+            continue
         for fid in ids:
             try:
-                body = net.get(f"{S.EPMC}/{fid}/fullTextXML", {})
+                body = net.get(f"{S.EPMC}/{fid}/fullTextXML", {}, attempts=FT_ATTEMPTS, timeout=FT_TIMEOUT)
             except urllib.error.HTTPError as e:
                 if e.code not in (400, 404):
                     raise
                 note += f"{fid}: HTTP {e.code}; "
                 continue
             except S.Unavailable as e:
-                if e.status is None:
-                    raise
-                note += f"{fid}: HTTP {e.status} on all 6 attempts; "
+                note += (f"{fid}: HTTP {e.status} on both attempts; " if e.status is not None
+                         else f"{fid}: no answer on both attempts ({e}); ")
+                failed += 1
                 continue
             if body.strip():
                 got = (fid, out.raw(f"verdicts/fulltext-{fid}.xml", body))
                 break
         rows.append(dict(epmc_id=r["epmc_id"], tried=",".join(ids) or "-", fulltext=got[0] if got else "-",
                          file=got[1] if got else "-", note=note.strip("; ") or "-"))
+    asked = [x for x in rows if x["tried"] != "-" and not x["note"].startswith("not fetched")]
+    fetched = sum(x["fulltext"] != "-" for x in asked)
+    if asked and failed > len(asked) / 4 and fetched < len(asked) / 4:
+        raise S.Unavailable(f"an outage: {failed} of {len(asked)} full texts failed, {fetched} fetched", None)
     return rows
 
 
@@ -165,10 +181,13 @@ def run(net, out, kept: dict) -> dict:
                                 records=len(rows), kept=sum(x["kept"] for x in rows)))
             out.log(f"{paper['rid']} {claim['id']} ({claim['kind']}): citing {len(citing)}, by the terms {len(by_terms)}, "
                     f"records {len(rows)}, kept by the filter {summary[-1]['kept']}")
-    ft = fulltexts(net, out, list(to_read.values()))
+    # the search's records written before the full texts are asked (2026-11-11, J30: a run that stops in the full
+    # texts keeps them)
     with gzip.GzipFile(filename="", mode="wb", fileobj=(out.root / "found.jsonl.gz").open("wb"), mtime=0) as g:
         for f in found:
             g.write((json.dumps(f, ensure_ascii=False, sort_keys=True) + "\n").encode())
+    (out.root / "search_counts.json").write_text(json.dumps(dict(claims=summary, to_read=len(to_read)), indent=1) + "\n")
+    ft = fulltexts(net, out, list(to_read.values()))
     with (out.root / "fulltext_index.tsv").open("w") as f:
         f.write("epmc_id\ttried\tfulltext\tfile\tnote\n")
         for r in ft:
@@ -190,7 +209,7 @@ class Fabricated:
                     doi=f"10.9999/fab.{i}", title=title, abstractText=abstract, pubYear="2024",
                     journalInfo=dict(journal=dict(isoabbreviation="Fab J")))
 
-    def get(self, url: str, params: dict, post: bool = False) -> bytes:
+    def get(self, url: str, params: dict, post: bool = False, attempts: int = 6, timeout: int = 180) -> bytes:
         body = self._answer(url, params)
         self.rows.append(dict(time="FABRICATED", method="GET", url=url, params=S.shown_params(params), status=200,
                               bytes=len(body), sha256="-", attempt=1))

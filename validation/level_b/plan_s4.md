@@ -56,6 +56,13 @@ no window of dates, every raw response kept with its SHA256:
     its paper's terms of cell or condition (taken from the claims' lines: R00189's ileum, Crohn, enterocyte...) are
     read; the others are counted, not read — a limit of the rule (a verdict that names the claim's tissue only in its
     full text is missed), said with the counts.
+  - *If the search's run stops before it publishes* (precised on 2026-11-11 at 04:35 UTC, while the first run, started
+    at 01:29, was still asking for full texts and before its outcome was known): its second attempt (the label removed
+    and set again; the branch does not exist) asks each kept record's full text twice, each time for at most a
+    minute, within 100 minutes for the whole phase, the records left recorded "not fetched: the run's time budget";
+    every full text failing while more than a quarter fail and fewer than a quarter are fetched stops it as an
+    outage (S3's rule, J11); the search's records are written before the full texts are asked. The search itself is
+    unchanged. If the first run publishes, this is not used.
   - *The instructions:* `verdicts_coding.md` (committed before any record is read); a coder's file is checked by
     `verdicts_codes.py check-codes`.
   - *The task each session gets*, word for word, with `<P>`, `<NN>`, `<MD>` and `<LIST>` its only variables:

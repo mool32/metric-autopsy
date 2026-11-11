@@ -139,11 +139,13 @@ class Net:
     def __init__(self, log):
         self.log, self.rows, self.last = log, [], {}
 
-    def get(self, url: str, params: dict, post: bool = False) -> bytes:
+    def get(self, url: str, params: dict, post: bool = False, attempts: int = 6, timeout: int = 180) -> bytes:
+        """`attempts` and `timeout` (seconds a request may wait for its answer) keep their defaults for every step
+        but S4's full texts, which ask with fewer and shorter ones (2026-11-11, J30)."""
         host = urllib.parse.urlsplit(url).hostname or ""
         query = urllib.parse.urlencode(params, doseq=True)
         last_error = last_status = None
-        for attempt in range(6):
+        for attempt in range(attempts):
             wait = PAUSE.get(host, 0.2) - (time.monotonic() - self.last.get(host, 0.0))
             if wait > 0:
                 time.sleep(wait)
@@ -151,7 +153,7 @@ class Net:
             req = (urllib.request.Request(url, data=query.encode(), headers=HEADERS) if post
                    else urllib.request.Request(f"{url}?{query}", headers=HEADERS))
             try:
-                with urllib.request.urlopen(req, timeout=180) as r:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
                     body, status = r.read(), r.status
                 self._record(url, params, post, status, body, attempt)
                 return body
@@ -162,13 +164,14 @@ class Net:
                     raise
             except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
                 last_error, last_status = f"{type(e).__name__}: {e}", None
-            if attempt == 5:
+            if attempt == attempts - 1:
                 break
             self.log(f"  retry {attempt + 1} after {last_error}: {url}")
             time.sleep(min(60, 2 ** (attempt + 1)))
         if last_status is not None:  # the server's answer to the last attempt, recorded
-            self._record(url, params, post, last_status, b"", 5)
-        raise Unavailable(f"the request failed six times ({last_error}): {url}", last_status)
+            self._record(url, params, post, last_status, b"", attempts - 1)
+        raise Unavailable(f"the request failed {'six times' if attempts == 6 else f'{attempts} times'} ({last_error}): {url}",
+                          last_status)
 
     def get_once(self, url: str) -> tuple:
         """One GET, redirects followed, no retry (amendment 1's one attempt at a publisher): (status, the final

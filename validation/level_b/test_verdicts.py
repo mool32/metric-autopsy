@@ -63,3 +63,36 @@ def test_every_version_a_record_joins_has_its_citations_asked():
     assert V.paper_keys(dict(pmid="", pmcid="PMC2", epmc_ids=[])) == [dict(source="PMC", id="PMC2")]
     assert V.paper_keys(dict(pmid="", pmcid="", epmc_ids=[])) == []
 
+
+
+def test_the_full_texts_with_short_attempts_a_time_budget_and_the_outage_rule(tmp_path):
+    """2026-11-11 (J30): a full text that fails is recorded and the next asked; the time spent stops the asking."""
+    import search as S
+
+    class Net:
+        def __init__(self, fail):
+            self.fail, self.calls = fail, []
+
+        def get(self, url, params, post=False, attempts=6, timeout=180):
+            self.calls.append((url, attempts, timeout))
+            fid = url.rsplit("/", 2)[-2]
+            if fid in self.fail:
+                raise S.Unavailable("no answer", None)
+            return b"<article/>"
+
+    out = S.Out(tmp_path / "o")
+    recs = [dict(epmc_id=f"MED:{i}", pmcid=f"PMC{i}") for i in range(8)]
+    rows = V.fulltexts(Net({"PMC1"}), out, recs)
+    assert [r["fulltext"] for r in rows].count("-") == 1 and "no answer on both attempts" in rows[1]["note"]
+    net = Net(set())
+    V.fulltexts(net, out, recs[:1])
+    assert net.calls[0][1:] == (V.FT_ATTEMPTS, V.FT_TIMEOUT)
+    ticks = iter(range(0, 1000, 10))
+    rows = V.fulltexts(Net(set()), out, recs, budget=25, clock=lambda: next(ticks))
+    assert [r["note"] for r in rows][-1] == "not fetched: the run's time budget" and rows[0]["fulltext"] == "PMC0"
+    try:
+        V.fulltexts(Net({f"PMC{i}" for i in range(7)}), out, recs)
+    except S.Unavailable as e:
+        assert "an outage" in str(e)
+    else:
+        raise AssertionError("no stop")
