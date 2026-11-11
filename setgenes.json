@@ -1,0 +1,51 @@
+{
+ "fabricated": false,
+ "claims_file": "validation/level_b/amendment1/kept_claims.json",
+ "rows": [
+  {
+   "rid": "R00653",
+   "pmcid": "PMC9774209",
+   "status": 200,
+   "file": "raw/setgenes/R00653-supplementary.zip.gz",
+   "bytes": 3808157,
+   "sha256": "ca4155330b4524bf5ed14a06b0b38a60efb13148387e528bb7429688b77fabd8",
+   "note": "-"
+  },
+  {
+   "rid": "R00765",
+   "pmcid": "PMC10168282",
+   "status": 200,
+   "file": "raw/setgenes/R00765-supplementary.zip.gz",
+   "bytes": 16399590,
+   "sha256": "abf22788dc0a8b1a365bc5595256953f7f77eed5b379b43b6107081216fe74dc",
+   "note": "-"
+  },
+  {
+   "rid": "R01795",
+   "pmcid": "PMC12112291",
+   "status": 200,
+   "file": "raw/setgenes/R01795-supplementary.zip.gz",
+   "bytes": 3330382,
+   "sha256": "c89ceb0ecb1e3d33f354040a764ca0cd1c27675c86e6c3614595d8e689b5f33d",
+   "note": "-"
+  },
+  {
+   "rid": "R02175",
+   "pmcid": "PMC12559761",
+   "status": 200,
+   "file": "raw/setgenes/R02175-supplementary.zip.gz",
+   "bytes": 22687994,
+   "sha256": "2727d36486c5226e92caa51490910501f7b10cafb932e4cc31d45ce4c928e1cd",
+   "note": "-"
+  }
+ ],
+ "extra": [
+  {
+   "rid": "R01795",
+   "url": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Hs/h.all.v2022.1.Hs.symbols.gmt",
+   "file": "raw/setgenes/R01795-h.all.v2022.1.Hs.symbols.gmt.gz",
+   "bytes": 48651,
+   "sha256": "544eb584f83d3b67d5d9628a84f9654ab13c07abcc901441971f39a0d90b5eae"
+  }
+ ]
+}

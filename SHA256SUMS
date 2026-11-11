@@ -1,0 +1,14 @@
+eccb9f127594ffe5e306a0c080aca0fa83ccea9d816ef746bd86bda2dc8512b9  ./README.md
+92ace5191ef8b2d6db31b506a30f7ca6c6230bda15037651a807474d1a3435e6  ./kept_claims.json
+f4ea9db43137eeff7f22c062d90796e2492133c5814aa9ef13896b793ba8b4b5  ./raw/setgenes/R00653-supplementary.zip.gz
+c977af74629e669af4fbe45bd20d2ab4b4403a534849d180c70adf86ce3cf3f4  ./raw/setgenes/R00765-supplementary.zip.gz
+63742acd81d8c07f71be6ab24e35d5f18996475e22ad7b7b1b497273a05e2fab  ./raw/setgenes/R01795-h.all.v2022.1.Hs.symbols.gmt.gz
+3b07c4085c4797574fda4a8db006fac4fcffd481d23e8bfc9429c941aa595df7  ./raw/setgenes/R01795-supplementary.zip.gz
+f03015dfe1ba345d3ba8dc3edc6da768ff3a5cd3afd2094f3fe26564e9e803e2  ./raw/setgenes/R02175-supplementary.zip.gz
+c7a7096b0f7663e967fc3db6f5a92bff4f93df0eed049be7571827c943ddeb08  ./requests.tsv
+c58a6b0a7e82fe9d80448597d1828f93d007cc5267555ff251fbc748b7b0540f  ./set_extra.tsv
+ea8069d36fd30b2ee9f73f97336e55850328ac8730ac1bda38f9f2aa816c6422  ./setgenes.json
+91e05eb406538c2bd0fef3ac9ff6ace5a10c23524db4d4274409189cb6f46c28  ./setgenes.log
+4bff35f6414af082d9c83dbb29d6cdc1f00cf3f7e53d59b797b7c37f6d40ffc6  ./setgenes_extra.tsv
+dc4406466a7ad44960245f90aa8b84174fafb6b0232f0d00cbeda202f2c8078d  ./setgenes_index.tsv
+5080003052ce16b0ee67cfb38d5ef64cf6e246ec07e8b974a539f8c56ee02d58  ./show.md
