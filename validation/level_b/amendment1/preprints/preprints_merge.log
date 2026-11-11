@@ -1,0 +1,7 @@
+# Level B, amendment 1: the preprints merged with the corrected list (merge_preprints.py)
+
+The corrected list: 3506 records (records.jsonl.gz, SHA256 48709ef7af34992616a929f498b0326f0aca58721cdf9ed5735af9fae4b523ca).
+The preprints: 761 records (preprints.jsonl.gz, SHA256 ac91f39ded76979a81f3b8e294d707e782939171d5d150444544aab1af702be0).
+Already in the list: 299; the same paper as an earlier preprint: 7; new: 455, numbered R03507 to R03961.
+The new preprints by language: none 455.
+preprints_new.jsonl.gz SHA256 a2d44c6a761a445c4546a3a1d3998c17bd105d4a773f93db3f0712d5ad4c4c4d.

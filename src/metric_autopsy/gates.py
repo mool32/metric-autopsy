@@ -21,7 +21,8 @@ from typing import Callable, Sequence
 import numpy as np
 import pandas as pd
 
-from .core import GateResult, GateStatus, SimpleData, as_dense, warn_if_dense_too_large
+from .core import (GateResult, GateStatus, SimpleData, as_dense, canonical_csr, column_block, issparse,
+                   looks_like_counts_matrix, row_sums, warn_if_dense_too_large, with_columns)
 from . import qc as _qc
 from .stats import extend_null, t_ppf
 
@@ -30,9 +31,12 @@ Metric = Callable[[object], float]
 
 
 def _as_simple(data) -> SimpleData:
-    """Materialize any duck-typed data object as a mutable SimpleData copy."""
+    """Materialize any duck-typed data object as a mutable SimpleData copy (a sparse X stays sparse:
+    v0.4 change 10)."""
     if isinstance(data, SimpleData):
         return SimpleData(data.X.copy(), data.obs.copy(), data.var_names)
+    if issparse(data.X):
+        return SimpleData(canonical_csr(data.X, copy=True), data.obs.copy(), list(data.var_names))
     warn_if_dense_too_large(getattr(data.X, "shape", (len(data.obs), len(data.var_names))),
                             "the gates (dense working copy)")
     return SimpleData(as_dense(data.X).copy(), data.obs.copy(), list(data.var_names))
@@ -63,13 +67,58 @@ def _safe_call(fn):
 NULL_DEPTH_BINS = 10
 
 
-def _looks_like_counts(X: np.ndarray) -> bool:
-    return bool(np.all(X >= 0) and np.allclose(X, np.round(X)))
+def _looks_like_counts(X) -> bool:
+    return looks_like_counts_matrix(X)
+
+
+def _scale_rows(X, factors: np.ndarray):
+    """A sparse X with every row multiplied by its factor (the dense ``X * factors[:, None]``)."""
+    out = X.copy()
+    out.data = out.data * np.repeat(factors, np.diff(out.indptr))
+    return out
+
+
+def _perturb_sparse(data: SimpleData, kind: str, rng: np.random.Generator,
+                    protect: frozenset = frozenset()) -> tuple[SimpleData, dict]:
+    """`_perturb` on a sparse X, with the dense path's draws (v0.4 change 10): its stored entries are in
+    the dense matrix's row-major order, a zero count draws no binomial, and only positive entries can be
+    dropped."""
+    X = data.X.copy()
+    note = {}
+    if kind == "extra_dropout":
+        nz = np.flatnonzero(X.data > 0)
+        k = int(0.2 * len(nz))
+        if k:
+            pick = nz[rng.choice(len(nz), size=k, replace=False)]
+            X.data[pick] = 0.0
+            X.eliminate_zeros()
+    elif kind == "depth_downsample":
+        if _looks_like_counts(X) and np.all(X.data <= np.iinfo(np.int64).max):
+            X.data = rng.binomial(X.data.astype(np.int64), 0.5).astype(float)
+            X.eliminate_zeros()
+        else:
+            X = _scale_rows(X, rng.uniform(0.25, 0.75, size=X.shape[0]))
+            note["note"] = "approximate: input is not raw counts (per-cell scaling used)"
+    elif kind == "library_scale":
+        X = _scale_rows(X, rng.uniform(0.5, 2.0, size=X.shape[0]))
+    elif kind == "gene_subsample":
+        keep = rng.random(X.shape[1]) < 0.8
+        for j, gname in enumerate(data.var_names):
+            if gname in protect:
+                keep[j] = True
+        if keep.sum() >= 2:
+            return SimpleData(X[:, keep], data.obs,
+                              [g for g, k in zip(data.var_names, keep) if k]), note
+    else:
+        raise ValueError(kind)
+    return SimpleData(X, data.obs, data.var_names), note
 
 
 def _perturb(data: SimpleData, kind: str, rng: np.random.Generator,
              protect: frozenset = frozenset()) -> tuple[SimpleData, dict]:
     """Return (perturbed data, note-dict) for one nuisance perturbation."""
+    if issparse(data.X):
+        return _perturb_sparse(data, kind, rng, protect)
     X = data.X.copy()
     note = {}
     if kind == "extra_dropout":
@@ -120,8 +169,11 @@ def _shuffle_null(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) ->
     """Permute every gene independently across cells *within depth bins*.
 
     Keeps each gene's distribution and the depth structure; destroys gene-gene co-variation.
-    The metric's value on this data is its 'no biology, same technology' reference.
+    The metric's value on this data is its 'no biology, same technology' reference. A sparse X is
+    permuted one depth bin at a time on that bin's dense block, with the same draws (v0.4 change 10).
     """
+    if issparse(sd.X):
+        return _shuffle_null_sparse(sd, bins, rng)
     X = sd.X.copy()
     for b in np.unique(bins):
         idx = np.where(bins == b)[0]
@@ -130,6 +182,26 @@ def _shuffle_null(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) ->
         order = np.argsort(rng.random((len(idx), X.shape[1])), axis=0)
         X[idx] = np.take_along_axis(X[idx], order, axis=0)
     return SimpleData(X, sd.obs, sd.var_names)
+
+
+def _shuffle_null_sparse(sd: SimpleData, bins: np.ndarray, rng: np.random.Generator) -> SimpleData:
+    import scipy.sparse as sp
+    X = sd.X
+    parts, order_rows = [], []
+    for b in np.unique(bins):
+        idx = np.where(bins == b)[0]
+        block = X[idx]
+        if len(idx) >= 2:
+            warn_if_dense_too_large((len(idx), X.shape[1]), "GATE 0's null of non-count data (one depth bin)")
+            order = np.argsort(rng.random((len(idx), X.shape[1])), axis=0)
+            block = sp.csr_matrix(np.take_along_axis(block.toarray(), order, axis=0))
+        parts.append(block)
+        order_rows.append(idx)
+    rows = np.concatenate(order_rows)
+    stacked = sp.vstack(parts, format="csr")
+    back = np.empty(len(rows), dtype=np.int64)
+    back[rows] = np.arange(len(rows))
+    return SimpleData(stacked[back], sd.obs, sd.var_names)
 
 
 def _mean_sd(vals):
@@ -367,7 +439,14 @@ def gate0_independence(
             0, "Mathematical independence", GateStatus.DEGENERATE,
             f"the metric returned the same value ({base_mean:.6g}) on every resample, null and "
             "perturbation — it carries no information about the data", detail)
+    return _gate0_result(detail)
 
+
+def _gate0_result(detail: dict) -> GateResult:
+    """GATE 0's status and message from its classified responses (shared by `gate0_independence` and
+    `gate0_between_groups`)."""
+    responses, attenuation, level_shifts = detail["responses"], detail["attenuation"], detail["level_shifts"]
+    bias_tolerance = detail["bias_tolerance"]
     flagged = {k: r for k, r in responses.items() if r.get("confounded")}
     if flagged:
         worst = max(flagged, key=lambda k: flagged[k]["bias_size"] / flagged[k]["bias_tolerance"])
@@ -377,7 +456,7 @@ def gate0_independence(
             f"'{worst}' biases the metric ({w['bias_kind']}): {w['bias_size']:.4g} "
             f"(95% lower bound {w['bias_ci_low']:.4g}) against a tolerance of {w['bias_tolerance']:.4g} "
             f"({float(bias_tolerance):g} x SESOI; z={w['z']:.1f}) — the nuisance can create a "
-            "difference with no biology",
+            "difference with no biology" + _between_text(detail.get("between_groups")),
             detail,
         )
     handled = {k: r for k, r in responses.items() if r.get("classification") == "bias"}
@@ -386,6 +465,10 @@ def gate0_independence(
         if r["handling"] == "corrected":
             notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}); the declared "
                          "correction removes it between groups")
+        elif r["handling"] == "equal between groups":
+            notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, above the tolerance "
+                         f"{r['bias_tolerance']:.4g}), but the groups' technical difference is shown within it"
+                         + _between_text(detail.get("between_groups")))
         elif r["handling"] == "below tolerance":
             notes.append(f"'{k}' biases the metric ({r['bias_kind']}, {r['bias_size']:.4g}, 95% lower "
                          f"bound {r['bias_ci_low']:.4g}) within the tolerance {r['bias_tolerance']:.4g}")
@@ -408,6 +491,61 @@ def gate0_independence(
     msg = ("no bias; " + "; ".join(parts) + " — reported, not failed") if parts else \
         "no bias or attenuation beyond estimator noise under any nuisance perturbation"
     return GateResult(0, "Mathematical independence", GateStatus.PASS, msg, detail)
+
+
+def _between_text(b: dict | None) -> str:
+    if not b:
+        return ""
+    if b.get("error"):
+        return f"; the groups' technical difference could not be estimated ({b['error']})"
+    ci = b.get("ci_2alpha") or [float("nan"), float("nan")]
+    return (f"; the groups' technical difference (the metric on the null, {b.get('estimate_over', 'the replicates')}) "
+            f"{b['effect']:+.4g}, {100 * (1 - 2 * b['alpha']):.0f}% interval [{ci[0]:+.4g}, {ci[1]:+.4g}], "
+            + ("within" if b["equivalent"] else "not shown within") + f" ±{b['margin']:.4g}")
+
+
+def claim_null(sd: SimpleData, genes, rng) -> SimpleData:
+    """GATE 0's 'no biology, same technology' reference restricted to a claim's genes (v0.4 change 12):
+    each gene's counts redrawn independently from cells at least as deep (`_depth_matched_draw`, depth
+    the counts of every other gene of the claim's), the other genes untouched; a claim without genes, or
+    non-count input, takes the whole null (`_gene_null`)."""
+    from .core import unique_col_index
+    if not genes or not _looks_like_counts(sd.X if issparse(sd.X) else np.asarray(sd.X)):
+        return _gene_null(sd, rng)
+    if issparse(sd.X):  # v0.4 change 10: the claim's columns only, the same draws
+        cols = [unique_col_index(list(sd.var_names), str(g)) for g in genes]
+        B = column_block(sd.X, cols)
+        depth = row_sums(sd.X) - B.sum(axis=1)
+        new = B.copy()
+        for jj in range(len(cols)):
+            new[:, jj] = _depth_matched_draw(B[:, jj], depth, rng)
+        return SimpleData(with_columns(sd.X, cols, new), sd.obs, sd.var_names)
+    X = np.array(sd.X, dtype=float, copy=True)
+    cols = [unique_col_index(list(sd.var_names), str(g)) for g in genes]
+    depth = X.sum(axis=1) - X[:, cols].sum(axis=1)
+    for c in cols:
+        X[:, c] = _depth_matched_draw(X[:, c], depth, rng)
+    return SimpleData(X, sd.obs, sd.var_names)
+
+
+def gate0_between_groups(g0: GateResult, between: dict) -> GateResult:
+    """v0.4 change 12 (decided 2026-10-12, coded on the owner's decision of 2026-10-18): GATE 0 blocks only a
+    bias it cannot show to be equal between the groups. `between` is the groups' technical difference: the
+    claim's metric on GATE 0's null (no gene-gene biology, each group's own technology), estimated between
+    the groups as the effect is (the same units, correction and test); `equivalent` where its 90% interval
+    lies within ±`margin` (bias_tolerance x SESOI, GATE 0's tolerance). A blocking bias then becomes
+    "equal between groups" (reported, not failed); otherwise it still blocks, the test recorded."""
+    if g0.status not in (GateStatus.FAIL,):
+        return g0
+    detail = dict(g0.detail)
+    detail["responses"] = {k: dict(r) for k, r in detail["responses"].items()}
+    detail["between_groups"] = between
+    if between.get("equivalent"):
+        for r in detail["responses"].values():
+            if r.get("handling") == "blocking":
+                r["handling"], r["confounded"] = "equal between groups", False
+        detail["bias_handling"] = {k: r["handling"] for k, r in detail["responses"].items() if r.get("handling")}
+    return _gate0_result(detail)
 
 
 # --------------------------------------------------------------------------- #
@@ -665,8 +803,11 @@ def gate3_raw_visibility(
 # --------------------------------------------------------------------------- #
 # GATE 4 (automatable part) — does the metric respond to an injected signal?
 # --------------------------------------------------------------------------- #
-GATE4_N_REP = 200    # injections (each against its own sham) per GATE 4 run
-DELTA_MIN_FRACTION = 0.5  # default delta_min = 0.5 x SESOI (decided 2026-10-08)
+GATE4_N_REP = 200    # injections (each against its own reference) of the all-cell response
+GATE4_N_REP_REPLICATE = 50  # injections into each unit's cells for the claim's statistic (v0.4)
+GATE4_N_REP_CURVE = 20  # injections into each unit's cells at the other doses of the dose-response curve
+GATE4_CURVE = (0.5, 2.0)  # the curve's construct changes, as multiples of the SESOI (beside the SESOI itself)
+DELTA_MIN_FRACTION = 0.5  # v0.3's default delta_min = 0.5 x SESOI; no longer used (v0.4 change 3)
 
 
 def response_interval(deltas, direction: str = "increase", alpha: float = 0.05) -> dict:
@@ -688,16 +829,33 @@ def response_interval(deltas, direction: str = "increase", alpha: float = 0.05) 
                 (float("inf") * np.sign(mean) if mean else 0.0))
 
 
-def judge_response(iv: dict, delta_min: float | None) -> str:
-    """FAIL when blindness is shown: the whole interval lies below delta_min in the declared
-    direction (also when it lies above 0: a response smaller than the smallest response that
-    matters is blindness by the definition of delta_min). PASS when a response is shown: the
-    lower bound in the declared direction is above 0. Otherwise UNTESTED: absence of evidence,
-    as INCONCLUSIVE is to NO DETECTABLE EFFECT."""
-    if delta_min is not None and iv["signed_upper"] < delta_min:
-        return "FAIL"
+def _interval(mean: float, se: float, df: float, n: int, direction: str, alpha: float) -> dict:
+    """``response_interval``'s fields for a mean with a given standard error and degrees of freedom
+    (the interval over replicates of GATE 4's claim-level response)."""
+    if direction not in ("increase", "decrease"):
+        raise ValueError(f"the signal direction is 'increase' or 'decrease', not {direction!r}")
+    if not (np.isfinite(se) and df > 0):
+        return dict(mean_response=mean, se=se, df=df, n_rep=n, ci=(float("nan"), float("nan")),
+                    ci_level=1.0 - alpha, signed_lower=float("nan"), signed_upper=float("nan"), z=float("nan"))
+    half = t_ppf(1.0 - alpha / 2.0, df) * se if se > 0 else 0.0
+    lo, hi = mean - half, mean + half
+    sign = 1.0 if direction == "increase" else -1.0
+    s_lo, s_hi = sorted((sign * lo, sign * hi))
+    return dict(mean_response=mean, se=se, df=df, n_rep=n, ci=(lo, hi), ci_level=1.0 - alpha,
+                signed_lower=s_lo, signed_upper=s_hi, z=float(mean / se) if se > 0 else
+                (float("inf") * np.sign(mean) if mean else 0.0))
+
+
+def judge_response(iv: dict, delta_min: float | None = None) -> str:
+    """GATE 4 decides only whether the metric is blind (v0.4 change 3, decided 2026-10-17): PASS when
+    a response is shown, the interval's lower bound in the declared direction above 0; FAIL when the
+    metric is shown not to respond, the whole interval at or below 0 in that direction; otherwise
+    UNTESTED, absence of evidence. `delta_min` is not used any more: what a change that matters is
+    in the metric's units is the response itself (s_m), which the effect field uses as the SESOI."""
     if iv["signed_lower"] > 0:
         return "PASS"
+    if iv["signed_upper"] <= 0:
+        return "FAIL"
     return "UNTESTED"
 
 
@@ -711,9 +869,12 @@ def _check_delta_min(delta_min):
 
 
 def _column_local(inject) -> bool:
+    """An injector that rewrites only its genes' columns (``inject.genes``, ``inject.columns``),
+    against a sham that does the same (``coupling``) or against the untouched data (``module``,
+    which has no sham)."""
     sham = getattr(inject, "sham", None)
     return (getattr(inject, "genes", None) is not None and callable(getattr(inject, "columns", None))
-            and sham is not None and callable(getattr(sham, "columns", None)))
+            and (sham is None or callable(getattr(sham, "columns", None))))
 
 
 def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
@@ -721,16 +882,14 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
     sham (or on the untouched data if the injector has no sham). Raises ValueError if the signal
     cannot be injected (e.g. non-count input).
 
-    A column-local injector (``injected_signal.coupling``: ``inject.genes`` and
-    ``inject.columns``) rewrites the two genes of one private copy of the data and restores them
-    after every evaluation, with the same random draws as injecting into copies: the metric sees
-    exactly the data a copy would hold, without copying the matrix twice per injection.
+    A column-local injector (``inject.genes`` and ``inject.columns``: ``injected_signal.coupling``
+    and ``module``) rewrites its genes in one private copy of the data and restores them after
+    every evaluation, with the same random draws as injecting into copies: the metric sees exactly
+    the data a copy would hold, without copying the matrix twice per injection.
     `decouple` names the gene replaced, before every injection, by a depth-matched draw from
     neighbouring cells (``_depth_matched_draw``): GATE 5 injects into the positive control's
-    genes with their own coupling removed. It needs a column-local injector.
+    genes with their own coupling removed. It needs a column-local injector with a sham.
     """
-    from .core import unique_col_index
-
     sham = getattr(inject, "sham", None)
     if not _column_local(inject):
         if decouple is not None:
@@ -746,16 +905,31 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
             if v is not None and ref is not None and np.isfinite(v - ref):
                 out.append(v - ref)
         return out
-    work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    if decouple is not None and sham is None:
+        raise ValueError("decoupling needs an injector with a sham")
+    if issparse(data.X):
+        work = SimpleData(canonical_csr(data.X, copy=True), data.obs.copy(), list(data.var_names))
+    else:
+        work = SimpleData(np.array(as_dense(data.X), copy=True), data.obs.copy(), list(data.var_names))
+    return _column_deltas(metric, work, inject, n_rep, rng, decouple=decouple)
+
+
+def _column_deltas(metric, work: SimpleData, inject, n_rep: int, rng, *, decouple: str | None = None) -> list:
+    """The column-local responses on `work`, a private copy that is restored before returning."""
+    from .core import unique_col_index
+
+    sham = getattr(inject, "sham", None)
     X, obs = work.X, work.obs
     cols = [unique_col_index(work.var_names, g) for g in inject.genes]
-    original = X[:, cols].copy()
+    sparse = issparse(X)
+    original = column_block(X, cols).copy()
     if not _looks_like_counts(original):
         raise ValueError("the injection needs raw counts (non-negative integers)")
     tot = np.asarray(obs["total_counts"], dtype=float).copy() if "total_counts" in obs else None
     if decouple is not None:
         kb = list(inject.genes).index(decouple)
-        depth = X.sum(axis=1) - original.sum(axis=1)
+        depth = row_sums(X) - original.sum(axis=1)
+    base = _safe_call(lambda: metric(work)) if sham is None else None
     out = []
     try:
         for _ in range(n_rep):
@@ -763,89 +937,384 @@ def injected_deltas(metric, data, inject, n_rep: int, rng, *, decouple: str | No
             if decouple is not None:
                 before[:, kb] = _depth_matched_draw(original[:, kb], depth, rng)
             vals = []
-            for fn in (inject.columns, sham.columns):
+            for fn in ((inject.columns,) if sham is None else (inject.columns, sham.columns)):
                 after = fn(before, rng)
+                if sparse:  # a new matrix with the columns replaced: the values a dense copy holds
+                    o = obs.copy()
+                    if tot is not None:
+                        o["total_counts"] = tot - (original - after).sum(axis=1)
+                    cur = SimpleData(with_columns(X, cols, after), o, work.var_names)
+                    vals.append(_safe_call(lambda: metric(cur)))
+                    continue
                 X[:, cols] = after
                 if tot is not None:
                     obs["total_counts"] = tot - (original - after).sum(axis=1)
                 vals.append(_safe_call(lambda: metric(work)))
-            v, ref = vals
+            v, ref = (vals[0], base) if sham is None else vals
             if v is not None and ref is not None and np.isfinite(v - ref):
                 out.append(v - ref)
     finally:
-        X[:, cols] = original
+        if not sparse:
+            X[:, cols] = original
         if tot is not None:
             obs["total_counts"] = tot
     return out
+
+
+def _replicate_delta(metric, sub: SimpleData, inject, n_rep: int, rng) -> tuple[float | None, int]:
+    """The mean response of one unit's cells (`sub`, a private copy) over `n_rep` injections."""
+    if _column_local(inject):
+        deltas = _column_deltas(metric, sub, inject, n_rep, rng)
+    else:
+        deltas = injected_deltas(metric, sub, inject, n_rep, rng)
+    return (float(np.mean(deltas)) if deltas else None), len(deltas)
+
+
+def _replicate_units(sd: SimpleData, group_col, groups, replicate_col, within):
+    """Without cell types, a unit is a replicate's cells (a paired replicate: both its groups' cells)."""
+    from .combined import Units
+    from .effect import _replicate_design
+
+    design = _replicate_design(sd.obs, group_col, groups, replicate_col, list(within))
+    if design["kind"] == "mixed":
+        return None, design
+    rep = np.asarray(sd.obs[replicate_col]).astype(str)
+    grp = np.asarray(sd.obs[group_col])
+    reps = list(design["reps"])
+    strata = list(dict.fromkeys(design["strata"][r] for r in reps))
+    s_index = {s: i for i, s in enumerate(strata)}
+    first = np.array([1 if groups[0] in design["membership"][r] else 0 for r in reps]) if design["kind"] == "nested" \
+        else np.zeros(len(reps), int)
+    cells = []
+    for r in reps:
+        m = rep == r
+        cells.append((np.where(m & (grp == groups[0]))[0], np.where(m & (grp == groups[1]))[0])
+                     if design["kind"] == "paired" else np.where(m)[0])
+    units = Units(design["kind"], reps, first, np.array([s_index[design["strata"][r]] for r in reps]), strata,
+                  ["all cells"], np.arange(len(reps)), np.zeros(len(reps), int), cells)
+    return units, design
+
+
+def _unit_cells(units, i: int, k: int) -> np.ndarray:
+    """Unit i's cells of group index k (a nested unit holds one group's cells)."""
+    c = units.cells[i]
+    return c[k] if units.kind == "paired" else c
+
+
+def _unit_group(units, i: int) -> int:
+    """0 for a unit of groups[0], 1 for groups[1] (nested)."""
+    return 0 if units.rep_first[units.unit_rep[i]] == 1 else 1
+
+
+def _bio_variances(X: np.ndarray, cols, units, k: int) -> list:
+    """Each probed gene's biological variance of log expression, the mean over group k's units."""
+    tot = row_sums(X)
+    B = column_block(X, cols)
+    out = []
+    for jj, j in enumerate(cols):
+        vals = []
+        for i in range(units.n_units):
+            if units.kind == "nested" and _unit_group(units, i) != k:
+                continue
+            idx = _unit_cells(units, i, k)
+            if len(idx) >= 3:
+                from .injected_signal import biological_log_variance
+                v = biological_log_variance(B[idx, jj], tot[idx])
+                if np.isfinite(v):
+                    vals.append(v)
+        out.append(float(np.mean(vals)) if vals else float("nan"))
+    return out
+
+
+def _unit_responses(metric, sd: SimpleData, X: np.ndarray, units, k: int, inject, n_rep: int, rng):
+    """Group k's units: the mean response of each over `n_rep` injections into its cells (NaN where
+    fewer than half gave one), the share of their counts the injection removes, and the units used."""
+    resp = np.full(units.n_units, np.nan)
+    used = np.zeros(units.n_units, bool)
+    depth = []
+    for i in range(units.n_units):
+        if units.kind == "nested" and _unit_group(units, i) != k:
+            continue
+        idx = _unit_cells(units, i, k)
+        if len(idx) == 0:
+            continue
+        used[i] = True
+        sub = SimpleData(X[idx] if issparse(X) else np.array(X[idx], copy=True), sd.obs.iloc[idx].copy(),
+                         list(sd.var_names))
+        v, n_ok = _replicate_delta(metric, sub, inject, n_rep, rng)
+        if v is not None and np.isfinite(v) and n_ok >= max(2, n_rep // 2):
+            resp[i] = v
+        if callable(getattr(inject, "depth_loss", None)):
+            depth.append(inject.depth_loss(sub))
+    return resp, (float(np.mean(depth)) if depth else None), used
+
+
+def _claim_response(metric, sd: SimpleData, inject, group_col, groups, replicate_col, within,
+                    direction: str, alpha: float, n_rep: int, rng, *, domain=None,
+                    construct_change: float | None = None, curve=GATE4_CURVE,
+                    n_rep_curve: int = GATE4_N_REP_CURVE) -> dict:
+    """GATE 4 on the claim's own statistic (v0.4 changes 1 and 3).
+
+    The units are the claim's: with cell types, a replicate's cells of one type of the domain
+    (``domain.build_units``), else a replicate's cells. The signal goes into the group whose units have
+    more of the probed genes' counts per cell (each unit weighted equally; on an exact tie into each
+    group, and the weaker response is judged). With a SESOI on the construct's scale the probe is
+    re-dosed to a construct change of that size (``injected_signal.at_construct_change``; a coupling's
+    strength from the injected group's biological variances). The response is the change of the
+    injected group's combined value, types equally weighted within a stratum and the strata by the
+    effect test's weights, as the effect field combines them; its interval is over the replicates."""
+    from .combined import Estimator, one_group_mean
+    from .core import unique_col_index
+    from .injected_signal import at_construct_change, describe
+
+    genes = getattr(inject, "genes", None)
+    if not genes:
+        return dict(error="the injector names no genes (inject.genes), so the group to inject into "
+                          "cannot be chosen by their counts")
+    if domain is not None:
+        from .domain import build_units
+        units = build_units(domain, sd, group_col=group_col, groups=groups, replicate_col=replicate_col)
+        if units is None:
+            return dict(error="the claim's domain holds no type with enough cells and replicates")
+        kind = units.kind
+    else:
+        units, design = _replicate_units(sd, group_col, groups, replicate_col, within)
+        if units is None:
+            return dict(error=design["reason"])
+        kind = units.kind
+    X = sd.X if issparse(sd.X) else as_dense(sd.X)
+    cols = [unique_col_index(sd.var_names, g) for g in genes]
+    probe = np.asarray(column_block(X, cols), dtype=float).sum(axis=1)
+    level = {}
+    for k, gname in enumerate(groups):
+        per = []
+        for i in range(units.n_units):
+            if kind == "nested" and _unit_group(units, i) != k:
+                continue
+            idx = _unit_cells(units, i, k)
+            if len(idx):
+                per.append(float(probe[idx].mean()))
+        level[str(gname)] = float(np.mean(per)) if per else float("nan")
+    a, b = level[str(groups[0])], level[str(groups[1])]
+    # on an exact tie both groups, in the order of their labels (a mirrored wording, the same draws)
+    targets = [0] if a > b else [1] if b > a else sorted((0, 1), key=lambda k: str(groups[k]))
+    weights = Estimator(units).weights if kind == "nested" else np.ones(1)
+    probe_kind = getattr(inject, "kind", None)
+    couples = probe_kind in ("coupling", "coupling_set")  # a change of correlation: its doses lie in (0, 1)
+
+    def dosed(change, var):
+        return at_construct_change(inject, change, var_a=var[0], var_b=var[1] if len(var) > 1 else None,
+                                   variances=var if probe_kind == "coupling_set" else None)
+    runs = []
+    for k in targets:
+        gname = groups[k]
+        probe_k, dose = inject, None
+        if construct_change is not None:
+            var = _bio_variances(X, cols, units, k) if couples else [None, None]
+            probe_k, dose = dosed(construct_change, var)
+            if probe_k is None:
+                return dict(error=f"no rule translates a SESOI on the construct's scale into {describe(inject)}'s dose")
+        resp, depth, used = _unit_responses(metric, sd, X, units, k, probe_k, n_rep, rng)
+        sub = units.subset(used)
+        mean, se, df, n_reps = one_group_mean(resp[used][None, :], sub, k, weights)
+        mean, se, df = float(mean[0]), float(se[0]), float(df[0])
+        iv = _interval(mean, se, df, n_reps, direction, alpha)
+        sign = 1.0 if k == 0 else -1.0  # the effect test's difference is groups[0] - groups[1]
+        lo, hi = iv["ci"]
+        label = (lambda i: str(units.reps[units.unit_rep[i]]) if len(units.types) == 1 and domain is None
+                 else f"{units.reps[units.unit_rep[i]]} | {units.types[units.unit_type[i]]}")
+        run = dict(group=str(gname), group_index=k, interval=iv, statistic_change=sign * mean,
+                   statistic_ci=tuple(sorted((sign * lo, sign * hi))) if np.isfinite(lo) else (lo, hi),
+                   depth_loss=depth, replicate_responses={label(i): float(resp[i]) for i in np.where(used)[0]
+                                                          if np.isfinite(resp[i])},
+                   probe=describe(probe_k), dose=dose, n_units=int(used.sum()))
+        if construct_change is not None and curve:
+            points = []
+            for mult in curve:
+                change = mult * construct_change
+                if couples and not 0 < change < 1:
+                    continue
+                pk, dk = dosed(change, var)
+                r_c, _, used_c = _unit_responses(metric, sd, X, units, k, pk, n_rep_curve, rng)
+                m_c, se_c, df_c, n_c = one_group_mean(r_c[used_c][None, :], units.subset(used_c), k, weights)
+                iv_c = _interval(float(m_c[0]), float(se_c[0]), float(df_c[0]), n_c, direction, alpha)
+                points.append(dict(construct_change=change, dose=dk, response=iv_c["mean_response"], ci=iv_c["ci"],
+                                   n_rep=n_rep_curve))
+            points.append(dict(construct_change=construct_change, dose=dose, response=mean, ci=(lo, hi), n_rep=n_rep))
+            run["dose_response"] = sorted(points, key=lambda p: p["construct_change"])
+        runs.append(run)
+    run = min(runs, key=lambda x: (x["interval"]["signed_lower"] if np.isfinite(x["interval"]["signed_lower"])
+                                   else -np.inf, x["interval"]["mean_response"] if direction == "increase"
+                                   else -x["interval"]["mean_response"]))
+    return dict(run, levels=level, tie=len(targets) == 2, design=kind,
+                units=dict(n=units.n_units, types=list(units.types), domain=domain is not None),
+                runs=[{k2: v2 for k2, v2 in x.items() if k2 != "replicate_responses"} for x in runs]
+                if len(runs) > 1 else None)
 
 
 def gate4_signal_response(
     metric: Metric,
     data,
     inject: Callable,
-    direction: str = "increase",
+    direction: str | None = None,
     delta_min: float | None = None,
     n_rep: int = GATE4_N_REP,
     alpha: float = 0.05,
     seed: int = 0,
+    *,
+    group_col: str | None = None,
+    groups: tuple | None = None,
+    replicate_col: str | None = None,
+    within: Sequence[str] = (),
+    n_rep_replicate: int = GATE4_N_REP_REPLICATE,
+    domain: dict | None = None,
+    construct_change: float | None = None,
+    curve=GATE4_CURVE,
+    n_rep_curve: int = GATE4_N_REP_CURVE,
 ) -> GateResult:
-    """Inject a known construct change (``injected_signal``) and judge the metric's response.
+    """Inject a known construct change (``injected_signal``) and judge whether the metric responds.
 
-    The response is the metric on injected data minus the metric on the injector's matched
-    *sham* (``inject.sham``: the same thinning without the signal), over `n_rep` injections,
-    with its two-sided (1 - `alpha`) t interval (``response_interval``). Against the untouched
-    data the thinning noise is confounded with the signal: a valid correlation metric on an
-    already strongly coupled pair fell (z = -2.6) and failed.
+    With the claim's groups and replicate unit (``run_autopsy`` passes them), the response is
+    measured with the claim's own statistic (v0.4 change 1): on the claim's units (with cell types, a
+    replicate's cells of one type of the claim's ``domain``: GATE 4 runs on the domain's cells, not on
+    the whole mixture), the signal goes into the group where the probed genes have more counts per
+    cell, whatever the claim's wording, and the response is the change of that group's combined value,
+    its (1 - `alpha`) interval taken over the replicates (`n_rep_replicate` injections within each
+    unit). With `construct_change`, a SESOI on the construct's scale, the probe is re-dosed to a
+    change of the construct of that size, and the response s_m is the SESOI in the metric's units
+    (``detail["sesoi_metric"]``, v0.4 change 3); the doses of `curve` x the SESOI give the
+    dose-response curve beside it. The response is judged against the direction the injection itself
+    must move the metric (`direction`, by default the injector's ``inject.direction``), not the
+    claim's. The all-cell response (v0.3's GATE 4: the metric over all the claim's cells, `n_rep`
+    injections) stays in the detail as a diagnostic, and is the judged response when no replicate unit
+    is given.
 
-    * FAIL — the metric is shown blind: the upper bound in the declared direction is below
-      `delta_min`, the smallest response that matters (pre-registered ``delta_min``, default
-      0.5 x SESOI). This holds also when the interval lies above 0: a response below
-      delta_min is blindness by its definition.
+    The reference is the injector's sham (``coupling``: the same thinning without the signal) or, for
+    an injector without one (``module``, which thins the module's own genes), the untouched data.
+
     * PASS — a response is shown: the lower bound in the declared direction is above 0.
-    * WARN (UNTESTED) — neither: absence of evidence, not invalidity. Without a delta_min
-      blindness cannot be shown, so the gate cannot FAIL.
+    * FAIL — the metric is shown not to respond: the whole interval is at or below 0.
+    * WARN (UNTESTED) — neither: absence of evidence, not invalidity.
 
-    Decided 2026-10-08 (validation/probes/JOURNAL.md, D5): the former rule, z >= 3 over 10
-    injections, failed the valid metric where its response is real but weak (probe p14).
+    GATE 4 decides only whether the metric is blind (decided 2026-10-17). `delta_min`, v0.3's smallest
+    response that matters, is accepted and not used: the response itself is the SESOI's size in the
+    metric's units.
     """
     from .injected_signal import describe
 
     name = "Construct response (injected signal)"
     delta_min = _check_delta_min(delta_min)
+    direction = direction or getattr(inject, "direction", None) or "increase"
     sd = _as_simple(data)
+    claim_mode = group_col is not None and groups is not None and replicate_col is not None
+    if claim_mode:
+        gcol = np.asarray(sd.obs[group_col])
+        keep = (gcol == groups[0]) | (gcol == groups[1])
+        if domain is not None and not domain.get("error"):
+            keep &= _domain_mask(sd.obs, domain, within)
+        else:
+            domain = None
+        if not keep.any():
+            return GateResult(4, name, GateStatus.SKIP, "no cell of the claim's domain to inject into", {})
+        sd = sd[keep]
     rng = np.random.default_rng(seed)
     base = _safe_call(lambda: metric(sd))
     if base is None:
         return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on the data", {})
     sham = getattr(inject, "sham", None)
+    reference = "sham" if sham is not None else "untouched data"
+    claim = None
+    if claim_mode:
+        try:
+            claim = _claim_response(metric, sd, inject, group_col, groups, replicate_col, within,
+                                    direction, alpha, n_rep_replicate, rng, domain=domain,
+                                    construct_change=construct_change, curve=curve, n_rep_curve=n_rep_curve)
+        except Exception as e:  # reported, never silent
+            claim = dict(error=f"{type(e).__name__}: {e}")
+    judged = inject
+    if claim is not None and claim.get("error") is None and claim.get("dose") is not None:
+        from .injected_signal import at_construct_change
+        judged = at_construct_change(inject, construct_change, var_a=claim["dose"].get("var_a"),
+                                     var_b=claim["dose"].get("var_b"),
+                                     variances=claim["dose"].get("variances"))[0] or inject
     try:
-        deltas = injected_deltas(metric, sd, inject, n_rep, rng)
+        deltas = injected_deltas(metric, sd, judged, n_rep, rng)
     except Exception as e:  # e.g. non-count input
         return GateResult(4, name, GateStatus.SKIP, f"signal could not be injected: {e}", {})
-    if len(deltas) < 3:
-        return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", {})
-    iv = response_interval(deltas, direction, alpha)
-    outcome = judge_response(iv, delta_min)
-    detail = dict(injection=describe(inject), direction=direction, base=base,
-                  reference="sham" if sham is not None else "untouched data", delta_min=delta_min,
-                  alpha=alpha, outcome=outcome, **iv)
-    lo, hi = iv["ci"]
-    resp = (f"{iv['mean_response']:+.4g} against the {detail['reference']} "
-            f"({100 * (1 - alpha):g}% CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected "
-            f"{direction})")
+    all_cells = response_interval(deltas, direction, alpha) if len(deltas) >= 3 else None
+    detail = dict(injection=describe(judged), declared_injection=describe(inject), direction=direction, base=base,
+                  reference=reference, alpha=alpha, all_cells=all_cells, construct_change=construct_change,
+                  delta_min=None, delta_min_declared=delta_min)
+    lvl = f"{100 * (1 - alpha):g}%"
+    if claim is not None and claim.get("error") is None:
+        iv = claim["interval"]
+        detail.update(mode="claim statistic", injected_group=claim["group"], probed_counts_per_cell=claim["levels"],
+                      tie=claim["tie"], replicate_responses=claim["replicate_responses"],
+                      statistic_change=claim["statistic_change"], statistic_ci=claim["statistic_ci"],
+                      depth_loss=claim["depth_loss"], n_rep_replicate=n_rep_replicate, runs=claim["runs"],
+                      dose=claim["dose"], dose_response=claim.get("dose_response"), units=claim["units"], **iv)
+        lo, hi = iv["ci"]
+        others = {g: v for g, v in claim["levels"].items() if g != claim["group"]}
+        where = ("on a tie of the probed counts the weaker of the two groups' responses is judged" if claim["tie"]
+                 else f"{claim['levels'][claim['group']]:.4g} probed counts per cell against "
+                      + ", ".join(f"{v:.4g} in {g}" for g, v in others.items()))
+        on = (f"the domain's {len(claim['units']['types'])} type(s)" if claim["units"]["domain"] else "the replicates")
+        resp = (f"{claim['probe']} injected into {claim['group']} ({where}), its values move by {iv['mean_response']:+.4g} "
+                f"against the {reference} ({lvl} CI [{lo:+.4g}, {hi:+.4g}] over {iv['n_rep']} replicates, on "
+                f"{on}, {n_rep_replicate} injections per unit, expected {direction}); the replicate-level difference "
+                f"{groups[0]} - {groups[1]} moves by {claim['statistic_change']:+.4g}")
+        if claim.get("depth_loss") is not None:
+            resp += f"; the injection removes {claim['depth_loss']:.2%} of their counts"
+        if claim.get("dose") is not None:
+            sign = 1.0 if direction == "increase" else -1.0
+            s_m = sign * iv["mean_response"]
+            detail["sesoi_metric"] = float(s_m) if np.isfinite(s_m) and s_m > 0 else None
+            detail["sesoi_metric_ci"] = tuple(sorted((sign * lo, sign * hi)))
+            resp += (f"; the probe is a change of {construct_change:g} on the construct's scale "
+                     f"({claim['dose']['scale']}), so the SESOI in the metric's units is s_m = {s_m:+.4g}")
+        if not np.isfinite(iv["signed_lower"]):
+            detail["outcome"] = "UNTESTED"
+            return GateResult(4, name, GateStatus.WARN,
+                              f"response to {describe(judged)} not established: {resp}; an interval over "
+                              "the replicates needs at least two replicates with a response in one stratum "
+                              "— untested, not invalid", detail)
+    else:
+        if all_cells is None:
+            return GateResult(4, name, GateStatus.SKIP, "metric could not be evaluated on injected data", detail)
+        iv = all_cells
+        detail.update(mode="all cells", **iv)
+        if claim is not None:
+            detail["claim_statistic_error"] = claim["error"]
+        lo, hi = iv["ci"]
+        resp = (f"{iv['mean_response']:+.4g} against the {reference} over all cells "
+                f"({lvl} CI [{lo:+.4g}, {hi:+.4g}], {iv['n_rep']} injections, expected {direction})")
+        if claim is not None:
+            resp += f"; the claim's statistic could not be used: {claim['error']}"
+    outcome = judge_response(iv)
+    detail["outcome"] = outcome
     if outcome == "FAIL":
-        shown = ("responds, but less than delta_min" if iv["signed_lower"] > 0 else "blind")
         return GateResult(4, name, GateStatus.FAIL,
-                          f"{shown} to {describe(inject)}: {resp}; the bound in the declared direction "
-                          f"is below delta_min {delta_min:.4g}, the smallest response that matters", detail)
+                          f"blind to {describe(judged)}: {resp}; the whole interval is at or below 0 in the "
+                          "injection's direction", detail)
     if outcome == "PASS":
-        return GateResult(4, name, GateStatus.PASS, f"responds to {describe(inject)}: {resp}", detail)
-    why = (f"the interval includes 0 and reaches delta_min {delta_min:.4g}" if delta_min is not None else
-           "the interval includes 0, and without a delta_min (declare a SESOI, or delta_min) "
-           "blindness cannot be shown")
+        return GateResult(4, name, GateStatus.PASS, f"responds to {describe(judged)}: {resp}", detail)
     return GateResult(4, name, GateStatus.WARN,
-                      f"response to {describe(inject)} not established: {resp}; {why} — untested, "
-                      "not invalid", detail)
+                      f"response to {describe(judged)} not established: {resp}; the interval includes 0 — "
+                      "untested, not invalid", detail)
+
+
+def _domain_mask(obs, domain: dict, within) -> np.ndarray:
+    """The cells of the domain's (stratum, type) cells."""
+    lab = np.asarray(obs[domain["column"]]).astype(str)
+    if within:
+        keys = obs[list(within)].astype(str).agg("\x1f".join, axis=1).to_numpy()
+    else:
+        keys = np.full(len(obs), "", dtype=object)
+    mask = np.zeros(len(obs), bool)
+    for st, types in domain["domain"].items():
+        if types:
+            mask |= (keys == st) & np.isin(lab, types)
+    return mask
 
 
 # --------------------------------------------------------------------------- #
@@ -870,9 +1339,11 @@ def _matched_pool(sub, pair, exclude, rng) -> list:
     Pairs are unordered and never repeated: the null's resolution is limited by the number of
     distinct pairs, and drawing the same pair twice would overstate it (a small panel offers
     only a few hundred)."""
-    X = as_dense(sub.X)
     names = [str(g) for g in sub.var_names]
-    means = X.mean(axis=0)
+    if issparse(sub.X):  # the sums of counts are exact in any order: the dense means
+        means = np.asarray(sub.X.sum(axis=0), dtype=float).ravel() / sub.X.shape[0]
+    else:
+        means = as_dense(sub.X).mean(axis=0)
     na = _neighbourhood(means, names, str(pair[0]), exclude)
     nb = _neighbourhood(means, names, str(pair[1]), exclude)
     pool = sorted({tuple(sorted((a, b))) for a in na for b in nb if a != b})
@@ -941,15 +1412,29 @@ def _depth_matched_matrix(X: np.ndarray, depth: np.ndarray, rng, window: int = D
     up = (width_up > 0)[:, None]
     width = np.maximum(width_up, 1)[:, None]
     safe = np.where(depth > 0, depth, 1.0)
-    out = np.empty((n, n_genes), dtype=float)
+    sparse = issparse(X)
+    if sparse:  # v0.4 change 10: chunk by chunk on the chunk's dense block, the same draws, a sparse result
+        import scipy.sparse as sp
+        Xc, blocks = X.tocsc(), []
+    else:
+        out = np.empty((n, n_genes), dtype=float)
     for c0 in range(0, n_genes, chunk):
         c1 = min(n_genes, c0 + chunk)
         u = rng.random((n, c1 - c0))
         partner = np.where(up, rank[:, None] + 1 + np.floor(u * width).astype(np.int64), rank[:, None])
         j = order[np.clip(partner, 0, n - 1)]
-        counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
+        if sparse:
+            counts = np.round(Xc[:, c0:c1].toarray()[j, np.arange(c1 - c0)[None, :]]).astype(np.int64)
+        else:
+            counts = np.round(X[j, np.arange(c0, c1)[None, :]]).astype(np.int64)
         ratio = np.where(depth[j] > 0, depth[:, None] / safe[j], 1.0)
-        out[:, c0:c1] = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+        drawn = rng.binomial(counts, np.clip(ratio, 0.0, 1.0))
+        if sparse:
+            blocks.append(sp.csc_matrix(drawn.astype(float)))
+        else:
+            out[:, c0:c1] = drawn
+    if sparse:
+        return canonical_csr(sp.hstack(blocks, format="csr") if blocks else sp.csr_matrix((n, n_genes)))
     return out
 
 
@@ -967,13 +1452,16 @@ def _gene_null(sd: SimpleData, rng, bins: np.ndarray | None = None, mode: str | 
     depth bins.
     """
     if (mode or _null_mode(sd)) == "depth-matched":
-        X = np.asarray(sd.X, float)
-        return SimpleData(_depth_matched_matrix(X, X.sum(axis=1), rng), sd.obs, sd.var_names)
+        X = sd.X if issparse(sd.X) else np.asarray(sd.X, float)
+        return SimpleData(_depth_matched_matrix(X, row_sums(X), rng), sd.obs, sd.var_names)
     return _shuffle_null(sd, bins if bins is not None else _depth_bins(sd), rng)
 
 
 def _pair_depth(X: np.ndarray, ia: int, ib: int) -> np.ndarray:
     """Per-cell depth for the pair's null: total counts of all *other* genes."""
+    if issparse(X):
+        B = column_block(X, [ia, ib])
+        return row_sums(X) - B[:, 0] - B[:, 1]
     return X.sum(axis=1) - X[:, ia] - X[:, ib]
 
 
@@ -990,8 +1478,9 @@ def _shuffled_null(pair_metric, sub, pair, n_null, rng):
     sd = _as_simple(sub)
     names = list(map(str, sd.var_names))
     ia, jb = names.index(str(pair[0])), names.index(str(pair[1]))
-    original = sd.X[:, jb].copy()
-    counts = _looks_like_counts(sd.X[:, [ia, jb]])
+    sparse = issparse(sd.X)
+    original = column_block(sd.X, [jb])[:, 0].copy() if sparse else sd.X[:, jb].copy()
+    counts = _looks_like_counts(column_block(sd.X, [ia, jb]) if sparse else sd.X[:, [ia, jb]])
     depth = _pair_depth(sd.X, ia, jb)
     groups = None
     if not counts:
@@ -999,12 +1488,18 @@ def _shuffled_null(pair_metric, sub, pair, n_null, rng):
         groups = [np.where(bins == k)[0] for k in np.unique(bins)]
     vals = []
     for _ in range(n_null):
-        sd.X[:, jb] = (_depth_matched_draw(original, depth, rng) if counts
-                       else _shuffle_within(original, groups, rng))
-        v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
+        col = (_depth_matched_draw(original, depth, rng) if counts
+               else _shuffle_within(original, groups, rng))
+        if sparse:  # v0.4 change 10: a new matrix with gene b replaced, the values the dense copy holds
+            cur = SimpleData(with_columns(sd.X, [jb], col[:, None]), sd.obs, sd.var_names)
+            v = _safe_call(lambda: pair_metric(cur, gene_a=pair[0], gene_b=pair[1]))
+        else:
+            sd.X[:, jb] = col
+            v = _safe_call(lambda: pair_metric(sd, gene_a=pair[0], gene_b=pair[1]))
         if v is not None:
             vals.append(v)
-    sd.X[:, jb] = original
+    if not sparse:
+        sd.X[:, jb] = original
     return np.asarray(vals)
 
 
@@ -1048,29 +1543,28 @@ def gate5_controls(
     direction: str = "increase",
     n_rep: int = GATE4_N_REP,
 ) -> GateResult:
-    """Positive control must fire and negative control must stay null — in every stratum —
-    judged against **empirical nulls** instead of a fixed band.
+    """The positive control must fire in every stratum, judged against an **empirical null**; the
+    negative control is reported (v0.4 change 13: the check of specificity in the report takes its
+    place, ``specificity``).
 
-    v0.1 used one negative pair and a band of 20% of the positive control, with no sampling
-    noise. Library-size normalization alone makes unrelated genes correlate (closure), so the
-    "robust" reference metric failed its own negative control on null data.
-
-    * Negative control: compared with `n_null` distinct unrelated pairs from the same
-      expression neighbourhoods (the 20 genes closest in mean, or 5% of genes). It must not
-      stand out (two-sided p >= alpha/K, K = assessable strata, Bonferroni). The null centre
-      is reported: a centre far from zero means the metric reports association between
-      unrelated genes. With few genes the pool of distinct pairs bounds the resolution; when
-      alpha/K is below it, the negative control cannot fail and the message says so.
+    * Negative control: compared with `n_null` distinct unrelated pairs from the same expression
+      neighbourhoods (the 20 genes closest in mean, or 5% of genes), two-sided p against alpha/K
+      (K = assessable strata, Bonferroni), and the null centre: a centre far from zero means the
+      metric reports association between unrelated genes. Reported, not a FAIL since v0.4: an
+      unrelated pair is exchangeable with the null's pairs, so one pair fails a valid metric in about
+      alpha of the claims by chance alone (the pilot's claim 1b, p = 0.0498, decided 2026-10-17).
+      The legacy fixed band (explicit `pos_min` / `neg_max`) still fails it.
     * Positive control: compared with `n_null` self-nulls of the *same* pair, gene b replaced
       by a depth-matched draw from neighbouring cells (thinned to each cell's depth). Coupling
       is destroyed, the dependence on depth kept exactly. It must stand out (p < alpha/K).
     * A silent positive control is judged as GATE 4 judges a response (decided 2026-10-08,
-      validation/probes/JOURNAL.md D6, probe p15): a coupling of dose `pos_dose` (pre-registered
-      ``positive_control_dose``, default 2.0) is injected `n_rep` times into the control pair
-      with its own coupling removed, and the metric's own response gets its two-sided
-      (1 - alpha/K) interval (``response_interval``). The metric is shown blind to the coupling
-      when the bound in the declared `direction` is below `delta_min` (``judge_response``);
-      otherwise the silence says that the control is not coupled here, or nothing.
+      validation/probes/JOURNAL.md D6, probe p15; the rule of 2026-10-17 since v0.4): a coupling of
+      dose `pos_dose` (pre-registered ``positive_control_dose``, default 2.0) is injected `n_rep`
+      times into the control pair with its own coupling removed, and the metric's own response gets
+      its two-sided (1 - alpha/K) interval (``response_interval``). The metric is shown blind to the
+      coupling when the whole interval lies at or below 0 in the declared `direction`
+      (``judge_response``); otherwise the silence says that the control is not coupled here, or
+      nothing. `delta_min` is accepted and not used.
 
     p values are rank-based Monte Carlo p values. When a control lies in the extreme tail of
     the first `n_null` draws and alpha/K is below their resolution, the null is extended to
@@ -1078,14 +1572,13 @@ def gate5_controls(
 
     Status:
 
-    * FAIL when the negative control stands out in any stratum (the metric reports
-      association where there is none), or when the positive control is silent in a stratum
-      where the metric is shown blind to an injected coupling of its genes.
-    * WARN when the positive control is silent somewhere without that proof: absence of
-      evidence (and without a delta_min blindness cannot be shown). If it fires nowhere,
-      ``detail["pos_demonstrated"]`` is False and the metric's response stays undemonstrated
-      (UNTESTED) unless an injected signal shows it.
-    * PASS when both controls behave in every stratum.
+    * FAIL when the positive control is silent in a stratum where the metric is shown blind to an
+      injected coupling of its genes (and, with the legacy band only, when the negative control is
+      outside it).
+    * WARN when the positive control is silent somewhere without that proof: absence of evidence.
+      If it fires nowhere, ``detail["pos_demonstrated"]`` is False and the metric's response stays
+      undemonstrated (UNTESTED) unless an injected signal shows it.
+    * PASS when the positive control fires in every stratum.
 
     The former rule (2026-10-07) failed a silent control wherever a reference detector had
     power >= 0.8 for the dose: it failed a valid metric whose control was coupled, but weakly
@@ -1173,8 +1666,10 @@ def gate5_controls(
                   legacy_band=legacy, pos_min=pos_min, neg_max=neg_max,
                   pos_demonstrated=bool(n_pos > 0), n_pos_fires=int(n_pos),
                   pos_dose=pos_dose, delta_min=delta_min, direction=direction, n_rep=n_rep)
-    centres = [r.get("null_center") for r in rows if r.get("null_center") is not None]
-    centre_note = (f"; null centre {np.nanmin(centres):.3g}..{np.nanmax(centres):.3g}"
+    # the strata whose null has a centre (a metric that gives no value there leaves it NaN: no "nan..nan")
+    centres = [float(r["null_center"]) for r in rows
+               if r.get("null_center") is not None and np.isfinite(r["null_center"])]
+    centre_note = (f"; null centre {min(centres):.3g}..{max(centres):.3g}"
                    if centres and not legacy else "")
     weak_neg = [r for r in rows if "unattainable" in str(r.get("method", "")).split("/")[0]]
     detail["neg_test_unattainable"] = [r["stratum"] for r in weak_neg]
@@ -1185,26 +1680,31 @@ def gate5_controls(
     neg_bad = [r for r in rows if not r["neg_ok"]]
     pos_miss = [r for r in rows if not r["pos_fires"]]
     blind = [r for r in pos_miss if r.get("pos_blind")]
-    if neg_bad or blind or (legacy and pos_miss):
-        f0 = (neg_bad or blind or pos_miss)[0]
+    detail["negative_control_outside_null"] = [r["stratum"] for r in neg_bad]
+    neg_note = ""
+    if neg_bad and not legacy:
+        f = neg_bad[0]
+        neg_note = (f"; the negative control {f['neg']:.3g} lies outside its null in {len(neg_bad)}/{len(rows)} strata "
+                    f"(e.g. {f['stratum']}: p={f['p_neg']:.3g}, null centre {f['null_center']:.3g}) — reported, not a "
+                    "failure: the check of specificity in the report judges the claim instead")
+    if blind or (legacy and (pos_miss or neg_bad)):
+        f0 = (blind or neg_bad or pos_miss)[0]
         why = []
-        if not f0["neg_ok"]:
-            why.append(f"negative control {f0['neg']:.3g} outside the null"
-                       + (f" (p={f0['p_neg']:.3g}, null centre {f0['null_center']:.3g})" if not legacy else ""))
+        if legacy and not f0["neg_ok"]:
+            why.append(f"negative control {f0['neg']:.3g} outside the band")
         if f0.get("pos_blind"):
             lo, hi = f0["pos_response_ci"]
             why.append(f"positive control {f0['pos']:.3g} inside its null (p={f0['p_pos']:.3g}) and the "
                        f"metric is blind to a coupling of dose {pos_dose:g} injected into its genes: "
                        f"response {f0['pos_response']:+.4g} ({100 * (1 - alpha_s):g}% CI [{lo:+.4g}, "
-                       f"{hi:+.4g}]), the bound in the declared direction below delta_min {delta_min:.4g}")
+                       f"{hi:+.4g}]), the whole interval at or below 0 in the declared direction")
         if legacy and not f0["pos_fires"]:
             why.append(f"positive control {f0['pos']:.3g} below the band")
-        n_bad = (len(failures) if legacy else
-                 sum(1 for r in rows if not r["neg_ok"] or r.get("pos_blind")))
+        n_bad = (len(failures) if legacy else len(blind))
         return GateResult(
             5, "Controls", GateStatus.FAIL,
             f"{n_bad}/{len(rows)} strata fail controls (e.g. {f0['stratum']}: "
-            + "; ".join(why) + ")",
+            + "; ".join(why) + ")" + neg_note,
             detail,
         )
     if pos_miss:
@@ -1220,20 +1720,16 @@ def gate5_controls(
         where = ", ".join(_where(r) for r in pos_miss[:3])
         lead = (f"positive control beats its null in {n_pos}/{len(rows)} strata; not demonstrated in "
                 if n_pos else "positive control not demonstrated in any stratum — ")
-        tail = ("" if delta_min is not None else
-                "; without a delta_min (declare a SESOI, or delta_min) blindness cannot be shown")
         return GateResult(
             5, "Controls", GateStatus.WARN,
             lead + where + ("…" if len(pos_miss) > 3 else "")
             + " (the metric is not shown blind to an injected coupling of the control's genes: "
-            f"absence of evidence, not a failure{tail}); negative control inside the null in all "
-            f"strata{centre_note}",
+            f"absence of evidence, not a failure){centre_note}{neg_note}",
             detail,
         )
     return GateResult(
         5, "Controls", GateStatus.PASS,
-        f"positive fires and negative stays inside the empirical null in all {len(rows)} strata"
-        + centre_note,
+        f"the positive control beats its empirical null in all {len(rows)} strata" + centre_note + neg_note,
         detail,
     )
 

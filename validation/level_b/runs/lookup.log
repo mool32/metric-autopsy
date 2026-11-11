@@ -1,0 +1,15 @@
+# Level B, the lookup — 2026-10-19T14:23:31+00:00
+python 3.13.16; the protocol validation/plans/level_b_protocol.md (approved 2026-10-19); this script validation/level_b/search.py
+
+- levy2020 (Levy et al. 2020, Nat Metab 2:1305-1315 (the global coordination level, GCL)): query 'AUTH:"Levy O" AND TITLE:"transcriptional coordination" AND PUB_YEAR:2020' -> 1 records, 1 matching Nat Metab 2020: MED:33139959 PMID 33139959 doi 10.1038/s42255-020-00304-4 — Age-related loss of gene-to-gene transcriptional coordination among single cells. (Nat Metab 2020; cited by 48)
+    MED:33139959 Nat Metab 2020 ["Research Support, U.S. Gov't, P.H.S.", "Research Support, Non-U.S. Gov't", 'Journal Article', 'Research Support, N.I.H., Extramural']: Age-related loss of gene-to-gene transcriptional coordination among single cells.
+- gcl2021 (Sci Rep 2021, doi:10.1038/s41598-021-90353-w (GCL's method, as real_claims.md names it)): query 'DOI:"10.1038/s41598-021-90353-w"' -> 1 records, 1 matching Sci Rep 2021: MED:34040065 PMID 34040065 doi 10.1038/s41598-021-90353-w — A top-down measure of gene-to-gene coordination for analyzing cell-to-cell variability. (Sci Rep 2021; cited by 3)
+    MED:34040065 Sci Rep 2021 ["Research Support, Non-U.S. Gov't", 'research-article', 'Journal Article']: A top-down measure of gene-to-gene coordination for analyzing cell-to-cell variability.
+- amit2022 (Amit et al. 2022, Sci Rep, doi:10.1038/s41598-022-11507-y (GCL's method)): query 'DOI:"10.1038/s41598-022-11507-y"' -> 1 records, 1 matching Sci Rep 2022: MED:35534606 PMID 35534606 doi 10.1038/s41598-022-11507-y — Global coordination level in single-cell transcriptomic data. (Sci Rep 2022; cited by 5)
+    MED:35534606 Sci Rep 2022 ["Research Support, Non-U.S. Gov't", 'research-article', 'Journal Article']: Global coordination level in single-cell transcriptomic data.
+- cscore2023 (CS-CORE: Su et al. 2023, Nat Commun (cell-type-specific co-expression inference; named from memory)): query 'TITLE:"co-expression inference" AND TITLE:"single cell" AND PUB_YEAR:2023' -> 1 records, 1 matching Nat Commun 2023: MED:37563115 PMID 37563115 doi 10.1038/s41467-023-40503-7 — Cell-type-specific co-expression inference from single cell RNA-sequencing data. (Nat Commun 2023; cited by 91)
+    MED:37563115 Nat Commun 2023 ['research-article', "Research Support, U.S. Gov't, Non-P.H.S.", 'Journal Article', 'Research Support, N.I.H., Extramural']: Cell-type-specific co-expression inference from single cell RNA-sequencing data.
+- skinnider2019 (Skinnider, Squair and Foster 2019, Nat Methods (measures of association for single-cell transcriptomics; named from memory)): query 'AUTH:"Skinnider MA" AND TITLE:"measures of association" AND PUB_YEAR:2019' -> 1 records, 1 matching Nat Methods 2019: MED:30962620 PMID 30962620 doi 10.1038/s41592-019-0372-4 — Evaluating measures of association for single-cell transcriptomics. (Nat Methods 2019; cited by 127)
+    MED:30962620 Nat Methods 2019 ["Research Support, Non-U.S. Gov't", 'Journal Article']: Evaluating measures of association for single-cell transcriptomics.
+
+All the method papers verified.

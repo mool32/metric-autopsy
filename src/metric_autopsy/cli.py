@@ -13,11 +13,32 @@ Real analysis on your AnnData:
     metric-autopsy --h5ad data.h5ad \
         --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 \
         --group-col age --groups young old --within sex --replicate-col mouse \
-        --estimand composition --sesoi 0.1 \
+        --estimand composition --direction decrease --sesoi 0.1 --inject-signal coupling \
         --pos-pair Actb Gapdh --neg-pair Gene1 Gene2 --json autopsy.json
 
-``--metric`` names a function in ``metric_autopsy.metrics``. Bring-your-own metrics are
-supported from Python via ``metric_autopsy.run_autopsy``; the CLI covers the reference set.
+(``--sesoi 0.1`` is on the construct's scale: a change of 0.1 in the correlation of the pair's log
+expected expression, which GATE 4's coupling probe translates into the metric's units.)
+
+The module probe (v0.4 change 11) lowers a module's genes by thinning; with ``--sesoi`` on the construct's
+scale (a change of the module's natural-log expression) GATE 4 doses it to exp(SESOI)-fold:
+    metric-autopsy --h5ad data.h5ad --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 ... \
+        --inject-signal module --module-genes Smad3 Col1a1 --sesoi 0.2
+
+The set's probe (v0.4 change 9) couples a set's genes by one shared factor (``--couple half``: a new random
+half of the set at every injection); with ``--sesoi`` on the construct's scale (a change of the mean
+correlation of log expected expression over the pairs it couples) GATE 4 doses it to that change:
+    metric-autopsy --h5ad data.h5ad --metric norm_pearson --gene-a Smad3 --gene-b Col1a1 ... \
+        --inject-signal coupling_set --set-genes Smad3 Col1a1 Tgfb1 Fn1 --sesoi 0.1
+
+A claim about a set's coordination takes the reference metric of a set, ``set_norm_pearson`` (the mean of
+``norm_pearson`` over the set's pairs), with the set's probe over the same genes, which names the claim's genes
+(GATE 5's controls are pairs, so the probe is how the metric's response is shown):
+    metric-autopsy --h5ad data.h5ad --metric set_norm_pearson --set-genes Smad3 Col1a1 Tgfb1 Fn1 ... \
+        --inject-signal coupling_set --sesoi 0.1
+
+``--metric`` names a function in ``metric_autopsy.metrics``: a pair's metric (``--gene-a``, ``--gene-b``), a set's
+(``--set-genes``) or ``spectral_entropy`` (no genes). Bring-your-own metrics are supported from Python via
+``metric_autopsy.run_autopsy``; the CLI covers the reference set.
 A pre-registration can be given as JSON (``--prereg``); explicit flags override it. Every
 run with a pre-registration is appended to a JSON-lines run log (``--log``, default
 ``$METRIC_AUTOPSY_LOG`` or ``metric_autopsy_runs.jsonl``; ``--no-log`` disables) — the same
@@ -90,7 +111,9 @@ def build_parser() -> argparse.ArgumentParser:
                                 description="Run the metric-autopsy gates and print a report.")
     p.add_argument("--h5ad", help="path to an AnnData .h5ad")
     p.add_argument("--demo", action="store_true", help="use the bundled synthetic confound")
-    p.add_argument("--metric", default="mi_3bin", help="function name in metric_autopsy.metrics")
+    p.add_argument("--metric", default="mi_3bin",
+                   help="function name in metric_autopsy.metrics: a pair's metric (--gene-a, --gene-b), a set's "
+                        "(set_norm_pearson, --set-genes, with --inject-signal coupling_set) or spectral_entropy")
     p.add_argument("--gene-a"); p.add_argument("--gene-b")
     p.add_argument("--group-col", default="age")
     p.add_argument("--groups", nargs=2, default=("young", "old"))
@@ -104,17 +127,37 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sesoi", type=float, help="smallest effect size of interest (construct scale, "
                    "unless --sesoi-scale observed)")
     p.add_argument("--sesoi-scale", choices=["construct", "observed"],
-                   help="the scale of the SESOI: 'construct' (default; equivalence within ±attenuation x "
-                        "SESOI) or 'observed' (a difference of the metric as measured at this depth)")
+                   help="the scale of the SESOI: 'construct' (default; for the coupling probe a change of the "
+                        "correlation of the pair's log expected expression, for the set's probe of its mean over the "
+                        "pairs it couples, for the module probe of the module's natural-log expression, translated "
+                        "into the metric's units by the --inject-signal probe) or 'observed' (a difference of the "
+                        "metric as measured at this depth)")
     p.add_argument("--bias-tolerance", type=float,
                    help="GATE 0: a nuisance bias blocks only above this many SESOIs (default 0.5)")
     p.add_argument("--delta-min", type=float,
-                   help="GATE 4/5: the smallest response to an injected signal that matters, on the "
-                        "metric's scale (default 0.5 x SESOI); a metric is invalid only if shown below it")
+                   help="recorded in the pre-registration, not used since v0.4: GATE 4/5 call a metric "
+                        "blind only where its response is shown at or below zero")
     p.add_argument("--min-replicates", type=int, help="minimum replicates per group (>= 3)")
     p.add_argument("--prereg", help="pre-registration JSON (explicit flags override it)")
-    p.add_argument("--inject-signal", choices=["coupling"],
-                   help="test the metric's response to an injected coupling of the gene pair")
+    p.add_argument("--inject-signal", choices=list(injected_signal.FRONT_END_PROBES),
+                   help="test the metric's response to an injected signal: 'coupling' of the gene pair, "
+                        "'module': the --module-genes lowered --module-fold-times by thinning, or 'coupling_set': "
+                        "the --set-genes coupled by one shared factor (--couple)")
+    p.add_argument("--module-genes", nargs="+", help="the module's genes for --inject-signal module")
+    p.add_argument("--module-fold", type=float, default=2.0,
+                   help="the module probe's fold (default 2; with --sesoi on the construct's scale GATE 4 doses it "
+                        "to exp(SESOI))")
+    p.add_argument("--set-genes", nargs="+",
+                   help="the set's genes: of --inject-signal coupling_set, and of a set's metric (set_norm_pearson)")
+    p.add_argument("--couple", choices=list(injected_signal.COUPLE), default="all",
+                   help="what the set's probe couples: 'all' the set (default), or 'half' a new random half of it "
+                        "at every injection, for a metric of what is relative within the set (a factor shared by "
+                        "the whole set cancels there)")
+    p.add_argument("--composition", nargs="*", default=[],
+                   help="obs columns of an annotation, the cell type first (e.g. cell_type tissue): their shares "
+                        "are compared between the groups at the replicate level, and the claim is judged within "
+                        "its domain, the cell types where its genes are expressed, the types weighted equally; the "
+                        "whole mixture's estimate is reported beside")
     p.add_argument("--pos-pair", nargs=2)
     p.add_argument("--neg-pair", nargs=2)
     p.add_argument("--data2", help="second .h5ad for GATE 6 replication")
@@ -124,10 +167,23 @@ def build_parser() -> argparse.ArgumentParser:
                                  "runs with a pre-registration are always logged)")
     p.add_argument("--no-log", action="store_true", help="do not write a run log")
     p.add_argument("--no-stop", action="store_true",
-                   help="estimate the effect even when the metric is invalid")
+                   help="kept for compatibility: since v0.4 the effect and every report line are estimated after "
+                        "a FAIL too (the dossier), and the verdict follows the first FAIL either way")
     p.add_argument("--resolve-judgment", action="store_true",
                    help="mark judgment gates (4, 7) resolved, allowing a provisional SUPPORTED")
     return p
+
+
+def set_metric(name: str, fn, set_genes, inject_signal):
+    """A set's reference metric bound to the set's genes, for the CLI and the MCP tool. It is judged with the set's
+    probe over the same genes (``inject_signal="coupling_set"``): the probe names the claim's genes, and with GATE 5's
+    controls pairs it is how the metric's response is shown."""
+    if not set_genes:
+        raise ValueError(f"{name} is a set's metric: name the set's genes (--set-genes, set_genes)")
+    if inject_signal != "coupling_set":
+        raise ValueError(f"{name} is judged with the set's probe over its genes, which names the claim's genes: "
+                         "--inject-signal coupling_set (inject_signal='coupling_set'); GATE 5's controls are pairs")
+    return partial(fn, genes=list(set_genes))
 
 
 def build_prereg(args) -> dict:
@@ -150,7 +206,8 @@ def build_prereg(args) -> dict:
 def main(argv=None):
     args = build_parser().parse_args(argv)
 
-    is_pairwise = args.metric != "spectral_entropy"
+    kind = metrics.kind(args.metric)
+    is_pairwise = kind == "pair"
     if args.demo or not args.h5ad:
         data = demo_data()
         if is_pairwise:
@@ -170,11 +227,19 @@ def main(argv=None):
 
     gene_pair = (args.gene_a, args.gene_b) if (is_pairwise and args.gene_a and args.gene_b) else None
     metric = partial(metric_fn, gene_a=args.gene_a, gene_b=args.gene_b) if gene_pair else metric_fn
+    if kind == "set":
+        try:
+            metric = set_metric(args.metric, metric_fn, args.set_genes, args.inject_signal)
+        except ValueError as e:
+            sys.exit(str(e))
 
     data2 = _load_h5ad(args.data2) if args.data2 else None
     pairwise_controls = bool(is_pairwise and args.pos_pair and args.neg_pair)
-    signal = (injected_signal.coupling(*gene_pair) if (args.inject_signal == "coupling" and gene_pair)
-              else None)
+    try:
+        signal = injected_signal.named(args.inject_signal, gene_pair=gene_pair, module_genes=args.module_genes,
+                                       module_fold=args.module_fold, set_genes=args.set_genes, couple=args.couple)
+    except ValueError as e:
+        sys.exit(str(e))
     is_demo = bool(args.demo or not args.h5ad)
     # None lets run_autopsy apply the shared rule (logged iff pre-registered)
     log_path = "off" if args.no_log else (args.log or ("off" if is_demo else None))
@@ -194,6 +259,8 @@ def main(argv=None):
         signal_test=signal,
         seed=args.seed,
         log_path=log_path,
+        composition=args.composition,
+        gene_metric=metric_fn if kind == "set" else None,
     )
     autopsy.metric_name = args.metric
     print(autopsy.to_markdown())

@@ -1,0 +1,86 @@
+{
+ "rid": "R01225",
+ "accession": "GSE189955",
+ "organism": "homo_sapiens",
+ "loader": "csv_counts",
+ "files": {
+  "counts": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_Count_matrix.csv.gz",
+  "meta": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE189nnn/GSE189955/suppl/GSE189955_RNA_meta_data.csv.gz"
+ },
+ "groups": {
+  "values": [
+   "tumour",
+   "normal"
+  ],
+  "rules": [
+   {
+    "when": {
+     "location": [
+      "PT"
+     ],
+     "Cell_Type": [
+      "Epithelial cells"
+     ]
+    },
+    "value": "tumour"
+   },
+   {
+    "when": {
+     "location": [
+      "FT"
+     ],
+     "Cell_Type": [
+      "Secretory cells",
+      "Epithelial cells"
+     ]
+    },
+    "value": "normal"
+   }
+  ]
+ },
+ "donor": "orig.ident",
+ "source": {
+  "column": "cell",
+  "regex": "(?:Epcam|EPCAM|NotSort)_[pN]_(.+)_\\d+$"
+ },
+ "sex_label": null,
+ "claims": [
+  {
+   "id": "1",
+   "genes": [
+    "SERPINE2",
+    "TFF3"
+   ]
+  },
+  {
+   "id": "2",
+   "genes": [
+    "IFI44L",
+    "IFITM1"
+   ]
+  },
+  {
+   "id": "3",
+   "genes": [
+    "IFITM1",
+    "MX1"
+   ]
+  },
+  {
+   "id": "4",
+   "genes": [
+    "CSNK2B",
+    "HLA-C"
+   ]
+  },
+  {
+   "id": "5",
+   "genes": [
+    "COL1A2",
+    "SERPINE2"
+   ]
+  }
+ ],
+ "design": "the paper's: a correlation r per condition over the pooled cells (DiffCorr), 1,940 primary tumour cells against 520 epithelial cells of fallopian tubes",
+ "notes": "groups: the paper's 1,940 tumour cells are the primary tumours' (PT) cells the authors label epithelial; its 520 normal cells the fallopian tubes' (FT) secretory and epithelial cells; the source is the library protocol written in each cell's name after its sort gate (e.g. Split_mouth, Split_FACS)"
+}

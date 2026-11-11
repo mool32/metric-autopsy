@@ -35,21 +35,59 @@ def sha256_json(obj) -> str:
     return hashlib.sha256(_canonical(obj).encode()).hexdigest()
 
 
+_MIRROR = {"increase": "decrease", "decrease": "increase"}
+
+
+def canonical_claim(metric: str, genes, groups, direction) -> dict:
+    """A claim's canonical form: the metric, its genes, the groups' labels sorted and the direction
+    stated for that order. "Higher in females" and "lower in males" are one claim, so the mirrored
+    wording (the groups and the direction swapped) has the same form (v0.4 change 1, decided
+    2026-10-12)."""
+    given = [str(g) for g in groups]
+    order = sorted(given)
+    if order != given and direction in _MIRROR:
+        direction = _MIRROR[direction]
+    return dict(metric=str(metric), genes=[str(g) for g in (genes or ())], groups=order,
+                direction=direction)
+
+
+def claim_seed(data_sha256: str, claim: dict, seed: int, stream: str) -> int:
+    """The seed of one random stream of the engine (a gate's draws), keyed by the data, the claim's
+    canonical form and the user's seed: a mirrored wording gets the same draws, and two claims on
+    the same data get different ones, so that their Monte Carlo errors are independent."""
+    key = sha256_json(dict(data=data_sha256, claim=claim, seed=int(seed), stream=str(stream)))
+    return int(key[:16], 16)
+
+
 def sha256_data(data, obs_columns: Iterable[str] = ()) -> str:
-    """Hash of X (dense or sparse), var_names and the named obs columns."""
+    """Hash of X's values, var_names and the named obs columns.
+
+    The values are hashed whatever their storage (dense or sparse, any numeric dtype): row by row,
+    the column index and the float64 value of every nonzero entry, as a canonical CSR. The same data
+    held as a SimpleData or as an AnnData with a sparse X therefore get the same hash, which since
+    v0.4 also keys the engine's random draws (``claim_seed``).
+    """
     h = hashlib.sha256()
     X = data.X
-    if hasattr(X, "tocsr"):
-        csr = X.tocsr()
-        h.update(f"csr{csr.shape}{csr.dtype}".encode())
-        for arr in (csr.indptr, csr.indices, csr.data):
-            h.update(np.ascontiguousarray(arr).tobytes())
-    else:
-        arr = np.ascontiguousarray(np.asarray(X))
-        h.update(f"dense{arr.shape}{arr.dtype}".encode())
-        step = max(1, 2_000_000 // max(arr.shape[1], 1))
-        for i in range(0, arr.shape[0], step):
-            h.update(arr[i:i + step].tobytes())
+    n_obs, n_vars = (int(v) for v in X.shape)
+    h.update(f"matrix({n_obs},{n_vars})".encode())
+    csr = X.tocsr() if hasattr(X, "tocsr") else None
+    step = max(1, 2_000_000 // max(n_vars, 1))
+    for i in range(0, n_obs, step):
+        if csr is not None:
+            block = csr[i:i + step].copy()
+            block.sum_duplicates()
+            block.eliminate_zeros()
+            block.sort_indices()
+            indptr, indices, values = block.indptr, block.indices, block.data
+        else:
+            dense = np.asarray(X[i:i + step])
+            nz = dense != 0
+            rows, indices = np.nonzero(nz)  # row-major: by row, then by column
+            indptr = np.concatenate([[0], np.cumsum(nz.sum(axis=1))])
+            values = dense[rows, indices]
+        for arr, dtype in ((indptr, np.int64), (indices, np.int64), (values, np.float64)):
+            h.update(np.ascontiguousarray(arr, dtype=dtype).tobytes())
     h.update("\x1f".join(map(str, data.var_names)).encode())
     obs = data.obs
     for col in sorted({c for c in obs_columns if c in obs.columns}):

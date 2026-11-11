@@ -94,8 +94,9 @@ Theodor Spiro | [ORCID 0009-0004-5382-9346](https://orcid.org/0009-0004-5382-934
 >     in [`gate4_module_dilution.log`](validation/exploratory/gate4_module_dilution.log)). At a
 >     depth of 2,000 counts it passes a marker of single counts for the wrong reason: of a
 >     response of 0.360 the sham's loss of the single counts makes 0.178, the 2-fold change
->     0.182, since the sham thins the marker and the injection does not. The module probe is
->     reached through the Python API only: the CLI and the MCP server offer the coupling probe.
+>     0.182, since the sham thins the marker and the injection does not. In v0.3.0 the module probe is
+>     reached through the Python API only: the CLI and the MCP server offer the coupling probe (v0.4.0.dev0,
+>     tagged `v0.4.0.dev0` and not released, offers the module probe and the set's probe there too).
 >     v1's panel used it only on the useless metric N6c.
 > - **Error rates by level and truth** (pre-registered secondary outcomes, v1.md sections 5 and
 >   7; [`v1_by_level.log`](validation/exploratory/v1_by_level.log)):

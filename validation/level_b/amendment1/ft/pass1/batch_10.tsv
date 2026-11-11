@@ -1,0 +1,2 @@
+rid	decision	code	claim	genes	species	cells	conditions	direction	metric	where	quote	data	donors	rule4	verdict	note
+R03874	EXCLUDE	F3	0	-	-	-	-	-	-	-	-	-	-	-	-	Abstract: NEMF decouples from GCN2, PKR in sALS vs PN. Metric: Hodge-potential residuals of pseudotime-windowed donor covariance changes and cross-cell-type correlation of residual z (NEMF-PKR rho=+0.73), not a pair's correlation across cells; pathway, cell-type claims same phi.

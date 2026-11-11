@@ -1,0 +1,20 @@
+{
+ "lines": 48,
+ "kappa_decision": NaN,
+ "agreement_decision": 1.0,
+ "kappa_code": NaN,
+ "agreement_code": 1.0,
+ "pairs": {
+  "NO_VERDICT / NO_VERDICT": 48
+ },
+ "per_pass": {
+  "1": {
+   "NO_VERDICT": 48
+  },
+  "2": {
+   "NO_VERDICT": 48
+  }
+ },
+ "verdicts_agreed": 0,
+ "to_owner": 0
+}

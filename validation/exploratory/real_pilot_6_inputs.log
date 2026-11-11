@@ -1,0 +1,14 @@
+case1.npz: sha256 13e7a563d4ed8fa482f976ead77b492189e8c729eb3ab103a203ccfdf8f24a44, as its run's SHA256SUMS
+case2.npz: sha256 7191ad731063a45110991a7fa7d3b8c15d43325bf7e9b6d95072165dc1655beb, as its run's SHA256SUMS
+select.json: sha256 63032110bb981a7c1615d680848d116271b1a52c01bee1e9e0b1c585634493ac, as its run's SHA256SUMS
+case3.npz: sha256 31c297fe83adac9d93ff905695301bf69f09d583f9306ef980ae4210bedc8568, as its run's SHA256SUMS
+select1.json: sha256 c308885e78767edb5c8bd1cc271381e330d299edee073e3496893ada3f1de286, as its run's SHA256SUMS
+cdcf23f9b86f2f0f94aa6fab9bb562b49578e3898edf5190752b87ae6421ee5e  GSE152183_family.soft.gz
+3c2b4b69d7b566d33e7deaaac408d6a2ca027776c88679b9da80671ff19ef9c0  GSE152183_suppl_filelist.txt
+ok 55134 bytes https://ftp.ncbi.nlm.nih.gov/geo/series/GSE132nnn/GSE132042/soft/GSE132042_family.soft.gz
+ok 4681 bytes https://ftp.ncbi.nlm.nih.gov/geo/series/GSE109nnn/GSE109774/soft/GSE109774_family.soft.gz
+7ac8f4e5c303be1cf77bb12631eb9b04d7846bd787b9aee20a500f3b4241c9aa  ./GSE109774_family.soft.gz
+ba58dbde2cdc22cbba18e3a37db4eccab99e56342ce181f8f5127e526c68d933  ./GSE132042_family.soft.gz
+cdcf23f9b86f2f0f94aa6fab9bb562b49578e3898edf5190752b87ae6421ee5e  ./GSE152183_family.soft.gz
+3c2b4b69d7b566d33e7deaaac408d6a2ca027776c88679b9da80671ff19ef9c0  ./GSE152183_suppl_filelist.txt
+PR head 57980d5694776ab91cd7247faccdceff4ed7a78b; src/ git tree d7f5fef250dd440c8110d09d2baa78f86917b59d; workflow run 39163054704

@@ -1,0 +1,201 @@
+rid	decision	code	kinds	note
+R00001	EXCLUDE	X2	-	Single-cell RT-PCR and immunostaining only; NG2/S100beta co-expression is a share of double-positive cells.
+R00002	EXCLUDE	X1	-	Review of StAR expression and activity in adrenal cells; no new single-cell RNA count comparison.
+R00003	EXCLUDE	X4	-	scRNA-seq of 37 HeLa-S3 cells; lincRNA co-expression network of one condition only.
+R00004	EXCLUDE	X5	-	Method; co-expression rewiring and modules along an inferred trajectory (pseudotime) of fetal neurons, not between donor groups or conditions.
+R00005	EXCLUDE	X2	-	Mass cytometry debarcoding tool; no RNA counts.
+R00006	EXCLUDE	X4	-	Method building co-expression networks from pseudotime ordering; no comparison of coordination between conditions.
+R00007	EXCLUDE	X4	-	SAMHD1-knockout macrophage single-cell platform; no changed coordination of two genes between conditions.
+R00008	EXCLUDE	X6	set	miR-294/let-7c in Dgcr8-KO mESCs change correlated expression of target gene sets and cell-cycle phasing; sets, no named pair; single line.
+R00009	EXCLUDE	X2	-	Mass cytometry of fresh versus cryopreserved tumour specimens; proteins only.
+R00010	EXCLUDE	X2	-	Fluidigm single-cell qPCR; coexpression networks compared between sorted perivascular cell subclasses.
+R00011	EXCLUDE	X2	-	Co-expression of immune marker genes in bulk TCGA tumour data.
+R00012	EXCLUDE	X2	-	Mass cytometry of cytotoxic proteins across T and NK differentiation stages.
+R00013	EXCLUDE	X4	-	Glioma scRNA-seq; decoupling of genetics, lineage and microenvironment, not two genes' coordination.
+R00014	KEEP	-	pair	Gene-gene correlation (propagation of variation) across single macrophages changes between cytokine environments; pairs may be named in results; assay and donors to check.
+R00015	EXCLUDE	X4	-	Injury induces Gfap co-expression in Cx3cr1+ cells: double-positive cells, not an association across cells.
+R00016	EXCLUDE	X2	-	Single-cell qualitative RT-PCR and immunohistochemistry of KV7 channels and bradykinin receptor.
+R00017	EXCLUDE	X2	-	Multiplex immunofluorescence of proteins in intestinal tuft cells.
+R00018	EXCLUDE	X2	-	Single-cell RT-PCR, electrophysiology and FRET of sigma-1 receptor and N-type calcium channel.
+R00019	EXCLUDE	X2	-	Connexin co-transfection in HeLa cells; electrophysiology, no RNA counts.
+R00020	EXCLUDE	X4	-	Co-expression of miR-17-92 and its targets means co-expressing sensory neurons; no changed correlation.
+R00021	EXCLUDE	X4	-	cDC1 defined by co-expression of CLEC9A and CD141 markers; lineage potential, no coordination change.
+R00022	EXCLUDE	X2	-	E. coli whole-cell biocatalysts co-expressing enzymes; no single-cell RNA data.
+R00023	EXCLUDE	X4	-	Visual analytics workflow using coexpression modules as features; no comparison of coordination between conditions.
+R00024	EXCLUDE	X2	-	Yeast weighted co-expression network analysis on microarray data.
+R00025	EXCLUDE	X2	-	Antibody mixture co-expression in a production cell line; no single-cell RNA data.
+R00026	EXCLUDE	X4	-	Co-expression of atypical SLCs means co-expressing brain cells; starvation changes expression levels only.
+R00027	EXCLUDE	X2	-	Single-cell proteomics distributions in yeast metabolic modelling; proteins only.
+R00028	EXCLUDE	X4	-	Transcriptional architecture delineating GABAergic neuron types; no coordination change between conditions.
+R00029	EXCLUDE	X2	-	Single-cell qPCR of 48 genes in hypocretin and MCH neurons.
+R00030	EXCLUDE	X4	-	HIV Tat feedback decouples expression noise from mean; no two-gene coordination between conditions.
+R00031	EXCLUDE	X2	-	Shikimic acid biosensor in Corynebacterium; co-expression of sensor and transporter genes; no single-cell RNA counts.
+R00032	EXCLUDE	X4	-	Methods for single-cell co-expression subnetwork detection; no comparison of coordination between conditions.
+R00033	EXCLUDE	X2	-	Multiplexed immunofluorescence of protein markers in DCIS tissue sections.
+R00034	EXCLUDE	X2	-	Co-expression of inulinase transgenes in Yarrowia for oil production; no single-cell RNA data.
+R00035	EXCLUDE	X2	-	Two plant viral vectors co-expressing proteins in the same cells; no single-cell RNA counts.
+R00036	EXCLUDE	X4	-	ASD genes enriched and hubs in an inhibitory-neuron co-expression module; no changed coordination between conditions.
+R00037	EXCLUDE	X4	-	scRNA-seq of KYSE-30 and paclitaxel-resistant cells; WGCNA subpopulations and expression levels only; single cell line.
+R00038	EXCLUDE	X2	-	Stable co-expression of sialylation enzymes in CHO cells; no single-cell RNA data.
+R00039	EXCLUDE	X2	-	Yeast plasmid system co-expressing ubiquitination enzymes; no single-cell RNA data.
+R00040	EXCLUDE	X2	-	Single-cell RT-PCR of TLRs and TRP channels; co-expression as shares of positive neurons.
+R00041	EXCLUDE	X2	-	Calcium imaging of single neutrophils; no RNA counts.
+R00042	EXCLUDE	X2	pair	In situ rolling-circle imaging: ECM stiffness changes PFN1 and CFL1 co-expression pattern; imaging only, no RNA counts.
+R00043	EXCLUDE	X2	-	In situ hybridization and single-cell RT-PCR; mu and delta opioid receptor co-expression as shares of neurons.
+R00044	KEEP	-	pair	Co-expression QTLs: genetic variants alter pairwise co-expression across PBMCs from 45 donors (scRNA-seq); genotype groups; pairs and directions in results.
+R00045	EXCLUDE	X4	-	Co-expression of Mrap2 with Mc3r and Mc4r means co-expressing hypothalamic neurons; no coordination change.
+R00046	EXCLUDE	X2	-	InsituNet for in situ sequencing; spatial co-expression only.
+R00047	EXCLUDE	X2	-	Mass cytometry profiling of exhausted CD8 T cells; proteins only.
+R00048	EXCLUDE	X4	-	ACPA+ versus RF+ B cells from RA patients; co-expression networks group subset-enriched genes, no changed pair coordination.
+R00049	EXCLUDE	X4	-	Cell-type-specific expression and co-expression modules integrated across brain datasets; no condition comparison.
+R00050	EXCLUDE	X4	-	CONICS tool mapping scRNA-seq to tumour clones; intra-clone co-expression, no condition comparison.
+R00051	EXCLUDE	X4	-	Co-inhibitory receptor module co-expressed in T cells and induced by IL-27; expression and co-expressing cells, no pair coordination change.
+R00052	EXCLUDE	X5	-	Negative mtDNA-nDNA OXPHOS gene correlation by brain region in bulk; scRNA-seq differences by cell type and location; gene sets.
+R00053	EXCLUDE	X2	-	Transgenic pig co-expressing hCD55 and hCD59; qPCR and immunostaining, no single-cell RNA counts.
+R00054	EXCLUDE	X1	-	Review of planarian neoblast lineages.
+R00055	EXCLUDE	X2	-	Single-cell RT-PCR and multiplex FISH co-expression of MCH1 and OX2 in nucleus incertus neurons.
+R00056	EXCLUDE	X4	-	Co-expression of DNMT3s and TETs drives methylation variability and oscillations; no changed coordination of two genes.
+R00057	EXCLUDE	X4	-	lncRNA expression in primary and metastatic RCC scRNA-seq; co-expression network for function only.
+R00058	EXCLUDE	X4	-	Mammary scRNA atlas; fetal stem cells co-express lineage factors in the same cells; no coordination change.
+R00059	EXCLUDE	X4	-	SILGGM package for Gaussian graphical model inference; no comparison of coordination between conditions.
+R00060	EXCLUDE	X4	-	iPSC erythroid scRNA-seq; coexpression of globins in individual cells; no coordination change.
+R00061	EXCLUDE	X2	-	Immunohistochemistry, confocal and RT-PCR of stem cell markers; dual-positive cells.
+R00062	EXCLUDE	X4	-	scRNA-seq of in vivo and SCNT mouse embryos; lncRNA expression landscapes and WGCNA for function; no changed coordination of a pair.
+R00063	EXCLUDE	X1	-	Opinion/review article on co-expression in single-cell analysis.
+R00064	EXCLUDE	X2	-	Single-cell RT-PCR of Nav channel coexpression patterns in bladder DRG neurons.
+R00065	EXCLUDE	X2	-	Fluidigm single-cell qPCR of endothelial cells from stenotic and control vein segments.
+R00066	EXCLUDE	X2	-	Exosomal K-Ras transfer assays with luciferase complementation; no single-cell RNA counts.
+R00067	EXCLUDE	X4	-	Ciona embryo scRNA-seq; Ptf1a and Meis co-misexpression transforms CNS cells; no coordination across cells.
+R00068	EXCLUDE	X2	-	Network co-expression analysis of bulk whole-blood RNA-seq deconvolved with single-cell signatures.
+R00069	KEEP	-	set	Drop-seq of TBI versus sham hippocampus: TBI alters gene co-expression across cell types; kind of claim unspecified, a pair possible in results.
+R00070	EXCLUDE	X2	-	Metabolic switch decoupling biomass and wax ester synthesis in bacteria; no single-cell RNA data.
+R00071	EXCLUDE	X2	-	Single-cell RT-PCR and immunohistochemistry of TRPM7 and CNNM4 in rat odontoblasts.
+R00072	EXCLUDE	X1	-	Methods chapter (protocol) on CyTOF profiling of glioblastoma cells; mass cytometry, no RNA counts.
+R00073	EXCLUDE	X4	-	TissueEnrich tool for tissue-specific gene enrichment; no coordination comparison.
+R00074	EXCLUDE	X1	-	Comment on single-cell RNA-seq applications in heart disease.
+R00075	EXCLUDE	X4	-	Regulon activities variable across mouse cell atlas cell types; activity scores, no changed pair coordination between conditions.
+R00076	EXCLUDE	X6	set	miRNA-mRNA interaction modules change dynamically during human brain development; set-level, ORC4-miR-2115 interaction without a direction of change.
+R00077	EXCLUDE	X4	-	NTN4-EGFR co-expression relationship in cell-line bulk and GBM scRNA data; one condition, no change between conditions.
+R00078	EXCLUDE	X2	-	RT-PCR, qPCR and immunohistochemistry of TRPV1 and TRPM8 in a keratocyte line; calcium imaging.
+R00079	EXCLUDE	X1	-	Review of single-cell gene expression in heart research.
+R00080	EXCLUDE	X2	-	Cotton fibre MYB genes from bulk RNA-seq and co-expression analyses.
+R00081	EXCLUDE	X6	set	scdNet method; differential networks in prostate CTCs (anti-androgen resistance) and embryos; no named pair in abstract.
+R00082	EXCLUDE	X4	-	Follicular lymphoma scRNA-seq; checkpoint co-expression and genes coexpressed with checkpoints in Tregs; no change between conditions.
+R00083	EXCLUDE	X4	-	Dermal condensate precursors co-express fibroblast and DC genes in the same cells; trajectory, no coordination change.
+R00084	EXCLUDE	X5	-	conCluster method; distinct co-expression networks between melanoma subtypes identified as cell clusters; sets.
+R00085	EXCLUDE	X4	-	V-SVZ scRNA-seq; regional and sex expression differences; TF co-expression modules mark lineage steps; no changed coordination.
+R00086	EXCLUDE	X2	-	Single-cell digital PCR of Glp1r and Ins2 in rat neurogliaform cells.
+R00087	EXCLUDE	X1	-	Perspective on chemoautotrophic food production; no single-cell RNA data.
+R00088	EXCLUDE	X2	-	Single-cell PCR of nicotinic receptor subunit coexpression in human DRG neurons; electrophysiology.
+R00089	EXCLUDE	X1	-	Review of (differential) co-expression analysis practices.
+R00090	EXCLUDE	X2	-	Fluorescence imaging of hantavirus glycoprotein co-expression; no RNA counts.
+R00091	EXCLUDE	X1	-	Review chapter on brown adipose tissue pharmacology.
+R00092	EXCLUDE	X4	-	Developing cerebellum scRNA-seq; co-expression networks of ataxia genes in one condition.
+R00093	EXCLUDE	X1	-	Methods chapter reviewing co-expression network inference methods for scRNA-seq; no new findings.
+R00094	EXCLUDE	X4	-	PyMINEr tool; islet co-expression graphs and autocrine-paracrine networks; BMP-WNT signalling changes in cystic fibrosis, no pair coordination.
+R00095	EXCLUDE	X4	-	IRIS-EDA web server for expression analysis; no coordination comparison.
+R00096	EXCLUDE	X4	-	COAC algorithm for localized co-expression subnetworks used as biomarkers; no change between conditions.
+R00097	EXCLUDE	X2	set	Multiplexed targeted RT-PCR of 96 genes: increased co-expression of interferon genes with PTEN in HIV versus controls; single-cell qPCR, not counts.
+R00098	EXCLUDE	X2	-	Lenvatinib plus anti-PD-1; co-expression network analysis on bulk tumour RNA-seq; flow cytometry.
+R00099	EXCLUDE	X4	-	AML scRNA-seq; primitive AML cells co-express stemness and myeloid priming genes in the same cells; no correlation change.
+R00100	EXCLUDE	X2	-	Plant expression of human furin with co-expressed enzymes; no single-cell RNA data.
+R00101	EXCLUDE	X4	-	webCEMiTool for co-expression module analysis; Zika/dengue scRNA-seq demonstration without a stated coordination change.
+R00102	EXCLUDE	X4	-	Benchmark of false gene-gene correlations from imputation; no comparison between conditions.
+R00103	EXCLUDE	X4	-	Topological visualization of scRNA-seq; expression patterns of co-expression modules; no coordination change between conditions.
+R00104	EXCLUDE	X4	-	CLL versus healthy B cells: decreased mutual information between epigenetic layers and expression, not between two genes.
+R00105	EXCLUDE	X2	-	CRISPR correction of KIT locus in pig cells; single-cell cloning, no RNA counts.
+R00106	EXCLUDE	X2	-	Multiplexed immunofluorescence and mass cytometry of PD-1, LAG-3, TIM-3 proteins.
+R00107	EXCLUDE	X4	-	Single-cell reprogramming; co-expression of Epcam, Nanog and Sox2 in the same cells; no coordination change between conditions.
+R00108	EXCLUDE	X4	-	Subspace-clustering co-expression module method on microarray and one scRNA dataset; no condition comparison.
+R00109	EXCLUDE	X2	-	Populus Hsf gene family expression and co-expression networks from bulk data.
+R00110	EXCLUDE	X2	-	Bulk transcriptomic co-expression network of hESC and cardiomyocytes; SMYD1/SMARCD1 functional study.
+R00111	EXCLUDE	X5	-	Correlation and variability changes between NSCs and differentiated astrocytes (cell states); Ascl1-Ntsr2 co-regulation; not between donor groups.
+R00112	EXCLUDE	X4	-	Chicken limb scRNA atlas; co-expression modules track tissue types; no coordination change between conditions.
+R00113	EXCLUDE	X4	-	Aortic endothelium scRNA-seq; regulatory networks per population; no coordination change between conditions.
+R00114	EXCLUDE	X4	-	NMPs defined by co-expression of Sox2 and T in the same cells; in vitro versus embryo comparison of populations.
+R00115	EXCLUDE	X1	-	Review of pericellular space regulation of cell behaviour.
+R00116	EXCLUDE	X2	-	miRNA in situ hybridization and protein immunofluorescence co-staining on tissue microarrays; imaging only.
+R00117	EXCLUDE	X4	-	Tox-containing co-expression module shows higher activity (expression) in progenitor-like CD8 T cells; no pair coordination change.
+R00118	EXCLUDE	X2	-	PNI-associated WGCNA module from bulk TCGA data; scRNA used for expression in cell types.
+R00119	EXCLUDE	X4	-	Enforced co-expression of Lin28b and Igf2bp3 in HSPCs; no association across cells.
+R00120	EXCLUDE	X4	-	Cardiac conduction system scRNA-seq; WGCNA discovers marker genes; no condition comparison of coordination.
+R00121	EXCLUDE	X4	-	WGCNA on prostate cancer single cells; AR-regulated modules and FECH/CROT prognostic signature; no changed coordination between conditions.
+R00122	EXCLUDE	X4	-	Cardiomyocyte co-expression modules active by region and stage; module activity, no coordination change between conditions.
+R00123	EXCLUDE	X1	-	Review of plant transcriptional networks regulating starch metabolism.
+R00124	EXCLUDE	X4	-	BioRank cell similarity method for clustering; no coordination comparison.
+R00125	EXCLUDE	X4	-	LTMG expression model with differential expression and co-regulation module methods; no stated coordination change between conditions.
+R00126	EXCLUDE	X4	-	Zebrafish PGC scRNA-seq at three stages; WGCNA modules with inverse expression patterns; expression only; one embryo per stage.
+R00127	EXCLUDE	X4	-	scds doublet detection using binarized gene-pair co-expression; method without condition comparison.
+R00128	EXCLUDE	X4	-	Cardiomyocyte microwell device; co-expression of PKA subunits and CaMKII across cells in one condition; no change between conditions.
+R00129	EXCLUDE	X1	-	Guide synthesizing literature on compositional analysis of sequencing counts.
+R00130	EXCLUDE	X4	-	Schistosoma lncRNA WGCNA across mixed bulk and single-cell libraries; modules correlate with life stages; no changed pair coordination.
+R00131	EXCLUDE	X4	-	Early T cell development scRNA-seq and seqFISH; co-expression of progenitor and T cell genes in same cells; pseudotime.
+R00132	EXCLUDE	X2	-	Multiplex immunohistochemistry: negative correlation of CDX2 and SOX2 proteins in colorectal cancer.
+R00133	EXCLUDE	X4	-	MTGO-SC tool for gene modules per cell cluster; no condition comparison.
+R00134	EXCLUDE	X1	-	Review of computational analysis of brain transcriptomes.
+R00135	EXCLUDE	X4	-	Colonic enteroendocrine scRNA-seq; Insl5 and GLP-1 co-expressing cells; clusters and expression gradients.
+R00136	EXCLUDE	X4	-	TGFbeta/BMP components in ESC-to-neural transition; perturbation interactions and stable single-cell co-expression modules; no changed pair coordination across cells.
+R00137	EXCLUDE	X2	-	Microbiome differential co-occurrence network model; taxa counts, no single-cell RNA.
+R00138	EXCLUDE	X1	-	Review of data and network reconstruction for single-cell CRISPR screens.
+R00139	EXCLUDE	X4	-	GBM NK cell study; co-expression of immune effector and inhibitory molecules across a bulk patient cohort; no changed coordination across cells.
+R00140	EXCLUDE	X2	-	Foraminifera single-cell barcode sequencing and morphology; no RNA counts.
+R00141	EXCLUDE	X4	-	nAChR subunit coexpression patterns in mouse cell types and evolution; no coordination change between conditions.
+R00142	EXCLUDE	X2	-	Stochastic model of E. coli promoter-sharing gene pairs validated with single-RNA imaging; no RNA counts by sequencing.
+R00143	EXCLUDE	X4	-	CNNC deep learning for gene relationships; method without a condition comparison.
+R00144	EXCLUDE	X4	-	Somatosensory neuron development; co-expression of TFs in same unspecialized cells, restricted later; mutants change expression.
+R00145	EXCLUDE	X2	-	CRISPR correction of beta-catenin in HCT-116 cells; no single-cell RNA counts.
+R00146	EXCLUDE	X2	-	Melanoma bulk RNA-seq co-expression networks, early versus late stage; scRNA only for expressed genes.
+R00147	KEEP	-	pair	Method: gene-pair coexpression landscapes change during embryonic development in published scRNA-seq; stages may be ages or cell states; pairs in results.
+R00148	EXCLUDE	X2	-	Flow cytometry of cytokine co-expression in tonsillar T cells.
+R00149	EXCLUDE	X4	-	TOX in exhausted CD8 T cells; co-expression with checkpoint genes in same cells; PDCD1-high versus low subsets.
+R00150	EXCLUDE	X2	-	SCI versus control comparison on bulk blood only; YY1-HAVCR2 co-expression in normal PBMC scRNA, one condition.
+R00151	EXCLUDE	X1	-	Consortium outline of goals and design considerations for single-cell eQTL studies; no new data.
+R00152	EXCLUDE	X2	-	Immunofluorescence imaging of S- and M-opsin co-expression in cones.
+R00153	EXCLUDE	X4	-	ACE2 co-receptor candidates by similar expression across cell types of 13 tissues; CellPhoneDB; no change between conditions.
+R00154	EXCLUDE	X4	-	netImpute imputation method using gene co-expression networks; no condition comparison.
+R00155	EXCLUDE	X2	-	Kozak variants for bispecific antibody chain co-expression in CHO cells; no single-cell RNA data.
+R00156	EXCLUDE	X4	-	mregDCs defined by coexpression of immunoregulatory and maturation genes in the same cells; program expression, no correlation change.
+R00157	EXCLUDE	X2	-	Calcium imaging of C. elegans neurons under isoflurane; correlation between neurons, not gene expression.
+R00158	EXCLUDE	X2	-	Nematode nuclear receptor mutants; transcriptional reporters co-expressed in one gland cell; no single-cell RNA counts.
+R00159	EXCLUDE	X4	-	CoCoNet method integrating tissue-specific co-expression networks with GWAS; no condition comparison.
+R00160	EXCLUDE	X2	-	Contamination detected as co-expression clusters of pancreas genes in bulk GTEx data.
+R00161	EXCLUDE	X2	-	BECC co-expression in public bulk expression data to find macrophage markers.
+R00162	EXCLUDE	X2	pair	Single-cell real-time PCR: GnRH1-ERgamma proportional in dominant, GnRH2-ERbeta in subordinate tilapia; qPCR, not RNA counts.
+R00163	EXCLUDE	X2	-	In vitro fermentation and 16S sequencing of infant faecal inoculum; no single-cell RNA.
+R00164	EXCLUDE	X4	-	Single-cell methylome-derived TF modules; co-expression of TFs by conditional probability; no coordination change between conditions.
+R00165	EXCLUDE	X4	-	mGluR subtypes co-expressed in cortical cells (co-expressing cells); dimerization assays.
+R00166	EXCLUDE	X4	-	Sampling-time artifacts in gene expression and accessibility; no coordination claim.
+R00167	EXCLUDE	X4	-	PCOS versus healthy oocytes scRNA-seq; WGCNA modules relate to stages, expression differences only.
+R00168	EXCLUDE	X1	-	Workshop vision paper on genotype-to-phenotype research.
+R00169	EXCLUDE	X4	-	ACE2 and TMPRSS2 co-expression in ocular surface cells means co-expressing cells; adult versus fetal presence.
+R00170	EXCLUDE	X4	-	SARS-CoV-2 strain mutations; ACE2-Furin co-expression as tissue expression; no coordination across cells.
+R00171	EXCLUDE	X4	-	Proportions of GI cells co-expressing ACE2 and TMPRSS2.
+R00172	EXCLUDE	X5	-	Coexpression enrichment of NDD gene sets across fetal brain cell types; convergence at a cell-type transition; sets.
+R00173	KEEP	-	set	GATA2-deficiency patients' HSPCs show distinct gene coexpression patterns versus healthy donors (single-cell full transcriptome); pairs possible in results.
+R00174	EXCLUDE	X2	-	Phylogenetic reconstruction of autotomy and regeneration; no single-cell RNA.
+R00175	EXCLUDE	X1	-	Protocol for the SCENIC workflow; no new findings.
+R00176	EXCLUDE	X4	-	scClassify cell type classification method; no coordination comparison.
+R00177	EXCLUDE	X4	-	Composition effects on bulk coexpression vs intra-cell-type coexpression in single-cell data; no comparison of a gene pair's coordination between conditions
+R00178	EXCLUDE	X4	-	No reproductive cell type co-expresses ACE2 with proteases; co-expressing cells only.
+R00179	EXCLUDE	X4	-	Osteoarthritis synovium and cartilage scRNA-seq; marker co-expression in IL-1beta producing cells; cross-talk.
+R00180	EXCLUDE	X4	-	Cell types co-expressing ACE2 and TMPRSS2 in reproductive tissues; descriptive.
+R00181	EXCLUDE	X4	-	Suture development bulk and scRNA-seq in mutant mice; co-expression modules for key drivers; no coordination change.
+R00182	EXCLUDE	X4	-	WGCNA on tumour and single-cell data detects coordinated expression changes in metastasis; MAPK7/MMP9 expression, not coordination.
+R00183	EXCLUDE	X2	-	WGCNA CAF module from bulk bladder cancer data; scRNA only confirms fibroblast signature.
+R00184	EXCLUDE	X4	-	Pancreatitis variant co-occurrence; gene co-expression in duct and acinar cells from scRNA; no change between conditions.
+R00185	EXCLUDE	X5	-	scHOT method; correlation and variability changes along liver development pseudotime and across space; not between conditions.
+R00186	EXCLUDE	X2	-	Multiplexed screen of 351 surface proteins on B cells; proteins only.
+R00187	EXCLUDE	X2	-	ALS motor cortex bulk RNA-seq coexpression modules; snRNA used only as deconvolution reference.
+R00188	EXCLUDE	X2	-	Morphoproteomic and copy-number profiling of single prostate cancer cells from one patient; proteins and DNA, no RNA counts.
+R00189	KEEP	-	pair	ACE2-TMPRSS2 co-expression elevated in absorptive enterocytes, inflamed vs uninflamed Crohn ileum (scRNA-seq); full text must show it is a correlation, not double-positive cells
+R00190	EXCLUDE	X2	-	Information-theoretic distance between bulk tissue transcriptomes; no single-cell RNA counts.
+R00191	EXCLUDE	X2	-	Enhancer-miRNA interactions from co-expression and 3D genome data across bulk cancer datasets.
+R00192	EXCLUDE	X1	-	Review of information-theoretic diversity and similarity measures for single-cell transcriptomics.
+R00193	EXCLUDE	X2	-	Arabidopsis peroxidase genes; microarray co-expression network and in situ hybridization.
+R00194	EXCLUDE	X2	set	AD versus control co-expression module changes from bulk brain samples; snRNA used only to assign cell-type specificity.
+R00195	EXCLUDE	X2	-	Single-cell RT-PCR of P2X receptor co-expression in human macrophages; electrophysiology.
+R00196	EXCLUDE	X4	-	ACE2 and TMPRSS2 co-expression across olfactory epithelial cell types; expression patterns only.
+R00197	EXCLUDE	X4	-	Sparse Bayesian factor model for co-expression networks; method without condition comparison.
+R00198	EXCLUDE	X5	-	Interactive gene groups from co-expression networks of cell subpopulations (cancer subtypes from clustering); sets, between clusters.
+R00199	EXCLUDE	X5	-	scPrognosis uses a dynamic co-expression network along EMT pseudotime to select prognostic genes; not between conditions.
+R00200	EXCLUDE	X4	-	Exhausted CD8 T cells across tissues; co-expression of inhibitory receptors in same cells; subpopulations.

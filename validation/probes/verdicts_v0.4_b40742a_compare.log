@@ -1,0 +1,4 @@
+# The dev set's verdicts: verdicts_v0.4_1337ead.log (metric-autopsy 0.4.0.dev0 — v0.3 verdicts on the probe truths — git 1337ead, python 3.13.16, numpy 2.5.3) against verdicts_v0.4_b40742a.log (metric-autopsy 0.4.0.dev0 — v0.3 verdicts on the probe truths — git b40742a, python 3.13.16, numpy 2.5.3)
+
+
+0 lines differ; VERDICT lines: 7 before, 0 of them changed, 0 in their class (the rest in their numbers)

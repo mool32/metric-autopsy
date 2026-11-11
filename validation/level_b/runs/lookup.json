@@ -1,0 +1,130 @@
+{
+ "ok": true,
+ "papers": [
+  {
+   "key": "levy2020",
+   "label": "Levy et al. 2020, Nat Metab 2:1305-1315 (the global coordination level, GCL)",
+   "query": "AUTH:\"Levy O\" AND TITLE:\"transcriptional coordination\" AND PUB_YEAR:2020",
+   "expect": {
+    "journal": "Nat Metab",
+    "year": 2020,
+    "title_words": [
+     "gene-to-gene",
+     "transcriptional coordination",
+     "single cells"
+    ]
+   },
+   "raw": "raw/lookup/levy2020.json.gz",
+   "n_records": 1,
+   "n_matching": 1,
+   "verified": {
+    "source": "MED",
+    "id": "33139959",
+    "pmid": "33139959",
+    "doi": "10.1038/s42255-020-00304-4",
+    "title": "Age-related loss of gene-to-gene transcriptional coordination among single cells.",
+    "journal": "Nat Metab",
+    "year": 2020,
+    "cited_by": 48
+   }
+  },
+  {
+   "key": "gcl2021",
+   "label": "Sci Rep 2021, doi:10.1038/s41598-021-90353-w (GCL's method, as real_claims.md names it)",
+   "query": "DOI:\"10.1038/s41598-021-90353-w\"",
+   "expect": {
+    "journal": "Sci Rep",
+    "year": 2021,
+    "doi": "10.1038/s41598-021-90353-w"
+   },
+   "raw": "raw/lookup/gcl2021.json.gz",
+   "n_records": 1,
+   "n_matching": 1,
+   "verified": {
+    "source": "MED",
+    "id": "34040065",
+    "pmid": "34040065",
+    "doi": "10.1038/s41598-021-90353-w",
+    "title": "A top-down measure of gene-to-gene coordination for analyzing cell-to-cell variability.",
+    "journal": "Sci Rep",
+    "year": 2021,
+    "cited_by": 3
+   }
+  },
+  {
+   "key": "amit2022",
+   "label": "Amit et al. 2022, Sci Rep, doi:10.1038/s41598-022-11507-y (GCL's method)",
+   "query": "DOI:\"10.1038/s41598-022-11507-y\"",
+   "expect": {
+    "journal": "Sci Rep",
+    "year": 2022,
+    "doi": "10.1038/s41598-022-11507-y"
+   },
+   "raw": "raw/lookup/amit2022.json.gz",
+   "n_records": 1,
+   "n_matching": 1,
+   "verified": {
+    "source": "MED",
+    "id": "35534606",
+    "pmid": "35534606",
+    "doi": "10.1038/s41598-022-11507-y",
+    "title": "Global coordination level in single-cell transcriptomic data.",
+    "journal": "Sci Rep",
+    "year": 2022,
+    "cited_by": 5
+   }
+  },
+  {
+   "key": "cscore2023",
+   "label": "CS-CORE: Su et al. 2023, Nat Commun (cell-type-specific co-expression inference; named from memory)",
+   "query": "TITLE:\"co-expression inference\" AND TITLE:\"single cell\" AND PUB_YEAR:2023",
+   "expect": {
+    "journal": "Nat Commun",
+    "year": 2023,
+    "title_words": [
+     "co-expression inference",
+     "single cell"
+    ]
+   },
+   "raw": "raw/lookup/cscore2023.json.gz",
+   "n_records": 1,
+   "n_matching": 1,
+   "verified": {
+    "source": "MED",
+    "id": "37563115",
+    "pmid": "37563115",
+    "doi": "10.1038/s41467-023-40503-7",
+    "title": "Cell-type-specific co-expression inference from single cell RNA-sequencing data.",
+    "journal": "Nat Commun",
+    "year": 2023,
+    "cited_by": 91
+   }
+  },
+  {
+   "key": "skinnider2019",
+   "label": "Skinnider, Squair and Foster 2019, Nat Methods (measures of association for single-cell transcriptomics; named from memory)",
+   "query": "AUTH:\"Skinnider MA\" AND TITLE:\"measures of association\" AND PUB_YEAR:2019",
+   "expect": {
+    "journal": "Nat Methods",
+    "year": 2019,
+    "title_words": [
+     "measures of association",
+     "single-cell transcriptomics"
+    ]
+   },
+   "raw": "raw/lookup/skinnider2019.json.gz",
+   "n_records": 1,
+   "n_matching": 1,
+   "verified": {
+    "source": "MED",
+    "id": "30962620",
+    "pmid": "30962620",
+    "doi": "10.1038/s41592-019-0372-4",
+    "title": "Evaluating measures of association for single-cell transcriptomics.",
+    "journal": "Nat Methods",
+    "year": 2019,
+    "cited_by": 127
+   }
+  }
+ ]
+}

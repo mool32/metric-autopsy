@@ -1,0 +1,168 @@
+[
+ {
+  "rid": "R02175",
+  "claim": "1",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": "(10) Mitochondria"
+ },
+ {
+  "rid": "R02175",
+  "claim": "2",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": "(6) Glycolysis"
+ },
+ {
+  "rid": "R02175",
+  "claim": "3",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": "(7) Proliferation"
+ },
+ {
+  "rid": "R02175",
+  "claim": "4",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": "(4) UPR"
+ },
+ {
+  "rid": "R02175",
+  "claim": "5",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": "(5) Microfilaments"
+ },
+ {
+  "rid": "R02175",
+  "claim": "6",
+  "member": "41467_2025_65060_MOESM4_ESM.xlsx",
+  "sheet": "dGCNA_modules-beta_cells",
+  "header_row": 1,
+  "column": [
+   "(5) Microfilaments",
+   "(9) Microtubuli"
+  ]
+ },
+ {
+  "rid": "R01795",
+  "claim": "1",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_TNFA_SIGNALING_VIA_NFKB"
+ },
+ {
+  "rid": "R01795",
+  "claim": "2",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+ },
+ {
+  "rid": "R01795",
+  "claim": "3",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+ },
+ {
+  "rid": "R01795",
+  "claim": "4",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_INTERFERON_ALPHA_RESPONSE"
+ },
+ {
+  "rid": "R01795",
+  "claim": "5",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_COMPLEMENT"
+ },
+ {
+  "rid": "R01795",
+  "claim": "6",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+ },
+ {
+  "rid": "R01795",
+  "claim": "7",
+  "extra": "h.all.v2022.1.Hs.symbols.gmt",
+  "gmt_set": "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+ },
+ {
+  "rid": "R00765",
+  "claim": "1",
+  "not_listed": "shown only in figures (Fig. 5D; Supplementary Figs S19-S21, the supplement a PDF of figures)"
+ },
+ {
+  "rid": "R00765",
+  "claim": "2",
+  "text": "R00765.txt",
+  "sha256": "af607e4ad7c9eebc9184273c18dc3e0b4abd9199b539a7e41a5cda2559721a35",
+  "quote": "We identified a set of 13 genes (COX5A, COX5B, COX4I1, COX6B1, COX7B, CTNNB1, FUS, NDUFA11, NDUFA4, TUBB2B, UQCRH, UQCRQ, XBP1) that exhibited significantly higher centrality in the Failure group",
+  "list_from": "(",
+  "list_to": ")",
+  "split": ","
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "1",
+  "rows": {
+   "FCN": [
+    "Interferon signalling"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "2",
+  "rows": {
+   "FCN": [
+    "Interferon signalling",
+    "Antigen Presentation"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "3",
+  "rows": {
+   "FCN": [
+    "Interferon signalling"
+   ]
+  }
+ },
+ {
+  "rid": "R00653",
+  "archive": "R00653:PMC10415381",
+  "member": "41467_2023_40503_MOESM6_ESM.xlsx",
+  "sheet": "Figure 6",
+  "header_row": 0,
+  "column": "gene",
+  "claim": "4",
+  "rows": {
+   "FCN": [
+    "Interferon signalling",
+    "Antigen Presentation"
+   ]
+  }
+ }
+]

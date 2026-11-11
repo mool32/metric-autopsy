@@ -1,0 +1,53 @@
+{
+ "rid": "R01962",
+ "accession": "GSE266919",
+ "organism": "homo_sapiens",
+ "loader": "r_export",
+ "files": {
+  "object": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE266nnn/GSE266919/suppl/GSE266919_Myeloid.rds.gz"
+ },
+ "loader_args": {
+  "export_dir": "files/export"
+ },
+ "cells": {
+  "Tissue": [
+   "breast"
+  ],
+  "Treatment": [
+   "Nab-PTX",
+   "Nab-PTX+Anti-PD-L1"
+  ],
+  "Response": [
+   "R"
+  ]
+ },
+ "groups": {
+  "column": "Group",
+  "values": [
+   "Post-treatment",
+   "Pre-treatment"
+  ]
+ },
+ "min_cells_each_group": 30,
+ "donor": "Patient",
+ "source": null,
+ "sex_label": null,
+ "claims": [
+  {
+   "id": "1",
+   "genes": [
+    "SRGN",
+    "RAB31"
+   ]
+  },
+  {
+   "id": "2",
+   "genes": [
+    "CXCL16",
+    "HEXB"
+   ]
+  }
+ ],
+ "design": "the paper's: scCOSMiX's copula correlation with the patients as random effects, the myeloid cells of 8 responders' breast biopsies before and after nab-paclitaxel with or without atezolizumab, 5,018 cells (2,215 before, 2,803 after)",
+ "notes": "the deposit is one SingleCellExperiment of 56,180 myeloid cells of 44 patients (results/level-b-rdescribe-2: its cells' metadata; its counts a dense matrix), exported by r_export.R in the data job; the cells are the paper's filter (its section on the TNBC data set): biopsies of breast tissue, nab-paclitaxel or nab-paclitaxel plus atezolizumab (the deposit's Treatment 'Nab-PTX' and 'Nab-PTX+Anti-PD-L1'), responders (Response 'R'), patients with at least 30 myeloid cells both before and after; the groups the deposit's Group; the deposit names no batch, platform or chemistry beyond its samples (a patient's biopsy before or after), so no source is named; the genes are taken as the object names them (its rownames; were they not symbols, the export's log names its rowData's columns)."
+}

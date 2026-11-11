@@ -23,6 +23,7 @@ then believe**, never "compute → believe."
    - Real data: `metric-autopsy --h5ad DATA.h5ad --metric mi_3bin --gene-a A --gene-b B --group-col age --groups young old --within sex --replicate-col mouse --estimand composition --direction decrease --sesoi 0.1 --pos-pair Actb Gapdh --neg-pair G1 G2 --json autopsy.json`
      **Wrong in scale:** the SESOI of 0.1 in this example does not fit `mi_3bin`. On real data its values are of the order of 0.01
      (0.0007 to 0.0162 per mouse in the pilot, `validation/exploratory/real_pilot_summary.log`). A SESOI is in the metric's own units.
+     In v0.4.0.dev0 (tag `v0.4.0.dev0` on branch `claude/v0.4`, not released) the SESOI is on the construct's scale by default — for a pair, a change of the correlation of its log expected expression — and GATE 4's probe (`--inject-signal coupling`; or `module --module-genes …`, a change of the module's natural-log expression, change 11; or `coupling_set --set-genes … [--couple half]`, a change of the mean correlation over the pairs it couples, change 9) translates it into the metric's units; `--sesoi-scale observed` declares it in the metric's own units.
    - Python: `from metric_autopsy import run_autopsy, metrics` → bind a metric with `functools.partial` → `run_autopsy(..., replicate_col="mouse", prereg={"estimand": "composition", "direction": "decrease", "sesoi": 0.1})` → `.to_markdown()` / `.save_json(path)`.
 2. **As a Claude Code skill.** `SKILL.md` — elicit a pre-registration first, then run the gates, then emit the autopsy. This is the skill's required behavior; follow it verbatim when invoked.
 3. **As an MCP server** (for any MCP agent). `pip install "metric-autopsy[mcp] @ git+https://github.com/mool32/metric-autopsy.git"` then `metric-autopsy-mcp` (not on PyPI yet). Tools: `autopsy_report`, `qc_parity_report`, `list_metrics`, `demo_report`. See `src/metric_autopsy/mcp_server.py`.
@@ -33,11 +34,16 @@ A metric that changes between conditions is **not** a finding. Declare the commi
 (estimand, direction, replicate unit, SESOI — `references/prereg_template.md`), then run the gates, then
 report the verdict that `report.decide` gives from four fields: **metric validity, design
 adequacy, effect, replication**. An invalid metric (nuisance *bias*, a failed negative control,
-no response to an injected signal) stops the analysis — a later field cannot rescue it. The
+no response to an injected signal) decides the verdict — a later field cannot rescue it (since
+v0.4 the rest is still estimated and reported as the dossier, marked `DOSSIER_ONLY`). The
 effect is judged across biological replicates at equal depth (or spike-in capture), never
 across cells. SUPPORTED needs a metric whose response is demonstrated (positive control or
 injected signal), a replicate-level DETECTED effect in the pre-registered direction and resolved
-judgment gates. Always stratify
+judgment gates. A difference between the groups in detection is not corrected beyond equal depth: v0.4's
+change 17' (a pair's detection equalized) failed its acceptance and was reverted on 2026-11-05
+(`validation/plans/v0.4_spec.md`, section 17'); the dossier's correction line reports the gap.
+Every difference in the dossier is groups[0] − groups[1].
+Always stratify
 by every factor (`--within sex tissue …`) — confounds hide in interactions that pooling
 erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill switch.
 
@@ -50,10 +56,14 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 | `src/metric_autopsy/effect.py` | estimand-dependent correction, replicate-level effect, graded rule, power |
 | `src/metric_autopsy/equalize.py` | binomial thinning to equal depth / spike-in capture |
 | `src/metric_autopsy/stats.py` | t / permutation tests (exact or Monte Carlo), TOST, MDE — no scipy needed |
-| `src/metric_autopsy/injected_signal.py` | known construct changes for GATE 4 (`coupling`, `module`) |
+| `src/metric_autopsy/injected_signal.py` | known construct changes for GATE 4 (`coupling`, `coupling_set` — a set's, v0.4 — and `module`) |
 | `src/metric_autopsy/provenance.py` | data / pre-registration hashes, versions, run log |
 | `src/metric_autopsy/metrics.py` | reference metrics (`mi_3bin`, `norm_pearson`, …) |
 | `src/metric_autopsy/report.py` | `run_autopsy` orchestration, the four fields, `decide` (the verdict rule) |
+| `src/metric_autopsy/composition.py` | the comparison's composition in cell types and tissues (v0.4; reported, not a gate) |
+| `src/metric_autopsy/domain.py` | the claim's domain: the cell types where its genes are expressed, where the claim is judged (v0.4) |
+| `src/metric_autopsy/combined.py` | the estimate combined over the domain's types: units, cluster-robust SE, relabelings (v0.4) |
+| `src/metric_autopsy/specificity.py` | the claim among 1,000 matched controls — a line of the report, not a gate (v0.4) |
 | `src/metric_autopsy/mcp_server.py` | MCP tools |
 | `references/` | full gate definitions, red flags, the pre-reg form (load on demand) |
 | `examples/mi_coupling_tms/` | worked example + executed notebook |
@@ -63,9 +73,9 @@ erases. GATE 1 is the quickest look at them; it is a diagnostic now, not a kill 
 
 - **Install:** `pip install -e ".[dev]"` (core needs only numpy+pandas; scipy/anndata/matplotlib/mcp are optional extras).
 - **Test:** `pytest -q` must stay green. It collects `tests/` and the dev set `validation/probes/`. Known validator failures are `xfail(strict=True)`: a fix that makes one pass shows up as an XPASS error until its marker is removed. Add a regression test for any behavior change, and never edit a dev probe's expected verdict to make it pass.
-- **Contract:** the gates take a black-box `metric(data) -> float`; `data` is any object with `.X`, `.obs`, `.var_names`, and `data[mask]` — real `anndata.AnnData` or the bundled `SimpleData`. Keep gates metric-agnostic; keep optional deps lazily imported.
+- **Contract:** the gates take a black-box `metric(data) -> float`; `data` is any object with `.X`, `.obs`, `.var_names`, and `data[mask]` — real `anndata.AnnData` or the bundled `SimpleData`. `X` may be dense or scipy.sparse: since v0.4.0.dev0 (change 10) a sparse X stays sparse and gets the dense X's report, draw for draw — keep every new path storage-aware (`core.row_sums`, `n_detected`, `column_block`, `with_columns`) and test it against the dense path. Keep gates metric-agnostic; keep optional deps lazily imported.
 - **One rule:** the verdict is `report.decide`, shared by the API, the CLI and MCP; never re-implement it in a front end. Numbers meant for the paper come only from scripts in this repo, with the hashes from the JSON report.
-- **Adding a reference metric:** add a keyword-only `fn(data, *, gene_a, gene_b) -> float` to `metrics.py`, then it's usable by name in the CLI and MCP tools.
+- **Adding a reference metric:** add a keyword-only `fn(data, *, gene_a, gene_b) -> float` to `metrics.py`, then it's usable by name in the CLI and MCP tools. A set's metric is `fn(data, *, genes) -> float`, listed in `metrics.SET_METRICS` (`set_norm_pearson`, v0.4); the front ends judge it with the set's probe over its genes.
 
 ## Don't
 

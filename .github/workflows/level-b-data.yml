@@ -1,0 +1,256 @@
+# Level B, step S5: the data of the kept claims, read from the authors' deposits and checked
+# (validation/level_b/plan_s5.md; validation/level_b/data_run.py, data_checks.py). Nothing of the engine runs.
+#
+# On every push to the pull request: the dry run (data_run.py's and data_checks.py's tests on fabricated deposits).
+#
+# A batch of datasets, once, by the label "level-b-data-<n>": every spec named in
+# validation/level_b/data_specs/run<n>.txt (each spec committed before the run) is read and checked in a job of its
+# own (a spec whose loader is r_export: its R object fetched, then exported by validation/level_b/r_export.R with R
+# from Ubuntu's archive, before it is read); the reports (report.json, report.md, files.tsv with each file's URL,
+# size and SHA256, the log) go to the new branch results/level-b-data-<n>. The deposits' files themselves are not
+# kept (their SHA256 are). A second start finds the branch and stops; a second run only after a technical failure,
+# recorded in JOURNAL.md.
+#
+# A deposit held only in an R object is described first, once, by the label "level-b-rdescribe-<n>": every
+# "rid<TAB>url[<TAB>md5]" of validation/level_b/data_specs/rdescribe<n>.txt is fetched (checked against the md5 its host
+# names, where it names one), unpacked where it is a gzip, and described by
+# validation/level_b/r_export.R (R and SingleCellExperiment from Ubuntu's archive, SeuratObject from Posit's dated snapshot of CRAN), its
+# description to results/level-b-rdescribe-<n>; no check is made.
+name: Level B's data checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+env:
+  PYTHONHASHSEED: "0"
+
+jobs:
+  dry:
+    if: github.event.action != 'labeled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+          pip install -q --no-deps pytest==9.1.1 pluggy==1.6.0 iniconfig==2.3.1 pygments==2.21.0
+      - name: The data checks' tests on fabricated deposits
+        run: python -m pytest -q -p no:cacheprovider -c /dev/null validation/level_b/test_data_run.py validation/level_b/test_data_checks.py
+      - name: Every spec reads as a spec
+        run: |
+          python -I -c "
+          import json, pathlib
+          for p in sorted(pathlib.Path('validation/level_b/data_specs').glob('R*.json')):
+              s = json.loads(p.read_text())
+              assert {'rid', 'organism', 'loader', 'files', 'groups', 'donor', 'claims'} <= set(s), p
+              assert p.stem == s['rid'] or p.stem.startswith(s['rid'] + '_'), p  # a paper's second dataset: <rid>_<x>
+              print(p.name, s['loader'], len(s['claims']), 'claims')
+          "
+
+  plan:
+    if: github.event.action == 'labeled' && startsWith(github.event.label.name, 'level-b-data-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      n: ${{ steps.n.outputs.n }}
+      rids: ${{ steps.rids.outputs.rids }}
+    steps:
+      - name: One run, one attempt; the branch must not exist
+        id: n
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          n="${{ github.event.label.name }}"; n="${n#level-b-data-}"
+          case "$n" in ''|*[!0-9]*) echo "the label must end in a number"; exit 1;; esac
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/results/level-b-data-$n" > /dev/null; then
+            echo "results/level-b-data-$n exists: this batch has run"; exit 1
+          fi
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: The batch's datasets
+        id: rids
+        run: |
+          f="validation/level_b/data_specs/run${{ steps.n.outputs.n }}.txt"
+          test -s "$f"
+          rids=$(python3 -c "import json,sys; print(json.dumps([l.strip() for l in open('$f') if l.strip()]))")
+          echo "rids=$rids" >> "$GITHUB_OUTPUT"
+          cat "$f"
+
+  data:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: ${{ fromJSON(needs.plan.outputs.rids || '["none"]') }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+      - name: An R object, fetched and exported by R first (a spec whose loader is r_export; plan_s5.md, section 4)
+        timeout-minutes: 120
+        run: |
+          spec=validation/level_b/data_specs/${{ matrix.rid }}.json
+          loader=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['loader'])" "$spec")
+          if [ "$loader" != r_export ]; then echo "the loader $loader: no R object"; exit 0; fi
+          sudo apt-get update -q
+          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite r-bioc-singlecellexperiment
+          sudo Rscript -e 'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))); install.packages(c("SeuratObject", "BiocManager"), repos = "https://p3m.dev/cran/__linux__/noble/2026-10-01")'
+          mkdir -p files out/${{ matrix.rid }}/fetch
+          Rscript -e 'cat(R.version.string, "\n"); for (p in c("Matrix", "SingleCellExperiment", "SeuratObject")) cat(p, as.character(packageVersion(p)), "\n")' | tee out/${{ matrix.rid }}/r_versions.txt
+          python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }}/fetch --files-to files --fetch-only
+          obj=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['files']['object'].rsplit('/', 1)[-1])" "$spec")
+          if [ "$(head -c 2 "files/$obj" | od -An -tx1 | tr -d ' \n')" = "1f8b" ]; then gunzip -c "files/$obj" > files/object.rds; else cp "files/$obj" files/object.rds; fi
+          set -o pipefail
+          # the spec's cells only (2026-11-11, J27): its `cells`, every column named, one of its values
+          python -I -c "import json, sys; json.dump(json.load(open(sys.argv[1])).get('cells') or {}, open(sys.argv[2], 'w'))" "$spec" files/keep.json
+          Rscript validation/level_b/r_export.R export files/object.rds files/export files/keep.json 2>&1 | tee out/${{ matrix.rid }}/export.log
+          rm -f files/object.rds
+      - name: Read and check
+        timeout-minutes: 170
+        run: |
+          spec=validation/level_b/data_specs/${{ matrix.rid }}.json
+          mkdir -p files
+          if [ -d files/export ]; then  # an R object's export: its file was fetched in the step before
+            python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }} --files files
+          else
+            python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }} --files-to files
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-data-${{ matrix.rid }}
+          path: out
+          if-no-files-found: error
+
+  publish:
+    needs: [plan, data]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: level-b-data-*
+          merge-multiple: true
+          path: pub
+      - name: To results/level-b-data-<n>, with SHA256SUMS (a second start finds the branch and stops)
+        run: |
+          n="${{ needs.plan.outputs.n }}"
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" "refs/heads/results/level-b-data-$n" > /dev/null; then
+            echo "results/level-b-data-$n exists: nothing is pushed"; exit 1
+          fi
+          mkdir -p pub
+          cp "repo/validation/level_b/data_specs/run$n.txt" pub/
+          for r in $(cat "pub/run$n.txt"); do mkdir -p "pub/$r" && cp "repo/validation/level_b/data_specs/$r.json" "pub/$r/spec.json"; done
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/data_run.py)
+          plan=$(git -C repo rev-parse HEAD:validation/level_b/plan_s5.md)
+          cd pub
+          {
+            echo "# Level B, S5: the data checks, batch $n"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-data.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/data_run.py (blob $blob) on each spec of run$n.txt; the plan validation/level_b/plan_s5.md (blob $plan), committed before the run. The data job: ${{ needs.data.result }}."
+            echo "- Per dataset: spec.json, report.json and report.md (the six checks), files.tsv (each file's URL, size and SHA256), data_run.log; for an R object also fetch/ (its download), export.log (r_export.R export) and r_versions.txt; a dataset without report.md failed (its log, if any, says where)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          git init -q -b "results/level-b-data-$n"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B, S5: the data checks, batch $n (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/results/level-b-data-$n" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/results/level-b-data-$n" | cut -f1)" = "$(git rev-parse HEAD)"
+          cat */report.md || true
+
+  rdescribe:
+    if: github.event.action == 'labeled' && startsWith(github.event.label.name, 'level-b-rdescribe-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - name: One run, one attempt; the branch must not exist
+        id: n
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          n="${{ github.event.label.name }}"; n="${n#level-b-rdescribe-}"
+          case "$n" in ''|*[!0-9]*) echo "the label must end in a number"; exit 1;; esac
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/results/level-b-rdescribe-$n" > /dev/null; then
+            echo "results/level-b-rdescribe-$n exists: this step has run"; exit 1
+          fi
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - name: R and SeuratObject
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q r-base-core r-cran-matrix r-cran-jsonlite r-bioc-singlecellexperiment
+          sudo Rscript -e 'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))); install.packages(c("SeuratObject", "BiocManager"), repos = "https://p3m.dev/cran/__linux__/noble/2026-10-01")'
+          Rscript -e 'cat(R.version.string, "\n"); cat("SeuratObject", as.character(packageVersion("SeuratObject")), "\n")'
+      - name: Fetch and describe
+        run: |
+          n="${{ steps.n.outputs.n }}"
+          mkdir -p pub dl
+          cp "repo/validation/level_b/data_specs/rdescribe$n.txt" pub/
+          while IFS=$'\t' read -r rid url md5; do
+            [ -n "$rid" ] || continue
+            mkdir -p "pub/$rid"
+            curl -sS -L --retry 3 -o "dl/$rid.rds.gz" "$url"
+            sha=$(sha256sum "dl/$rid.rds.gz" | cut -d' ' -f1); size=$(stat -c %s "dl/$rid.rds.gz")
+            got=$(md5sum "dl/$rid.rds.gz" | cut -d' ' -f1)
+            printf 'url\tbytes\tsha256\tmd5\tmd5_named\n%s\t%s\t%s\t%s\t%s\n' "$url" "$size" "$sha" "$got" "${md5:--}" > "pub/$rid/files.tsv"
+            if [ -n "$md5" ] && [ "$md5" != "$got" ]; then echo "$rid: md5 $got, not the $md5 its host names"; continue; fi
+            # a gzip (GEO's .rds.gz, or an .rds saved compressed) is unpacked once; any other file is read as it is
+            if [ "$(head -c 2 "dl/$rid.rds.gz" | od -An -tx1 | tr -d ' \n')" = "1f8b" ]; then gunzip -c "dl/$rid.rds.gz" > "dl/$rid.rds"; else mv "dl/$rid.rds.gz" "dl/$rid.rds"; fi
+            set -o pipefail
+            Rscript repo/validation/level_b/r_export.R describe "dl/$rid.rds" "pub/$rid" 2>&1 | tee "pub/$rid/describe.log" || echo "$rid: the description failed (its log)"
+            rm -f "dl/$rid.rds"
+          done < "repo/validation/level_b/data_specs/rdescribe$n.txt"
+      - name: To results/level-b-rdescribe-<n>, with SHA256SUMS
+        run: |
+          n="${{ steps.n.outputs.n }}"
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/r_export.R)
+          cd pub
+          {
+            echo "# Level B, S5: R objects described, batch $n"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-data.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/r_export.R (blob $blob) describe, per line of rdescribe$n.txt; no check is made (plan_s5.md, section 4)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+          git init -q -b "results/level-b-rdescribe-$n"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B, S5: R objects described, batch $n (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/results/level-b-rdescribe-$n" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/results/level-b-rdescribe-$n" | cut -f1)" = "$(git rev-parse HEAD)"
+          cat */describe.json || true

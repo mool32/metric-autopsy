@@ -1,0 +1,171 @@
+R00242  Improving gene network inference with graph wavelets and making insights about ageing-associated regulatory changes in lungs.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00250  Single-cell analysis of nonhuman primate preimplantation development in comparison to humans and mice.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00272  Sequential progenitor states mark the generation of pancreatic endocrine lineages in mice and humans.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00289  Loss of coordinated expression between ribosomal and mitochondrial genes revealed by comprehensive characterization of a large family with a rare Mendelian disorder.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00304  WDNE: an integrative graphical model for inferring differential networks from multi-platform gene expression data with missing values.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00444  Single-Cell Differential Network Analysis with Sparse Bayesian Factor Models.
+  pass 1: UNCLEAR - — Rule 4 undecidable: patients per group and donor ids not given (462 vs 1,371 cells, GSE162086). Set claims: CD200/TNFSF8 partners more correlated in hospitalized, IFI44L/XAF1 in non-hospitalized (Figs 6-7); metric is SFM model-based correlation (rule 2?).
+  pass 2: UNCLEAR - — Set claims (gene with many partners, Figs 6–7): CD200, TNFSF8 edges stronger in hospitalized, IFI44L, XAF1 in non-hospitalized COVID-19 T cells (GSE162086). Rule 4: donors per group not given. Rule 2 doubtful: Bayesian factor model's latent correlation.
+
+R00508  Single-cell RNA-sequencing of peripheral blood mononuclear cells reveals widespread, context-specific gene expression regulation upon pathogenic exposure.
+  pass 1: EXCLUDE F7 — Co-expression QTL claims (CLEC12A-PML; CLEC12A, RPS26 partner sets) compare genotype groups of donors; genotypes and cell-to-donor link only via EGA EGAS00001005376 and Data Access Committee request ('access restricted'); raw counts said on eqtlgen.org.
+  pass 2: UNCLEAR - — Set claims by genotype (co-expression QTLs: CLEC12A with partners at 3 h, RPS26 coQTLs fall after stimulation; Supplementary Data 11), Spearman per donor, 120 donors. Rule 3 unclear: counts on eqtlgen.org, but genotypes, barcode-to-donor file restricted (EGA, DAC).
+
+R00562  Network analysis reveals different hub genes and molecular pathways for pig in vitro fertilized early embryos and parthenogenotes.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00740  Imputation of single-cell transcriptome data enables the reconstruction of networks predictive of breast cancer metastasis.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R00846  Sodium glucose co-transporter 2 inhibition increases epidermal growth factor expression and improves outcomes in patients with type 2 diabetes.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01186  Single-cell transcriptomics reveals stage- and side-specificity of gene modules in colorectal cancer.
+  pass 1: UNCLEAR - — Set claims: WGCNA modules E1, E2 not preserved, weaker in pT234 than pT1; R1, R3 differ left vs right (GSE178341, 62 patients). Unclear rule 1: module gene lists, sizes not given; Additional file 1 unstated. Patient ids unstated.
+  pass 2: UNCLEAR - — Rule 1 (set) undecidable: WGCNA modules E1/E2 (edge weights higher in pT1 than pT234) and R1/R3 (by colon side) over single cells, GSE178341, 62 patients; module gene lists not given; Additional file 1 cited only for cell counts.
+
+R01215  Loss of Inpp5d has disease-relevant and sex-specific effects on glial transcriptomes.
+  pass 1: EXCLUDE F3 — Female-1 hdWGCNA module (Inpp5d hub, Table S8) said to collapse in female Inpp5d-/-, measured as eigengene decrease (a set level); other claims CellChat signaling. Also 2 vs 2 mice per sex (GSE254999), rule 4 fails.
+  pass 2: KEEP - — Set claim kept: Inpp5d the most central gene of the female microglial hdWGCNA module, much less central in males (6 vs 6 mice). KO 'collapse' rests on eigengene levels with 2 vs 2 mice; CellChat signalling is not coordination.
+    pass 2 claim 1: SET: Female-1 module (Inpp5d and its module partners), 5056 genes, Table S8; male counterpart Male-1 module, 5798 genes, Table S9 | female mice (2 each Inpp5d+/+, +/-, -/-) vs male mice (same), 6 weeks | higher in females: Inpp5d 1st of 5056 genes by intramodular connectivity vs 256th of 5798 in males | hdWGCNA intramodular connectivity (centrality rank) | n1=6 females, n2=6 males; C(12,6)=924 (rule 4 yes) | GEO GSE254999
+
+R01281  scDiffCoAM: A complete framework to identify potential biomarkers for esophageal squamous cell carcinoma using scRNA-Seq data analysis.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01426  The impact of PTEN status on glioblastoma multiforme: A glial cell type-specific study identifies unique prognostic markers.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01787  Paricalcitol plus hydroxychloroquine enhances gemcitabine activity and induces mesenchymal to epithelial transition in pancreatic ductal adenocarcinoma: A single cell RNA-seq analysis.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R01963  Analysis of individual patient pathway coordination in a cross-species single-cell kidney atlas.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02150  Deconstruction of tophi and synovium defines SPP1+ macrophages involved in extracellular matrix remodelling in gout.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02159  Reconstructing human pancreatic gene networks enhances stem cell-derived β cell induction.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02185  Uncovering the core genetic programs governing plant guard cell biology.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R02858  Single-Nucleus Transcriptomics of the Mouse Medial Preoptic Area Reveals Sex-Dependent Molecular Signatures of Social Dominance.
+  pass 1: KEEP - — Oxt-Avp Spearman correlation stronger in subordinate than dominant mice of both sexes (6 vs 6, Souporcell-demultiplexed pools of 3), and in subordinate males than females (3 vs 3). Zenodo deposit; check it holds counts and individual labels.
+  pass 2: UNCLEAR - — Oxt–Avp Spearman ρ higher in subordinates than dominants, both sexes (3 vs 3 per sex; 6 vs 6 overall). Rules 3–4 undecidable: one pooled library per group, mouse ids only from Souporcell genotypes; Zenodo deposit's contents (counts, ids) unstated.
+    pass 1 claim 1: Oxt, Avp | subordinate vs dominant, in each sex (females, males) | higher in subordinates (dom - sub: Δρ = -0.112 females, -0.191 males) | Spearman correlation (ρ) of normalized expression; Δρ between sample pools | 6 vs 6 mice (3 F + 3 M per group; one pool of 3 per sex x status, Souporcell-demultiplexed); 3 vs 3 within a sex (rule 4 yes) | Zenodo 10.5281/zenodo.19685732; github.com/kmmahach/snRNAseq_status
+    pass 1 claim 2: Oxt, Avp | subordinate males vs subordinate females | higher in subordinate males (female sub - male sub: Δρ = -0.102) | Spearman correlation (ρ) of normalized expression; Δρ between sample pools | 3 vs 3 mice (one pool each, Souporcell-demultiplexed) (rule 4 no) | Zenodo 10.5281/zenodo.19685732; github.com/kmmahach/snRNAseq_status
+
+R03041  The response of human melanocytic nevi to simulated solar radiation assessed by single-nucleus RNA sequencing of frozen tissue.
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03206  Ortholog transfer stress test: Regulatory edge conservation across species, tissues, and evolutionary distance.
+  pass 1: UNCLEAR - — Results name RUNX3-NKG7 and RUNX3-GZMB Spearman edges stronger in mouse than human lung (CELLxGENE data). Rule 4 undecidable: donors per dataset not given; also unclear whether the Krasnow mouse Smart-seq2 lung data are Tabula Muris FACS (F6).
+  pass 2: UNCLEAR - — Results: RUNX3-NKG7 and RUNX3-GZMB Spearman edges stronger in mouse than human lung (fragile edges). Rule 4 open: no donor or mouse numbers or ids for Tabula Sapiens lung or Krasnow mouse lung; species as conditions to confirm.
+
+R03277  Single-nuclei RNA sequencing reveals obesity-associated rewiring of estrogen signaling in endometrioid adenocarcinoma.
+  pass 1: UNCLEAR - — Set claims, TE nuclei, obese 7 vs normal 6, GSE300407 (ESR1 module distinct; ESR1 kME 0.48 vs 0.25; weak preservation). Open: module memberships unlisted (only top-50 hubs, Figure 3C); nine-gene rewired set (Table 1) lacks a described edge method.
+  pass 2: UNCLEAR - — Set claims (ESR1 hdWGCNA modules rewired in obese vs normal-BMI epithelium; ESR1 kME 0.48 vs 0.25) lack full gene lists (top-50 hubs only, Fig 3C); Table 1's 9 rewired genes listed, rewired-edge metric undescribed. GSE300407; 7 vs 6 donors.
+
+R03468  CGMFinder Identifies Correlated Gene Modules from 3H scRNA-seq Data
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03474  RNA Dynamics Regulate Transcriptional Condensate Vivacity to Drive Gene Coordination
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03475  Conserved cell state dynamics reveal targetable resistance patterns in ovarian high-grade serous carcinoma
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03515  Evaluating brain cell marker genes based on differential gene expression and co-expression
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03520  Nuclear gene proximity and protein interactions shape transcript covariances in mammalian single cells
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03557  NEBULA: a fast negative binomial mixed model for differential expression and co-expression analyses of large-scale multi-subject single-cell data
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03569  Cell type resolved co-expression networks of core clock genes in brain development
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03583  Single-cell RNA-sequencing reveals widespread personalized, context-specific gene expression regulation in immune cells
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03593  Random Forest Factorization Reveals Latent Structure in Single Cell RNA Sequencing Data
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03633  Conserved coexpression at single cell resolution across primate brains
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03642  Single-nucleus co-expression networks of dopaminergic neurons support iron accumulation as a plausible explanation to their vulnerability in Parkinson’s disease
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03644  Spectral detection of condition-specific biological pathways in single-cell gene expression data
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03733  Single-cell Transcriptome Profiling of Post-treatment and Treatment-naïve Colorectal Cancer: Insights into Putative Mechanisms of Chemoresistance
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03739  Zebrahub-Multiome: Uncovering Gene Regulatory Network Dynamics During Zebrafish Embryogenesis
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03794  Disease-associated variants are enriched for altering cell-type-specific gene co-expression relationships
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03857  Integrative Omics and Network Biology Reveal Transcriptional Changes of Amino Acid Transport in Arabidopsis Susceptibility to Pseudomonas syringae
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03915  Inflammatory suppression and cancer-associated bypass of the b 0,+ selenium-utilization program in the human intestine
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03952  Deciphering the Network Architecture of APOBEC3-Driven Mutagenesis in HPV-Positive Head and Neck Cancers
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+
+R03953  Single-nucleus profiling of social behaviour in a mutualistic reef fish
+  pass 1: not read (no full text)
+  pass 2: not read (no full text)
+

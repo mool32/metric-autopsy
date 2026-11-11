@@ -1,0 +1,7 @@
+# metric-autopsy 0.4.0.dev0 — change 10 at scale — git b40742a, python 3.13.16, numpy 2.5.3
+matrix: 10000 cells x 10000 genes, 5 mice per group; stored entries 9448720 (9.4%); CSR 113 MB; a dense float64 copy would take 800 MB
+built in 4.5 s; peak resident memory so far 399 MB
+run_autopsy: 361 s wall; peak resident memory of the process 949 MB
+gates: GATE 0 WARN; GATE 5 PASS; GATE 4 PASS; GATE 1 PASS; GATE 2 PASS; GATE 3 JUDGMENT
+specificity: 988 of 1000 controls at least as far in the claim's direction, not specific
+VERDICT: NO DETECTABLE EFFECT — effect -0.019 [-0.03845, +0.0004586]: the 90% interval lies within ±0.06556 (s_m, GATE 4's response to a change of 0.1 on the construct's scale, 95% CI [+0.0578, +0.07331] over the replicates; TOST)

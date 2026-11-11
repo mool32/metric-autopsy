@@ -1,0 +1,60 @@
+{
+ "rid": "R02693",
+ "accession": "GSE178265",
+ "organism": "homo_sapiens",
+ "loader": "mtx_libraries",
+ "files": {
+  "matrix": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_matrix.mtx.gz",
+  "features": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_features.tsv.gz",
+  "barcodes": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/suppl/GSE178265_Homo_bcd.tsv.gz",
+  "series": [
+   "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL20084_series_matrix.txt.gz",
+   "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL21120_series_matrix.txt.gz",
+   "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL24676_series_matrix.txt.gz",
+   "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE178nnn/GSE178265/matrix/GSE178265-GPL30282_series_matrix.txt.gz"
+  ]
+ },
+ "cells": {
+  "tissue": [
+   "Substantia nigra pars compacta"
+  ]
+ },
+ "groups": {
+  "column": "disease",
+  "values": [
+   "Disease",
+   "Ctrl"
+  ]
+ },
+ "donor": {
+  "column": "library",
+  "regex": "(?:CN|xi)(\\d+)"
+ },
+ "source": "facs classification",
+ "sex_label": "sex",
+ "claims": [
+  {
+   "id": "1",
+   "genes": [
+    "TMBIM6",
+    "HSPA5"
+   ]
+  },
+  {
+   "id": "2",
+   "genes": [
+    "TMBIM6",
+    "ERN1"
+   ]
+  },
+  {
+   "id": "3",
+   "genes": [
+    "TMBIM6",
+    "XBP1"
+   ]
+  }
+ ],
+ "design": "the paper's: Pearson correlation of log-normalized expression over the pooled nuclei of the substantia nigra, PD against neurologically healthy controls (11 against 10 in the paper)",
+ "notes": "the claim's cells are every nucleus of the substantia nigra pars compacta (the paper's 'overall cell population'); the deposit's per-library characteristics give the disease, sex and sort (NURR1-positive 'Pos' or unsorted 'DAPI', the source); the donor is the number in the library's title"
+}
