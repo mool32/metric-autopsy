@@ -408,3 +408,32 @@ covid19cellatlas.org's page of patients' datasets, which links the Blish lab's a
 (`https://covid19.cog.sanger.ac.uk/submissions/release1/blish_awilk_covid_seurat.rds`, md5 52794c83…3d73d4c05 on the
 page) — the object R01795 names. It is described first (`rdescribe3.txt`, label `level-b-rdescribe-3`; the job now
 checks a file against the md5 its host names and unpacks only a gzip). Nothing of any count was read.
+
+## J23 — 2026-11-11: S4's coding fixed before its search; batch 3's deposits looked at further
+
+**S4, before its search and before any record is read:** the coders' instructions (`verdicts_coding.md`, 8d62a76);
+the batches, the check of a coder's file and the comparison of the passes (`verdicts_codes.py`); the task each
+session gets, word for word, one session at a time, and the independence check (`independence.py --text-pattern`,
+S4's texts named by their keys) — `plan_s4.md`, section 2, precised (00bf69f). The comparison computes no share of
+the claims with a verdict, nor of those that hold: π's inputs, after the owner approves the list (section 3).
+
+**Batch 3's deposits, looked at further** (2026-11-11, 00:00–00:04 UTC; names, listings, tables of cells and one
+table's first rows; no claim's genes read in any count):
+- **GSE174367** (Morabito et al. 2021; R00765's claim 1, oligodendrocytes): the file listing answered HTTP 404; the
+  SOFT names a 10x HDF5 matrix of the snRNA-seq and a table of its 61,472 nuclei (barcode — each sample its own
+  suffix, every barcode once —, sample, diagnosis, batch, cell type, age, sex...): 18 samples, 11 AD and 7 controls,
+  in 3 batches each holding both groups; 1,092 to 3,739 oligodendrocytes ("ODC") a sample. Synapse's syn22079621
+  ("Human AD Single-nuclei Multi-Omics") answered its project's description only.
+- **Jerber et al. 2021** (R00765's claim 2, the differentiation's failure): Zenodo 4333872 holds normalised counts
+  only (D11, D30, D52: 5.9 to 13 GB); the raw data are reads, in EGA (managed access) and ENA (ERP121676). No count
+  matrix is public: the claim's data are listed as not checkable, with why.
+- **GSE153855** (R02175): per-sample tables of counts and of RPKM (Smart-seq2), one archive of 218 MB; one sample's
+  table of counts (GSM4656102, 3.2 MB) downloaded to see its form: genes by cells, 384 cells, 30,558 genes, whole
+  numbers written with a decimal point; the series matrix (the samples' donors and diagnoses).
+- **GSE214517** (R02175's second dataset): the SOFT and the series matrix; the one supplementary table
+  (`GSE214517_rpkms.txt.gz`) holds RPKM, its first rows read (its columns cells, named by their donor `HP…`): no
+  counts, so this dataset fails the check of origin (12.3: counts not raw integers) if nothing else is found.
+- **E-MTAB-5061** (R02175): BioStudies' record lists three files, one of processed data.
+
+The specs follow the sets' genes (`plan_s5.md`, section 5): the next runs are the sets' files
+(`level-b-setgenes`) and the description of the Wilk et al. object (`level-b-rdescribe-3`).
