@@ -174,7 +174,11 @@ def table_rows(name: str, data: bytes, sheet: str | None = None) -> list:
 
 
 def _show_tables(L: list, name: str, data: bytes):
-    sheets = sheet_names(data) if name.lower().endswith(".xlsx") else [None]
+    try:
+        sheets = sheet_names(data) if name.lower().endswith(".xlsx") else [None]
+    except Exception as e:  # a workbook this reader cannot open is said so (2026-11-11, J26)
+        L += ["", f"### `{name}`: not read ({type(e).__name__}: {e})"]
+        return
     for sh in sheets:
         try:
             rows = table_rows(name, data, sh)
@@ -199,13 +203,22 @@ def show(files, out: Path) -> str:
         for info in z.infolist():
             L.append(f"- `{info.filename}` ({info.file_size:,} bytes)")
             if info.filename.lower().endswith(".zip"):
-                with zipfile.ZipFile(io.BytesIO(z.read(info.filename))) as zz:
-                    inner[info.filename] = [(i.filename, i.file_size) for i in zz.infolist()]
+                try:
+                    with zipfile.ZipFile(io.BytesIO(z.read(info.filename))) as zz:
+                        inner[info.filename] = [(i.filename, i.file_size) for i in zz.infolist()]
+                except Exception as e:  # said so, and the next member read
+                    L.append(f"  - not read as an archive ({type(e).__name__}: {e})")
+                    continue
                 L += [f"  - `{info.filename}!/{n}` ({b:,} bytes)" for n, b in inner[info.filename]]
         names = [i.filename for i in z.infolist()] + [f"{o}!/{n}" for o, ms in inner.items() for n, _b in ms]
         for name in names:
             if name.lower().endswith(TABLES):
-                _show_tables(L, name, member(z, name))
+                try:
+                    data = member(z, name)
+                except Exception as e:
+                    L += ["", f"### `{name}`: not read ({type(e).__name__}: {e})"]
+                    continue
+                _show_tables(L, name, data)
         L.append("")
     text = "\n".join(L) + "\n"
     out.write_text(text)

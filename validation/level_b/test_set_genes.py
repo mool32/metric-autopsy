@@ -134,3 +134,13 @@ def test_another_version_s_supplement_an_archive_inside_it_and_several_columns(t
     kept2 = dict(papers=[dict(rid="R02175", claims=[dict(id="6", kind="set", genes=[], set_name="Microfilaments and Microtubuli")])])
     spec2 = dict(rid="R02175", claim="6", member="m.xlsx", sheet="S", header_row=1, column=["(5) Microfilaments", "(9) Microtubuli"])
     assert G.extract([spec2], files, kept2)[0]["genes"] == ["CAPN2", "MARCKS", "AP1M2"]
+
+
+def test_show_says_which_members_it_cannot_read_and_goes_on(tmp_path):
+    """2026-11-11 (J26): a member named .xlsx that is no workbook, and a .zip that is no archive, stopped `show`."""
+    _xlsx(tmp_path / "ok.xlsx", {"S": [["gene"], ["A"]]})
+    files = _archive(tmp_path, "R00653", {"bad.xlsx": b"not a workbook", "bad.zip": b"not an archive",
+                                          "ok.xlsx": (tmp_path / "ok.xlsx").read_bytes()})
+    text = G.show(files, tmp_path / "show.md")
+    assert "### `bad.xlsx`: not read (BadZipFile" in text and "not read as an archive (BadZipFile" in text
+    assert "### `ok.xlsx` / S: 2 rows" in text

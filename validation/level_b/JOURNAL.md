@@ -489,3 +489,12 @@ SingleCellExperiment is read as before (tried again).
 
 **The second attempt** (the one a technical failure allows): the same object by the same line
 (`data_specs/rdescribe4.txt`, label `level-b-rdescribe-4`), the branch of the first kept.
+
+## J26 — 2026-11-11: R00653's journal article's supplement fetched, then `show` stopped (a technical failure); the second attempt
+
+**The run** (label `level-b-setgenes-2`, workflow run 42935138906 at b0d1133): Europe PMC answered HTTP 500 once,
+then gave the archive (42,353,139 bytes); `set_genes.py show` then stopped on a member named `.xlsx` that its reader
+could not open as a workbook (`BadZipFile`), before the job's upload: nothing was published, no branch was made, and
+nothing of the archive was read here. **The fix:** `show` says which member it cannot read (a workbook, an archive
+inside the archive) and goes on; tested on fabricated members. **The second attempt** (the one a technical failure
+allows): the same list (`amendment1/setgenes3.tsv`, a copy of `setgenes2.tsv`), label `level-b-setgenes-3`.
