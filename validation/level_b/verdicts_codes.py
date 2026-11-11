@@ -303,6 +303,15 @@ def merge(batches_dir: Path, pass1: Path, pass2: Path, out: Path) -> dict:
         f.write("claim\trecord\t" + "\t".join(f"{c}_1" for c in cols[2:]) + "\t" + "\t".join(f"{c}_2" for c in cols[2:]) + "\n")
         for r in owner:
             f.write("\t".join([r["claim"], r["record"]] + [r["one"][c] for c in cols[2:]] + [r["two"][c] for c in cols[2:]]) + "\n")
+    # each session's counts, from its file (one session per pass and batch)
+    with (out / "sessions.tsv").open("w") as f:
+        f.write("pass\tbatch\tlines\tVERDICT\tNO_VERDICT\tcodes\n")
+        for p, side in (("1", "one"), ("2", "two")):
+            for name in manifest["batches"]:
+                mine = [_full(r[side]) for r in rows if r["batch"] == name]
+                n_v = sum(x != "NO_VERDICT" for x in mine)
+                codes = ", ".join(f"{k} {v}" for k, v in sorted(Counter(x for x in mine if x != "NO_VERDICT").items()))
+                f.write(f"{p}\t{name.removeprefix('batch_')}\t{len(mine)}\t{n_v}\t{len(mine) - n_v}\t{codes or '-'}\n")
     return res
 
 

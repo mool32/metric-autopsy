@@ -105,6 +105,11 @@ def assemble(results: Path, root: Path = HERE) -> dict:
                 data_not_checked=dict(papers=unchecked, claims=n_claims(unchecked)))
 
 
+def _kappa(x) -> str:
+    """A kappa, or why it is undefined: both passes code every line in one and the same category (chance agreement 1)."""
+    return "undefined (one category in both passes)" if x is None or x != x else f"{x:.3f}"
+
+
 def markdown(L: dict) -> str:
     c = L["counts"]
     out = ["# Level B: the list for the owner (S7; `plan_s7.md`)", "",
@@ -139,9 +144,9 @@ def markdown(L: dict) -> str:
     v = L.get("verdicts")
     if v:
         mg = v["merge"]
-        out.append(f"- coded by both passes: {mg['lines']} lines; kappa of the decisions {mg['kappa_decision']:.3f}, "
-                   f"of the full codes {mg['kappa_code']:.3f}; agreed verdicts {mg['verdicts_agreed']}; to the owner "
-                   f"{mg['to_owner']}")
+        out.append(f"- coded by both passes: {mg['lines']} lines; the decisions: agreement {mg['agreement_decision']:.3f}, "
+                   f"kappa {_kappa(mg['kappa_decision'])}; the full codes: agreement {mg['agreement_code']:.3f}, kappa "
+                   f"{_kappa(mg['kappa_code'])}; agreed verdicts {mg['verdicts_agreed']}; to the owner {mg['to_owner']}")
         for c in v["claims"]:
             capped = f", read by its paper's terms {c.get('read')} (over the cap)" if c.get("terms_applied") else ""
             out.append(f"- {c['claim']} ({c['kind']}): found {c['records']} (by citations {c['by_citations']}, by the "

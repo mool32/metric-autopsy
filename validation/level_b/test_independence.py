@@ -79,3 +79,26 @@ def test_s4_s_texts_by_their_keys(tmp_path, capsys):
     assert independence.main(args) == 1
     lines = capsys.readouterr().out.splitlines()
     assert lines[0].endswith("ok") and "outside its list ['V00002']" in lines[1] and lines[1].endswith("CHECK")
+
+
+def test_the_harness_s_attachment_is_counted_apart(tmp_path, capsys):
+    """S4 (J31): the harness's task list in a session's context names a forbidden path; the session's own reading
+    does not. Strict, it fails; with the attachment counted apart, only a session that names the path itself fails."""
+    att = json.dumps({"type": "attachment", "attachment": {"type": "task_reminder", "content": [
+        {"id": "1", "subject": "S3: decision sheet from screening/to_owner.tsv and claims.md"}]}})
+    clean = att + "\n" + _transcript([f"{tmp_path}/pass1/batch_01.list"], ["R00001\ttexts/R00001.txt"])
+    reads = att + "\n" + _transcript([f"{tmp_path}/pass2/batch_01.list", "validation/level_b/claims.md"],
+                                     ["R00001\ttexts/R00001.txt", "the claims"])
+    tr = _setup(tmp_path, [("1", "01", clean), ("2", "01", reads)])
+    args = ["--transcripts", str(tr), "--agents", str(tmp_path / "agents.tsv"),
+            "--pass1", f"{tmp_path}/pass1", "--pass2", f"{tmp_path}/pass2", "--forbid", "claims.md",
+            "--batch-pattern", r"/batch_(\d+)\.list"]
+    assert independence.main(args) == 1
+    assert capsys.readouterr().out.count("CHECK") == 2
+    out_file = tmp_path / "excluded.jsonl"
+    assert independence.main(args + ["--exclude-attachment", "task_reminder", "--excluded-out", str(out_file)]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert "claims.md named 0 times" in lines[0] and "excluded attachments 1 (1 distinct), naming: claims.md 1" in lines[0]
+    assert lines[0].endswith("ok") and "claims.md named 1 times" in lines[1] and lines[1].endswith("CHECK")
+    assert lines[2] == "2 sessions: 1 to check" and lines[3].endswith("1, written to excluded.jsonl")
+    assert len(out_file.read_text().splitlines()) == 1 and "to_owner.tsv" in out_file.read_text()

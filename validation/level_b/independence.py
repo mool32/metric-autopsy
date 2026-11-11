@@ -16,6 +16,12 @@ transcript) name one. Added 2026-11-10 for S3, where the instructions cite the p
 
 `--text-pattern`: the full texts' file names (S3: `R<nnnnn>.txt`, the default; S4: `V<nnnnn>.txt`, its texts' keys,
 the first column of its batch lists). Added 2026-11-11 for S4, before its passes.
+
+`--exclude-attachment TYPE ...`: attachments of these types (JSONL lines `{"type": "attachment", "attachment":
+{"type": TYPE, ...}}`) are counted apart: what they name is reported, not checked, and `--excluded-out` writes their
+distinct contents for the record. Added 2026-11-11 for S4, after its passes (`JOURNAL.md`, J31): the harness put the
+parent session's task list (`task_reminder`) in every S4 session's context; it names paths, no decision and no code.
+The strict check (without the option) stays the first line of the record.
 """
 from __future__ import annotations
 
@@ -43,6 +49,23 @@ def calls_text(s: str) -> str:
     return "\n".join(out)
 
 
+def split_attachments(s: str, types: set[str]) -> tuple[str, list[str]]:
+    """The transcript without its attachments of `types`, and those attachments' contents (one JSON text each)."""
+    keep, out = [], []
+    for line in s.splitlines():
+        try:
+            d = json.loads(line)
+        except ValueError:
+            keep.append(line)
+            continue
+        a = d.get("attachment") if isinstance(d, dict) and d.get("type") == "attachment" else None
+        if isinstance(a, dict) and a.get("type") in types:
+            out.append(json.dumps(a.get("content"), ensure_ascii=False, sort_keys=True))
+        else:
+            keep.append(line)
+    return "\n".join(keep), out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--transcripts", type=Path, required=True)
@@ -58,9 +81,13 @@ def main(argv=None) -> int:
                     help=r"the regular expression of a batch's path, its number the group (full texts: /batch_(\d+)\.list)")
     ap.add_argument("--text-pattern", default=r"\b(R\d{5})\.txt",
                     help=r"the regular expression of a full text's file name, its key the group (S4: \b(V\d{5})\.txt)")
+    ap.add_argument("--exclude-attachment", nargs="*", default=[],
+                    help="attachment types the harness put in the sessions' context: counted apart, not checked")
+    ap.add_argument("--excluded-out", type=Path, help="the excluded attachments' distinct contents (JSON lines)")
     a = ap.parse_args(argv)
     dirs = {"1": a.pass1, "2": a.pass2}
     bad = n = 0
+    distinct: dict[str, None] = {}
     for line in a.agents.read_text().splitlines():
         if not line.strip():
             continue
@@ -72,6 +99,11 @@ def main(argv=None) -> int:
             bad += 1
             continue
         s = f.read_text(errors="replace")
+        excluded = ""
+        if a.exclude_attachment:
+            s, parts = split_attachments(s, set(a.exclude_attachment))
+            distinct.update(dict.fromkeys(parts))
+            excluded = "\n".join(parts)
         other = s.count(dirs["2" if p == "1" else "1"])
         forbidden = {x: s.count(x) for x in a.forbid}
         batches = sorted(set(re.findall(a.batch_pattern, s)))
@@ -88,10 +120,17 @@ def main(argv=None) -> int:
             named = set(re.findall(a.text_pattern, s))
             ok = ok and named <= own
             extra += f"; texts named {len(named)}, outside its list {sorted(named - own)}"
+        if a.exclude_attachment:
+            names = [dirs["1"], dirs["2"]] + a.forbid + a.calls_only
+            named = ", ".join(f"{x} {excluded.count(x)}" for x in names if excluded.count(x))
+            extra += f"; excluded attachments {len(parts)} ({len(set(parts))} distinct), naming: {named or 'none'}"
         bad += not ok
         print(f"pass {p} batch {b}: other pass's directory named {other} times; own {s.count(dirs[p])}{extra}; "
               f"batches named {batches}; {'ok' if ok else 'CHECK'}")
     print(f"{n} sessions: " + ("all independent" if bad == 0 else f"{bad} to check"))
+    if a.excluded_out:
+        a.excluded_out.write_text("".join(x + "\n" for x in distinct))
+        print(f"excluded attachments' distinct contents: {len(distinct)}, written to {a.excluded_out.name}")
     return 0 if bad == 0 else 1
 
 

@@ -37,7 +37,8 @@ def test_the_verdicts_part_from_the_passes_comparison(tmp_path):
     claim = dict(claim="R00189:1", kind="pair", records=3, by_citations=2, by_terms=1, kept=2, coded=2,
                  verdicts_agreed=1, agreed_codes={"VERDICT/causal/holds": 1}, to_owner=1)
     (root / "verdicts" / "merge" / "merge.json").write_text(json.dumps(dict(
-        lines=2, kappa_decision=0.0, kappa_code=0.0, verdicts_agreed=1, to_owner=1, claims=[claim])))
+        lines=2, kappa_decision=0.0, kappa_code=0.0, agreement_decision=0.5, agreement_code=0.5, verdicts_agreed=1,
+        to_owner=1, claims=[claim])))
     (root / "verdicts" / "merge" / "verdicts.tsv").write_text(
         "claim\trecord\tkind\tcode\tquote_1\twhere_1\tquote_2\twhere_2\n"
         "R00189:1\tMED:1\tcausal\tholds\tknockdown lowered it\tFig 2\tthe knockdown lowered it\tFig 2B\n")
@@ -48,3 +49,8 @@ def test_the_verdicts_part_from_the_passes_comparison(tmp_path):
     md = L.markdown(dict(L.assemble(tmp_path), verdicts=v))
     assert "R00189:1 (pair): found 3 (by citations 2, by the terms 1), kept by the filter 2, coded 2" in md
     assert '  - MED:1: causal, holds — "knockdown lowered it" (Fig 2); pass 2: "the knockdown lowered it" (Fig 2B)' in md
+    assert "the decisions: agreement 0.500, kappa 0.000" in md
+    # every line NO_VERDICT in both passes (S4, J31): the kappa is undefined, said so
+    v["merge"].update(kappa_decision=float("nan"), kappa_code=float("nan"), agreement_decision=1.0, agreement_code=1.0)
+    md = L.markdown(dict(L.assemble(tmp_path), verdicts=v))
+    assert "the decisions: agreement 1.000, kappa undefined (one category in both passes)" in md

@@ -601,3 +601,32 @@ committed at 4dd6653 while this run was still asking, are not used: the run publ
 **The batches** (`verdicts_codes.py batches --terms`; `verdicts/batches/`): 48 lines to code — R00189's 34 in batches
 01 and 02, R01225's 10 and R02693's 4 in batch 03 — and 26 full texts as text (`V00001`–`V00026`, outside the
 repository, their SHA256 in `texts.sha256`), committed before either pass. The passes follow `plan_s4.md`, section 2.
+
+## J31 — 2026-11-11: S4's two passes, their independence (a deviation) and their comparison
+
+**The passes** (`verdicts/README.md`): six fresh sessions, one at a time, pass 1's batches 01–03 then pass 2's, each
+with `plan_s4.md`'s task word for word; pass 1's files out of the working tree while pass 2 coded, back unchanged
+(`sha256sum -c`). Every file passed `check-codes` (pass 1's batch 02 after the session fixed what its first check
+reported, as the task says); none coded again, none stopped by the usage limit. In pass 2's batch 02 one response,
+after its ninth line (R00189:3, MED:36513242) was written, was stopped by the harness's classifier; the harness's
+message is in the transcript, the response's withheld calls did not run, and the session looked at its file and
+went on in the same session (its file checks: each line once, in order).
+
+**Independence: the plan's criterion not met as written (a deviation).** `independence.py` as `plan_s4.md` section 2
+states it: 6 sessions to check. Every name it flags (`claims.md`, `claims.json`, `fulltext_screening`, `JOURNAL.md`,
+and the plans) sits inside the harness's task reminder: attachments of type `task_reminder`, 1 to 6 per session,
+that put this session's own task list (20 items, subjects and descriptions) into each coder's context. Its one
+content, the same in all six, is `verdicts/task_reminder.jsonl`: it names paths and holds no decision's content, no
+code of either pass, no batch, no text (no `VERDICT`, `pass1`, `pass2`, `batch_0` or `V000` in it). S2's and S3's
+28 sessions had no such attachment (their transcripts read for it). Outside it, no session names the other pass's
+directory, the directory that held pass 1's files, a batch or a text outside its own list, or an earlier decision,
+and no session's own call names the plans or the protocol. `independence.py --exclude-attachment task_reminder`
+(added after the passes for this, with its test) counts the attachment apart: all independent. Both parts are
+`verdicts/independence.log`, the strict one first. Whether the passes stand is the owner's, with the list.
+
+**The comparison** (`verdicts_codes.py merge`, `verdicts/merge/`): 48 lines, all `NO_VERDICT` in both passes;
+agreement 1.000 for the decisions and the full codes; Cohen's kappa undefined (one category in both passes, the
+chance agreement 1; `merge.json` writes `NaN`, the list says "undefined"); no verdict agreed, no line to the owner.
+Both passes call PPR:PPR182850 the claim's own paper (a ChemRxiv preprint of R00189's). `merge/sessions.tsv` (each
+session's counts, from its file) was added to the comparison's outputs after its first run, changing no other output,
+and the comparison run again (`merge/merge.log`); `list_s7.py` shows the agreement with the kappa.

@@ -103,6 +103,10 @@ def test_the_comparison_of_the_passes(tmp_path):
     assert len(owner) == 2 and owner[1].startswith(f"{rows[1][0]}\t{rows[1][1]}\tNO_VERDICT")
     per = {c["claim"]: c for c in out["claims"]}
     assert per[first[0]]["verdicts_agreed"] == 1 and "claims_with_agreed_verdict" not in out
+    sessions = (tmp_path / "merge" / "sessions.tsv").read_text().splitlines()
+    assert sessions[0] == "pass\tbatch\tlines\tVERDICT\tNO_VERDICT\tcodes" and len(sessions) == 1 + 2 * len(m["batches"])
+    assert sum(int(x.split("\t")[3]) for x in sessions[1:] if x.startswith("2\t")) == 2
+    assert "VERDICT/replication/holds 1" in sessions[1]
     # a file failing its check stops the comparison
     (tmp_path / "p2" / f"{m['batches'][0]}.tsv").write_text("claim\n")
     try:
