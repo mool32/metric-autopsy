@@ -573,3 +573,8 @@ SHA256 checked here): every dataset of `run3.txt` read and checked, each in a jo
   (COVID-19 4,535, healthy 1,238; patient 561 37 of them), B 4,742, monocytes 12,645. The genes: R00653's present;
   R01795's Hallmark sets each miss one or two of their genes by the names MSigDB v2022.1 gives them (WARS1,
   MARCHF1, CCN1, PLPP3, TENT5A, RBSN), not looked up under other names.
+
+**GSE214517, the second attempt** (label `level-b-data-4`, workflow run 42942044094 at f755907;
+`results/level-b-data-4` at e2eea39, its 7 SHA256 checked here): the genes named by their symbols (`LEF1`, `FOXJ2`,
+`ZNF654`...); the six sets' genes present; both sexes among the 10 donors, each one sex, none failing; the counts
+still RPKM (the check of origin fails); donors and rule 4 as before. This report replaces the first's for the list.
