@@ -8,7 +8,8 @@
   "series": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE214nnn/GSE214517/matrix/GSE214517_series_matrix.txt.gz"
  },
  "loader_args": {
-  "columns_are": "title"
+  "columns_are": "title",
+  "gene_regex": "^([^|]+)"
  },
  "groups": {
   "column": "disease state",
@@ -538,5 +539,5 @@
   }
  ],
  "design": "the paper's, as for R02175; GSE214517 holds dataset 2's new donors",
- "notes": "dataset 2's new donors (Smart-seq2): its one table holds RPKM, not counts (J23); every cell, the deposit naming no cell type; the donor is the HP number that begins each cell's title"
+ "notes": "dataset 2's new donors (Smart-seq2): its one table holds RPKM, not counts (J23); every cell, the deposit naming no cell type; the donor is the HP number that begins each cell's title; its rows are named 'SYMBOL|RefSeq ids', a gene named by its symbol (gene_regex; the second attempt, J29)"
 }

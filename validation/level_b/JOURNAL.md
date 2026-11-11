@@ -548,3 +548,28 @@ Antigen Presentation's, 43 (`set_specs.json`, f99b63f, before the extraction).
 53 to 111 (Supplementary Data 2's columns), R01795 97 to 200 (the Hallmark sets; the paper states 118 for the
 IFN-gamma set's genes it analysed in CD4+ T cells, against MSigDB's 200), R00765's claim 2 13 (its text), R00653 24
 or 43; R00765's claim 1 not listed (figures only).
+
+## J29 — 2026-11-11: S5's third batch (seven datasets); one fault of a spec, its second attempt
+
+**The run** (label `level-b-data-3`, workflow run 42939298430 at b8552b3; `results/level-b-data-3` at e0fee1d, its 49
+SHA256 checked here): every dataset of `run3.txt` read and checked, each in a job of its own.
+- **R02175 on GSE153855** (dataset 1): counts raw; 11 donors, 6 non-T2D and 5 T2D (nested), rule 4 passes; both
+  sexes, no id failing; the six sets' genes present; no source named; 4,224 cells, every cell of the deposit (the
+  paper's 3,645 after its own filter; its beta cells, Conos clusters, not identifiable from the deposit).
+- **R02175 on E-MTAB-5061** (dataset 2's published donors): counts raw; the authors' 270 inferred beta cells; 6
+  donors without diabetes and 4 with, rule 4 passes; both sexes, none failing; the genes present; no source named.
+- **R02175 on GSE214517** (dataset 2's new donors): counts not raw integers (RPKM: the check of origin fails); 4
+  healthy donors and 6 with T2D, rule 4 passes. **Its genes and sex checks are void:** the table's rows are named
+  "SYMBOL|RefSeq ids" (`LEF1|NM_016269+…`), which the loader took whole, so no gene matched (J23's look read the
+  header only). A fault of the spec, not of the data: `table_series` takes a gene's name by `gene_regex` (tested; a
+  table named so fails as the run did without it, passes with it); **the second attempt**, this dataset alone
+  (`run4.txt`, label `level-b-data-4`, its spec amended with `gene_regex` `^([^|]+)`).
+- **R00765 on GSE174367** (claim 1): counts raw; 37,052 oligodendrocytes, AD 22,059 and Control 14,993; 11 AD
+  donors and 7 controls, rule 4 passes; both sexes, none failing; no gene checked (the set not listed); the source
+  balanced (the three batches in both groups; read as numbers, 1.0 to 3.0).
+- **R01795 and R00653 on the Wilk et al. object** (2020's 13 samples; J27): counts raw; **6 COVID-19 patients and 6
+  healthy donors**, not the papers' seven and six (patient 555's two samples are one donor; no other patient's
+  sample is among GSE150728's), rule 4 passes; both sexes, none failing; one source (PBMC). CD4+ T 5,773 cells
+  (COVID-19 4,535, healthy 1,238; patient 561 37 of them), B 4,742, monocytes 12,645. The genes: R00653's present;
+  R01795's Hallmark sets each miss one or two of their genes by the names MSigDB v2022.1 gives them (WARS1,
+  MARCHF1, CCN1, PLPP3, TENT5A, RBSN), not looked up under other names.

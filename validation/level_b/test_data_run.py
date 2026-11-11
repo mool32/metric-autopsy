@@ -407,3 +407,29 @@ def test_one_table_of_rpkm_then_counts_and_the_deposit_s_sdrf(tmp_path):
     res = json.loads((tmp_path / "out" / "report.json").read_text())
     assert res["cells"] == 56 and res["counts"]["raw"]  # the counts, not the RPKM
     assert res["donors"]["donors"] == {"type II diabetes mellitus": 4, "normal": 4} and not res["sex"]["fails"]
+
+
+def test_a_table_whose_rows_name_a_symbol_and_its_refseq_ids(tmp_path):
+    """2026-11-11 (J29): GSE214517's rows are "SYMBOL|NM_...+NM_..."; `gene_regex` names each gene by its symbol."""
+    rng = np.random.default_rng(5)
+    cells = [f"HP{100 + k // 3}{'T2D' if k < 12 else ''}_A{k}" for k in range(24)]
+    rows = [f"{g}|NM_{i}+NM_{i + 1}" for i, g in enumerate(GENES)]
+    X = np.vstack([_cells(rng, 3, female=(k % 2 == 0)) for k in range(8)])  # cells by genes, a donor's 3 cells one sex
+    pd.DataFrame(X.T, index=rows, columns=cells).to_csv(tmp_path / "rpkms.txt.gz", sep="\t")
+    _series(tmp_path / "s.txt.gz", [f"GSM{900 + k}" for k in range(24)], cells,
+            {"disease state": ["T2D" if k < 12 else "Healthy" for k in range(24)]})
+    spec = dict(rid="R00010", organism="homo_sapiens", loader="table_series",
+                files=dict(table="https://example.org/rpkms.txt.gz", series="https://example.org/s.txt.gz"),
+                loader_args=dict(gene_regex=r"^([^|]+)"),
+                groups={"column": "disease state", "values": ["T2D", "Healthy"]},
+                donor=dict(column="cell", regex=r"^(HP\d+)"), source=None, sex_label=None,
+                claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["genes"]["1"]["passes"] and res["sex"]["both_sexes"]
+    without = dict(spec, loader_args={})
+    (tmp_path / "spec2.json").write_text(json.dumps(without))
+    assert R.main(["--spec", str(tmp_path / "spec2.json"), "--out", str(tmp_path / "out2"), "--files", str(tmp_path)]) == 0
+    res2 = json.loads((tmp_path / "out2" / "report.json").read_text())
+    assert not res2["genes"]["1"]["passes"]  # the rows' names as they stand: no symbol matches (the first run's fault)

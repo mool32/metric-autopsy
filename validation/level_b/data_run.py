@@ -40,7 +40,8 @@ Loaders (`LOADERS`):
 * `tab_samples` — a GEO archive of per-sample tables of counts (`<GSM>_..._counts.tab.gz`, genes by cells, the gene
   in the first column), one sample a donor, and the series matrix, whose samples' characteristics become the cells';
 * `table_series` — one table (genes by cells, the gene in the first column) whose cells are the series' samples, by
-  their titles, and the series matrix, each sample one cell;
+  their titles, and the series matrix, each sample one cell; with `loader_args` `{"gene_regex": r}` a gene's name is
+  the first group of r on its row's name (GSE214517's rows are "SYMBOL|RefSeq ids");
 * `rpkm_counts_table` — one table of every cell's RPKM then every cell's counts (E-MTAB-5061's), its counts read in a
   stream, and the deposit's SDRF (`sdrf`), joined on the cell's name;
 * `r_export` — the counts, genes and cells R wrote from the deposit's R object (`r_export.R`, run before this);
@@ -358,7 +359,12 @@ def load_table_series(files: dict, args: dict, log):
     log(f"table_series: {t.shape[1]} columns, {len(cols)} of them the series' samples; {t.shape[0]} genes")
     X = sparse.csr_matrix(t[cols].to_numpy(dtype=np.float64).T)
     obs = lut.loc[cols].reset_index().rename(columns={key: "cell"})
-    return X, [str(g) for g in t.index], obs
+    genes = [str(g) for g in t.index]
+    if args.get("gene_regex"):  # a row named "LEF1|NM_016269+..." (GSE214517): its symbol, the pattern's first group
+        rx = re.compile(args["gene_regex"])
+        genes = [m.group(1) if (m := rx.match(g)) else g for g in genes]
+        log(f"table_series: the genes named by {args['gene_regex']!r}, the first three {genes[:3]}")
+    return X, genes, obs
 
 
 def load_r_export(files: dict, args: dict, log):
