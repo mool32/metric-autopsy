@@ -7,9 +7,12 @@
   supplement Europe PMC does not give, is listed so.
 * `show`: each archive's members and, of each table, its sheets and first rows — what is looked at to write the
   specs, nothing more of the files.
+* `fetch --extra extra.tsv` also fetches the files a list names beforehand (rid, URL), each as it came with its
+  SHA256 (`raw/setgenes/<rid>-<file>.gz`, `setgenes_extra.tsv`): a set the paper names from a public collection
+  without listing it (MSigDB's Hallmark sets: the collection's file of the release the paper used).
 * `extract`: each set's genes by its spec (`set_specs.json`: the archive's member, its sheet, the row of its header,
-  the column of the genes, the rows that are the set's), their number against the number the paper states, and the
-  kept claims with the sets' genes filled.
+  the column of the genes, the rows that are the set's; or an extra file and the set's name in it, a GMT), their
+  number against the number the paper states, and the kept claims with the sets' genes filled.
 * `dry`: the three on fabricated answers (FABRICATED, nothing fetched).
 
     python -I validation/level_b/set_genes.py fetch --claims validation/level_b/amendment1/kept_claims.json --out OUT
@@ -49,6 +52,29 @@ _M = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 def _error_message(body: bytes) -> str:
     m = re.search(rb"<errMsg>(.*?)</errMsg>", body)
     return m.group(1).decode("utf-8", "replace") if m else f"not an archive ({len(body)} bytes)"
+
+
+def fetch_extra(net, out, rows: list) -> list:
+    """The files named beforehand (`extra.tsv`: rid, url), each fetched once with the search's retries."""
+    got = []
+    for rid, url in rows:
+        name = url.rsplit("/", 1)[-1]
+        body = net.get(url, {})
+        got.append(dict(rid=rid, url=url, file=out.raw(f"setgenes/{rid}-{name}", body), bytes=len(body),
+                        sha256=hashlib.sha256(body).hexdigest()))
+        out.log(f"{rid}: {name}, {len(body):,} bytes")
+    with (out.root / "setgenes_extra.tsv").open("w") as f:
+        cols = ["rid", "url", "file", "bytes", "sha256"]
+        f.write("\t".join(cols) + "\n")
+        f.writelines("\t".join(str(r[c]) for c in cols) + "\n" for r in got)
+    return got
+
+
+def read_extra(path: Path) -> list:
+    rows = [line.split("\t") for line in path.read_text().splitlines() if line.strip() and not line.startswith("#")]
+    if not rows or rows[0][:2] != ["rid", "url"]:
+        raise SystemExit(f"{path}: the header must be rid<TAB>url")
+    return [(r[0], r[1]) for r in rows[1:]]
 
 
 def fetch(net, out, kept: dict) -> list:
@@ -169,6 +195,15 @@ def extract_one(z: zipfile.ZipFile, spec: dict) -> list:
     return genes
 
 
+def gmt_set(data: bytes, name: str) -> list:
+    """A set's genes from a GMT file (name, description, genes, tab-separated)."""
+    for line in data.decode("utf-8", "replace").splitlines():
+        f = line.split("\t")
+        if f and f[0] == name:
+            return [g for g in f[2:] if g.strip()]
+    raise SystemExit(f"no set {name!r} in the GMT file")
+
+
 def extract(specs: list, files: Path, kept: dict) -> list:
     arch = archives(files)
     stated = {(p["rid"], c["id"]): c for p in kept["papers"] for c in p["claims"] if c["kind"] == "set"}
@@ -177,7 +212,11 @@ def extract(specs: list, files: Path, kept: dict) -> list:
         c = stated.get((s["rid"], str(s["claim"])))
         if c is None:
             raise SystemExit(f"{s['rid']} claim {s['claim']}: not a kept set's claim")
-        genes = extract_one(_zip(arch[s["rid"]]), s)
+        if s.get("extra"):
+            with gzip.open(files / "raw" / "setgenes" / f"{s['rid']}-{s['extra']}.gz", "rb") as g:
+                genes = gmt_set(g.read(), s["gmt_set"])
+        else:
+            genes = extract_one(_zip(arch[s["rid"]]), s)
         res.append(dict(rid=s["rid"], claim=str(s["claim"]), set_name=c.get("set_name"), stated=c.get("set_size"),
                         n=len(genes), genes=genes, spec=s))
     return res
@@ -190,7 +229,7 @@ def fill(kept: dict, res: list) -> dict:
             r = by.get((p["rid"], c["id"]))
             if r is not None:
                 c["genes"] = r["genes"]
-                c["genes_from"] = f"set_genes.json ({r['spec']['member']})"
+                c["genes_from"] = f"set_genes.json ({r['spec'].get('member') or r['spec'].get('extra')})"
     return kept
 
 
@@ -204,6 +243,11 @@ class Fabricated:
         self.log, self.rows = log, []
 
     def get(self, url: str, params: dict, post: bool = False) -> bytes:
+        if url.endswith(".gmt"):
+            body = b"HALLMARK_FAB\thttp://fab\tGENE1\tGENE5\tGENE7\nHALLMARK_OTHER\thttp://fab\tGENE2\n"
+            self.rows.append(dict(time="FABRICATED", method="GET", url=url, params="{}", status=200, bytes=len(body),
+                                  sha256="-", attempt=1))
+            return body
         pmcid = url.rsplit("/", 2)[-2]
         if int(pmcid[3:]) % 2 == 0:
             buf = io.BytesIO()
@@ -227,15 +271,19 @@ def dry(out_dir: Path) -> dict:
         dict(rid="R09002", pmcid="PMC101", claims=[dict(id="1", kind="set", genes=[], set_name="M7", set_size=10)]),
         dict(rid="R09003", pmcid="", claims=[dict(id="1", kind="set", genes=[], set_name="X", set_size=5)]),
         dict(rid="R09004", pmcid="PMC102", claims=[dict(id="1", kind="pair", genes=["A", "B"])])])
+    kept["papers"][1]["claims"].append(dict(id="2", kind="set", genes=[], set_name="HALLMARK_FAB", set_size=3))
     net = Fabricated(out.log)
     rows = fetch(net, out, kept)
+    extra = fetch_extra(net, out, [("R09002", "https://example.org/h.all.v0.Hs.symbols.gmt")])
     text = show(out_dir, out_dir / "show.md")
-    res = extract([dict(rid="R09001", claim="1", member="supp/Table_S4.csv", column="gene", rows=dict(module=["M3"]))],
+    res = extract([dict(rid="R09001", claim="1", member="supp/Table_S4.csv", column="gene", rows=dict(module=["M3"])),
+                   dict(rid="R09002", claim="2", extra="h.all.v0.Hs.symbols.gmt", gmt_set="HALLMARK_FAB")],
                   out_dir, kept)
     fill(kept, res)
     assert [r["note"] for r in rows] == ["-", "Article with id PMC101 is not open access one", "no PMCID"], rows
     assert "supp/Table_S4.csv" in text and res[0]["genes"] == ["GENE1", "GENE2", "GENE3"] and res[0]["n"] == 3
     assert kept["papers"][0]["claims"][0]["genes"] == ["GENE1", "GENE2", "GENE3"]
+    assert extra[0]["bytes"] > 0 and res[1]["genes"] == ["GENE1", "GENE5", "GENE7"] and res[1]["n"] == res[1]["stated"] == 3
     out.log("the dry run's checks pass")
     out.finish("setgenes", net, dict(fabricated=True, rows=rows, sets=res))
     return dict(rows=rows, sets=res)
@@ -247,6 +295,7 @@ def main(argv=None) -> int:
     f = sub.add_parser("fetch")
     f.add_argument("--claims", type=Path, required=True)
     f.add_argument("--out", type=Path, required=True)
+    f.add_argument("--extra", type=Path, help="files named beforehand: rid<TAB>url")
     s = sub.add_parser("show")
     s.add_argument("--files", type=Path, required=True)
     s.add_argument("--out", type=Path, required=True)
@@ -264,7 +313,8 @@ def main(argv=None) -> int:
         out.log("# Level B, the sets' genes: Europe PMC's supplementary files of the kept papers with a set (set_genes.py)")
         net = S.Net(out.log)
         rows = fetch(net, out, json.loads(a.claims.read_text()))
-        out.finish("setgenes", net, dict(fabricated=False, claims_file=str(a.claims), rows=rows))
+        extra = fetch_extra(net, out, read_extra(a.extra)) if a.extra else []
+        out.finish("setgenes", net, dict(fabricated=False, claims_file=str(a.claims), rows=rows, extra=extra))
         return 0
     if a.mode == "show":
         show(a.files, a.out)

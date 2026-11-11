@@ -59,3 +59,16 @@ def test_a_spec_for_a_claim_that_is_not_a_kept_set_stops(tmp_path):
         assert "not a kept set's claim" in str(e)
     else:
         raise AssertionError("no stop")
+
+
+def test_the_extra_files_list_and_a_gmt_set(tmp_path):
+    (tmp_path / "x.tsv").write_text("rid\turl\nR01795\thttps://example.org/h.all.v1.Hs.symbols.gmt\n")
+    assert G.read_extra(tmp_path / "x.tsv") == [("R01795", "https://example.org/h.all.v1.Hs.symbols.gmt")]
+    gmt = b"HALLMARK_A\thttp://x\tG1\tG2\nHALLMARK_B\thttp://x\tG3\n"
+    assert G.gmt_set(gmt, "HALLMARK_B") == ["G3"]
+    try:
+        G.gmt_set(gmt, "HALLMARK_C")
+    except SystemExit as e:
+        assert "no set" in str(e)
+    else:
+        raise AssertionError("no stop")

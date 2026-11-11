@@ -603,7 +603,7 @@ jobs:
       - name: The supplementary files of the kept papers with a set (Europe PMC), and their tables' first rows
         timeout-minutes: 45
         run: |
-          python -I validation/level_b/set_genes.py fetch --claims validation/level_b/amendment1/kept_claims.json --out out
+          python -I validation/level_b/set_genes.py fetch --claims validation/level_b/amendment1/kept_claims.json --out out --extra validation/level_b/amendment1/set_extra.tsv
           python -I validation/level_b/set_genes.py show --files out --out out/show.md
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -633,6 +633,7 @@ jobs:
             echo "results/level-b-setgenes exists: nothing is pushed"; exit 1
           fi
           cp repo/validation/level_b/amendment1/kept_claims.json pub/kept_claims.json
+          cp repo/validation/level_b/amendment1/set_extra.tsv pub/set_extra.tsv
           blob=$(git -C repo rev-parse HEAD:validation/level_b/set_genes.py)
           plan=$(git -C repo rev-parse HEAD:validation/level_b/plan_s5.md)
           cd pub

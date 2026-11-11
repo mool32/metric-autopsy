@@ -94,5 +94,9 @@ are taken before both, the same way for every set:
   rows (a module's label in another column, say) that give its genes — written after the files' names and first
   rows are looked at (as J6 looked at the deposits), committed before the genes are extracted; the extraction is a
   script's, its output each set's genes and their number against the number the paper states.
+- **A set the paper names from a public collection without listing its genes** (added 2026-11-11, before the run;
+  R01795's MSigDB Hallmark sets, which the paper took from MSigDB on 2022-10-20): its genes from the collection's
+  file of the release current at the paper's date (MSigDB v2022.1.Hs, `h.all.v2022.1.Hs.symbols.gmt`, published
+  2022-09-02), named beforehand in `amendment1/set_extra.tsv` and fetched in the same run with its SHA256.
 - A set whose list is not found or cannot be read is said so: its claim stays in the list without its genes, S4
   searches it by its name only, and S5 reports its genes as not listed.
