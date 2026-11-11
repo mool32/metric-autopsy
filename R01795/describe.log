@@ -1,0 +1,11 @@
+{
+  "class": "Seurat",
+  "cells": 174753,
+  "meta_columns": ["orig.ident", "Donor", "Status", "Array.type", "record_id", "Sex", "BMI", "MAX_SEVERITY_SCORE", "days_post_pos_test", "acuity", "current_severity", "cell.name", "nCount_RNA", "nFeature_RNA", "percent.mt", "percent.rps", "percent.rpl", "percent.rrna", "percent.hb", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.1", "seurat_clusters", "cell.type.fine", "cell.type.coarse", "celltype.l2", "celltype.l3", "Severity.max.final", "Severity.current.final", "manual.coarse.idents", "manual.fine.idents", "Severity.max.grouped", "time_to_death", "barcode", "ddim", "stroke", "cell.type", "Race_ethnicity"],
+  "slots": ["assays", "meta.data", "active.assay", "active.ident", "graphs", "neighbors", "reductions", "images", "project.name", "misc", "version", "commands", "tools"],
+  "assays": ["RNA", "SCT", "imputed.protein", "both"],
+  "counts_dim": [34548, 174753],
+  "counts_class": "dgCMatrix",
+  "counts_integer": true,
+  "counts_integer_of": "every value"
+}

@@ -1,0 +1,735 @@
+column	type	distinct	value	cells
+orig.ident	factor	55	HIP015_PBMC_2	16048
+orig.ident	factor	55	HIP002_ACK	10360
+orig.ident	factor	55	HIP015_ACK	10310
+orig.ident	factor	55	565	7429
+orig.ident	factor	55	ED_139_ACK	7038
+orig.ident	factor	55	570_PBMC	6639
+orig.ident	factor	55	566	6312
+orig.ident	factor	55	ED_139_PBMC	6227
+orig.ident	factor	55	557	6151
+orig.ident	factor	55	555_2	5762
+orig.ident	factor	55	HIP043	5351
+orig.ident	factor	55	HIP046_ACK	5039
+orig.ident	factor	55	558	5037
+orig.ident	factor	55	HIP002_PBMC_2	4850
+orig.ident	factor	55	569_PBMC	4807
+orig.ident	factor	55	555_1	4465
+orig.ident	factor	55	563	4101
+orig.ident	factor	55	568_PBMC	3808
+orig.ident	factor	55	561	3636
+orig.ident	factor	55	Imm_061	3176
+orig.ident	factor	55	ED_132_ACK	3162
+orig.ident	factor	55	HIP044	3129
+orig.ident	factor	55	568_ACK	3111
+orig.ident	factor	55	569_ACK	2894
+orig.ident	factor	55	559	2786
+orig.ident	factor	55	ED_080_PBMC	2736
+orig.ident	factor	55	HIP002	2241
+orig.ident	factor	55	556	2068
+orig.ident	factor	55	562	1971
+orig.ident	factor	55	ED_080_ACK	1888
+Donor	factor	41	HIP015	27874
+Donor	factor	41	HIP002	17451
+Donor	factor	41	55650-0139	13265
+Donor	factor	41	28205-0569	7701
+Donor	factor	41	28205-0565	7429
+Donor	factor	41	28205-0568	6919
+Donor	factor	41	28205-0570	6639
+Donor	factor	41	28205-0566	6312
+Donor	factor	41	28205-0557	6151
+Donor	factor	41	28205-0555d2	5762
+Donor	factor	41	HIP043	5351
+Donor	factor	41	HIP046	5039
+Donor	factor	41	28205-0558	5037
+Donor	factor	41	55650-0080	4624
+Donor	factor	41	28205-0555d0	4465
+Donor	factor	41	28205-0563	4101
+Donor	factor	41	28205-0561	3636
+Donor	factor	41	55689-0061	3176
+Donor	factor	41	55650-0132d7	3162
+Donor	factor	41	HIP044	3129
+Donor	factor	41	28205-0559	2786
+Donor	factor	41	55650-0082	2485
+Donor	factor	41	28205-0556	2068
+Donor	factor	41	55689-0037	2015
+Donor	factor	41	28205-0562	1971
+Donor	factor	41	HIP045	1804
+Donor	factor	41	55689-0060	1759
+Donor	factor	41	EC003	1634
+Donor	factor	41	55689-0006	1533
+Donor	factor	41	HIP023	1359
+Status	factor	2	COVID	112589
+Status	factor	2	Healthy	62164
+Array.type	factor	2	PBMC	127614
+Array.type	factor	2	WB	47139
+record_id	character	39	HIP015	27874
+record_id	character	39	HIP002	17451
+record_id	character	39	55650-0139	13265
+record_id	character	39	28205-0555	10227
+record_id	character	39	28205-0569	7701
+record_id	character	39	28205-0565	7429
+record_id	character	39	28205-0568	6919
+record_id	character	39	28205-0570	6639
+record_id	character	39	28205-0566	6312
+record_id	character	39	28205-0557	6151
+record_id	character	39	HIP043	5351
+record_id	character	39	HIP046	5039
+record_id	character	39	28205-0558	5037
+record_id	character	39	55650-0080	4624
+record_id	character	39	28205-0563	4101
+record_id	character	39	28205-0561	3636
+record_id	character	39	55689-0061	3176
+record_id	character	39	55650-0132	3162
+record_id	character	39	HIP044	3129
+record_id	character	39	28205-0559	2786
+record_id	character	39	55650-0082	2485
+record_id	character	39	28205-0556	2068
+record_id	character	39	55689-0037	2015
+record_id	character	39	28205-0562	1971
+record_id	character	39	HIP045	1804
+record_id	character	39	55689-0060	1759
+record_id	character	39	EC003	1634
+record_id	character	39	55689-0006	1533
+record_id	character	39	HIP023	1359
+record_id	character	39	55650-0085	1294
+Sex	factor	2	M	124558
+Sex	factor	2	F	50195
+BMI	numeric	25	NA	72708
+BMI	numeric	25	37.22	13265
+BMI	numeric	25	32.21	10227
+BMI	numeric	25	26.61	8321
+BMI	numeric	25	40.46	7701
+BMI	numeric	25	29.86	6919
+BMI	numeric	25	24.71	6639
+BMI	numeric	25	33.98	6312
+BMI	numeric	25	28.15	6151
+BMI	numeric	25	46.73	5037
+BMI	numeric	25	23.26	4624
+BMI	numeric	25	29.29	4101
+BMI	numeric	25	26.79	3636
+BMI	numeric	25	33.47	3162
+BMI	numeric	25	29.32	2786
+BMI	numeric	25	35.34	2485
+BMI	numeric	25	35.69	2068
+BMI	numeric	25	30.18	1971
+BMI	numeric	25	27.34	1533
+BMI	numeric	25	36.23	1294
+BMI	numeric	25	20.58	1158
+BMI	numeric	25	25.48	894
+BMI	numeric	25	38.28	756
+BMI	numeric	25	24.69	692
+BMI	numeric	25	28.44	313
+MAX_SEVERITY_SCORE	character	8	0	62164
+MAX_SEVERITY_SCORE	character	8	7	33740
+MAX_SEVERITY_SCORE	character	8	8	30515
+MAX_SEVERITY_SCORE	character	8	4	24818
+MAX_SEVERITY_SCORE	character	8	2	10379
+MAX_SEVERITY_SCORE	character	8	5	10366
+MAX_SEVERITY_SCORE	character	8	1	2015
+MAX_SEVERITY_SCORE	character	8	6	756
+days_post_pos_test	integer	18	NA	62164
+days_post_pos_test	integer	18	2	32635
+days_post_pos_test	integer	18	4	22628
+days_post_pos_test	integer	18	1	21982
+days_post_pos_test	integer	18	0	7422
+days_post_pos_test	integer	18	3	6919
+days_post_pos_test	integer	18	50	3176
+days_post_pos_test	integer	18	8	3162
+days_post_pos_test	integer	18	6	2068
+days_post_pos_test	integer	18	66	2015
+days_post_pos_test	integer	18	14	1971
+days_post_pos_test	integer	18	51	1759
+days_post_pos_test	integer	18	41	1634
+days_post_pos_test	integer	18	45	1533
+days_post_pos_test	integer	18	13	1158
+days_post_pos_test	integer	18	34	943
+days_post_pos_test	integer	18	39	892
+days_post_pos_test	integer	18	35	692
+acuity	factor	3	Acute	99945
+acuity	factor	3	Healthy	62164
+acuity	factor	3	Convalescent	12644
+current_severity	character	7	0	65938
+current_severity	character	7	7	59790
+current_severity	character	7	4	23285
+current_severity	character	7	5	13939
+current_severity	character	7	2	8719
+current_severity	character	7	1	2326
+current_severity	character	7	6	756
+cell.name	character	174753	555_1.10_TAACCTAGGGTC	1
+cell.name	character	174753	555_1.100_AAAGAATTACGG	1
+cell.name	character	174753	555_1.1000_CAATCGGTTGCG	1
+cell.name	character	174753	555_1.1001_TCGGCGCTTACA	1
+cell.name	character	174753	555_1.1002_CCCGGCGCGTAC	1
+cell.name	character	174753	555_1.1003_GGTAGTCAATAC	1
+cell.name	character	174753	555_1.1004_AACTAGTGCCTT	1
+cell.name	character	174753	555_1.1005_ACGGAGGCCAAG	1
+cell.name	character	174753	555_1.1006_GCCGAATGACCC	1
+cell.name	character	174753	555_1.1007_GAACCATGTCTA	1
+cell.name	character	174753	555_1.1008_GCTTGTAGGTCA	1
+cell.name	character	174753	555_1.1009_CAGCGCACTTCT	1
+cell.name	character	174753	555_1.101_TATTGTCTTCAC	1
+cell.name	character	174753	555_1.1010_ATTCGCGCCAGA	1
+cell.name	character	174753	555_1.1011_GTCGCCACTCTG	1
+cell.name	character	174753	555_1.1012_ACGAGCGGCTAG	1
+cell.name	character	174753	555_1.1013_GAATCCGCCTAG	1
+cell.name	character	174753	555_1.1014_ATGCAGACAAAA	1
+cell.name	character	174753	555_1.1015_CCAGGCGTTCCT	1
+cell.name	character	174753	555_1.1016_CGCACAGGGTCG	1
+cell.name	character	174753	555_1.1017_AGTCCAGCTCAA	1
+cell.name	character	174753	555_1.1018_TGGTCGAAGAGA	1
+cell.name	character	174753	555_1.1019_TTCGATACACTG	1
+cell.name	character	174753	555_1.102_CACAGTGGGCCA	1
+cell.name	character	174753	555_1.1020_CAACGATTCCAG	1
+cell.name	character	174753	555_1.1021_ACGAATACGGTT	1
+cell.name	character	174753	555_1.1022_CGGAGTTAAACT	1
+cell.name	character	174753	555_1.1023_ACCGAGACGTTG	1
+cell.name	character	174753	555_1.1024_CTTCCTTATACC	1
+cell.name	character	174753	555_1.1025_GTAGTATGCAGT	1
+nCount_RNA	numeric	10340	776	194
+nCount_RNA	numeric	10340	767	192
+nCount_RNA	numeric	10340	755	190
+nCount_RNA	numeric	10340	813	190
+nCount_RNA	numeric	10340	757	188
+nCount_RNA	numeric	10340	764	187
+nCount_RNA	numeric	10340	778	183
+nCount_RNA	numeric	10340	772	180
+nCount_RNA	numeric	10340	869	180
+nCount_RNA	numeric	10340	781	178
+nCount_RNA	numeric	10340	806	178
+nCount_RNA	numeric	10340	769	176
+nCount_RNA	numeric	10340	815	174
+nCount_RNA	numeric	10340	802	173
+nCount_RNA	numeric	10340	853	173
+nCount_RNA	numeric	10340	787	172
+nCount_RNA	numeric	10340	788	172
+nCount_RNA	numeric	10340	814	172
+nCount_RNA	numeric	10340	753	171
+nCount_RNA	numeric	10340	760	171
+nCount_RNA	numeric	10340	762	170
+nCount_RNA	numeric	10340	770	170
+nCount_RNA	numeric	10340	777	169
+nCount_RNA	numeric	10340	831	169
+nCount_RNA	numeric	10340	751	168
+nCount_RNA	numeric	10340	789	168
+nCount_RNA	numeric	10340	763	167
+nCount_RNA	numeric	10340	768	167
+nCount_RNA	numeric	10340	790	167
+nCount_RNA	numeric	10340	809	167
+nFeature_RNA	integer	3829	524	273
+nFeature_RNA	integer	3829	597	273
+nFeature_RNA	integer	3829	545	271
+nFeature_RNA	integer	3829	557	270
+nFeature_RNA	integer	3829	528	267
+nFeature_RNA	integer	3829	538	267
+nFeature_RNA	integer	3829	550	267
+nFeature_RNA	integer	3829	535	265
+nFeature_RNA	integer	3829	530	264
+nFeature_RNA	integer	3829	593	259
+nFeature_RNA	integer	3829	561	258
+nFeature_RNA	integer	3829	562	258
+nFeature_RNA	integer	3829	564	258
+nFeature_RNA	integer	3829	507	257
+nFeature_RNA	integer	3829	551	257
+nFeature_RNA	integer	3829	509	255
+nFeature_RNA	integer	3829	529	255
+nFeature_RNA	integer	3829	537	255
+nFeature_RNA	integer	3829	559	254
+nFeature_RNA	integer	3829	516	253
+nFeature_RNA	integer	3829	526	252
+nFeature_RNA	integer	3829	540	252
+nFeature_RNA	integer	3829	546	252
+nFeature_RNA	integer	3829	548	251
+nFeature_RNA	integer	3829	569	251
+nFeature_RNA	integer	3829	549	250
+nFeature_RNA	integer	3829	552	250
+nFeature_RNA	integer	3829	518	249
+nFeature_RNA	integer	3829	536	249
+nFeature_RNA	integer	3829	554	249
+percent.mt	numeric	109079	5.55555555555556	75
+percent.mt	numeric	109079	5.26315789473684	70
+percent.mt	numeric	109079	5.88235294117647	66
+percent.mt	numeric	109079	4.16666666666667	64
+percent.mt	numeric	109079	3.84615384615385	61
+percent.mt	numeric	109079	6.25	61
+percent.mt	numeric	109079	4.76190476190476	60
+percent.mt	numeric	109079	7.69230769230769	60
+percent.mt	numeric	109079	3.57142857142857	58
+percent.mt	numeric	109079	4.34782608695652	56
+percent.mt	numeric	109079	7.14285714285714	56
+percent.mt	numeric	109079	4.54545454545455	55
+percent.mt	numeric	109079	3.125	53
+percent.mt	numeric	109079	3.44827586206897	52
+percent.mt	numeric	109079	6.66666666666667	52
+percent.mt	numeric	109079	4	51
+percent.mt	numeric	109079	8.33333333333333	50
+percent.mt	numeric	109079	5	48
+percent.mt	numeric	109079	2.08333333333333	46
+percent.mt	numeric	109079	2.63157894736842	46
+percent.mt	numeric	109079	3.33333333333333	45
+percent.mt	numeric	109079	9.09090909090909	42
+percent.mt	numeric	109079	2.32558139534884	40
+percent.mt	numeric	109079	2.77777777777778	40
+percent.mt	numeric	109079	3.2258064516129	40
+percent.mt	numeric	109079	2.22222222222222	39
+percent.mt	numeric	109079	2.5	39
+percent.mt	numeric	109079	2.38095238095238	38
+percent.mt	numeric	109079	2.17391304347826	37
+percent.mt	numeric	109079	2.4390243902439	37
+percent.rps	numeric	86901	0	2638
+percent.rps	numeric	86901	2.85714285714286	82
+percent.rps	numeric	86901	2.5	81
+percent.rps	numeric	86901	2.7027027027027	78
+percent.rps	numeric	86901	2.38095238095238	74
+percent.rps	numeric	86901	2.63157894736842	70
+percent.rps	numeric	86901	3.03030303030303	70
+percent.rps	numeric	86901	1.81818181818182	69
+percent.rps	numeric	86901	2.4390243902439	69
+percent.rps	numeric	86901	2.04081632653061	68
+percent.rps	numeric	86901	2.22222222222222	67
+percent.rps	numeric	86901	3.2258064516129	66
+percent.rps	numeric	86901	1.75438596491228	65
+percent.rps	numeric	86901	2	65
+percent.rps	numeric	86901	3.44827586206897	65
+percent.rps	numeric	86901	1.92307692307692	63
+percent.rps	numeric	86901	1.96078431372549	63
+percent.rps	numeric	86901	2.32558139534884	63
+percent.rps	numeric	86901	2.77777777777778	63
+percent.rps	numeric	86901	2.27272727272727	62
+percent.rps	numeric	86901	2.56410256410256	62
+percent.rps	numeric	86901	3.7037037037037	62
+percent.rps	numeric	86901	2.12765957446809	61
+percent.rps	numeric	86901	2.17391304347826	61
+percent.rps	numeric	86901	3.125	61
+percent.rps	numeric	86901	1.72413793103448	60
+percent.rps	numeric	86901	2.08333333333333	59
+percent.rps	numeric	86901	4	56
+percent.rps	numeric	86901	1.85185185185185	54
+percent.rps	numeric	86901	4.16666666666667	54
+percent.rpl	numeric	91128	0	3783
+percent.rpl	numeric	91128	2.22222222222222	80
+percent.rpl	numeric	91128	3.2258064516129	77
+percent.rpl	numeric	91128	3.03030303030303	76
+percent.rpl	numeric	91128	2.77777777777778	73
+percent.rpl	numeric	91128	2.32558139534884	71
+percent.rpl	numeric	91128	3.57142857142857	71
+percent.rpl	numeric	91128	3.7037037037037	70
+percent.rpl	numeric	91128	3.84615384615385	70
+percent.rpl	numeric	91128	2.12765957446809	69
+percent.rpl	numeric	91128	2.63157894736842	68
+percent.rpl	numeric	91128	2.27272727272727	65
+percent.rpl	numeric	91128	3.125	65
+percent.rpl	numeric	91128	1.88679245283019	61
+percent.rpl	numeric	91128	2	61
+percent.rpl	numeric	91128	2.56410256410256	61
+percent.rpl	numeric	91128	4.76190476190476	61
+percent.rpl	numeric	91128	2.4390243902439	60
+percent.rpl	numeric	91128	2.7027027027027	60
+percent.rpl	numeric	91128	2.08333333333333	59
+percent.rpl	numeric	91128	4.54545454545455	59
+percent.rpl	numeric	91128	2.38095238095238	58
+percent.rpl	numeric	91128	2.5	58
+percent.rpl	numeric	91128	2.94117647058824	57
+percent.rpl	numeric	91128	3.44827586206897	57
+percent.rpl	numeric	91128	4.34782608695652	57
+percent.rpl	numeric	91128	2.85714285714286	56
+percent.rpl	numeric	91128	3.33333333333333	56
+percent.rpl	numeric	91128	4	55
+percent.rpl	numeric	91128	4.16666666666667	53
+percent.rrna	numeric	146443	33.3333333333333	74
+percent.rrna	numeric	146443	20	61
+percent.rrna	numeric	146443	25	60
+percent.rrna	numeric	146443	16.6666666666667	59
+percent.rrna	numeric	146443	12.5	52
+percent.rrna	numeric	146443	0	47
+percent.rrna	numeric	146443	14.2857142857143	41
+percent.rrna	numeric	146443	11.1111111111111	38
+percent.rrna	numeric	146443	10	37
+percent.rrna	numeric	146443	22.2222222222222	35
+percent.rrna	numeric	146443	28.5714285714286	35
+percent.rrna	numeric	146443	9.09090909090909	31
+percent.rrna	numeric	146443	23.0769230769231	29
+percent.rrna	numeric	146443	15.3846153846154	28
+percent.rrna	numeric	146443	5.88235294117647	27
+percent.rrna	numeric	146443	40	26
+percent.rrna	numeric	146443	7.14285714285714	25
+percent.rrna	numeric	146443	13.3333333333333	24
+percent.rrna	numeric	146443	7.69230769230769	24
+percent.rrna	numeric	146443	18.1818181818182	22
+percent.rrna	numeric	146443	5.26315789473684	22
+percent.rrna	numeric	146443	50	22
+percent.rrna	numeric	146443	6.25	22
+percent.rrna	numeric	146443	8.33333333333333	22
+percent.rrna	numeric	146443	15	21
+percent.rrna	numeric	146443	30	21
+percent.rrna	numeric	146443	21.0526315789474	20
+percent.rrna	numeric	146443	27.2727272727273	20
+percent.rrna	numeric	146443	11.7647058823529	19
+percent.rrna	numeric	146443	12	19
+percent.hb	numeric	19679	0	142933
+percent.hb	numeric	19679	0.00126103404791929	19
+percent.hb	numeric	19679	0.0012853470437018	17
+percent.hb	numeric	19679	0.00115473441108545	16
+percent.hb	numeric	19679	0.00123762376237624	16
+percent.hb	numeric	19679	0.0012531328320802	16
+percent.hb	numeric	19679	0.00125786163522013	16
+percent.hb	numeric	19679	0.00128040973111396	16
+percent.hb	numeric	19679	0.00131406044678055	16
+percent.hb	numeric	19679	0.00117785630153121	15
+percent.hb	numeric	19679	0.00118764845605701	15
+percent.hb	numeric	19679	0.00119047619047619	15
+percent.hb	numeric	19679	0.00120192307692308	15
+percent.hb	numeric	19679	0.00121802679658952	15
+percent.hb	numeric	19679	0.00126582278481013	15
+percent.hb	numeric	19679	0.00132275132275132	15
+percent.hb	numeric	19679	0.00132978723404255	15
+percent.hb	numeric	19679	0.000841750841750842	14
+percent.hb	numeric	19679	0.000858369098712446	14
+percent.hb	numeric	19679	0.000862812769628991	14
+percent.hb	numeric	19679	0.000931098696461825	14
+percent.hb	numeric	19679	0.00102354145342886	14
+percent.hb	numeric	19679	0.00103734439834025	14
+percent.hb	numeric	19679	0.00106496272630458	14
+percent.hb	numeric	19679	0.00107642626480086	14
+percent.hb	numeric	19679	0.00112107623318386	14
+percent.hb	numeric	19679	0.00112994350282486	14
+percent.hb	numeric	19679	0.00120918984280532	14
+percent.hb	numeric	19679	0.00121065375302663	14
+percent.hb	numeric	19679	0.00122399020807834	14
+nCount_SCT	numeric	1230	1345	454
+nCount_SCT	numeric	1230	1340	448
+nCount_SCT	numeric	1230	1338	435
+nCount_SCT	numeric	1230	1341	430
+nCount_SCT	numeric	1230	1350	429
+nCount_SCT	numeric	1230	1333	428
+nCount_SCT	numeric	1230	1336	427
+nCount_SCT	numeric	1230	1314	426
+nCount_SCT	numeric	1230	1353	422
+nCount_SCT	numeric	1230	1321	420
+nCount_SCT	numeric	1230	1328	419
+nCount_SCT	numeric	1230	1331	419
+nCount_SCT	numeric	1230	1343	416
+nCount_SCT	numeric	1230	1346	413
+nCount_SCT	numeric	1230	1329	408
+nCount_SCT	numeric	1230	1348	408
+nCount_SCT	numeric	1230	1360	408
+nCount_SCT	numeric	1230	1351	407
+nCount_SCT	numeric	1230	1332	406
+nCount_SCT	numeric	1230	1330	405
+nCount_SCT	numeric	1230	1303	404
+nCount_SCT	numeric	1230	1335	404
+nCount_SCT	numeric	1230	1342	404
+nCount_SCT	numeric	1230	1349	404
+nCount_SCT	numeric	1230	1310	402
+nCount_SCT	numeric	1230	1312	402
+nCount_SCT	numeric	1230	1320	401
+nCount_SCT	numeric	1230	1339	399
+nCount_SCT	numeric	1230	1306	396
+nCount_SCT	numeric	1230	1344	395
+nFeature_SCT	integer	1663	597	283
+nFeature_SCT	integer	1663	545	279
+nFeature_SCT	integer	1663	524	277
+nFeature_SCT	integer	1663	564	273
+nFeature_SCT	integer	1663	557	271
+nFeature_SCT	integer	1663	551	270
+nFeature_SCT	integer	1663	537	268
+nFeature_SCT	integer	1663	562	268
+nFeature_SCT	integer	1663	535	267
+nFeature_SCT	integer	1663	561	267
+nFeature_SCT	integer	1663	509	266
+nFeature_SCT	integer	1663	516	266
+nFeature_SCT	integer	1663	530	265
+nFeature_SCT	integer	1663	550	265
+nFeature_SCT	integer	1663	593	265
+nFeature_SCT	integer	1663	513	262
+nFeature_SCT	integer	1663	528	262
+nFeature_SCT	integer	1663	571	262
+nFeature_SCT	integer	1663	529	261
+nFeature_SCT	integer	1663	538	261
+nFeature_SCT	integer	1663	549	260
+nFeature_SCT	integer	1663	556	260
+nFeature_SCT	integer	1663	559	260
+nFeature_SCT	integer	1663	532	259
+nFeature_SCT	integer	1663	554	259
+nFeature_SCT	integer	1663	610	258
+nFeature_SCT	integer	1663	480	257
+nFeature_SCT	integer	1663	526	257
+nFeature_SCT	integer	1663	555	257
+nFeature_SCT	integer	1663	589	257
+SCT_snn_res.1	factor	33	0	17582
+SCT_snn_res.1	factor	33	1	14401
+SCT_snn_res.1	factor	33	2	12836
+SCT_snn_res.1	factor	33	3	12700
+SCT_snn_res.1	factor	33	4	12502
+SCT_snn_res.1	factor	33	5	11800
+SCT_snn_res.1	factor	33	6	10321
+SCT_snn_res.1	factor	33	7	8861
+SCT_snn_res.1	factor	33	8	7293
+SCT_snn_res.1	factor	33	9	7223
+SCT_snn_res.1	factor	33	10	6910
+SCT_snn_res.1	factor	33	11	6465
+SCT_snn_res.1	factor	33	12	5087
+SCT_snn_res.1	factor	33	13	4137
+SCT_snn_res.1	factor	33	14	4014
+SCT_snn_res.1	factor	33	15	3569
+SCT_snn_res.1	factor	33	16	3554
+SCT_snn_res.1	factor	33	17	2981
+SCT_snn_res.1	factor	33	18	2606
+SCT_snn_res.1	factor	33	19	2482
+SCT_snn_res.1	factor	33	20	2309
+SCT_snn_res.1	factor	33	21	2118
+SCT_snn_res.1	factor	33	22	1947
+SCT_snn_res.1	factor	33	23	1882
+SCT_snn_res.1	factor	33	24	1482
+SCT_snn_res.1	factor	33	25	1374
+SCT_snn_res.1	factor	33	26	1322
+SCT_snn_res.1	factor	33	27	1274
+SCT_snn_res.1	factor	33	28	1273
+SCT_snn_res.1	factor	33	29	1085
+seurat_clusters	factor	33	0	17582
+seurat_clusters	factor	33	1	14401
+seurat_clusters	factor	33	2	12836
+seurat_clusters	factor	33	3	12700
+seurat_clusters	factor	33	4	12502
+seurat_clusters	factor	33	5	11800
+seurat_clusters	factor	33	6	10321
+seurat_clusters	factor	33	7	8861
+seurat_clusters	factor	33	8	7293
+seurat_clusters	factor	33	9	7223
+seurat_clusters	factor	33	10	6910
+seurat_clusters	factor	33	11	6465
+seurat_clusters	factor	33	12	5087
+seurat_clusters	factor	33	13	4137
+seurat_clusters	factor	33	14	4014
+seurat_clusters	factor	33	15	3569
+seurat_clusters	factor	33	16	3554
+seurat_clusters	factor	33	17	2981
+seurat_clusters	factor	33	18	2606
+seurat_clusters	factor	33	19	2482
+seurat_clusters	factor	33	20	2309
+seurat_clusters	factor	33	21	2118
+seurat_clusters	factor	33	22	1947
+seurat_clusters	factor	33	23	1882
+seurat_clusters	factor	33	24	1482
+seurat_clusters	factor	33	25	1374
+seurat_clusters	factor	33	26	1322
+seurat_clusters	factor	33	27	1274
+seurat_clusters	factor	33	28	1273
+seurat_clusters	factor	33	29	1085
+cell.type.fine	factor	20	Neutrophil	33087
+cell.type.fine	factor	20	CD4 T	18167
+cell.type.fine	factor	20	CD14 mono	17298
+cell.type.fine	factor	20	NK	17176
+cell.type.fine	factor	20	Eff CD8 T	16153
+cell.type.fine	factor	20	B	12909
+cell.type.fine	factor	20	IgG PB	9983
+cell.type.fine	factor	20	ISG+ CD14 mono	8932
+cell.type.fine	factor	20	Activated CD14 mono	7186
+cell.type.fine	factor	20	Developing neutrophil	6737
+cell.type.fine	factor	20	Platelet	5389
+cell.type.fine	factor	20	Naive CD8 T	4196
+cell.type.fine	factor	20	IgM PB	3675
+cell.type.fine	factor	20	CD16 mono	3637
+cell.type.fine	factor	20	IgA PB	3070
+cell.type.fine	factor	20	Eos/Mast Prog	2553
+cell.type.fine	factor	20	Prolif Lymph	2106
+cell.type.fine	factor	20	DC	1169
+cell.type.fine	factor	20	pDC	749
+cell.type.fine	factor	20	IgA/IgG PB	581
+cell.type.coarse	factor	14	CD14 mono	33416
+cell.type.coarse	factor	14	Neutrophil	33087
+cell.type.coarse	factor	14	CD8 T	20349
+cell.type.coarse	factor	14	CD4 T	18167
+cell.type.coarse	factor	14	PB	17309
+cell.type.coarse	factor	14	NK	17176
+cell.type.coarse	factor	14	B	12909
+cell.type.coarse	factor	14	Developing neutrophil	6737
+cell.type.coarse	factor	14	Platelet	5389
+cell.type.coarse	factor	14	CD16 mono	3637
+cell.type.coarse	factor	14	Eos/Mast Prog	2553
+cell.type.coarse	factor	14	Prolif Lymph	2106
+cell.type.coarse	factor	14	DC	1169
+cell.type.coarse	factor	14	pDC	749
+celltype.l2	character	27	CD14 Mono	49696
+celltype.l2	character	27	Eryth	26648
+celltype.l2	character	27	CD4 TCM	14697
+celltype.l2	character	27	NK	14571
+celltype.l2	character	27	CD8 TEM	13537
+celltype.l2	character	27	CD4 Naive	6761
+celltype.l2	character	27	B naive	6663
+celltype.l2	character	27	B intermediate	6130
+celltype.l2	character	27	CD4 CTL	5995
+celltype.l2	character	27	Plasmablast	5135
+celltype.l2	character	27	Platelet	4347
+celltype.l2	character	27	CD16 Mono	3941
+celltype.l2	character	27	B memory	2624
+celltype.l2	character	27	gdT	2348
+celltype.l2	character	27	CD4 TEM	2146
+celltype.l2	character	27	Proliferating	1910
+celltype.l2	character	27	cDC2	1773
+celltype.l2	character	27	CD8 Naive	1413
+celltype.l2	character	27	Treg	1062
+celltype.l2	character	27	NK_CD56	725
+celltype.l2	character	27	HSPC	712
+celltype.l2	character	27	pDC	567
+celltype.l2	character	27	CD8 TCM	498
+celltype.l2	character	27	MAIT	479
+celltype.l2	character	27	dnT	177
+celltype.l2	character	27	ASDC	125
+celltype.l2	character	27	cDC1	73
+celltype.l3	character	56	CD14 Mono	49843
+celltype.l3	character	56	Eryth	27091
+celltype.l3	character	56	CD4 TCM_1	10018
+celltype.l3	character	56	NK_2	8025
+celltype.l3	character	56	CD4 CTL	7653
+celltype.l3	character	56	CD4 Naive	6942
+celltype.l3	character	56	CD8 TEM_2	4828
+celltype.l3	character	56	B memory kappa	4574
+celltype.l3	character	56	Platelet	4405
+celltype.l3	character	56	CD16 Mono	3947
+celltype.l3	character	56	Plasma	3890
+celltype.l3	character	56	B naive lambda	3889
+celltype.l3	character	56	NK_1	3139
+celltype.l3	character	56	CD8 TEM_4	2954
+celltype.l3	character	56	CD4 TCM_3	2953
+celltype.l3	character	56	B naive kappa	2121
+celltype.l3	character	56	B memory lambda	2109
+celltype.l3	character	56	CD8 TEM_1	2032
+celltype.l3	character	56	NK_4	1905
+celltype.l3	character	56	gdT_1	1576
+celltype.l3	character	56	B immature kappa	1509
+celltype.l3	character	56	CD8 Naive	1329
+celltype.l3	character	56	CD8 TEM_5	1326
+celltype.l3	character	56	CD4 TCM_2	1258
+celltype.l3	character	56	Plasmablast	1211
+celltype.l3	character	56	Treg Memory	1182
+celltype.l3	character	56	NK_3	1178
+celltype.l3	character	56	B immature lambda	1078
+celltype.l3	character	56	cDC2_2	1047
+celltype.l3	character	56	NK Proliferating	958
+Severity.max.final	character	5	0	62164
+Severity.max.final	character	5	4-5	35184
+Severity.max.final	character	5	6-7	34496
+Severity.max.final	character	5	8	30515
+Severity.max.final	character	5	1-3	12394
+Severity.current.final	character	4	0	65938
+Severity.current.final	character	4	6-7	60546
+Severity.current.final	character	4	4-5	37224
+Severity.current.final	character	4	1-3	11045
+manual.coarse.idents	factor	14	CD14 Monocyte	33368
+manual.coarse.idents	factor	14	Neutrophil	33276
+manual.coarse.idents	factor	14	CD4 T	19182
+manual.coarse.idents	factor	14	NK	19159
+manual.coarse.idents	factor	14	PB	17688
+manual.coarse.idents	factor	14	CD8 T	17582
+manual.coarse.idents	factor	14	B	12700
+manual.coarse.idents	factor	14	Developing neutrophil	6569
+manual.coarse.idents	factor	14	Platelet	5222
+manual.coarse.idents	factor	14	CD16 Monocyte	3554
+manual.coarse.idents	factor	14	Eos/Mast Prog	2482
+manual.coarse.idents	factor	14	Prolif Lymph	1947
+manual.coarse.idents	factor	14	DC	1274
+manual.coarse.idents	factor	14	pDC	750
+manual.fine.idents	factor	18	CD14 Monocyte	33368
+manual.fine.idents	factor	18	Neutrophil	33276
+manual.fine.idents	factor	18	CD4 T	19182
+manual.fine.idents	factor	18	CD8Eff T	17582
+manual.fine.idents	factor	18	NK	16850
+manual.fine.idents	factor	18	B	12700
+manual.fine.idents	factor	18	IgG PB	10890
+manual.fine.idents	factor	18	Developing neutrophil	6569
+manual.fine.idents	factor	18	Platelet	5222
+manual.fine.idents	factor	18	CD16 Monocyte	3554
+manual.fine.idents	factor	18	IgA PB	3310
+manual.fine.idents	factor	18	IgM PB	2981
+manual.fine.idents	factor	18	Eos/Mast Prog	2482
+manual.fine.idents	factor	18	CD8 T/NK	2309
+manual.fine.idents	factor	18	Prolif Lymph	1947
+manual.fine.idents	factor	18	DC	1274
+manual.fine.idents	factor	18	pDC	750
+manual.fine.idents	factor	18	IgA/IgG PB	507
+Severity.max.grouped	character	4	6-8	65011
+Severity.max.grouped	character	4	0	62164
+Severity.max.grouped	character	4	4-5	35184
+Severity.max.grouped	character	4	1-3	12394
+time_to_death	factor	7	NA	144238
+time_to_death	factor	7	63	13265
+time_to_death	factor	7	39	6919
+time_to_death	factor	7	36	6639
+time_to_death	factor	7	14	2485
+time_to_death	factor	7	9	894
+time_to_death	factor	7	33	313
+barcode	character	173800	ATACGCGACAAT	3
+barcode	character	173800	CTCGCCAACCCA	3
+barcode	character	173800	AAAAACCAAGGA	2
+barcode	character	173800	AAAAAGCTGTTG	2
+barcode	character	173800	AAAAGCATCCGT	2
+barcode	character	173800	AAAGAGCACAGC	2
+barcode	character	173800	AAAGATGTCCAT	2
+barcode	character	173800	AAATCCCCTTAT	2
+barcode	character	173800	AAATTCGCTACG	2
+barcode	character	173800	AACAACGCCAGA	2
+barcode	character	173800	AACATAGGATTT	2
+barcode	character	173800	AACATAGGGGGA	2
+barcode	character	173800	AACCACTCCTAA	2
+barcode	character	173800	AACCACTGTTAT	2
+barcode	character	173800	AACCCATAACTG	2
+barcode	character	173800	AACCCGCCGCTA	2
+barcode	character	173800	AACCCTCTAAGT	2
+barcode	character	173800	AACCGCGTTGGG	2
+barcode	character	173800	AACCGTGCCCAC	2
+barcode	character	173800	AACCTAGACCAC	2
+barcode	character	173800	AACCTGAGCAAG	2
+barcode	character	173800	AACGGTACAAAG	2
+barcode	character	173800	AACGTGCCTGCG	2
+barcode	character	173800	AACTATCACGCT	2
+barcode	character	173800	AACTCACGTCGG	2
+barcode	character	173800	AACTCCCGTAAC	2
+barcode	character	173800	AACTTAAACGCG	2
+barcode	character	173800	AACTTCAGTTTG	2
+barcode	character	173800	AAGACCTGACCC	2
+barcode	character	173800	AAGAGCTCCATA	2
+ddim	numeric	6	NA	152772
+ddim	numeric	6	1.4	13265
+ddim	numeric	6	2.238	4624
+ddim	numeric	6	1.47	2485
+ddim	numeric	6	0.33	1294
+ddim	numeric	6	1.144	313
+stroke	character	2	No stroke	167644
+stroke	character	2	Stroke	7109
+cell.type	character	29	Neutrophil	33276
+cell.type	character	29	CD14 Mono	29575
+cell.type	character	29	Eryth	14841
+cell.type	character	29	NK	14127
+cell.type	character	29	CD8 TEM	13041
+cell.type	character	29	CD4 TCM	11785
+cell.type	character	29	B naive	6625
+cell.type	character	29	Developing neutrophil	6569
+cell.type	character	29	B intermediate	6064
+cell.type	character	29	CD4 Naive	6018
+cell.type	character	29	CD4 CTL	5611
+cell.type	character	29	Plasmablast	5093
+cell.type	character	29	CD16 Mono	3878
+cell.type	character	29	B memory	2592
+cell.type	character	29	Platelet	2558
+cell.type	character	29	gdT	2285
+cell.type	character	29	CD4 TEM	1931
+cell.type	character	29	cDC2	1751
+cell.type	character	29	Proliferating	1643
+cell.type	character	29	CD8 Naive	1258
+cell.type	character	29	Treg	1000
+cell.type	character	29	NK_CD56	693
+cell.type	character	29	HSPC	666
+cell.type	character	29	pDC	567
+cell.type	character	29	CD8 TCM	469
+cell.type	character	29	MAIT	464
+cell.type	character	29	dnT	175
+cell.type	character	29	ASDC	125
+cell.type	character	29	cDC1	73
+Race_ethnicity	character	7	NA	62164
+Race_ethnicity	character	7	Hispanic/Latino	47984
+Race_ethnicity	character	7	White	25380
+Race_ethnicity	character	7	Asian	22157
+Race_ethnicity	character	7	Patient Refused	13265
+Race_ethnicity	character	7	Black or African American	2786
+Race_ethnicity	character	7	Other	1017
