@@ -522,3 +522,29 @@ patient sampled twice would make: the run's counts will show what the object hol
 **The export keeps a spec's cells only** (`r_export.R`, its optional `keep.json`: the spec's `cells`; the data job
 writes it from the spec): 174,753 cells exported whole would be read for nothing. Tried here on the fabricated
 object of J25 (a filter on two columns; an unknown column stops it; without a filter, as before).
+
+## J28 — 2026-11-11: R00653's journal supplement fetched (the second attempt); every set's genes extracted
+
+**The run** (label `level-b-setgenes-3`, workflow run 42937061805 at a00d343; `results/level-b-setgenes-3` at
+894d6d6, its 8 SHA256 checked here): Europe PMC answered HTTP 500 twice, then gave the same archive as J26's attempt
+(42,353,139 bytes); `show` read it whole, the members it could not open being macOS's resource forks
+(`__MACOSX/._Supplementary_Data_N.xlsx`, 212 bytes each), said so. The label was set before the dry job of a00d343
+had run (the runners' queue held three heads' CI); level B's tests had passed here in both environments.
+
+**The look** (`show.md`): the journal article's Supplementary Data 1–4 give GO enrichment with the enriched terms'
+genes, not whole modules; its source data (`41467_2023_40503_MOESM6_ESM.xlsx`) give, for its Figure 6 — the
+preprint's Figure 5, the COVID-19 monocytes' module the claims name — each gene of the module with its sub-module
+(`gene`, `FCN`): Toll-like receptor signalling 7, Interferon signalling 24, Antigen Presentation 19 (the sub-modules
+of the preprint's Table S13). A table, not a figure's image: the module is listed (section 5's rule).
+
+**R00653's claims:** 1 and 3 are one claim written by the two passes under two names (the same quote: "upregulated
+co-expressions among interferon-stimulated genes"), 2 and 4 another ("between genes in the interferon signaling and
+antigen presentation pathways"); `kept.py` matched sets by their names, so each is listed by one pass only (to the
+owner with the list, as J21 counted). Their genes: 1 and 3 the Interferon signalling sub-module's 24; 2 and 4 that and
+Antigen Presentation's, 43 (`set_specs.json`, f99b63f, before the extraction).
+
+**The extraction** (`set_genes.py extract`, both results directories and S3's texts; `amendment1/set_genes.json`,
+`set_genes.log`; `kept_claims.json` filled, nothing else in it changed): 18 of the 19 sets have their genes — R02175
+53 to 111 (Supplementary Data 2's columns), R01795 97 to 200 (the Hallmark sets; the paper states 118 for the
+IFN-gamma set's genes it analysed in CD4+ T cells, against MSigDB's 200), R00765's claim 2 13 (its text), R00653 24
+or 43; R00765's claim 1 not listed (figures only).

@@ -1,0 +1,19 @@
+R02175 claim 1 (Mitochondria NDCG): 111 genes, the paper states None
+R02175 claim 2 (Glycolysis NDCG): 53 genes, the paper states None
+R02175 claim 3 (Proliferation NDCG): 82 genes, the paper states None
+R02175 claim 4 (UPR NDCG): 64 genes, the paper states None
+R02175 claim 5 (Microfilaments NDCG): 61 genes, the paper states None
+R02175 claim 6 (Microfilaments and Microtubuli NDCGs (the abstract's cytoskeleton organization)): 111 genes, the paper states None
+R01795 claim 1 (TNF-alpha/TNF receptor 1-dependent immune pathways (HALLMARK_TNFA_SIGNALING_VIA_NFKB)): 200 genes, the paper states None
+R01795 claim 2 (IFITM3 with its partners in the IFN-gamma gene set (HALLMARK_INTERFERON_GAMMA_RESPONSE)): 200 genes, the paper states 118
+R01795 claim 3 (HALLMARK_INTERFERON_GAMMA_RESPONSE): 200 genes, the paper states 118
+R01795 claim 4 (HALLMARK_INTERFERON_ALPHA_RESPONSE): 97 genes, the paper states None
+R01795 claim 5 (HALLMARK_COMPLEMENT): 200 genes, the paper states None
+R01795 claim 6 (HALLMARK_INTERFERON_GAMMA_RESPONSE): 200 genes, the paper states None
+R01795 claim 7 (HALLMARK_INTERFERON_GAMMA_RESPONSE differential network): 200 genes, the paper states 118
+R00765 claim 1 (Dozer-A3 module): 0 genes, the paper states 57; not listed: shown only in figures (Fig. 5D; Supplementary Figs S19-S21, the supplement a PDF of figures)
+R00765 claim 2 (genes of 'Pathways of neurodegeneration' with higher centrality in Failure): 13 genes, the paper states 13
+R00653 claim 1 (interferon-signalling module of monocyte differential co-expression (CS-CORE)): 24 genes, the paper states None
+R00653 claim 2 (interferon-signalling and antigen-presentation genes of the same module): 43 genes, the paper states None
+R00653 claim 3 (CS-CORE differential co-expression module enriched for interferon signalling (interferon-stimulated genes)): 24 genes, the paper states None
+R00653 claim 4 (interferon signalling and antigen presentation pathway genes of the same CS-CORE module): 43 genes, the paper states None
