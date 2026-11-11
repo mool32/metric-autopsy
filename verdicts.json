@@ -1,0 +1,281 @@
+{
+ "claims": [
+  {
+   "rid": "R00189",
+   "claim": "1",
+   "citing": 145,
+   "by_terms": 183,
+   "records": 327,
+   "kept": 185
+  },
+  {
+   "rid": "R00189",
+   "claim": "2",
+   "citing": 145,
+   "by_terms": 0,
+   "records": 145,
+   "kept": 0
+  },
+  {
+   "rid": "R00189",
+   "claim": "3",
+   "citing": 145,
+   "by_terms": 7,
+   "records": 152,
+   "kept": 7
+  },
+  {
+   "rid": "R00189",
+   "claim": "4",
+   "citing": 145,
+   "by_terms": 0,
+   "records": 145,
+   "kept": 0
+  },
+  {
+   "rid": "R00189",
+   "claim": "5",
+   "citing": 145,
+   "by_terms": 1,
+   "records": 146,
+   "kept": 1
+  },
+  {
+   "rid": "R00653",
+   "claim": "1",
+   "citing": 82,
+   "by_terms": 0,
+   "records": 82,
+   "kept": 0
+  },
+  {
+   "rid": "R00653",
+   "claim": "2",
+   "citing": 82,
+   "by_terms": 0,
+   "records": 82,
+   "kept": 0
+  },
+  {
+   "rid": "R00653",
+   "claim": "3",
+   "citing": 82,
+   "by_terms": 0,
+   "records": 82,
+   "kept": 0
+  },
+  {
+   "rid": "R00653",
+   "claim": "4",
+   "citing": 82,
+   "by_terms": 0,
+   "records": 82,
+   "kept": 0
+  },
+  {
+   "rid": "R00765",
+   "claim": "1",
+   "citing": 3,
+   "by_terms": 0,
+   "records": 3,
+   "kept": 0
+  },
+  {
+   "rid": "R00765",
+   "claim": "2",
+   "citing": 3,
+   "by_terms": 0,
+   "records": 3,
+   "kept": 0
+  },
+  {
+   "rid": "R01225",
+   "claim": "1",
+   "citing": 2,
+   "by_terms": 0,
+   "records": 2,
+   "kept": 0
+  },
+  {
+   "rid": "R01225",
+   "claim": "2",
+   "citing": 2,
+   "by_terms": 3,
+   "records": 5,
+   "kept": 3
+  },
+  {
+   "rid": "R01225",
+   "claim": "3",
+   "citing": 2,
+   "by_terms": 7,
+   "records": 9,
+   "kept": 7
+  },
+  {
+   "rid": "R01225",
+   "claim": "4",
+   "citing": 2,
+   "by_terms": 0,
+   "records": 2,
+   "kept": 0
+  },
+  {
+   "rid": "R01225",
+   "claim": "5",
+   "citing": 2,
+   "by_terms": 0,
+   "records": 2,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "1",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "2",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "3",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "4",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "5",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "6",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01795",
+   "claim": "7",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01962",
+   "claim": "1",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R01962",
+   "claim": "2",
+   "citing": 0,
+   "by_terms": 0,
+   "records": 0,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "1",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "2",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "3",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "4",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "5",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02175",
+   "claim": "6",
+   "citing": 9,
+   "by_terms": 0,
+   "records": 9,
+   "kept": 0
+  },
+  {
+   "rid": "R02693",
+   "claim": "1",
+   "citing": 2,
+   "by_terms": 1,
+   "records": 2,
+   "kept": 0
+  },
+  {
+   "rid": "R02693",
+   "claim": "2",
+   "citing": 2,
+   "by_terms": 2,
+   "records": 3,
+   "kept": 1
+  },
+  {
+   "rid": "R02693",
+   "claim": "3",
+   "citing": 2,
+   "by_terms": 4,
+   "records": 5,
+   "kept": 3
+  }
+ ],
+ "to_read": 206,
+ "fulltexts": 113,
+ "ok": true,
+ "fabricated": false,
+ "claims_file": "validation/level_b/amendment1/kept_claims.json"
+}

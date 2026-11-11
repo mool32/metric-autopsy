@@ -1,0 +1,419 @@
+# Level B, S4: the independent verdicts' search (verdicts.py)
+
+Citations of R00189 (MED:32676577): 0 counted, 0 unique, 0 with a core record, 0 without (cited by None at the lookup)
+Citations of R00189-1 (MED:33156843): 145 counted, 145 unique, 145 with a core record, 0 without (cited by None at the lookup)
+R00189 1 (pair): citing 145, by the terms 183, records 327, kept by the filter 185
+R00189 2 (pair): citing 145, by the terms 0, records 145, kept by the filter 0
+R00189 3 (pair): citing 145, by the terms 7, records 152, kept by the filter 7
+R00189 4 (pair): citing 145, by the terms 0, records 145, kept by the filter 0
+R00189 5 (pair): citing 145, by the terms 1, records 146, kept by the filter 1
+Citations of R00653 (MED:36561173): 2 counted, 2 unique, 2 with a core record, 0 without (cited by None at the lookup)
+Citations of R00653-1 (MED:37563115): 80 counted, 80 unique, 80 with a core record, 0 without (cited by None at the lookup)
+R00653 1 (set): citing 82, by the terms 0, records 82, kept by the filter 0
+R00653 2 (set): citing 82, by the terms 0, records 82, kept by the filter 0
+R00653 3 (set): citing 82, by the terms 0, records 82, kept by the filter 0
+R00653 4 (set): citing 82, by the terms 0, records 82, kept by the filter 0
+Citations of R00765 (MED:37163070): 3 counted, 3 unique, 3 with a core record, 0 without (cited by None at the lookup)
+R00765 1 (set): citing 3, by the terms 0, records 3, kept by the filter 0
+R00765 2 (set): citing 3, by the terms 0, records 3, kept by the filter 0
+Citations of R01225 (MED:38975079): 2 counted, 2 unique, 2 with a core record, 0 without (cited by None at the lookup)
+R01225 1 (pair): citing 2, by the terms 0, records 2, kept by the filter 0
+R01225 2 (pair): citing 2, by the terms 3, records 5, kept by the filter 3
+R01225 3 (pair): citing 2, by the terms 7, records 9, kept by the filter 7
+R01225 4 (pair): citing 2, by the terms 0, records 2, kept by the filter 0
+R01225 5 (pair): citing 2, by the terms 0, records 2, kept by the filter 0
+Citations of R01795 (MED:40429912): 0 counted, 0 unique, 0 with a core record, 0 without (cited by None at the lookup)
+R01795 1 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 2 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 3 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 4 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 5 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 6 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+R01795 7 (set): citing 0, by the terms 0, records 0, kept by the filter 0
+Citations of R01962 (MED:40772737): 0 counted, 0 unique, 0 with a core record, 0 without (cited by None at the lookup)
+R01962 1 (pair): citing 0, by the terms 0, records 0, kept by the filter 0
+R01962 2 (pair): citing 0, by the terms 0, records 0, kept by the filter 0
+Citations of R02175 (MED:41145477): 9 counted, 9 unique, 9 with a core record, 0 without (cited by None at the lookup)
+R02175 1 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+R02175 2 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+R02175 3 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+R02175 4 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+R02175 5 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+R02175 6 (set): citing 9, by the terms 0, records 9, kept by the filter 0
+Citations of R02693 (MED:41932887): 2 counted, 2 unique, 2 with a core record, 0 without (cited by None at the lookup)
+R02693 1 (pair): citing 2, by the terms 1, records 2, kept by the filter 0
+R02693 2 (pair): citing 2, by the terms 2, records 3, kept by the filter 1
+R02693 3 (pair): citing 2, by the terms 4, records 5, kept by the filter 3
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR247333/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR247333/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR247333/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR247333/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR247333/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1337025/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1337025/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1337025/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1337025/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1337025/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1256265/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1256265/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1256265/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1256265/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1256265/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1338249/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1338249/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1338249/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1338249/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1338249/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11019950/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11019950/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11019950/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11019950/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11019950/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13286030/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13286030/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13286030/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13286030/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13286030/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR746566/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR746566/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR746566/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR746566/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR746566/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR872507/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR872507/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR872507/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR872507/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR872507/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1195941/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1195941/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1195941/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1195941/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1195941/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8014618/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8014618/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8014618/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8014618/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8014618/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179700/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179700/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179700/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179700/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179700/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR208057/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR208057/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR208057/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR208057/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR208057/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163537/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163537/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163537/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163537/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163537/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR241522/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR241522/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR241522/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR241522/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR241522/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR368773/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR368773/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR368773/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR368773/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR368773/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163501/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163501/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163501/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163501/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163501/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR192022/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR192022/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR192022/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR192022/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR192022/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR951068/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR951068/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR951068/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR951068/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR951068/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR385264/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR385264/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR385264/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR385264/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR385264/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR127035/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR127035/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR127035/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR127035/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR127035/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR367418/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR367418/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR367418/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR367418/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR367418/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR989861/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR989861/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR989861/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR989861/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR989861/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR213648/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR213648/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR213648/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR213648/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR213648/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR207544/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR207544/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR207544/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR207544/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR207544/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9348314/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9348314/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9348314/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9348314/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9348314/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384340/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384340/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384340/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384340/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384340/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR261056/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR261056/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR261056/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR261056/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR261056/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR167627/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR167627/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR167627/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR167627/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR167627/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR174004/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR174004/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR174004/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR174004/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR174004/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR716938/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR716938/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR716938/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR716938/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR716938/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR414418/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR414418/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR414418/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR414418/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR414418/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7241737/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7241737/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7241737/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7241737/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7241737/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150281/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150281/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150281/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150281/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150281/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR348861/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR348861/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR348861/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR348861/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR348861/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343431/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343431/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343431/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343431/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343431/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR149890/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR149890/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR149890/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR149890/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR149890/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8274604/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8274604/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8274604/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8274604/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8274604/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7735593/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7388840/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR651435/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR651435/fullTextXML
+  retry 3 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR651435/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR651435/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR651435/fullTextXML
+  retry 1 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11168432/fullTextXML
+  retry 2 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11168432/fullTextXML
+  retry 3 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11168432/fullTextXML
+  retry 4 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11168432/fullTextXML
+  retry 5 after HTTP 503: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11168432/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384375/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384375/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384375/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384375/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9384375/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7462334/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7462334/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7462334/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7462334/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7462334/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR121854/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR121854/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR121854/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR121854/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR121854/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10442191/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10442191/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10442191/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10442191/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10442191/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179284/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179284/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179284/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179284/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR179284/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150275/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150275/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150275/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150275/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150275/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385877/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385877/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385877/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385877/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385877/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385818/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385818/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385818/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385818/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385818/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR363712/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR363712/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR363712/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR363712/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR363712/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343579/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343579/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343579/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343579/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR343579/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR352367/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR352367/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR352367/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR352367/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR352367/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8222884/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8222884/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8222884/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8222884/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8222884/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163829/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163829/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163829/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163829/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR163829/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR200842/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR200842/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR200842/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR200842/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR200842/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385899/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385899/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385899/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385899/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385899/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7300910/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7300910/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7300910/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7300910/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7300910/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR381939/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR381939/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR381939/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR381939/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR381939/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7995007/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7995007/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7995007/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7995007/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7995007/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR169402/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR169402/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR169402/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR169402/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR169402/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR236359/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR236359/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR236359/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR236359/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR236359/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR185961/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR185961/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR185961/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR185961/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR185961/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316020/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316020/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316020/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316020/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316020/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150278/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150278/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150278/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150278/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR150278/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316833/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316833/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316833/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316833/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR316833/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385900/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385900/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385900/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385900/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8385900/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7323151/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7323151/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7323151/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7323151/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7323151/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR216522/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR216522/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR216522/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR216522/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR216522/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR182850/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR182850/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR182850/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR182850/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR182850/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3126222/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3126222/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3126222/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3126222/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3126222/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR563207/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR563207/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR563207/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR563207/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR563207/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR180462/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR180462/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR180462/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR180462/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR180462/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1077525/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1077525/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1077525/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1077525/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1077525/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1330841/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1330841/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1330841/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1330841/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR1330841/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR115950/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR115950/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR115950/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR115950/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR115950/fullTextXML
+  retry 1 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR248652/fullTextXML
+  retry 2 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR248652/fullTextXML
+  retry 3 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR248652/fullTextXML
+  retry 4 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR248652/fullTextXML
+  retry 5 after HTTP 500: https://www.ebi.ac.uk/europepmc/webservices/rest/PPR248652/fullTextXML
+Records the filter keeps, over the claims: 206; their full texts fetched: 113
