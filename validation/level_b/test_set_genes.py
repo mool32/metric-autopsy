@@ -72,3 +72,32 @@ def test_the_extra_files_list_and_a_gmt_set(tmp_path):
         assert "no set" in str(e)
     else:
         raise AssertionError("no stop")
+
+
+def test_a_set_listed_in_the_paper_s_text_and_a_set_not_listed(tmp_path):
+    import hashlib
+    texts = tmp_path / "texts"
+    texts.mkdir()
+    body = "Results.\nWe identified a set of 3 genes (COX5A, COX5B,\nXBP1) that exhibited higher centrality.\n"
+    (texts / "R00765.txt").write_text(body)
+    sha = hashlib.sha256(body.encode()).hexdigest()
+    files = _archive(tmp_path, "R00765", {"x.tsv": "gene\nA\n"})
+    kept = dict(papers=[dict(rid="R00765", claims=[dict(id="1", kind="set", genes=[], set_name="Dozer-A3 module", set_size=57),
+                                                   dict(id="2", kind="set", genes=[], set_name="neurodegeneration", set_size=3)])])
+    specs = [dict(rid="R00765", claim="1", not_listed="shown only in figures"),
+             dict(rid="R00765", claim="2", text="R00765.txt", sha256=sha, quote="a set of 3 genes (COX5A, COX5B, XBP1) that",
+                  list_from="(", list_to=")", split=",")]
+    res = G.extract(specs, files, kept, texts)
+    assert res[0]["genes"] == [] and res[0]["note"] == "not listed: shown only in figures"
+    assert res[1]["genes"] == ["COX5A", "COX5B", "XBP1"] and res[1]["n"] == res[1]["stated"] == 3
+    G.fill(kept, res)
+    assert kept["papers"][0]["claims"][0]["genes_from"] == "not listed: shown only in figures"
+    assert kept["papers"][0]["claims"][1]["genes_from"] == "set_genes.json (the text R00765.txt)"
+    for bad, why in ((dict(specs[1], sha256="0" * 64), "not the text S3 read"),
+                     (dict(specs[1], quote="a set of 4 genes"), "the quote is not in")):
+        try:
+            G.extract([bad], files, kept, texts)
+        except SystemExit as e:
+            assert why in str(e)
+        else:
+            raise AssertionError("no stop")

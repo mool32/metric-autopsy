@@ -104,5 +104,10 @@ are taken before both, the same way for every set:
   R01795's MSigDB Hallmark sets, which the paper took from MSigDB on 2022-10-20): its genes from the collection's
   file of the release current at the paper's date (MSigDB v2022.1.Hs, `h.all.v2022.1.Hs.symbols.gmt`, published
   2022-09-02), named beforehand in `amendment1/set_extra.tsv` and fetched in the same run with its SHA256.
+- **A set the paper lists in its text, not in a table** (added 2026-11-11, before any set's genes are extracted;
+  R00765's claim 2: "a set of 13 genes (COX5A, …)"): its genes are the list the sentence holds — the sentence quoted
+  in `set_specs.json`, found by the script in the paper's text as S3 read it (that text's SHA256 checked against
+  `amendment1/ft/batches/texts_group*.sha256`), the list cut between its brackets at its commas; nothing typed by
+  hand. A set the paper shows only in a figure is "not listed", with where it is shown.
 - A set whose list is not found or cannot be read is said so: its claim stays in the list without its genes, S4
   searches it by its name only, and S5 reports its genes as not listed.

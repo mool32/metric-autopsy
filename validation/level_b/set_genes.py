@@ -11,8 +11,9 @@
   SHA256 (`raw/setgenes/<rid>-<file>.gz`, `setgenes_extra.tsv`): a set the paper names from a public collection
   without listing it (MSigDB's Hallmark sets: the collection's file of the release the paper used).
 * `extract`: each set's genes by its spec (`set_specs.json`: the archive's member, its sheet, the row of its header,
-  the column of the genes, the rows that are the set's; or an extra file and the set's name in it, a GMT), their
-  number against the number the paper states, and the kept claims with the sets' genes filled.
+  the column of the genes, the rows that are the set's; or an extra file and the set's name in it, a GMT; or the
+  sentence of the paper's text that lists them, `--texts`; or "not listed" and why), their number against the
+  number the paper states, and the kept claims with the sets' genes filled.
 * `dry`: the three on fabricated answers (FABRICATED, nothing fetched).
 
     python -I validation/level_b/set_genes.py fetch --claims validation/level_b/amendment1/kept_claims.json --out OUT
@@ -204,7 +205,32 @@ def gmt_set(data: bytes, name: str) -> list:
     raise SystemExit(f"no set {name!r} in the GMT file")
 
 
-def extract(specs: list, files: Path, kept: dict) -> list:
+def _norm(text: str) -> str:
+    return " ".join(text.split())
+
+
+def text_set(texts: Path, spec: dict) -> list:
+    """A set the paper lists in its text (`plan_s5.md`, section 5, as precised on 2026-11-11): the sentence the spec
+    quotes, found in the paper's text as S3 read it (its SHA256 checked), and the list it holds between `list_from`
+    and `list_to`, cut at `split`."""
+    path = texts / spec["text"]
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != spec["sha256"]:
+        raise SystemExit(f"{spec['rid']} claim {spec['claim']}: {spec['text']} is not the text S3 read (SHA256)")
+    quote = _norm(spec["quote"])
+    if quote not in _norm(data.decode("utf-8")):
+        raise SystemExit(f"{spec['rid']} claim {spec['claim']}: the quote is not in {spec['text']}")
+    start = quote.index(spec["list_from"]) + len(spec["list_from"])
+    inner = quote[start:quote.index(spec["list_to"], start)]
+    genes = []
+    for g in inner.split(spec["split"]):
+        g = g.strip()
+        if g and g not in genes:
+            genes.append(g)
+    return genes
+
+
+def extract(specs: list, files: Path, kept: dict, texts: Path | None = None) -> list:
     arch = archives(files)
     stated = {(p["rid"], c["id"]): c for p in kept["papers"] for c in p["claims"] if c["kind"] == "set"}
     res = []
@@ -212,13 +238,20 @@ def extract(specs: list, files: Path, kept: dict) -> list:
         c = stated.get((s["rid"], str(s["claim"])))
         if c is None:
             raise SystemExit(f"{s['rid']} claim {s['claim']}: not a kept set's claim")
-        if s.get("extra"):
+        note = None
+        if s.get("not_listed"):
+            genes, note = [], f"not listed: {s['not_listed']}"
+        elif s.get("text"):
+            if texts is None:
+                raise SystemExit(f"{s['rid']} claim {s['claim']}: a text's list needs --texts")
+            genes = text_set(texts, s)
+        elif s.get("extra"):
             with gzip.open(files / "raw" / "setgenes" / f"{s['rid']}-{s['extra']}.gz", "rb") as g:
                 genes = gmt_set(g.read(), s["gmt_set"])
         else:
             genes = extract_one(_zip(arch[s["rid"]]), s)
         res.append(dict(rid=s["rid"], claim=str(s["claim"]), set_name=c.get("set_name"), stated=c.get("set_size"),
-                        n=len(genes), genes=genes, spec=s))
+                        n=len(genes), genes=genes, note=note, spec=s))
     return res
 
 
@@ -228,8 +261,10 @@ def fill(kept: dict, res: list) -> dict:
         for c in p["claims"]:
             r = by.get((p["rid"], c["id"]))
             if r is not None:
+                sp = r["spec"]
                 c["genes"] = r["genes"]
-                c["genes_from"] = f"set_genes.json ({r['spec'].get('member') or r['spec'].get('extra')})"
+                c["genes_from"] = (r["note"] if r.get("note") else
+                                   f"set_genes.json ({sp.get('member') or sp.get('extra') or 'the text ' + str(sp.get('text'))})")
     return kept
 
 
@@ -305,6 +340,7 @@ def main(argv=None) -> int:
     e.add_argument("--claims", type=Path, required=True)
     e.add_argument("--out", type=Path, required=True)
     e.add_argument("--claims-out", type=Path)
+    e.add_argument("--texts", type=Path, help="S3's texts (a set the paper lists in its text)")
     d = sub.add_parser("dry")
     d.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
@@ -321,10 +357,11 @@ def main(argv=None) -> int:
         return 0
     if a.mode == "extract":
         kept = json.loads(a.claims.read_text())
-        res = extract(json.loads(a.specs.read_text()), a.files, kept)
+        res = extract(json.loads(a.specs.read_text()), a.files, kept, a.texts)
         a.out.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")
         for r in res:
-            print(f"{r['rid']} claim {r['claim']} ({r['set_name']}): {r['n']} genes, the paper states {r['stated']}")
+            print(f"{r['rid']} claim {r['claim']} ({r['set_name']}): {r['n']} genes, the paper states {r['stated']}"
+                  + (f"; {r['note']}" if r.get("note") else ""))
         if a.claims_out:
             a.claims_out.write_text(json.dumps(fill(kept, res), indent=1, ensure_ascii=False) + "\n")
         return 0
