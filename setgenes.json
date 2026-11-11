@@ -1,0 +1,16 @@
+{
+ "fabricated": false,
+ "claims_file": "validation/level_b/amendment1/kept_claims.json",
+ "rows": [
+  {
+   "rid": "R00653",
+   "pmcid": "PMC10415381",
+   "status": 200,
+   "file": "raw/setgenes/R00653-PMC10415381-supplementary.zip.gz",
+   "bytes": 42353139,
+   "sha256": "45189b19744fbd6016b4c26684d493d3d6986cc3fe74a96176c9e2088849fb49",
+   "note": "-"
+  }
+ ],
+ "extra": []
+}
