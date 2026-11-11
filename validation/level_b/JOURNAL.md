@@ -578,3 +578,26 @@ SHA256 checked here): every dataset of `run3.txt` read and checked, each in a jo
 `results/level-b-data-4` at e2eea39, its 7 SHA256 checked here): the genes named by their symbols (`LEF1`, `FOXJ2`,
 `ZNF654`...); the six sets' genes present; both sexes among the 10 donors, each one sex, none failing; the counts
 still RPKM (the check of origin fails); donors and rule 4 as before. This report replaces the first's for the list.
+
+## J30 — 2026-11-11: S4's search for the independent verdicts; the batches before the passes
+
+**The run** (label `level-b-verdicts`, workflow run 42939285848 at b8552b3; `results/level-b-verdicts` at e4351a9, its
+179 SHA256 checked here): one attempt, 3 h 32 min of the step's 220 (the full texts' requests: 72 answered HTTP 500
+on all six attempts, 53 of them preprints, and one HTTP 503; each such record cost about two minutes). The kept
+claims as the run read them are the repository's (`kept_claims.json`, the same file). The second attempt's rules,
+committed at 4dd6653 while this run was still asking, are not used: the run published.
+- **The forward citations** of every PMID a kept record joins: R00189 145 (its journal article's PMID 33156843; its
+  preprint's, 32676577, none), R00653 2 and 80, R00765 3, R01225 2, R02175 9, R02693 2; R01795 and R01962 none.
+- **Kept by the filter, 206 records over the claims; their full texts, 113** (`fulltext_index.tsv`: 72 HTTP 500, 1
+  HTTP 503, 20 without a PMCID or a preprint's id). Per claim: R00189:1 185, R00189:3 7, R00189:5 1, R01225:2 3,
+  R01225:3 7, R02693:2 1, R02693:3 3. **None for every set's claim** (R00653's 82 citing records, R00765's 3,
+  R02175's 9 name neither a set's name nor two of its genes in their titles and abstracts; R01795 has no citing
+  record yet, and its sets' names no record of the terms' query), nor for R00189:2 and 4, R01225:1, 4 and 5,
+  R01962's two (no citing record yet) and R02693:1.
+- **R00189:1 over its cap** (185 > 100; `verdicts_terms.json`): read are its 26 records whose titles or abstracts
+  name one of R00189's terms of cell or condition; the 159 others counted, not read (the rule's limit, said with
+  the counts).
+
+**The batches** (`verdicts_codes.py batches --terms`; `verdicts/batches/`): 48 lines to code — R00189's 34 in batches
+01 and 02, R01225's 10 and R02693's 4 in batch 03 — and 26 full texts as text (`V00001`–`V00026`, outside the
+repository, their SHA256 in `texts.sha256`), committed before either pass. The passes follow `plan_s4.md`, section 2.
