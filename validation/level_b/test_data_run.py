@@ -371,3 +371,39 @@ def test_per_sample_count_tables_and_one_table_of_series_samples(tmp_path):
     assert R.main(["--spec", str(tmp_path / "spec2.json"), "--out", str(tmp_path / "out2"), "--files", str(tmp_path)]) == 0
     res2 = json.loads((tmp_path / "out2" / "report.json").read_text())
     assert res2["cells"] == 24 and not res2["counts"]["raw"] and res2["donors"]["donors"] == {"T2D": 4, "Healthy": 4}
+
+
+def test_one_table_of_rpkm_then_counts_and_the_deposit_s_sdrf(tmp_path):
+    """E-MTAB-5061's form: `#samples` and the cells; each row a gene, its RefSeq id, the RPKM, then the counts."""
+    rng = np.random.default_rng(11)
+    cells, ind, dis, kind = [], [], [], []
+    blocks = []
+    for k in range(8):
+        X = _cells(rng, 10, female=k % 2 == 0)
+        blocks.append(X)
+        for i in range(10):
+            cells.append(f"HP{150 + k}{'T2D' if k < 4 else ''}_A{i}")
+            ind.append(f"{'T2D' if k < 4 else 'H'}{k}")
+            dis.append("type II diabetes mellitus" if k < 4 else "normal")
+            kind.append("beta cell" if i < 7 else "alpha cell")
+    counts = np.vstack(blocks).T  # genes by cells
+    rpkm = counts * 3.7
+    lines = ["\t".join(["#samples"] + cells)]
+    for g, r, c in zip(GENES, rpkm, counts):
+        lines.append("\t".join([g, f"NM_{len(lines)}"] + [f"{x:.3f}" for x in r] + [f"{x:.1f}" for x in c]))
+    (tmp_path / "table.txt").write_text("\n".join(lines) + "\n")
+    sdrf = pd.DataFrame({"Source Name": cells[::-1], "Characteristics [individual]": ind[::-1],
+                         "Characteristics [disease]": dis[::-1], "Characteristics [inferred cell type]": kind[::-1],
+                         "Characteristics [sex]": ["female" if int(c[2:5]) % 2 == 0 else "male" for c in cells[::-1]],
+                         "Protocol REF": "P-1"})
+    sdrf.to_csv(tmp_path / "sdrf.txt", sep="\t", index=False)
+    spec = dict(rid="R00009", organism="homo_sapiens", loader="rpkm_counts_table",
+                files=dict(table="https://example.org/table.txt", sdrf="https://example.org/sdrf.txt"),
+                cells={"inferred cell type": ["beta cell"]},
+                groups={"column": "disease", "values": ["type II diabetes mellitus", "normal"]},
+                donor="individual", source=None, sex_label="sex", claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["cells"] == 56 and res["counts"]["raw"]  # the counts, not the RPKM
+    assert res["donors"]["donors"] == {"type II diabetes mellitus": 4, "normal": 4} and not res["sex"]["fails"]

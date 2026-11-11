@@ -437,3 +437,37 @@ table's first rows; no claim's genes read in any count):
 
 The specs follow the sets' genes (`plan_s5.md`, section 5): the next runs are the sets' files
 (`level-b-setgenes`) and the description of the Wilk et al. object (`level-b-rdescribe-3`).
+
+## J24 — 2026-11-11: the sets' files fetched and looked at; one more fetch, for R00653's journal article
+
+**The run** (label `level-b-setgenes`, workflow run 42931297815 at a71b961; `results/level-b-setgenes` at 2ef4660,
+its 14 SHA256 checked here): the four kept papers with a set each gave Europe PMC's archive of their supplement
+(R00653 3.8 MB, R00765 16.4 MB, R01795 3.3 MB, R02175 22.7 MB), and MSigDB's Hallmark file of v2022.1.Hs (48,651
+bytes). One attempt, nothing refused.
+
+**The look** (`show.md`, then the two supplements that are PDFs, as text by `pdftotext`; nothing of any count):
+- **R02175:** Supplementary Data 2 (`41467_2025_65060_MOESM4_ESM.xlsx`, sheet `dGCNA_modules-beta_cells`) lists each
+  beta-cell module's genes in a column of its own, "(1) Ribosome" to "(11) Cell Cycle".
+- **R01795:** its sets are MSigDB's Hallmark sets by name, in the Hallmark file; its supplement holds an archive
+  inside the archive (`ijms-26-04771-s001.zip`), not needed for the sets.
+- **R00765:** claim 1's module Dozer-A3 (57 genes) is shown in figures only (Fig. 5D; Supplementary Figs S19–S21;
+  the supplement is one PDF of figures): not listed, by section 5's rule. Claim 2's 13 genes are listed in the
+  paper's text ("We identified a set of 13 genes (COX5A, …, XBP1)").
+- **R00653:** S3 read the preprint (PMC9774209). Its supplement is one PDF whose Table S13 gives the three
+  sub-modules' GO and Reactome enrichment, not their genes; the main text names no gene of the module (its Figure 5
+  shows them). The record joins the journal article (PMID 37563115): Europe PMC, asked from this environment for that
+  article's record and its full text (two requests, 2026-11-11), gives PMC10415381, open access, with "Supplementary
+  Data 1-4" (an archive).
+
+**Deviation, recorded before the fetch:** the journal article's supplement is fetched the same way, once
+(`plan_s5.md`, section 5, as precised; `amendment1/setgenes2.tsv`, label `level-b-setgenes-2`). The set is taken from
+it only where it is the module the claim names. `set_genes.py` gains the fetch of a listed version, a member of an
+archive inside the archive (`outer.zip!/inner.xlsx`) and a spec's several columns (R02175's claim 6, two modules);
+tested on fabricated archives.
+
+**E-MTAB-5061** (R02175's reused dataset; batch 3): looked at for its spec — its BioStudies listing (an SDRF, an IDF,
+one table of 689 MB), the SDRF (3,514 cells: their donor, sex, disease, the authors' inferred cell type, 270 "beta
+cell"; 6 donors without diabetes and 4 with) and the first 256 kB of the table (`#samples` and the 3,514 cells, then
+each gene's RefSeq id, its 3,514 RPKM and its 3,514 counts: 7,030 fields a row). `data_run.py` gains its loader
+(`rpkm_counts_table`: the counts read in a stream, the RPKM skipped, the SDRF joined on the cell's name), tested on a
+fabricated table.

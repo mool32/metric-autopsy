@@ -10,6 +10,10 @@
 * `fetch --extra extra.tsv` also fetches the files a list names beforehand (rid, URL), each as it came with its
   SHA256 (`raw/setgenes/<rid>-<file>.gz`, `setgenes_extra.tsv`): a set the paper names from a public collection
   without listing it (MSigDB's Hallmark sets: the collection's file of the release the paper used).
+* `fetch --versions versions.tsv` fetches, instead, the supplement of another version of a kept record (its
+  journal article where S3 read its preprint; `raw/setgenes/<rid>-<pmcid>-supplementary.zip.gz`); `show` and
+  `extract` then take both runs' directories, the first run's first, and a spec names that archive `rid:pmcid`.
+  A member of an archive inside the archive is named `outer.zip!/inner.xlsx`.
 * `extract`: each set's genes by its spec (`set_specs.json`: the archive's member, its sheet, the row of its header,
   the column of the genes, the rows that are the set's; or an extra file and the set's name in it, a GMT; or the
   sentence of the paper's text that lists them, `--texts`; or "not listed" and why), their number against the
@@ -78,9 +82,16 @@ def read_extra(path: Path) -> list:
     return [(r[0], r[1]) for r in rows[1:]]
 
 
-def fetch(net, out, kept: dict) -> list:
+def read_versions(path: Path) -> list:
+    """Another version's PMCID per kept record (`rid<TAB>pmcid`, a header first): its supplement fetched instead."""
+    return [tuple(line.split("\t")[:2]) for line in path.read_text().splitlines()[1:] if line.strip()]
+
+
+def fetch(net, out, kept: dict, versions: list | None = None) -> list:
     rows = []
-    for p in kept["papers"]:
+    wanted = ([dict(rid=r, pmcid=v, claims=[dict(kind="set")], version=True) for r, v in versions] if versions
+              else kept["papers"])
+    for p in wanted:
         if not any(c["kind"] == "set" for c in p["claims"]):
             continue
         row = dict(rid=p["rid"], pmcid=p.get("pmcid") or "-", status="-", file="-", bytes=0, sha256="-", note="-")
@@ -88,6 +99,7 @@ def fetch(net, out, kept: dict) -> list:
         if not p.get("pmcid"):
             row["note"] = "no PMCID"
             continue
+        stem = f"{p['rid']}-{p['pmcid']}" if p.get("version") else p["rid"]
         try:
             body = net.get(f"{S.EPMC}/{p['pmcid']}/supplementaryFiles", {})
         except urllib.error.HTTPError as e:
@@ -100,7 +112,7 @@ def fetch(net, out, kept: dict) -> list:
             continue
         is_zip = body[:2] == b"PK"
         row.update(status=200, bytes=len(body), sha256=hashlib.sha256(body).hexdigest(),
-                   file=out.raw(f"setgenes/{p['rid']}-supplementary.{'zip' if is_zip else 'xml'}", body),
+                   file=out.raw(f"setgenes/{stem}-supplementary.{'zip' if is_zip else 'xml'}", body),
                    note="-" if is_zip else _error_message(body))
         out.log(f"{p['rid']} {p['pmcid']}: {'an archive' if is_zip else row['note']}, {len(body):,} bytes")
     with (out.root / "setgenes_index.tsv").open("w") as f:
@@ -113,14 +125,26 @@ def fetch(net, out, kept: dict) -> list:
 # --------------------------------------------------------------------------- #
 # reading a supplement's tables
 # --------------------------------------------------------------------------- #
-def archives(files: Path) -> dict:
-    """The fetched archives, by rid (the gzip of each, as the fetch stored it)."""
+def archives(files) -> dict:
+    """The fetched archives (the gzip of each, as the fetch stored it), by rid (the first run's, the version S3
+    read) and by `rid:pmcid` (any run's); `files` one results directory or several."""
     out = {}
-    for line in (files / "setgenes_index.tsv").read_text().splitlines()[1:]:
-        r = line.split("\t")
-        if len(r) >= 4 and r[3].endswith(".zip.gz"):
-            out[r[0]] = files / r[3]
+    for d in ([files] if isinstance(files, Path) else files):
+        for line in (d / "setgenes_index.tsv").read_text().splitlines()[1:]:
+            r = line.split("\t")
+            if len(r) >= 4 and r[3].endswith(".zip.gz"):
+                out.setdefault(r[0], d / r[3])
+                out[f"{r[0]}:{r[1]}"] = d / r[3]
     return out
+
+
+def member(z: zipfile.ZipFile, name: str) -> bytes:
+    """A member's bytes; `outer.zip!/inner.xlsx` names a member of an archive inside the archive."""
+    if "!/" in name:
+        outer, inner = name.split("!/", 1)
+        with zipfile.ZipFile(io.BytesIO(z.read(outer))) as zz:
+            return zz.read(inner)
+    return z.read(name)
 
 
 def _zip(path: Path) -> zipfile.ZipFile:
@@ -149,26 +173,39 @@ def table_rows(name: str, data: bytes, sheet: str | None = None) -> list:
     return [r for r in csv.reader(io.StringIO(text), delimiter="\t" if "\t" in first else ",")]
 
 
-def show(files: Path, out: Path) -> str:
+def _show_tables(L: list, name: str, data: bytes):
+    sheets = sheet_names(data) if name.lower().endswith(".xlsx") else [None]
+    for sh in sheets:
+        try:
+            rows = table_rows(name, data, sh)
+        except Exception as e:  # a table this reader cannot read is said so
+            L += ["", f"### `{name}`{' / ' + sh if sh else ''}: not read ({type(e).__name__}: {e})"]
+            continue
+        L += ["", f"### `{name}`{' / ' + sh if sh else ''}: {len(rows)} rows", "", "```"]
+        L += ["\t".join(r)[:300] for r in rows[:SHOW_ROWS]] + ["```"]
+
+
+def show(files, out: Path) -> str:
+    """Each archive's members (and those of an archive inside it, one level), each table's sheets and first rows."""
     L = ["# The supplements' members, and each table's sheets and first rows (set_genes.py show)", ""]
-    for rid, path in sorted(archives(files).items()):
+    seen = set()
+    for key, path in sorted(archives(files).items()):
+        if path in seen:
+            continue
+        seen.add(path)
         z = _zip(path)
-        L += [f"## {rid} ({path.name})", ""]
+        L += [f"## {key} ({path.name})", ""]
+        inner = {}
         for info in z.infolist():
             L.append(f"- `{info.filename}` ({info.file_size:,} bytes)")
-        for info in z.infolist():
-            if not info.filename.lower().endswith(TABLES):
-                continue
-            data = z.read(info.filename)
-            sheets = sheet_names(data) if info.filename.lower().endswith(".xlsx") else [None]
-            for sh in sheets:
-                try:
-                    rows = table_rows(info.filename, data, sh)
-                except Exception as e:  # a table this reader cannot read is said so
-                    L += ["", f"### `{info.filename}`{' / ' + sh if sh else ''}: not read ({type(e).__name__}: {e})"]
-                    continue
-                L += ["", f"### `{info.filename}`{' / ' + sh if sh else ''}: {len(rows)} rows", "", "```"]
-                L += ["\t".join(r)[:300] for r in rows[:SHOW_ROWS]] + ["```"]
+            if info.filename.lower().endswith(".zip"):
+                with zipfile.ZipFile(io.BytesIO(z.read(info.filename))) as zz:
+                    inner[info.filename] = [(i.filename, i.file_size) for i in zz.infolist()]
+                L += [f"  - `{info.filename}!/{n}` ({b:,} bytes)" for n, b in inner[info.filename]]
+        names = [i.filename for i in z.infolist()] + [f"{o}!/{n}" for o, ms in inner.items() for n, _b in ms]
+        for name in names:
+            if name.lower().endswith(TABLES):
+                _show_tables(L, name, member(z, name))
         L.append("")
     text = "\n".join(L) + "\n"
     out.write_text(text)
@@ -179,20 +216,22 @@ def show(files: Path, out: Path) -> str:
 # extract
 # --------------------------------------------------------------------------- #
 def extract_one(z: zipfile.ZipFile, spec: dict) -> list:
-    rows = table_rows(spec["member"], z.read(spec["member"]), spec.get("sheet"))
+    rows = table_rows(spec["member"], member(z, spec["member"]), spec.get("sheet"))
     h = int(spec.get("header_row", 0))
     header, body = rows[h], rows[h + 1:]
-    col = header.index(spec["column"]) if spec.get("column") is not None else 0
+    names = spec.get("column", 0)
+    cols = [header.index(c) for c in (names if isinstance(names, list) else [names])] if names != 0 else [0]
     filt = {header.index(k): {str(x) for x in v} for k, v in (spec.get("rows") or {}).items()}
     genes = []
-    for r in body:
-        if any((r[j] if j < len(r) else "") not in vals for j, vals in filt.items()):
-            continue
-        v = r[col].strip() if col < len(r) else ""
-        for g in (v.split(spec["split"]) if spec.get("split") else [v]):
-            g = g.strip()
-            if g and g.lower() not in ("nan", "none", "na") and g not in genes:
-                genes.append(g)
+    for col in cols:  # several columns: their union, in the spec's order
+        for r in body:
+            if any((r[j] if j < len(r) else "") not in vals for j, vals in filt.items()):
+                continue
+            v = r[col].strip() if col < len(r) else ""
+            for g in (v.split(spec["split"]) if spec.get("split") else [v]):
+                g = g.strip()
+                if g and g.lower() not in ("nan", "none", "na") and g not in genes:
+                    genes.append(g)
     return genes
 
 
@@ -230,7 +269,7 @@ def text_set(texts: Path, spec: dict) -> list:
     return genes
 
 
-def extract(specs: list, files: Path, kept: dict, texts: Path | None = None) -> list:
+def extract(specs: list, files, kept: dict, texts: Path | None = None) -> list:
     arch = archives(files)
     stated = {(p["rid"], c["id"]): c for p in kept["papers"] for c in p["claims"] if c["kind"] == "set"}
     res = []
@@ -246,10 +285,11 @@ def extract(specs: list, files: Path, kept: dict, texts: Path | None = None) -> 
                 raise SystemExit(f"{s['rid']} claim {s['claim']}: a text's list needs --texts")
             genes = text_set(texts, s)
         elif s.get("extra"):
-            with gzip.open(files / "raw" / "setgenes" / f"{s['rid']}-{s['extra']}.gz", "rb") as g:
+            first = files if isinstance(files, Path) else files[0]
+            with gzip.open(first / "raw" / "setgenes" / f"{s['rid']}-{s['extra']}.gz", "rb") as g:
                 genes = gmt_set(g.read(), s["gmt_set"])
         else:
-            genes = extract_one(_zip(arch[s["rid"]]), s)
+            genes = extract_one(_zip(arch[s.get("archive") or s["rid"]]), s)
         res.append(dict(rid=s["rid"], claim=str(s["claim"]), set_name=c.get("set_name"), stated=c.get("set_size"),
                         n=len(genes), genes=genes, note=note, spec=s))
     return res
@@ -331,12 +371,13 @@ def main(argv=None) -> int:
     f.add_argument("--claims", type=Path, required=True)
     f.add_argument("--out", type=Path, required=True)
     f.add_argument("--extra", type=Path, help="files named beforehand: rid<TAB>url")
+    f.add_argument("--versions", type=Path, help="another version's PMCID per record (rid<TAB>pmcid): those only")
     s = sub.add_parser("show")
-    s.add_argument("--files", type=Path, required=True)
+    s.add_argument("--files", type=Path, nargs="+", required=True)
     s.add_argument("--out", type=Path, required=True)
     e = sub.add_parser("extract")
     e.add_argument("--specs", type=Path, required=True)
-    e.add_argument("--files", type=Path, required=True)
+    e.add_argument("--files", type=Path, nargs="+", required=True, help="the results directories, the first run's first")
     e.add_argument("--claims", type=Path, required=True)
     e.add_argument("--out", type=Path, required=True)
     e.add_argument("--claims-out", type=Path)
@@ -348,16 +389,16 @@ def main(argv=None) -> int:
         out = S.Out(a.out)
         out.log("# Level B, the sets' genes: Europe PMC's supplementary files of the kept papers with a set (set_genes.py)")
         net = S.Net(out.log)
-        rows = fetch(net, out, json.loads(a.claims.read_text()))
+        rows = fetch(net, out, json.loads(a.claims.read_text()), read_versions(a.versions) if a.versions else None)
         extra = fetch_extra(net, out, read_extra(a.extra)) if a.extra else []
         out.finish("setgenes", net, dict(fabricated=False, claims_file=str(a.claims), rows=rows, extra=extra))
         return 0
     if a.mode == "show":
-        show(a.files, a.out)
+        show(a.files if len(a.files) > 1 else a.files[0], a.out)
         return 0
     if a.mode == "extract":
         kept = json.loads(a.claims.read_text())
-        res = extract(json.loads(a.specs.read_text()), a.files, kept, a.texts)
+        res = extract(json.loads(a.specs.read_text()), a.files if len(a.files) > 1 else a.files[0], kept, a.texts)
         a.out.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")
         for r in res:
             print(f"{r['rid']} claim {r['claim']} ({r['set_name']}): {r['n']} genes, the paper states {r['stated']}"

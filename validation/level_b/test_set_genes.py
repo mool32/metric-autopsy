@@ -101,3 +101,36 @@ def test_a_set_listed_in_the_paper_s_text_and_a_set_not_listed(tmp_path):
             assert why in str(e)
         else:
             raise AssertionError("no stop")
+
+
+def test_another_version_s_supplement_an_archive_inside_it_and_several_columns(tmp_path):
+    """2026-11-11: a record's journal version fetched by a list; its genes in an archive inside the archive."""
+    import search as S
+    first = _archive(tmp_path / "one", "R00653", {"media-1.pdf": b"%PDF"})
+    (tmp_path / "v.tsv").write_text("rid\tpmcid\nR00653\tPMC200\n")
+    out = S.Out(tmp_path / "two")
+    rows = G.fetch(G.Fabricated(out.log), out, dict(papers=[]), G.read_versions(tmp_path / "v.tsv"))
+    assert rows[0]["file"] == "raw/setgenes/R00653-PMC200-supplementary.zip.gz"
+    # an archive inside the journal version's archive, as Nature's Supplementary Data come
+    _xlsx(tmp_path / "d.xlsx", {"Modules": [["module", "genes"], ["IFN", "ISG15"], ["IFN", "MX1"], ["AP", "HLA-A"]]})
+    inner = io.BytesIO()
+    with zipfile.ZipFile(inner, "w") as z:
+        z.writestr("Supplementary Data 3.xlsx", (tmp_path / "d.xlsx").read_bytes())
+    outer = io.BytesIO()
+    with zipfile.ZipFile(outer, "w") as z:
+        z.writestr("41467_MOESM4_ESM.zip", inner.getvalue())
+    (tmp_path / "two" / rows[0]["file"]).write_bytes(gzip.compress(outer.getvalue(), mtime=0))
+    arch = G.archives([first, tmp_path / "two"])
+    assert set(arch) == {"R00653", "R00653:PMC1", "R00653:PMC200"} and arch["R00653"] == arch["R00653:PMC1"]
+    text = G.show([first, tmp_path / "two"], tmp_path / "show.md")
+    assert "`41467_MOESM4_ESM.zip!/Supplementary Data 3.xlsx`" in text and "Modules: 4 rows" in text
+    kept = dict(papers=[dict(rid="R00653", claims=[dict(id="1", kind="set", genes=[], set_name="IFN module", set_size=None)])])
+    spec = dict(rid="R00653", claim="1", archive="R00653:PMC200", member="41467_MOESM4_ESM.zip!/Supplementary Data 3.xlsx",
+                sheet="Modules", column="genes", rows=dict(module=["IFN"]))
+    assert G.extract([spec], [first, tmp_path / "two"], kept)[0]["genes"] == ["ISG15", "MX1"]
+    # several columns: their union, in the spec's order
+    _xlsx(tmp_path / "m.xlsx", {"S": [["title"], ["(5) Microfilaments", "(9) Microtubuli"], ["CAPN2", "AP1M2"], ["MARCKS", "CAPN2"]]})
+    files = _archive(tmp_path / "three", "R02175", {"m.xlsx": (tmp_path / "m.xlsx").read_bytes()})
+    kept2 = dict(papers=[dict(rid="R02175", claims=[dict(id="6", kind="set", genes=[], set_name="Microfilaments and Microtubuli")])])
+    spec2 = dict(rid="R02175", claim="6", member="m.xlsx", sheet="S", header_row=1, column=["(5) Microfilaments", "(9) Microtubuli"])
+    assert G.extract([spec2], files, kept2)[0]["genes"] == ["CAPN2", "MARCKS", "AP1M2"]

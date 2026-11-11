@@ -39,6 +39,9 @@
 # - by the label "level-b-setgenes" (validation/level_b/plan_s5.md, section 5): Europe PMC's supplementary files of
 #   every kept paper with a set's claim (validation/level_b/set_genes.py fetch on amendment1/kept_claims.json), and
 #   each archive's members and tables' first rows (show), to results/level-b-setgenes.
+# - by a label "level-b-setgenes-<n>" (plan_s5.md, section 5, as precised on 2026-11-11): the supplements of other
+#   versions of kept records (their journal articles where S3 read the preprint; amendment1/setgenes<n>.tsv), the same
+#   way, to results/level-b-setgenes-<n>.
 name: Level B's search for claims
 
 on:
@@ -652,6 +655,91 @@ jobs:
           git commit -qm "Level B: the kept sets' supplementary files (workflow run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do git push "$remote" HEAD:refs/heads/results/level-b-setgenes && break; sleep $((i * 10)); done
           test "$(git ls-remote "$remote" refs/heads/results/level-b-setgenes | cut -f1)" = "$(git rev-parse HEAD)"
+          cat setgenes.log
+
+  setgenes-n:
+    if: github.event.action == 'labeled' && startsWith(github.event.label.name, 'level-b-setgenes-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      n: ${{ steps.n.outputs.n }}
+    steps:
+      - name: One run per n, one attempt; the branch results/level-b-setgenes-<n> must not exist
+        id: n
+        env:
+          LABEL: ${{ github.event.label.name }}
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1 || { echo "this step runs once: this is attempt $GITHUB_RUN_ATTEMPT"; exit 1; }
+          n="${LABEL#level-b-setgenes-}"
+          echo "$n" | grep -Eq '^[0-9]+$' || { echo "the label's n is not a number: $n"; exit 1; }
+          if git ls-remote --exit-code "https://github.com/${{ github.repository }}.git" "refs/heads/results/level-b-setgenes-$n" > /dev/null; then
+            echo "results/level-b-setgenes-$n exists: this step has run"; exit 1
+          fi
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13.16"
+      - name: v1's analysis environment (data_run.py's reader of Excel sheets needs pandas)
+        run: |
+          python -m pip install -q pip==26.2.1
+          pip install -q --no-deps -r validation/prereg/requirements-panel.txt && pip check
+      - name: The supplements of other versions of kept records (Europe PMC; amendment1/setgenes<n>.tsv), and their tables' first rows
+        timeout-minutes: 45
+        run: |
+          python -I validation/level_b/set_genes.py fetch --claims validation/level_b/amendment1/kept_claims.json --out out --versions "validation/level_b/amendment1/setgenes${{ steps.n.outputs.n }}.tsv"
+          python -I validation/level_b/set_genes.py show --files out --out out/show.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: level-b-setgenes-n
+          path: out
+          if-no-files-found: error
+
+  publish-setgenes-n:
+    needs: setgenes-n
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: repo
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: level-b-setgenes-n
+          path: pub
+      - name: To results/level-b-setgenes-<n>, with SHA256SUMS (a second start finds the branch and stops)
+        env:
+          N: ${{ needs.setgenes-n.outputs.n }}
+        run: |
+          echo "$N" | grep -Eq '^[0-9]+$' || { echo "no n"; exit 1; }
+          remote="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code "$remote" "refs/heads/results/level-b-setgenes-$N" > /dev/null; then
+            echo "results/level-b-setgenes-$N exists: nothing is pushed"; exit 1
+          fi
+          cp "repo/validation/level_b/amendment1/setgenes$N.tsv" "pub/setgenes$N.tsv"
+          blob=$(git -C repo rev-parse HEAD:validation/level_b/set_genes.py)
+          plan=$(git -C repo rev-parse HEAD:validation/level_b/plan_s5.md)
+          cd pub
+          {
+            echo "# Level B: other versions' supplements of kept records with a set (setgenes$N.tsv)"
+            echo
+            echo "- Workflow run ${{ github.run_id }} of .github/workflows/level-b-search.yml at the pull request's head ${{ github.event.pull_request.head.sha }}; validation/level_b/set_genes.py (blob $blob) fetch --versions setgenes$N.tsv, then show; the plan validation/level_b/plan_s5.md (blob $plan), section 5, committed before the run."
+            echo "- setgenes.log, setgenes.json, setgenes_index.tsv, requests.tsv; show.md (each archive's members, one level of archives inside it, each table's sheets and first rows); raw/: every response as it came (gzip)."
+          } > README.md
+          find . -type f ! -name SHA256SUMS | LC_ALL=C sort | xargs -d '\n' sha256sum > SHA256SUMS
+          for f in $(find . -type f -size +45000000c); do split -b 45000000 -d -a 2 "$f" "$f.part-" && rm "$f"; done
+          git init -q -b "results/level-b-setgenes-$N"
+          git config user.name "metric-autopsy validation"
+          git config user.email "validation@users.noreply.github.com"
+          git add -A
+          git commit -qm "Level B: other versions' supplements, setgenes$N.tsv (workflow run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do git push "$remote" "HEAD:refs/heads/results/level-b-setgenes-$N" && break; sleep $((i * 10)); done
+          test "$(git ls-remote "$remote" "refs/heads/results/level-b-setgenes-$N" | cut -f1)" = "$(git rev-parse HEAD)"
           cat setgenes.log
 
   verdicts:

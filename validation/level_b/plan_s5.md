@@ -86,6 +86,14 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   first (`level-b-rdescribe-3`, its host's md5 checked), then each paper's spec. R02175's islets (GSE153855,
   GSE214517, E-MTAB-5061) and R00765's two datasets (Morabito et al. 2021 on Synapse; Jerber et al. 2021 on Zenodo)
   follow, each with its own look at its deposit first.
+  **Precised on 2026-11-11, after those looks (J22–J24) and before any spec of R02175 or R00765:** R02175's beta cells
+  are the paper's clusters of its merged datasets (Conos), which no deposit holds: each of its three deposits is
+  checked as it stands, its cells said not to be the paper's. GSE153855 (dataset 1; `tab_samples`): every cell of
+  its 11 donors, the deposit naming no cell type; GSE214517 (dataset 2, new donors; `table_series`): every cell, its
+  table RPKM only; E-MTAB-5061 (dataset 2, the published donors; `rpkm_counts_table`): the cells its authors inferred
+  to be beta cells (the SDRF's "inferred cell type"), the nearest the deposits come to the paper's. R00765's claim 1
+  on GSE174367 (`tenx_h5`; the oligodendrocytes, its table's "ODC"; groups its diagnosis, donors its samples, source
+  its batch, sex its label); claim 2's dataset (Jerber et al. 2021) has no public counts (J23): listed, not checked.
 
 ## 5. The sets' genes (added 2026-11-10, before any set's list is fetched)
 
@@ -109,5 +117,12 @@ are taken before both, the same way for every set:
   in `set_specs.json`, found by the script in the paper's text as S3 read it (that text's SHA256 checked against
   `amendment1/ft/batches/texts_group*.sha256`), the list cut between its brackets at its commas; nothing typed by
   hand. A set the paper shows only in a figure is "not listed", with where it is shown.
+- **Another version of a kept record** (added 2026-11-11, before its fetch; `JOURNAL.md`, J24): where the version S3
+  read lists no set's genes and the record joins another version that Europe PMC holds open access, that version's
+  supplement is fetched the same way, once (`amendment1/setgenes<n>.tsv`, the label `level-b-setgenes-<n>`), and a
+  set's spec names its archive (`rid:pmcid`). Its list is the set's only where it is the module the claim names;
+  else the set is not listed. R00653: S3 read the preprint (PMC9774209), whose supplement's Table S13 gives the
+  sub-modules' enrichment, not their genes; the journal article (PMC10415381) holds "Supplementary Data 1-4"
+  (`setgenes2.tsv`).
 - A set whose list is not found or cannot be read is said so: its claim stays in the list without its genes, S4
   searches it by its name only, and S5 reports its genes as not listed.

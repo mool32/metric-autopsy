@@ -41,6 +41,8 @@ Loaders (`LOADERS`):
   in the first column), one sample a donor, and the series matrix, whose samples' characteristics become the cells';
 * `table_series` — one table (genes by cells, the gene in the first column) whose cells are the series' samples, by
   their titles, and the series matrix, each sample one cell;
+* `rpkm_counts_table` — one table of every cell's RPKM then every cell's counts (E-MTAB-5061's), its counts read in a
+  stream, and the deposit's SDRF (`sdrf`), joined on the cell's name;
 * `r_export` — the counts, genes and cells R wrote from the deposit's R object (`r_export.R`, run before this);
   with `loader_args` `{"symbol_column": c}` the genes are named by the object's rowData column c.
 
@@ -427,8 +429,40 @@ def stream_mtx_libraries(files: dict, args: dict, keep_genes: list, log) -> dict
     return dict(K=K, genes=kept_names, totals=totals, raw=integers and nonneg, obs=obs, all_genes=symbols)
 
 
+def load_rpkm_counts_table(files: dict, args: dict, log):
+    """One table holding every cell's RPKM and then every cell's counts (E-MTAB-5061's
+    `pancreas_refseq_rpkms_counts_3514sc.txt`: its header `#samples` and the cells; each row a gene, its RefSeq id, the
+    cells' RPKM, the cells' counts), read in a stream, the counts kept and the RPKM skipped; and the deposit's SDRF,
+    joined on `loader_args` `cell_column` (default "Source Name"), its `Characteristics [x]` named `x`."""
+    from scipy import sparse
+    with _open(files["table"]) as f:
+        cells = f.readline().decode("utf-8").rstrip("\r\n").split("\t")[1:]
+        n = len(cells)
+        genes, rows, cols, vals = [], [], [], []
+        for i, raw in enumerate(f):
+            parts = raw.decode("utf-8").rstrip("\r\n").split("\t")
+            if len(parts) != 2 + 2 * n:
+                raise ValueError(f"row {i + 2}: {len(parts)} fields, not 2 + 2 x {n}")
+            genes.append(parts[0])
+            v = np.asarray(parts[2 + n:], dtype=np.float64)
+            nz = np.flatnonzero(v)
+            rows.append(nz)
+            cols.append(np.full(nz.size, i))
+            vals.append(v[nz])
+    X = sparse.csr_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(n, len(genes)))
+    sdrf = pd.read_csv(files["sdrf"], sep="\t", dtype=str)
+    sdrf.columns = [re.sub(r"^Characteristics ?\[(.+)\]$", r"\1", c).strip() for c in sdrf.columns]
+    key = args.get("cell_column", "Source Name")
+    sdrf = sdrf.drop_duplicates(key)
+    obs = pd.DataFrame(dict(cell=cells)).merge(sdrf, left_on="cell", right_on=key, how="left")
+    log(f"rpkm_counts_table: {n} cells by {len(genes)} genes (the counts; the RPKM skipped); "
+        f"{int(obs[key].notna().sum())} in the SDRF ({len(sdrf)} rows)")
+    return X, genes, obs
+
+
 LOADERS = dict(csv_counts=load_csv_counts, tenx_samples=load_tenx_samples, r_export=load_r_export,
-               tenx_h5=load_tenx_h5, tab_samples=load_tab_samples, table_series=load_table_series)
+               tenx_h5=load_tenx_h5, tab_samples=load_tab_samples, table_series=load_table_series,
+               rpkm_counts_table=load_rpkm_counts_table)
 
 
 # --------------------------------------------------------------------------- #
