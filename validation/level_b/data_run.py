@@ -35,6 +35,12 @@ Loaders (`LOADERS`):
 * `mtx_libraries` — one large MatrixMarket file (genes by cells) read in a stream, its barcodes prefixed by their
   library's title, and the series matrices, whose per-library characteristics become the cells' metadata; only the
   X-inactivation and Y genes and the claims' genes are kept, with every cell's total;
+* `tenx_h5` — one 10x HDF5 matrix (Cell Ranger's `filtered_feature_bc_matrix.h5`, its gene-expression features)
+  and the deposit's table of cells (`meta`, CSV), joined on the barcode (`loader_args` `barcode_column`);
+* `tab_samples` — a GEO archive of per-sample tables of counts (`<GSM>_..._counts.tab.gz`, genes by cells, the gene
+  in the first column), one sample a donor, and the series matrix, whose samples' characteristics become the cells';
+* `table_series` — one table (genes by cells, the gene in the first column) whose cells are the series' samples, by
+  their titles, and the series matrix, each sample one cell;
 * `r_export` — the counts, genes and cells R wrote from the deposit's R object (`r_export.R`, run before this);
   with `loader_args` `{"symbol_column": c}` the genes are named by the object's rowData column c.
 
@@ -51,6 +57,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import io
 import json
 import re
 import sys
@@ -290,6 +297,68 @@ def load_tenx_samples(files: dict, args: dict, log):
     return sparse.vstack(Xs, format="csr"), genes, obs
 
 
+def load_tenx_h5(files: dict, args: dict, log):
+    """A 10x HDF5 matrix (genes by cells, CSC by barcode) and the deposit's table of cells, joined on the barcode."""
+    import h5py
+    from scipy import sparse
+    with h5py.File(files["matrix"], "r") as f:
+        g = f["matrix"]
+        shape = tuple(int(x) for x in g["shape"][:])
+        M = sparse.csc_matrix((g["data"][:], g["indices"][:], g["indptr"][:]), shape=shape)
+        bc = [b.decode() for b in g["barcodes"][:]]
+        feat = g["features"]
+        names = [x.decode() for x in feat["name"][:]]
+        kinds = ([x.decode() for x in feat["feature_type"][:]] if "feature_type" in feat
+                 else ["Gene Expression"] * len(names))
+    rows = [i for i, k in enumerate(kinds) if k == "Gene Expression"]
+    X = M[rows, :].T.tocsr()
+    meta = pd.read_csv(files["meta"])
+    key = args.get("barcode_column", "Barcode")
+    meta[key] = meta[key].astype(str)
+    obs = pd.DataFrame(dict(cell=bc)).merge(meta, left_on="cell", right_on=key, how="left")
+    log(f"tenx_h5: {X.shape[0]} barcodes by {len(rows)} genes; {int(obs[key].notna().sum())} in the table of cells "
+        f"({len(meta)} rows)")
+    return X, [names[i] for i in rows], obs
+
+
+def load_tab_samples(files: dict, args: dict, log):
+    """A GEO archive of per-sample tables of counts (genes by cells); the cells' metadata are their sample's."""
+    from scipy import sparse
+    samples = series_samples(files["series"])
+    pattern = re.compile(args.get("member", r"(GSM\d+)_.*_counts\.tab\.gz$"))
+    Xs, obs, genes = [], [], None
+    with tarfile.open(files["raw"]) as tar:
+        for m in sorted(tar.getmembers(), key=lambda m: m.name):
+            g = pattern.match(Path(m.name).name)
+            if not g:
+                continue
+            t = pd.read_csv(io.BytesIO(gzip.decompress(tar.extractfile(m).read())), sep="\t", index_col=0)
+            if genes is None:
+                genes = [str(x) for x in t.index]
+            elif [str(x) for x in t.index] != genes:
+                raise ValueError(f"{m.name}: its genes are not the first table's")
+            Xs.append(sparse.csr_matrix(t.to_numpy(dtype=np.float64).T))
+            obs.append(pd.DataFrame(dict(cell=[f"{g.group(1)}_{c}" for c in t.columns], gsm=g.group(1))))
+    obs = pd.concat(obs, ignore_index=True).merge(samples, on="gsm", how="left")
+    log(f"tab_samples: {len(Xs)} samples, {sum(x.shape[0] for x in Xs)} cells, {len(genes)} genes")
+    return sparse.vstack(Xs, format="csr"), genes, obs
+
+
+def load_table_series(files: dict, args: dict, log):
+    """One table (genes by cells) whose columns are the series' samples (by title, `loader_args` `columns_are`)."""
+    from scipy import sparse
+    samples = series_samples(files["series"])
+    key = args.get("columns_are", "title")
+    t = pd.read_csv(files["table"], sep="\t", index_col=0)
+    lut = samples.drop_duplicates(key).set_index(key)
+    cols = [c for c in map(str, t.columns) if c in lut.index]
+    t.columns = [str(c) for c in t.columns]
+    log(f"table_series: {t.shape[1]} columns, {len(cols)} of them the series' samples; {t.shape[0]} genes")
+    X = sparse.csr_matrix(t[cols].to_numpy(dtype=np.float64).T)
+    obs = lut.loc[cols].reset_index().rename(columns={key: "cell"})
+    return X, [str(g) for g in t.index], obs
+
+
 def load_r_export(files: dict, args: dict, log):
     """The files `r_export.R` wrote into `args["export_dir"]` from the deposit's R object: counts.mtx.gz (genes by
     cells), genes.tsv.gz, cells.csv.gz (the object's metadata, the cells in the counts' order)."""
@@ -358,7 +427,8 @@ def stream_mtx_libraries(files: dict, args: dict, keep_genes: list, log) -> dict
     return dict(K=K, genes=kept_names, totals=totals, raw=integers and nonneg, obs=obs, all_genes=symbols)
 
 
-LOADERS = dict(csv_counts=load_csv_counts, tenx_samples=load_tenx_samples, r_export=load_r_export)
+LOADERS = dict(csv_counts=load_csv_counts, tenx_samples=load_tenx_samples, r_export=load_r_export,
+               tenx_h5=load_tenx_h5, tab_samples=load_tab_samples, table_series=load_table_series)
 
 
 # --------------------------------------------------------------------------- #
@@ -388,11 +458,15 @@ def _labelled(obs: pd.DataFrame, spec: dict):
     else:
         obs["group"] = obs[g["column"]].astype(str).map(g.get("map") or (lambda x: x))
     keep &= obs["group"].isin(g["values"]).to_numpy()
-    def column(rule):  # a column, or {"column": ..., "regex": ...}: the first group of the pattern on it; a missing
-        # value stays missing (pandas 2's astype(str) would make it the string "nan")
+    def column(rule):  # a column, or {"column": ..., "regex": ..., "map": {...}}: the first group of the pattern on
+        # it, then its values mapped; a missing value stays missing (pandas 2's astype(str) would make it "nan")
         c = obs[rule["column"] if isinstance(rule, dict) else rule]
         c = c.astype(str).where(c.notna())
-        return c.str.extract(rule["regex"], expand=False) if isinstance(rule, dict) else c
+        if isinstance(rule, dict) and rule.get("regex"):
+            c = c.str.extract(rule["regex"], expand=False)
+        if isinstance(rule, dict) and rule.get("map"):
+            c = c.map(lambda v: rule["map"].get(v, v) if isinstance(v, str) else v)
+        return c
     obs["donor"] = column(spec["donor"])
     obs["source"] = column(spec["source"]).fillna("unmatched") if spec.get("source") else "no source named"
     obs["sex_label"] = column(spec["sex_label"]).str.lower() if spec.get("sex_label") else "-"

@@ -291,3 +291,83 @@ def test_an_r_export_named_by_its_symbol_column(tmp_path):
     assert genes == GENES and len(obs) == 6
     _, genes, _ = R.load_r_export({}, dict(export_dir=str(exp)), lambda s: None)
     assert genes == ids
+
+
+def test_a_10x_hdf5_matrix_with_the_deposit_s_table_of_cells_batches_and_a_mapped_sex_label(tmp_path):
+    import h5py
+    from scipy import sparse
+    rng = np.random.default_rng(6)
+    blocks, meta = [], []
+    for k in range(8):
+        female = k % 2 == 0
+        blocks.append(_cells(rng, 30, female=female))
+        meta += [dict(Barcode=f"B{len(meta) + i}-{k + 1}", SampleID=f"Sample-{k}", Diagnosis="AD" if k < 4 else "Control",
+                      Batch=1 + k % 2, **{"Cell.Type": "ODC"}, Sex="F" if female else "M") for i in range(30)]
+    X = np.vstack(blocks)
+    M = sparse.csc_matrix(X.T)
+    with h5py.File(tmp_path / "m.h5", "w") as f:
+        g = f.create_group("matrix")
+        g["data"], g["indices"], g["indptr"], g["shape"] = M.data, M.indices, M.indptr, np.array(M.shape)
+        g["barcodes"] = np.array([m["Barcode"] for m in meta] + ["EMPTY-1"], dtype="S")[:M.shape[1]]
+        ft = g.create_group("features")
+        ft["name"] = np.array(GENES, dtype="S")
+        ft["id"] = np.array([f"E{i}" for i in range(len(GENES))], dtype="S")
+        ft["feature_type"] = np.array(["Gene Expression"] * len(GENES), dtype="S")
+    pd.DataFrame(meta).to_csv(tmp_path / "meta.csv.gz", index=False)
+    spec = dict(rid="R00006", organism="homo_sapiens", loader="tenx_h5",
+                files=dict(matrix="https://example.org/m.h5", meta="https://example.org/meta.csv.gz"),
+                cells={"Cell.Type": ["ODC"]}, groups=dict(column="Diagnosis", values=["AD", "Control"]),
+                donor="SampleID", source="Batch", sex_label=dict(column="Sex", map=dict(M="male", F="female")),
+                claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["cells"] == 240 and res["donors"]["design"] == "nested" and res["donors"]["donors"] == {"AD": 4, "Control": 4}
+    assert res["source"]["verdict"] == "balanced" and res["sex"]["both_sexes"] and res["sex"]["fails"] == []
+    assert {d["label"] for d in res["sex"]["donors"]} == {"female", "male"}
+
+
+def test_per_sample_count_tables_and_one_table_of_series_samples(tmp_path):
+    rng = np.random.default_rng(7)
+    gsms, titles, dis = [], [], []
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        for k in range(8):
+            gsm = f"GSM{500 + k}"
+            gsms.append(gsm)
+            titles.append(f"Donor{100 + k}_{'t2d' if k < 4 else 'control'}")
+            dis.append("T2D" if k < 4 else "non-T2D")
+            X = _cells(rng, 12, female=True)
+            t = pd.DataFrame(X.T, index=GENES, columns=[f"A{i}" for i in range(12)])
+            t.index.name = "gene"
+            for name, data in {f"{gsm}_sample{100 + k}_counts.tab.gz": gzip.compress(t.to_csv(sep="\t").encode(), mtime=0),
+                               f"{gsm}_sample{100 + k}_rpkms.tab.gz": gzip.compress(b"x", mtime=0)}.items():
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                tar.addfile(info, io.BytesIO(data))
+    (tmp_path / "raw.tar").write_bytes(buf.getvalue())
+    _series(tmp_path / "series.txt.gz", gsms, titles, {"disease state": dis})
+    spec = dict(rid="R00007", organism="homo_sapiens", loader="tab_samples",
+                files=dict(raw="https://example.org/raw.tar", series="https://example.org/series.txt.gz"),
+                groups={"column": "disease state", "values": ["T2D", "non-T2D"]},
+                donor=dict(column="title", regex=r"(Donor\d+)"), source=None, sex_label=None,
+                claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    assert R.main(["--spec", str(tmp_path / "spec.json"), "--out", str(tmp_path / "out"), "--files", str(tmp_path)]) == 0
+    res = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert res["cells"] == 96 and res["counts"]["raw"] and res["donors"]["donors"] == {"T2D": 4, "non-T2D": 4}
+    # one table whose columns are the series' samples (a cell each), non-integer values: the counts check fails
+    cells = [f"HP{100 + k // 3}{'T2D' if k < 12 else ''}_A{k}" for k in range(24)]
+    tab = pd.DataFrame(rng.gamma(1.0, 2.0, size=(len(GENES), 24)), index=GENES, columns=cells)
+    tab.to_csv(tmp_path / "rpkms.txt.gz", sep="\t")
+    _series(tmp_path / "s2.txt.gz", [f"GSM{900 + k}" for k in range(24)], cells,
+            {"disease state": ["T2D" if k < 12 else "Healthy" for k in range(24)]})
+    spec2 = dict(rid="R00008", organism="homo_sapiens", loader="table_series",
+                 files=dict(table="https://example.org/rpkms.txt.gz", series="https://example.org/s2.txt.gz"),
+                 groups={"column": "disease state", "values": ["T2D", "Healthy"]},
+                 donor=dict(column="cell", regex=r"^(HP\d+)"), source=None, sex_label=None,
+                 claims=[dict(id="1", genes=["ACE2", "TMPRSS2"])])
+    (tmp_path / "spec2.json").write_text(json.dumps(spec2))
+    assert R.main(["--spec", str(tmp_path / "spec2.json"), "--out", str(tmp_path / "out2"), "--files", str(tmp_path)]) == 0
+    res2 = json.loads((tmp_path / "out2" / "report.json").read_text())
+    assert res2["cells"] == 24 and not res2["counts"]["raw"] and res2["donors"]["donors"] == {"T2D": 4, "Healthy": 4}
