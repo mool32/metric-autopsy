@@ -12,7 +12,8 @@
 # recorded in JOURNAL.md.
 #
 # A deposit held only in an R object is described first, once, by the label "level-b-rdescribe-<n>": every
-# "rid<TAB>url" of validation/level_b/data_specs/rdescribe<n>.txt is fetched, gunzipped and described by
+# "rid<TAB>url[<TAB>md5]" of validation/level_b/data_specs/rdescribe<n>.txt is fetched (checked against the md5 its host
+# names, where it names one), unpacked where it is a gzip, and described by
 # validation/level_b/r_export.R (R and SingleCellExperiment from Ubuntu's archive, SeuratObject from Posit's dated snapshot of CRAN), its
 # description to results/level-b-rdescribe-<n>; no check is made.
 name: Level B's data checks
@@ -119,7 +120,7 @@ jobs:
           Rscript -e 'cat(R.version.string, "\n"); for (p in c("Matrix", "SingleCellExperiment", "SeuratObject")) cat(p, as.character(packageVersion(p)), "\n")' | tee out/${{ matrix.rid }}/r_versions.txt
           python -I validation/level_b/data_run.py --spec "$spec" --out out/${{ matrix.rid }}/fetch --files-to files --fetch-only
           obj=$(python -I -c "import json, sys; print(json.load(open(sys.argv[1]))['files']['object'].rsplit('/', 1)[-1])" "$spec")
-          gunzip -c "files/$obj" > files/object.rds
+          if [ "$(head -c 2 "files/$obj" | od -An -tx1 | tr -d ' \n')" = "1f8b" ]; then gunzip -c "files/$obj" > files/object.rds; else cp "files/$obj" files/object.rds; fi
           set -o pipefail
           Rscript validation/level_b/r_export.R export files/object.rds files/export 2>&1 | tee out/${{ matrix.rid }}/export.log
           rm -f files/object.rds
@@ -217,13 +218,16 @@ jobs:
           n="${{ steps.n.outputs.n }}"
           mkdir -p pub dl
           cp "repo/validation/level_b/data_specs/rdescribe$n.txt" pub/
-          while IFS=$'\t' read -r rid url; do
+          while IFS=$'\t' read -r rid url md5; do
             [ -n "$rid" ] || continue
             mkdir -p "pub/$rid"
             curl -sS -L --retry 3 -o "dl/$rid.rds.gz" "$url"
             sha=$(sha256sum "dl/$rid.rds.gz" | cut -d' ' -f1); size=$(stat -c %s "dl/$rid.rds.gz")
-            printf 'url\tbytes\tsha256\n%s\t%s\t%s\n' "$url" "$size" "$sha" > "pub/$rid/files.tsv"
-            gunzip -c "dl/$rid.rds.gz" > "dl/$rid.rds"
+            got=$(md5sum "dl/$rid.rds.gz" | cut -d' ' -f1)
+            printf 'url\tbytes\tsha256\tmd5\tmd5_named\n%s\t%s\t%s\t%s\t%s\n' "$url" "$size" "$sha" "$got" "${md5:--}" > "pub/$rid/files.tsv"
+            if [ -n "$md5" ] && [ "$md5" != "$got" ]; then echo "$rid: md5 $got, not the $md5 its host names"; continue; fi
+            # a gzip (GEO's .rds.gz, or an .rds saved compressed) is unpacked once; any other file is read as it is
+            if [ "$(head -c 2 "dl/$rid.rds.gz" | od -An -tx1 | tr -d ' \n')" = "1f8b" ]; then gunzip -c "dl/$rid.rds.gz" > "dl/$rid.rds"; else mv "dl/$rid.rds.gz" "dl/$rid.rds"; fi
             set -o pipefail
             Rscript repo/validation/level_b/r_export.R describe "dl/$rid.rds" "pub/$rid" 2>&1 | tee "pub/$rid/describe.log" || echo "$rid: the description failed (its log)"
             rm -f "dl/$rid.rds"

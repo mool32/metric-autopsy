@@ -80,6 +80,12 @@ of 12.3 so far (the claims that fail the check of origin; the claims whose test 
   gains the paper's minimum of cells per donor and group (`min_cells_each_group`, the donors under it listed) and an
   export's genes named by a rowData column where its rownames are not symbols; tried here on a fabricated object
   with R 4.3.3, SingleCellExperiment 1.24.0 and Matrix 1.6.5 (the versions of Ubuntu's archive the job installs).
+- **Batch 3** (added 2026-11-11, before its runs): the papers S3 kept (`JOURNAL.md`, J21, J22). R01795 and R00653
+  analyse one dataset, Wilk et al. 2020's blood cells (GSE150728), through the authors' annotated Seurat object that
+  covid19cellatlas.org hosts (the object R01795 names; GSE150728's per-sample objects hold no cell types): described
+  first (`level-b-rdescribe-3`, its host's md5 checked), then each paper's spec. R02175's islets (GSE153855,
+  GSE214517, E-MTAB-5061) and R00765's two datasets (Morabito et al. 2021 on Synapse; Jerber et al. 2021 on Zenodo)
+  follow, each with its own look at its deposit first.
 
 ## 5. The sets' genes (added 2026-11-10, before any set's list is fetched)
 

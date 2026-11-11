@@ -398,3 +398,13 @@ dropped from a gene and from a set's name, a set's name ends at the first comma 
 name holds an MSigDB-style identifier is matched by it. The papers kept do not change, and no claim is dropped: 42
 claims (17 pairs, 25 sets; 15 by both passes) became 34 (15 pairs, 19 sets; 23 by both). The first rule's output is
 kept as `amendment1/kept_claims_first_rule.json`.
+
+## J22 — 2026-11-11: the deposits of S3's kept papers looked at, for S5's batch 3 (names and listings only)
+
+As J6 did for the first four, before any spec: GEO's file listings of GSE150728 (Wilk et al. 2020: per-sample R
+objects, `cell.counts.matrices.rds.gz`, no cell types; a 390 MB archive), GSE153855 (per-sample count and RPKM tables
+of Smart-seq2) and GSE214517 (the listing answered HTTP 404: looked at again with its spec); and
+covid19cellatlas.org's page of patients' datasets, which links the Blish lab's annotated Seurat object
+(`https://covid19.cog.sanger.ac.uk/submissions/release1/blish_awilk_covid_seurat.rds`, md5 52794c83…3d73d4c05 on the
+page) — the object R01795 names. It is described first (`rdescribe3.txt`, label `level-b-rdescribe-3`; the job now
+checks a file against the md5 its host names and unpacks only a gzip). Nothing of any count was read.
