@@ -63,3 +63,19 @@ def test_calls_only_counts_the_session_s_own_requests(tmp_path, capsys):
 def test_calls_text_reads_tool_calls_only():
     s = _transcript(["a/b.md"], ["c/d.md"]) + "not json\n"
     assert independence.calls_text(s) == json.dumps({"file_path": "a/b.md"})
+
+
+def test_s4_s_texts_by_their_keys(tmp_path, capsys):
+    """S4's batch lists hold its texts' keys (`V<nnnnn>`) first; a session naming another batch's text fails."""
+    own = _transcript([f"{tmp_path}/pass1/batch_01.list", "texts/V00001.txt"], ["V00001\tR00189:1\tMED:1\ttexts/V00001.txt", "a text"])
+    other = _transcript([f"{tmp_path}/pass2/batch_01.list", "texts/V00002.txt"], ["V00001\tR00189:1\tMED:1\ttexts/V00001.txt", "a text"])
+    tr = _setup(tmp_path, [("1", "01", own), ("2", "01", other)])
+    for p in ("1", "2"):
+        (tmp_path / f"pass{p}" / "batch_01.list").write_text("V00001\tR00189:1\tMED:1\ttexts/V00001.txt\n")
+    args = ["--transcripts", str(tr), "--agents", str(tmp_path / "agents.tsv"),
+            "--pass1", f"{tmp_path}/pass1", "--pass2", f"{tmp_path}/pass2",
+            "--lists", f"{tmp_path}/pass1", f"{tmp_path}/pass2", "--batch-pattern", r"/batch_(\d+)\.list",
+            "--text-pattern", r"\b(V\d{5})\.txt"]
+    assert independence.main(args) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0].endswith("ok") and "outside its list ['V00002']" in lines[1] and lines[1].endswith("CHECK")

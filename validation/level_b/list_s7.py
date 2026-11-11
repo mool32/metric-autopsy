@@ -66,6 +66,20 @@ def donors_cannot_run(rep: dict) -> str | None:
     return None if r4.get("passes") else f"rule 4 fails ({rep.get('donors', {}).get('design')}, {rep.get('donors', {}).get('donors')})"
 
 
+def verdicts(root: Path = HERE) -> dict | None:
+    """Part 5 (S4): per claim the records found, by source, kept by the filter and coded; the verdicts both passes
+    code alike, with their quotes; the lines coded differently, for the owner. None before the passes' comparison."""
+    m, b = root / "verdicts" / "merge", root / "verdicts" / "batches"
+    if not (m / "merge.json").exists():
+        return None
+    rows = lambda p: [dict(zip(p.read_text().splitlines()[0].split("\t"), line.split("\t")))  # noqa: E731
+                      for line in p.read_text().splitlines()[1:] if line.strip()]
+    res = _json(m / "merge.json")
+    return dict(merge={k: v for k, v in res.items() if k != "claims"}, claims=res["claims"],
+                agreed=rows(m / "verdicts.tsv"), to_owner=rows(m / "to_owner.tsv"),
+                batches=_json(b / "manifest.json")["batches"])
+
+
 def controls(results: Path) -> dict | None:
     p = results / "level-b-controls" / "claims.json"
     return _json(p) if p.exists() else None
@@ -85,7 +99,7 @@ def assemble(results: Path, root: Path = HERE) -> dict:
     unchecked = [p["rid"] for p in papers if not p["data"]]
     n_claims = lambda rids: sum(len(p["claims"]) for p in papers if p["rid"] in rids)  # noqa: E731
     return dict(counts=counts(root), kept_counts=kept["counts"], fewer_than_target=kept["fewer_than_target"],
-                drawn=kept["drawn"], papers=papers, controls=controls(results),
+                drawn=kept["drawn"], papers=papers, verdicts=verdicts(root), controls=controls(results),
                 origin_fails=dict(papers=fail_origin, claims=n_claims(fail_origin)),
                 donors_cannot_run=dict(papers=cannot, claims=n_claims(cannot)),
                 data_not_checked=dict(papers=unchecked, claims=n_claims(unchecked)))
@@ -121,6 +135,23 @@ def markdown(L: dict) -> str:
         if not p["data"]:
             out.append("- data: not checked yet")
         out.append("")
+    out += ["## 5. The independent verdicts (S4)", ""]
+    v = L.get("verdicts")
+    if v:
+        mg = v["merge"]
+        out.append(f"- coded by both passes: {mg['lines']} lines; kappa of the decisions {mg['kappa_decision']:.3f}, "
+                   f"of the full codes {mg['kappa_code']:.3f}; agreed verdicts {mg['verdicts_agreed']}; to the owner "
+                   f"{mg['to_owner']}")
+        for c in v["claims"]:
+            out.append(f"- {c['claim']} ({c['kind']}): found {c['records']} (by citations {c['by_citations']}, by the "
+                       f"terms {c['by_terms']}), kept by the filter {c['kept']}, coded {c['coded']}; agreed verdicts "
+                       f"{c['verdicts_agreed']} {c['agreed_codes'] or ''}; to the owner {c['to_owner']}")
+            for a in [x for x in v["agreed"] if x["claim"] == c["claim"]]:
+                out.append(f"  - {a['record']}: {a['kind']}, {a['code']} — \"{a['quote_1']}\" ({a['where_1']}); "
+                           f"pass 2: \"{a['quote_2']}\" ({a['where_2']})")
+        out.append("")
+    else:
+        out += ["- the verdicts not coded yet", ""]
     out += ["## 6. The controls", ""]
     ctl = L["controls"]
     if ctl:

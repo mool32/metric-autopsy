@@ -13,6 +13,9 @@ The transcripts are the agent sessions' own records (not in the repository).
 `--calls-only PATH ...`: paths the instructions themselves name (every session reads them, so its transcript
 holds them): a session fails only where its own tool calls (the inputs of its requests, from the JSONL
 transcript) name one. Added 2026-11-10 for S3, where the instructions cite the protocol (`JOURNAL.md`, J14).
+
+`--text-pattern`: the full texts' file names (S3: `R<nnnnn>.txt`, the default; S4: `V<nnnnn>.txt`, its texts' keys,
+the first column of its batch lists). Added 2026-11-11 for S4, before its passes.
 """
 from __future__ import annotations
 
@@ -53,6 +56,8 @@ def main(argv=None) -> int:
                     help="full texts: each pass's batch lists; a session may name no text file outside its own list")
     ap.add_argument("--batch-pattern", default=r"batches/batch_(\d+)",
                     help=r"the regular expression of a batch's path, its number the group (full texts: /batch_(\d+)\.list)")
+    ap.add_argument("--text-pattern", default=r"\b(R\d{5})\.txt",
+                    help=r"the regular expression of a full text's file name, its key the group (S4: \b(V\d{5})\.txt)")
     a = ap.parse_args(argv)
     dirs = {"1": a.pass1, "2": a.pass2}
     bad = n = 0
@@ -80,7 +85,7 @@ def main(argv=None) -> int:
         if a.lists:
             own = {line.split("\t")[0] for line in (Path(a.lists[int(p) - 1]) / f"batch_{b}.list").read_text().splitlines()
                    if line.strip()}
-            named = set(re.findall(r"\b(R\d{5})\.txt", s))
+            named = set(re.findall(a.text_pattern, s))
             ok = ok and named <= own
             extra += f"; texts named {len(named)}, outside its list {sorted(named - own)}"
         bad += not ok
